@@ -73,7 +73,7 @@
     ],
     "deep": [
       "별표 둘과 \"0 손실\" → 진짜 traceroute라면 별표 둘은 대답이 없던 탐침이라 손실로 센다. 여기선 경비 아저씨의 대답이 늦었을 뿐이라 손실은 0이다.",
-      "\"64 hops max\" → macOS·BSD의 traceroute가 실제로 찍는 기본값이다(최대 홉 수가 시스템 기본 TTL과 같다). macOS와 리눅스가 패킷에 처음 붙이는 TTL 기본값이 64라서 표의 TTL도 64에서 시작한다.",
+      "큰 화면에서 표 첫 줄 끝에 붙는 \"64 hops max\" → macOS·BSD의 traceroute가 실제로 찍는 기본값이다(최대 홉 수가 시스템 기본 TTL과 같다). macOS와 리눅스가 패킷에 처음 붙이는 TTL 기본값이 64라서 표의 TTL도 64에서 시작한다.",
       "패킷 크기 → \"thank you\"는 띄어쓰기까지 9바이트, \"고마워요\"는 UTF-8에서 한글 한 글자가 3바이트라 12바이트다. 한국어판은 1홉과 6홉의 말도 같은 \"고마워요\"라 같은 패킷이 돌아온다.",
       "진짜로 127.0.0.1에 traceroute를 하면 1홉(localhost)에서 바로 끝난다. 여기서는 네 사람을 돌아 여섯 홉 만에 온다.",
       "공문 → RFC는 원래 '메모' 시리즈라 요즘 RFC도 첫머리에 **Status of This Memo** 절을 단다. 영어판 \"Nobody here got the memo.\"가 겹말이 되는 까닭이고, 한국어판은 같은 자리에 회사에서 쓰는 '공문'을 넣었다."
@@ -85,7 +85,7 @@
       "The \"+1\" that pops up over each person the heart reaches, and the TTL counting up from 64 to 69 → on a real network every router takes one off. Here everyone adds one, and the heart grows at every hop until the one that comes home is about three and a half times the first.",
       "The last row, \"Back to you (127.0.0.1)\" → 127.0.0.1 always means this very computer. A trace to yourself that goes through four other people and takes six hops to come back. The first line already said so: \"traceroute to you (127.0.0.1)\".",
       "The delay column, and the heart that bounces off the security desk twice → no milliseconds, just \"1 smile\", \"a wave\", \"a high-five\". traceroute prints an asterisk for every probe that gets no reply, so each bounce stamps one into the table, and only on the third try does it become \"* * a nod\". The last hop's delay is \"1 glove\", the one the kid returned.",
-      "\"1 sent. 19 received. 0% loss.\" and, a beat later, \"RFC 791: every hop takes one off the TTL. Nobody here got the memo.\" → the packet didn't get lost, it multiplied, and the internet standard that says the number must go down never reached this town. TTL stands for time to live, so everyone gave the thank-you a little more life."
+      "\"1 sent. 19 received. 0% loss.\" and, a beat later, \"RFC 791: every hop decrements the TTL. Nobody here got the memo.\" → the packet didn't get lost, it multiplied, and the internet standard that says the number must go down by one at every hop never reached this town. TTL stands for time to live, so everyone gave the thank-you a little more life."
     ],
     "terms": [
       {
@@ -146,7 +146,7 @@
     ],
     "deep": [
       "Two asterisks and \"0 lost\" → a real traceroute would count those two asterisks as lost probes. Here the guard's answer was only late, so loss stays at 0.",
-      "\"64 hops max\" → what traceroute on macOS and BSD actually prints by default (its hop limit is the system's default TTL). 64 is also the TTL macOS and Linux put on new packets, which is why the table starts at TTL 64.",
+      "\"64 hops max\", at the end of the table's first line on wider screens → what traceroute on macOS and BSD actually prints by default (its hop limit is the system's default TTL). 64 is also the TTL macOS and Linux put on new packets, which is why the table starts at TTL 64.",
       "The packet sizes → \"thank you\" is 9 bytes counting the space; \"고마워요\" (\"thank you\" in Korean) is 12 bytes in UTF-8, three per Hangul syllable.",
       "A real traceroute to 127.0.0.1 ends after one hop (localhost). Here it goes round four other people and takes six hops.",
       "The memo → RFCs began as a series of memos, and modern ones still open with a section called **Status of This Memo**. The Korean version swaps the idiom for 공문, the official notice a head office sends down to its branches, so in Korean the town never got the notice."

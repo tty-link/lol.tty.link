@@ -98,9 +98,10 @@
   .zz { font: 700 14px 'JetBrains Mono', monospace; fill: #cfc3ff; }
   /* The room's own plate ('4242 Z' → 'VACANT') carries the setup and the punchline's empty room:
      in a small house it grows about its centre so it stays 10 px and up (17 units × scale × width / 600).
-     fitPlate() sets that scale from the house's rendered width, whether the stage limits its width or
-     its height (the low 508×339 home stage). The scale sits on the inner group: its origin (0 0) is the
-     plate's centre, and the flip in vacate() animates the outer group's transform, so the two never multiply. */
+     The scale sits on the inner group: its origin (0 0) is the plate's centre, and the flip in vacate()
+     animates the outer group's transform, so the two never multiply. */
+  @container (max-width: 276px) { .plate-face { scale: 1.75; } }
+  @container (min-width: 276.5px) and (max-width: 370px) { .plate-face { scale: 1.3; } }
 
   /* Animated SVG groups: positions come from the transform attribute on the parent group, motion
      from CSS/Web Animations on the child, scaled about the parent's origin (the feet). */
@@ -338,7 +339,7 @@
     <circle cx="300" cy="78" r="13" fill="#0e1830" stroke="#24170e" stroke-width="4"/>
     <ellipse cx="236" cy="96" rx="70" ry="30" fill="url(#glow-warm)" opacity=".35"/>
     <rect x="334" y="111" width="30" height="7" fill="#0b0710"/>
-    <g transform="translate(176 106)"><rect x="-26" y="-12" width="52" height="16" rx="3" fill="#d9c27a"/><text data-tty-line="decor" class="plate-t" x="0" y="0.5" text-anchor="middle" style="font-size:12px">PID 1</text></g>
+    <g transform="translate(176 106)"><rect x="-26" y="-12" width="52" height="16" rx="3" fill="#d9c27a"/><text class="plate-t" x="0" y="0.5" text-anchor="middle" style="font-size:12px">PID 1</text></g>
     <!-- grandpa, rocking in his chair -->
     <g class="gp-seated" transform="translate(240 116)">
       <g class="rocker">
@@ -350,13 +351,13 @@
         <rect x="-16" y="-27" width="20" height="8" rx="4" fill="#5b5f7a"/>
         <rect x="-22" y="-20" width="8" height="18" rx="3" fill="#5b5f7a"/>
         <rect x="-2" y="-47" width="18" height="28" rx="7" fill="#8a3b3b"/>
-        <text data-tty-line="decor" x="7" y="-28" text-anchor="middle" style="font:700 11px 'JetBrains Mono',monospace;fill:#fff">1</text>
+        <text x="7" y="-28" text-anchor="middle" style="font:700 11px 'JetBrains Mono',monospace;fill:#fff">1</text>
         <circle cx="5" cy="-55" r="9" fill="#f0c9a8"/>
         <path d="M-4 -58 q4 -10 13 -6 q4 4 0 8" fill="#eee"/>
         <path d="M-1 -51 q5 3 9 0" stroke="#eee" stroke-width="3" fill="none" stroke-linecap="round"/>
         <circle cx="1" cy="-56" r="2.6" fill="none" stroke="#333" stroke-width="1"/>
         <path d="M-1 -57 q1 -1 2 0" stroke="#333" stroke-width=".8" fill="none"/>
-        <g class="gp-z"><text data-tty-line="decor" class="zz" x="14" y="-64">z</text><text data-tty-line="decor" class="zz z2" x="20" y="-70">z</text></g>
+        <g class="gp-z"><text class="zz" x="14" y="-64">z</text><text class="zz z2" x="20" y="-70">z</text></g>
       </g>
       <g transform="translate(-36 -8)"><rect x="-5" y="-12" width="10" height="13" rx="2" fill="#4a3a2a"/><rect x="-3.5" y="-10" width="7" height="9" fill="#ffd166" opacity=".9"/></g>
     </g>
@@ -373,8 +374,8 @@
     <g class="room-a">
       <rect x="44" y="156" width="40" height="44" fill="#0d1730" stroke="#1a1026" stroke-width="4"/>
       <circle cx="70" cy="170" r="7" fill="#f6e7b0"/>
-      <g transform="translate(112 146)"><rect x="-40" y="-14" width="80" height="24" rx="3" fill="#d9c27a"/><text data-tty-line="decor" class="plate-t" x="0" y="4" text-anchor="middle">4316 S</text></g>
-      <text data-tty-line="decor" class="plate-s cmd" x="112" y="176" text-anchor="middle">cat</text>
+      <g transform="translate(112 146)"><rect x="-40" y="-14" width="80" height="24" rx="3" fill="#d9c27a"/><text class="plate-t" x="0" y="4" text-anchor="middle">4316 S</text></g>
+      <text class="plate-s cmd" x="112" y="176" text-anchor="middle">cat</text>
       <ellipse cx="118" cy="262" rx="40" ry="10" fill="#7a4d8c"/>
       <g class="cat" transform="translate(118 254)">
         <path d="M18 2 q16 -2 12 -16 q-2 -6 -6 -4" stroke="#141018" stroke-width="5" fill="none" stroke-linecap="round"/>
@@ -383,14 +384,14 @@
         <path d="M-27 -14 l2 -11 7 7z M-15 -17 l5 -9 4 9z" fill="#141018"/>
         <path class="cat-eye-shut" d="M-23 -8 q3 2 6 0" stroke="#5a4f6a" stroke-width="1.6" fill="none"/>
         <g class="cat-eye-open"><circle cx="-20" cy="-8.5" r="3.6" fill="#ffd23f"/><rect x="-20.8" y="-11.5" width="1.6" height="6" rx=".8" fill="#141018"/></g>
-        <text data-tty-line="decor" class="zz cat-z" x="-6" y="-24">z</text><text data-tty-line="decor" class="zz z2 cat-z" x="0" y="-30">z</text>
+        <text class="zz cat-z" x="-6" y="-24">z</text><text class="zz z2 cat-z" x="0" y="-30">z</text>
       </g>
     </g>
 
     <!-- 4317: a sleepover kid whose parent has already gone home -->
     <g class="room-b">
-      <g transform="translate(270 146)"><rect class="plate-bg-4317" x="-44" y="-14" width="88" height="24" rx="3" fill="#d9c27a"/><text data-tty-line="decor" class="plate-t plate-4317" x="0" y="4" text-anchor="middle">4317 Z</text></g>
-      <text data-tty-line="decor" class="plate-s ppid-4317" x="270" y="176" text-anchor="middle">PPID 3999</text>
+      <g transform="translate(270 146)"><rect class="plate-bg-4317" x="-44" y="-14" width="88" height="24" rx="3" fill="#d9c27a"/><text class="plate-t plate-4317" x="0" y="4" text-anchor="middle">4317 Z</text></g>
+      <text class="plate-s ppid-4317" x="270" y="176" text-anchor="middle">PPID 3999</text>
       <!-- ladder from the attic hatch -->
       <g stroke="#6b4428" stroke-width="3"><path d="M338 118 V262 M360 118 V262"/><path d="M338 134h22M338 154h22M338 174h22M338 194h22M338 214h22M338 234h22M338 254h22"/></g>
       <rect x="236" y="250" width="64" height="12" rx="5" fill="#6aa3c8"/>
@@ -408,7 +409,7 @@
           <path class="o-sad" d="M-11 -80 l6 -2 M4 -82 l6 2" stroke="#3d5f22" stroke-width="1.6"/>
           <path class="o-mouth" d="M-5 -63 q5 -3 10 0" stroke="#3d5f22" stroke-width="1.8" fill="none"/>
           <rect x="10" y="-52" width="22" height="16" rx="6" fill="#f3f0ff" stroke="#c9c2e6"/>
-          <g class="o-card hidden"><rect x="-30" y="-64" width="18" height="22" rx="2" fill="#fffaf0" stroke="#1b1027" stroke-width="1.5"/><text data-tty-line="decor" class="card-t" x="-21" y="-46" text-anchor="middle" style="font-size:15px">0</text></g>
+          <g class="o-card hidden"><rect x="-30" y="-64" width="18" height="22" rx="2" fill="#fffaf0" stroke="#1b1027" stroke-width="1.5"/><text class="card-t" x="-21" y="-46" text-anchor="middle" style="font-size:15px">0</text></g>
         </g>
       </g>
       </g>
@@ -421,7 +422,7 @@
           <rect x="-10" y="-30" width="8" height="28" rx="3" fill="#5b5f7a"/><rect x="2" y="-30" width="8" height="28" rx="3" fill="#5b5f7a"/>
           <path d="M-12 -2h10v3h-12z M2 -2h10v3h-10z" fill="#3a2a22"/>
           <rect x="-15" y="-66" width="30" height="40" rx="10" fill="#8a3b3b"/>
-          <text data-tty-line="decor" x="0" y="-40" text-anchor="middle" style="font:700 15px 'JetBrains Mono',monospace;fill:#fff">1</text>
+          <text x="0" y="-40" text-anchor="middle" style="font:700 15px 'JetBrains Mono',monospace;fill:#fff">1</text>
           <circle cx="0" cy="-78" r="13" fill="#f0c9a8"/>
           <path d="M-13 -80 q3 -15 14 -12 q11 2 12 10 q-6 -6 -13 -5 q-8 0 -13 7z" fill="#eee"/>
           <path d="M-7 -72 q7 4 14 0" stroke="#eee" stroke-width="4" fill="none" stroke-linecap="round"/>
@@ -436,8 +437,8 @@
 
     <!-- 4318: dad's other kid, still running (bouncing on the bed) -->
     <g class="room-c">
-      <g transform="translate(450 146)"><rect x="-40" y="-14" width="80" height="24" rx="3" fill="#d9c27a"/><text data-tty-line="decor" class="plate-t" x="0" y="4" text-anchor="middle">4318 R</text></g>
-      <text data-tty-line="decor" class="plate-s cmd" x="450" y="176" text-anchor="middle">bounce</text>
+      <g transform="translate(450 146)"><rect x="-40" y="-14" width="80" height="24" rx="3" fill="#d9c27a"/><text class="plate-t" x="0" y="4" text-anchor="middle">4318 R</text></g>
+      <text class="plate-s cmd" x="450" y="176" text-anchor="middle">bounce</text>
       <rect x="462" y="236" width="110" height="22" rx="4" fill="#6b4a8a"/>
       <rect x="462" y="226" width="26" height="14" rx="5" fill="#f3f0ff"/>
       <path d="M460 258v6M574 258v6" stroke="#4a3260" stroke-width="5"/>
@@ -480,7 +481,7 @@
       <circle cx="402" cy="346" r="10" fill="#8b8098"/><path d="M386 386 q16 -30 32 0z" fill="#8b8098"/>
       <path d="M396 346 h4 M404 346 h4" stroke="#2a2238" stroke-width="2"/>
       <rect x="385" y="396" width="34" height="13" rx="2" fill="#d9c27a"/>
-      <text data-tty-line="decor" class="tiny" x="402" y="406" text-anchor="middle" style="fill:#2a1a0c;font-weight:700">PID 0</text>
+      <text class="tiny" x="402" y="406" text-anchor="middle" style="fill:#2a1a0c;font-weight:700">PID 0</text>
     </g>
     <!-- lamp -->
     <path d="M300 278v28" stroke="#111" stroke-width="2"/>
@@ -562,7 +563,7 @@
         <rect x="36" y="-90" width="10" height="17" rx="3" fill="#3c4652"/>
         <path d="M46 -110 v-14" stroke="#3c4652" stroke-width="3"/>
         <circle class="zap-led" cx="46" cy="-126" r="3.6" fill="#ff3d7f"/>
-        <text data-tty-line="decor" class="zlabel" x="62" y="-94" text-anchor="middle">-9</text>
+        <text class="zlabel" x="62" y="-94" text-anchor="middle">-9</text>
       </g>
     </g>
   </g>
@@ -588,7 +589,7 @@
           <g class="z-arm-back arm"><path d="M-2 -88 L-50 -90" stroke="#86bd57" stroke-width="11" stroke-linecap="round"/><circle cx="-52" cy="-90" r="6.5" fill="#86bd57"/></g>
           <path d="M-22 -98 q22 -8 44 0 l3 54 l-8 -5 l-6 6 l-7 -6 l-7 6 l-7 -6 l-6 6 l-7 -5z" fill="#93b7cc"/>
           <path d="M-8 -70 l6 8 M10 -84 l-4 6" stroke="#6f93a8" stroke-width="2"/>
-          <g transform="translate(2 -72)"><rect x="-1" y="-10" width="20" height="20" rx="4" fill="#24163f"/><text data-tty-line="decor" x="9" y="5.5" text-anchor="middle" style="font:700 15px 'JetBrains Mono',monospace;fill:#b6f36b">Z</text></g>
+          <g transform="translate(2 -72)"><rect x="-1" y="-10" width="20" height="20" rx="4" fill="#24163f"/><text x="9" y="5.5" text-anchor="middle" style="font:700 15px 'JetBrains Mono',monospace;fill:#b6f36b">Z</text></g>
           <g class="z-head">
             <circle cx="-2" cy="-124" r="28" fill="#9fd46b"/>
             <path d="M-2 -152 q-8 -10 2 -14 q-2 8 8 6 q-4 4 -2 8" fill="#4d7a2c"/>
@@ -622,7 +623,7 @@
         <path d="M40 0 V-222" stroke="#6b4a2e" stroke-width="6" stroke-linecap="round"/>
         <path d="M40 -222 C 6 -244 -38 -236 -66 -206 C -32 -220 4 -218 40 -206 Z" fill="#cfd6e0" stroke="#7d8796" stroke-width="2"/>
         <path d="M-40 -212 v16" stroke="#7d6a4a" stroke-width="1.5"/>
-        <g transform="translate(-40 -188)"><rect x="-30" y="-8" width="60" height="22" rx="4" fill="#ffd166" stroke="#7d5a12" stroke-width="1.5"/><text data-tty-line="decor" class="tag-t" x="0" y="8" text-anchor="middle">wait()</text></g>
+        <g transform="translate(-40 -188)"><rect x="-30" y="-8" width="60" height="22" rx="4" fill="#ffd166" stroke="#7d5a12" stroke-width="1.5"/><text class="tag-t" x="0" y="8" text-anchor="middle">wait()</text></g>
       </g>
       <path d="M-40 0 L40 0 L28 -150 Q0 -170 -28 -150 Z" fill="#1d1726"/>
       <path d="M-30 0 L-20 -140 M8 0 L12 -146" stroke="#2a2238" stroke-width="3"/>
@@ -649,7 +650,7 @@
   <g class="card hidden" transform="translate(420 500)">
     <g class="card-move mv">
       <rect x="-14" y="-18" width="28" height="34" rx="3" fill="#fffaf0" stroke="#1b1027" stroke-width="2"/>
-      <text data-tty-line="decor" class="card-t" x="0" y="8" text-anchor="middle">0</text>
+      <text class="card-t" x="0" y="8" text-anchor="middle">0</text>
     </g>
   </g>
 
@@ -658,7 +659,7 @@
       <p class="bubble zom" data-who="zombie"></p>
       <p class="bubble dad" data-who="dad"></p>
       <p class="bubble grandpa" data-who="grandpa"></p>
-      <p class="bubble hunter" data-who="hunter" data-tty-line="punch"></p>
+      <p class="bubble hunter" data-who="hunter"></p>
     </div>
   </section>
 
@@ -683,8 +684,8 @@
       </button>
     </div>
     <p class="hint" id="hint">
-      <span data-lang="en">Your turn. Hint: only a parent can reap.</span>
-      <span data-lang="ko">직접 해 보세요. 힌트: 거둘 수 있는 건 부모뿐.</span>
+      <span data-lang="en">Get the zombie out. Hint: only a parent can reap.</span>
+      <span data-lang="ko">좀비를 내보내 보세요. 힌트: 거둘 수 있는 건 부모뿐.</span>
     </p>
   </aside>
   <p class="sr" id="say" aria-live="polite"></p>
@@ -701,7 +702,7 @@
     en: {
       desc: 'A haunted house in cross-section. Two ghost hunters fire kill -9 at a zombie in room 4242; the shots pass straight through. A reaper turns out to be its parent, who reaps it with wait(). Upstairs, grandpa PID 1 takes in an orphan.',
       stage: 'Room 4242 of the haunted house',
-      dead: "I'm already\u00a0dead.",
+      dead: "I'm already dead.",
       dadCall: "Dad! You're\u00a0late!",
       reap: "Relax. I'm just here to reap my kid.",
       grandpa: "Your parent went first? Grandpa'll reap you, kiddo.",
@@ -726,7 +727,7 @@
       dadCall: '아빠! 왜\u00a0이제\u00a0와!',
       reap: '놀라지 마세요. 애\u00a0데리러 왔어요.',
       grandpa: '부모가 먼저 갔구나. 이 할애비가 거두마.',
-      hunters: '…우린 뭐\u00a0하러\u00a0왔지?',
+      hunters: '…우린 뭐\u00a0하러 왔지?',
       count: (n) => `kill -9 × ${n}`,
       effect: '효과 없음 · 오류도 없음',
       ready: 'SIGKILL 장전 완료',
@@ -788,7 +789,7 @@
   }
   function dropRow(pid, ms = 900) {
     markRow(pid, 'gone');
-    at(dur(ms), () => { rows = rows.filter((r) => r.pid !== pid); renderRows(); });
+    at(ms, () => { rows = rows.filter((r) => r.pid !== pid); renderRows(); });
   }
 
   // ---------- timers ----------
@@ -802,9 +803,6 @@
     timers.forEach(clearTimeout);
     timers = [];
   }
-  // With reduced motion every step of the story comes at once, so its delays are 0 too: the run ends
-  // on the autoplay's own last scene.
-  const dur = (ms) => (reduce ? 0 : ms);
   const anim = (el, frames, opts) => (reduce ? null : el.animate(frames, Object.assign({ fill: 'forwards', easing: 'ease-in-out' }, opts)));
   function cancelAnims() {
     document.getAnimations().forEach((a) => { if (!(window.CSSAnimation && a instanceof CSSAnimation)) a.cancel(); });
@@ -855,26 +853,13 @@
   function say(who, text, ms = 2200) {
     const b = bubbles[who];
     b.textContent = text;
-    if (text === L.dead) b.dataset.ttyLine = 'setup';
-    else if (who === 'zombie') delete b.dataset.ttyLine;
     b.classList.add('on');
     place(b);
     sr.textContent = text;
     clearTimeout(bubbleTimers[who]);
     if (ms) bubbleTimers[who] = setTimeout(() => b.classList.remove('on'), ms);
   }
-  // The room's plate stays 10 px and up in a small house: 17 units × scale × house width / 600
-  // (10.2 px, so rounding never leaves it a hair under 10).
-  const house = $('.house'), plateFace = $('.plate-face');
-  function fitPlate() {
-    const w = house.getBoundingClientRect().width;
-    if (w) plateFace.style.scale = String(Math.max(1, 10.2 / (17 * w / 600)));
-  }
-  fitPlate();
-  new ResizeObserver(() => {
-    fitPlate();
-    Object.values(bubbles).forEach((b) => { if (b.classList.contains('on')) place(b); });
-  }).observe(house);
+  new ResizeObserver(() => Object.values(bubbles).forEach((b) => { if (b.classList.contains('on')) place(b); })).observe($('.house'));
   const hush = () => Object.values(bubbles).forEach((b) => b.classList.remove('on'));
 
   // ---------- LCD ----------
@@ -936,7 +921,7 @@
   }
   function yawn(ms = 1100) {
     zombie.classList.add('yawning');
-    at(dur(ms), () => zombie.classList.remove('yawning'));
+    at(ms, () => zombie.classList.remove('yawning'));
   }
   function sitDown() {
     zombie.classList.add('sitting');
@@ -982,18 +967,18 @@
     ], { duration: dur });
     if (reduce) card.classList.add('hidden');
   }
-  function leaveTogether(ms = 1600) {
+  function leaveTogether(dur = 1600) {
     card.classList.add('hidden');
     // dad walks back to the doorway; the zombie follows one step behind
-    anim(rMove, [{ transform: 'none', opacity: 1 }, { transform: 'translate(-30px, -30px) scale(.92)', opacity: 1, offset: .5 }, { transform: DOORWAY, opacity: 0 }], { duration: ms });
+    anim(rMove, [{ transform: 'none', opacity: 1 }, { transform: 'translate(-30px, -30px) scale(.92)', opacity: 1, offset: .5 }, { transform: DOORWAY, opacity: 0 }], { duration: dur });
     anim(zMove, [
       { transform: 'translate(0, 0)' },
       { transform: 'translate(-96px, -14px) scale(.96)', offset: .45 },
       { transform: 'translate(-150px, -36px) scale(.9)', offset: .78 },
       { transform: 'translate(-176px, -44px) scale(.88)', opacity: 0 },
-    ], { duration: ms * 1.15 });
-    at(dur(ms * .55), () => wave(2, 800));
-    at(dur(ms * 1.15 + 50), () => {
+    ], { duration: dur * 1.15 });
+    at(dur * .55, () => wave(2, 800));
+    at(dur * 1.15 + 50, () => {
       reaper.classList.add('hidden');
       zombie.classList.add('hidden');
     });
@@ -1041,7 +1026,7 @@
   function grandpaGoesUp() {
     anim(gpMove, [{ transform: 'translate(0, 0)' }, { transform: 'translate(28px, 0)', offset: .25 }, { transform: 'translate(28px, -152px)', opacity: 1, offset: .9 }, { transform: 'translate(28px, -152px)', opacity: 0 }], { duration: 1500 });
     anim(oMove, [{ transform: 'translate(0, 0)' }, { transform: 'translate(52px, 0)', offset: .3 }, { transform: 'translate(52px, -150px)', opacity: 1, offset: .9 }, { transform: 'translate(52px, -150px)', opacity: 0 }], { duration: 1500 });
-    at(dur(1550), () => {
+    at(1550, () => {
       gpStanding.classList.add('hidden');
       orphan.classList.add('hidden');
       gpSeated.classList.remove('hidden');
@@ -1051,10 +1036,23 @@
       dropRow(4317);
     });
   }
+  function upstairsFinal() {
+    gpStanding.classList.add('hidden');
+    orphan.classList.add('hidden');
+    gpSeated.classList.remove('hidden');
+    dim4317.setAttribute('opacity', '0');
+    orphanEyes.classList.add('hidden');
+    plate4317.textContent = L.vacant;
+    $('.plate-bg-4317').setAttribute('fill', '#9be3a6');
+    ppid4317.textContent = '';
+    rows = rows.filter((r) => r.pid !== 3999 && r.pid !== 4317);
+    renderRows();
+  }
 
   // ---------- reset ----------
   function resetScene() {
     clearTimers();
+    clearTimeout(loopTimer);
     cancelAnims();
     hush();
     bolts.textContent = '';
@@ -1088,117 +1086,111 @@
     kills = 0;
     lcd(L.ready);
     zapArm.style.transform = '';
-    armDown = false;
     $('.ha-mouth').setAttribute('d', 'M5 -139 q5 3 10 0');
     hint.classList.remove('on', 'hot');
     busy = false;
     present = true;
-    parentOn = false;
-    auto = false;
     setButtons();
   }
 
   // ---------- the autoplay story ----------
-  // A timeline: a visitor's press holds it still for a moment (the kit's busy 2.5 s) and never breaks it.
-  let pid = 4242, nextPid = 4319, present = true, busy = false, auto = false, parentOn = false;
-  // The punchline goes back to the professionals: the zapper comes down, the hint says it is the visitor's turn.
-  function punchline() {
-    anim(zapArm, [{ transform: 'rotate(0)' }, { transform: 'rotate(32deg)' }], { duration: 600 });
-    $('.ha-mouth').setAttribute('d', 'M5 -138 q5 -2 10 0');
-    say('hunter', L.hunters, reduce ? 0 : 4200);
-    armDown = true;
-    hint.classList.add('on');
-  }
-  // The first run starts on the scene drawn at load, so a press made while the fonts load stays.
-  let first = true;
-  const story = TTY.timeline(async (t) => {
-    if (!first) resetScene();
-    first = false;
+  let pid = 4242, nextPid = 4319, present = true, busy = false, auto = false, loopTimer = null;
+  function play() {
+    resetScene();
     auto = true;
-    // 0–3 s: the gag. Three shots pass straight through; the zombie waves. The meter reloads after
-    // the first two and gives its verdict on the third, so 'SIGKILL loaded' is up long enough to read.
-    const shot = (verdict) => { kills++; zap(); lcd(verdict ? L.effect : L.ready); };
-    await t.at(600); shot(false);
-    await t.at(1000); wave(2, 900);
-    await t.at(1450); shot(false);
-    await t.at(2250); shot(true);
+    if (reduce) return finalTableau();
+    // 0–3 s: the gag. Three shots pass straight through; the zombie waves.
+    [600, 1450, 2250].forEach((t, i) => at(t, () => { kills++; zap(); lcd(L.effect); }));
+    at(1000, () => wave(2, 900));
     // 3 s: the line.
-    await t.at(2900); say('zombie', L.dead, 2500);
+    at(2900, () => say('zombie', L.dead, 2500));
     // 3.3–5 s: rapid fire, a yawn, then it sits down on its suitcase.
-    await t.at(3300); shot(true);
-    await t.at(3650); shot(true);
-    await t.at(3700); yawn(1100);
-    await t.at(4000); shot(true);
-    await t.at(4350); shot(true);
-    await t.at(4700); shot(true);
-    await t.at(4900); sitDown();
-    await t.at(5050); shot(true);
+    [3300, 3650, 4000, 4350, 4700, 5050].forEach((t) => at(t, () => { kills++; zap(); lcd(L.effect); }));
+    at(3700, () => yawn(1100));
+    at(4900, sitDown);
     // 5.7 s: lightning, the lights go out, the door creaks open: a reaper.
-    await t.at(5700);
-    anim(flash, [{ opacity: 0 }, { opacity: .95 }, { opacity: 0, offset: .3 }, { opacity: .8, offset: .45 }, { opacity: 0 }], { duration: 700, fill: 'none' });
-    anim(dark, [{ opacity: 0 }, { opacity: .25, offset: .15 }, { opacity: .05, offset: .3 }, { opacity: .62 }], { duration: 700 });
-    // From here the story's parent is on stage: wait() waits for the punchline.
-    await t.at(6000); doorOpen(true); parentOn = true; setButtons();
-    await t.at(6200); reaperEnter(true);
-    await t.at(6650);
-    bangs.classList.remove('hidden');
-    anim(hb, [{ transform: 'none' }, { transform: 'translate(36px, -70px) rotate(-14deg)', offset: .5 }, { transform: 'translate(52px, -44px) rotate(-10deg)' }], { duration: 420, easing: 'cubic-bezier(.3,1.4,.6,1)' });
-    anim(ha, [{ transform: 'none' }, { transform: 'translate(-3px, 0)' }, { transform: 'translate(3px, 0)' }, { transform: 'none' }], { duration: 160, iterations: 6, fill: 'none' });
-    $('.ha-mouth').setAttribute('d', 'M5 -141 q5 -4 10 0 q-5 6 -10 0z');
-    await t.at(6700); cat.classList.add('peek');
+    at(5700, () => {
+      anim(flash, [{ opacity: 0 }, { opacity: .95 }, { opacity: 0, offset: .3 }, { opacity: .8, offset: .45 }, { opacity: 0 }], { duration: 700, fill: 'none' });
+      anim(dark, [{ opacity: 0 }, { opacity: .25, offset: .15 }, { opacity: .05, offset: .3 }, { opacity: .62 }], { duration: 700 });
+    });
+    at(6000, () => doorOpen(true));
+    at(6200, () => reaperEnter(true));
+    at(6650, () => {
+      bangs.classList.remove('hidden');
+      anim(hb, [{ transform: 'none' }, { transform: 'translate(36px, -70px) rotate(-14deg)', offset: .5 }, { transform: 'translate(52px, -44px) rotate(-10deg)' }], { duration: 420, easing: 'cubic-bezier(.3,1.4,.6,1)' });
+      anim(ha, [{ transform: 'none' }, { transform: 'translate(-3px, 0)' }, { transform: 'translate(3px, 0)' }, { transform: 'none' }], { duration: 160, iterations: 6, fill: 'none' });
+      $('.ha-mouth').setAttribute('d', 'M5 -141 q5 -4 10 0 q-5 6 -10 0z');
+    });
+    at(6700, () => cat.classList.add('peek'));
+    at(7700, () => cat.classList.remove('peek'));
     // 7.6 s: lights back on. The hood comes down: it's a parent in a costume.
-    await t.at(7600);
-    anim(dark, [{ opacity: .62 }, { opacity: 0 }], { duration: 400 });
-    unhood();
-    bangs.classList.add('hidden');
-    await t.at(7700); cat.classList.remove('peek');
-    await t.at(7900);
-    standUp();
-    zombie.classList.add('happy');
-    hearts.classList.remove('hidden');
-    anim(hearts, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'translateY(-6px)', offset: .3 }, { opacity: 0, transform: 'translateY(-26px)' }], { duration: 1500 });
-    say('zombie', L.dadCall, 2000);
-    await t.at(8700); say('dad', L.reap, 2700);
-    await t.at(8800); anim(hb, [{ transform: 'translate(52px, -44px) rotate(-10deg)' }, { transform: 'none' }], { duration: 500 });
+    at(7600, () => {
+      anim(dark, [{ opacity: .62 }, { opacity: 0 }], { duration: 400 });
+      unhood();
+      bangs.classList.add('hidden');
+    });
+    at(7900, () => {
+      standUp();
+      zombie.classList.add('happy');
+      hearts.classList.remove('hidden');
+      anim(hearts, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'translateY(-6px)', offset: .3 }, { opacity: 0, transform: 'translateY(-26px)' }], { duration: 1500 });
+      say('zombie', L.dadCall, 2000);
+    });
+    at(8700, () => say('dad', L.reap, 2700));
+    at(8800, () => anim(hb, [{ transform: 'translate(52px, -44px) rotate(-10deg)' }, { transform: 'none' }], { duration: 500 }));
     // 10.2 s: the exit status changes hands: that is the reaping.
-    await t.at(10200); handOver(900);
-    await t.at(11100); leaveTogether(1500); lcd(L.reaped(4242));
-    await t.at(12900); doorOpen(false); vacate(4242); present = false; setButtons();
+    at(10200, () => handOver(900));
+    at(11100, () => { leaveTogether(1500); lcd(L.reaped(4242)); });
+    at(12900, () => { doorOpen(false); vacate(4242); present = false; setButtons(); });
     // 13.3 s upstairs: the sleepover's parent goes home. The kid is re-parented to PID 1.
-    await t.at(13300); orphanParentExits(); lcd(L.adopted);
-    await t.at(13800); grandpaComesDown();
-    await t.at(15000); grandpaTakesIn(); say('grandpa', L.grandpa, 3000);
-    await t.at(17400); grandpaGoesUp();
-    // 18.2 s: the punchline. The story is told: from here a press plays along (the empty room:
-    // 'No such process') and the punchline stays up.
-    await t.at(18200);
-    hush();
-    punchline();
-    lcd(L.effect);
-    auto = false; parentOn = false; setButtons();
+    at(13300, orphanParentExits);
+    at(13300, () => lcd(L.adopted));
+    at(13800, grandpaComesDown);
+    at(15000, () => { grandpaTakesIn(); say('grandpa', L.grandpa, 3000); });
+    at(17400, grandpaGoesUp);
+    // 18.2 s: the punchline goes back to the professionals.
+    at(18200, () => {
+      anim(zapArm, [{ transform: 'rotate(0)' }, { transform: 'rotate(32deg)' }], { duration: 600 });
+      $('.ha-mouth').setAttribute('d', 'M5 -138 q5 -2 10 0');
+      say('hunter', L.hunters, 4200);
+      lcd(L.effect);
+    });
     // 20.5 s, while they still wonder: dad's next kid rises in room 4242 (a fresh zombie to practise
-    // on), the zapper comes back up and the meter reloads. A reading the visitor just made on the
-    // meter stays 2.5 s first (the kit holds the timeline after each press; this covers the keyboard too).
-    await t.at(20500);
-    const lag = pressedAt + 2500 - performance.now();
-    if (lag > 0) await t.wait(lag);
-    startRound(0, () => { if (armDown) raiseArm(300); });
-    await t.wait(800); if (!busy) wave(2, 900);
-    // Later the story starts over, unless the visitor is still playing (then the idle restart does it).
-    if (reduce) return;
-    await t.at(34000);
-    if (performance.now() - pressedAt >= 12000) story.start();
-  }, { punch: 18.4 });
+    // on), the zapper comes back up and the meter reloads. Later the story starts over.
+    at(20500, () => {
+      auto = false;
+      hint.classList.add('on');
+      startRound(0, () => anim(zapArm, [{ transform: 'rotate(32deg)' }, { transform: 'rotate(0)' }], { duration: 300, easing: 'cubic-bezier(.3,1.4,.6,1)' }));
+    });
+    at(21300, () => wave(2, 900));
+    loopTimer = setTimeout(play, 34000);
+  }
+
+  // Reduced motion: one picture that tells the whole joke.
+  function finalTableau() {
+    kills = 9;
+    lcd(L.effect);
+    sitDown();
+    zombie.classList.add('yawning');
+    zap(true, true);
+    reaper.classList.remove('hidden');
+    unhood();
+    orphanParentExits();
+    gpSeated.classList.add('hidden');
+    gpStanding.classList.remove('hidden');
+    grandpaTakesIn();
+    hint.classList.add('on');
+    auto = false;
+    setTimeout(() => { say('zombie', L.dead, 0); say('dad', L.reap, 0); }, 60);
+    present = true;
+    busy = false;
+    setButtons();
+  }
 
   // ---------- interaction ----------
-  let round = 0, misses = 0, reactionIx = 0, armDown = false;
-  // The hunter lowers the zapper at the punchline; the next zombie, or a visitor's shot, brings it back up.
-  function raiseArm(ms) {
-    armDown = false;
-    anim(zapArm, [{ transform: 'rotate(32deg)' }, { transform: 'rotate(0)' }], { duration: ms, easing: 'cubic-bezier(.3,1.4,.6,1)' });
-  }
+  let round = 0, misses = 0, reactionIx = 0;
   function setButtons() {
-    btnWait.setAttribute('aria-disabled', String(busy || !present || parentOn));
+    btnWait.setAttribute('aria-disabled', String(busy || !present));
     btnKill.setAttribute('aria-disabled', String(busy));
   }
   // A new zombie in room 4242: dad's next kid comes back and exits.
@@ -1227,25 +1219,52 @@
     });
   }
 
-  let idle = null, pressedAt = -Infinity;
-  // The story starts over 12 s after the last press, once it has been told (a press during the story
-  // leaves it running, and it starts over at its own 34 s).
-  function bumpIdle() {
-    pressedAt = performance.now();
-    clearTimeout(idle);
-    idle = setTimeout(() => { if (busy) return bumpIdle(); if (!auto) story.start(); }, 12000);
+  function takeOver() {
+    clearTimeout(loopTimer);
+    if (!auto) return;
+    auto = false;
+    // Stop the story where it is; finish what has to be finished.
+    const reapingStarted = reaper.classList.contains('unhooded') || !present;
+    clearTimers();
+    cancelAnims();
+    hush();
+    dark.setAttribute('opacity', '0');
+    bangs.classList.add('hidden');
+    hearts.classList.add('hidden');
+    card.classList.add('hidden');
+    hb.style.transform = '';
+    $('.ha-mouth').setAttribute('d', 'M5 -139 q5 3 10 0');
+    door.style.transform = '';
+    upstairsFinal();
+    zapArm.style.transform = '';
+    hint.classList.add('on');
+    if (reapingStarted) {
+      // The reaping is done (or as good as): the room stays empty for a moment, so this very click
+      // can hit nothing but the wall ("No such process"). The next zombie comes in a little later.
+      if (present) { vacate(pid); present = false; lcd(L.reaped(pid)); }
+      reaper.classList.add('hidden');
+      zombie.classList.add('hidden');
+      busy = false; setButtons();
+      at(2500, () => startRound(0));
+    } else {
+      reaper.classList.add('hidden'); reaper.classList.remove('unhooded');
+      zMove.style.transform = '';
+      zombie.classList.remove('yawning', 'happy');
+      if (zombie.classList.contains('sitting')) zMove.style.transform = 'translate(44px, -2px)';
+      busy = false; setButtons();
+    }
   }
 
-  function react(line) {
-    if (line === L.reactions[3]) yawn(1000);
-    else if (line === L.reactions[0]) wave(1, 600);
-    say('zombie', line, 2000);
+  let idle = null;
+  function bumpIdle() {
+    clearTimeout(idle);
+    idle = setTimeout(() => { if (busy) return bumpIdle(); play(); }, 12000);
   }
 
   function pressKill() {
+    takeOver();
     bumpIdle();
     if (busy) return;
-    if (armDown) raiseArm(150);
     if (!present) {
       zap(false);
       lcd(L.nosuch(pid), true);
@@ -1253,20 +1272,16 @@
       return;
     }
     kills++;
+    misses++;
     zap(true);
     lcd(L.effect);
-    sr.textContent = L.sayZap(kills);
-    if (auto) {
-      // During the story a shot joins in: it zaps, counts and reads the meter. The zombie answers
-      // only while it has nothing of its own to say and its parent is not yet in the room.
-      if (parentOn) return;
-      const line = L.reactions[reactionIx++ % 4];
-      at(dur(380), () => { if (auto && !parentOn && !bubbles.zombie.classList.contains('on')) react(line); });
-      return;
-    }
-    misses++;
     const line = misses >= 3 && misses % 3 === 0 ? L.reactions[4] : L.reactions[reactionIx++ % 4];
-    at(dur(380), () => react(line));
+    at(reduce ? 0 : 380, () => {
+      if (line === L.reactions[3]) yawn(1000);
+      else if (line === L.reactions[0]) wave(1, 600);
+      say('zombie', line, 2000);
+    });
+    sr.textContent = L.sayZap(kills);
     if (misses >= 3) {
       hint.classList.add('hot');
       btnWait.classList.remove('nudge'); void btnWait.offsetWidth; btnWait.classList.add('nudge');
@@ -1274,19 +1289,9 @@
   }
 
   function pressWait() {
+    takeOver();
     bumpIdle();
-    if (busy || !present || parentOn) return;
-    // wait() before the story's own parent comes: the visitor's parent tells the rest, and the
-    // hunters still get their line once the room is empty.
-    const ending = auto;
-    if (ending) {
-      story.stop();
-      auto = false;
-      first = false;
-      [dark, flash].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
-      dark.setAttribute('opacity', '0');
-      zombie.classList.remove('yawning');
-    }
+    if (busy || !present) return;
     busy = true; setButtons();
     hint.classList.remove('hot');
     btnWait.classList.remove('nudge');
@@ -1297,9 +1302,8 @@
       at(2800, () => {
         reaper.classList.add('hidden'); zombie.classList.add('hidden'); hush();
         vacate(thisPid); present = false; lcd(L.reaped(thisPid)); sr.textContent = L.sayReap(thisPid);
-        if (ending) punchline();
         busy = false; setButtons();
-        at(2600, () => startRound(0, ending ? () => { if (armDown) raiseArm(300); } : null));
+        at(2600, () => startRound(0));
       });
       return;
     }
@@ -1309,34 +1313,19 @@
     at(1000, () => { unhood(); standUp(); zombie.classList.add('happy'); say('dad', L.reap, 2700); });
     at(2300, () => handOver(800));
     at(3400, () => { leaveTogether(1400); lcd(L.reaped(thisPid)); });
-    at(5100, () => {
-      doorOpen(false); vacate(thisPid); present = false;
-      if (ending) punchline();
-      sr.textContent = L.sayReap(thisPid) + (ending ? ' ' + L.hunters : '');
-    });
+    at(5100, () => { doorOpen(false); vacate(thisPid); present = false; sr.textContent = L.sayReap(thisPid); });
     at(5500, () => { busy = false; setButtons(); });
-    // The next zombie: 7.9 s, 2.5 s after the hunters' line is fully shown.
-    startRound(7900, ending ? () => { if (armDown) raiseArm(300); } : null);
+    startRound(7900);
   }
 
   [[btnKill, pressKill], [btnWait, pressWait]].forEach(([b, fn]) => b.addEventListener('click', (e) => {
-    if (b.getAttribute('aria-disabled') === 'true') { bumpIdle(); return; }
+    if (b.getAttribute('aria-disabled') === 'true') { takeOver(); bumpIdle(); return; }
     fn(e);
   }));
 
-  // Until the story starts (the fonts may take a moment) the page already counts as telling it: a
-  // press joins in as it would at 0 s. A wait() pressed then tells the ending itself, so the story waits
-  // for the idle restart. A press still holding the story when it starts asks the home page for that time.
-  let touchedAt = -Infinity;
-  ['pointerdown', 'keydown'].forEach((type) => addEventListener(type, (e) => { if (e.isTrusted) touchedAt = performance.now(); }, { capture: true, passive: true }));
   resetScene();
-  auto = true;
-  TTY.onPlay(() => {
-    if (!auto) return;
-    story.start();
-    const left = touchedAt + 2500 - performance.now();
-    if (left > 0) TTY.busy(left);
-  });
+  if (reduce) finalTableau();
+  TTY.onShow(() => { if (!reduce) play(); });
   const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
   Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
 })();

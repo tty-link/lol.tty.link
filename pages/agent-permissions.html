@@ -23,6 +23,9 @@
     --accent: #1f6f63;
     --agent: #ff6b4a;
     --note: #fff1a8;
+    /* The size of the copy that carries the joke (the note at the end), and so of the title too:
+       the title is never bigger than the joke. It stands out by weight instead. */
+    --joke: clamp(14px, 2.7cqmin, 22px);
   }
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; }
@@ -62,10 +65,10 @@
   .bar .count:empty { display: none; }
 
   .headline { position: absolute; left: 4cqw; top: calc(clamp(26px, 4.4cqmin, 36px) + 3cqmin); max-width: 60cqw; }
-  .headline h1 { font-size: clamp(20px, 5.4cqmin, 46px); font-weight: 700; line-height: 1.05; letter-spacing: -.02em; }
-  .headline p { margin-top: .8cqmin; font-size: clamp(12px, 2cqmin, 16px); color: var(--soft); }
+  .headline h1 { font-size: var(--joke); font-weight: 700; line-height: 1.15; letter-spacing: -.01em; }
+  .headline p { margin-top: .8cqmin; font-size: clamp(12px, 2cqmin, 16px); color: var(--soft); text-wrap: pretty; }
   /* the one-line hint: the dialogs are real buttons */
-  .headline p.hint { margin-top: .4em; font-size: clamp(11px, 1.7cqmin, 14px); font-style: italic; opacity: .85; }
+  .headline p.hint { margin-top: .4em; font-size: clamp(11px, 1.7cqmin, 14px); font-style: italic; color: #6b7a71; }
   .lang-ko .headline p.hint { font-style: normal; }
   .headline h1 > font-kku { color: var(--ink); }
 
@@ -133,6 +136,7 @@
     white-space: nowrap;
     box-shadow: 0 2px 6px rgba(0,0,0,.12);
   }
+  .agent .say:empty { visibility: hidden; }
   .agent .eye { transform-box: fill-box; transform-origin: center; transition: scale .15s; }
   .agent { transition: translate 1.2s cubic-bezier(.4, 0, .3, 1), scale 1.2s cubic-bezier(.4, 0, .3, 1); }
   /* "Always allow" has just been clicked: for a moment, anything could happen. */
@@ -205,6 +209,7 @@
     translate: -50% -50%;
     opacity: 0;
     pointer-events: none;
+    text-wrap: balance;
   }
   .note > font-kku { color: #3a3418; }
 
@@ -227,11 +232,12 @@
   .dialog.gone { pointer-events: none; }
   .dialog .top { display: flex; gap: 3.6cqi; align-items: flex-start; }
   .dialog .who { flex: none; width: 11cqi; height: 11cqi; }
-  .dialog .q { font-size: 5.2cqi; font-weight: 700; line-height: 1.25; }
+  /* (never under the title's size: the asks that carry the joke are the biggest words on screen) */
+  .dialog .q { font-size: max(14px, 5.2cqi); font-weight: 700; line-height: 1.25; text-wrap: balance; }
   .lang-ko .dialog .q { font-weight: 600; }
   .dialog .q > font-kku { color: var(--ink); }
   /* (the reason and the scope carry the jokes: never smaller than 11px, and darker than the soft grey) */
-  .dialog .why { margin-top: 1.6cqi; font-size: max(11px, 4.1cqi); color: #4b5b52; line-height: 1.4; }
+  .dialog .why { margin-top: 1.6cqi; font-size: max(11px, 4.1cqi); color: #4b5b52; line-height: 1.4; text-wrap: pretty; }
   .dialog code { font-family: inherit; padding: 0 .3em; border-radius: 4px; background: #eef1ea; }
   /* The call it would make, and its scope, as permission prompts show them. */
   .dialog .tool { display: grid; gap: .6cqi; margin: 3.6cqi 0 0 14.6cqi; padding: 2.2cqi 3cqi; border-radius: 8px; background: #f2f4ee; box-shadow: inset 0 0 0 1px var(--line); }
@@ -243,7 +249,8 @@
     border: 0;
     border-radius: 10px;
     background: #eef1ea;
-    font-size: 3.9cqi;
+    /* (10.5px at least: on the 328-wide phone stage 3.9cqi is 9.5px) */
+    font-size: max(10.5px, 3.9cqi);
     font-weight: 600;
     cursor: pointer;
   }
@@ -291,7 +298,7 @@
 <header class="headline">
   <h1>
     <span data-lang="en">Your agent would like to…</span>
-    <span data-lang="ko"><font-kku font="sebul" size="clamp(22px, 5.6cqmin, 48px)">에이전트가 묻습니다</font-kku></span>
+    <span data-lang="ko"><font-kku font="sebul" size="var(--joke)">에이전트가 묻습니다</font-kku></span>
   </h1>
   <p>
     <span data-lang="en">It just wants to help. Carefully. Very carefully.</span>
@@ -342,7 +349,7 @@
 </div>
 
 <div class="toast" role="status"><b></b><span></span></div>
-<p class="note"></p>
+<p class="note" data-tty-line="punch"></p>
 <div class="stack"></div>
 <svg class="cursor" viewBox="0 0 24 30" aria-hidden="true"><path d="M2 2 L2 24 L8 18.5 L12 28 L16 26.3 L12.2 17 L20.5 17 Z" fill="#fff" stroke="#22302a" stroke-width="2" stroke-linejoin="round"/></svg>
 
@@ -380,8 +387,8 @@
         { q: 'Allow the agent to read <code>README.md</code>?', why: 'It wants to understand you better.', tool: 'read_file("README.md")', scope: 'this project', act: 'read' },
         { q: 'Allow the agent to install what <code>package.json</code> asks for?', why: "It's a big one. 1,204 packages.", tool: 'shell("npm install")', scope: 'node_modules (all of it)', act: 'pkg' },
         { q: 'Allow the agent to rename <code>temp2_final_REAL</code>?', why: 'Suggested name: final_FINAL_v2.', rename: 'final_FINAL_v2', tool: 'rename("temp2_final_REAL", "final_FINAL_v2")', scope: '~/Desktop', act: 'rename' },
-        { q: 'Allow the agent to make you a coffee?', why: "You've been staring at that bug for 40 minutes.", tool: 'brew_coffee(strength="strong")', scope: 'the office kitchen', act: 'brew' },
-        { q: 'Allow the agent to tell your mom you are eating well?', why: 'She asked. Twice.', tool: 'send_message(to="Mom", text="I am eating well.")', scope: 'family group chat', act: 'mom' },
+        { q: 'Allow the agent to make you coffee?', why: '40 minutes on the same bug.', tool: 'brew_coffee(strength="strong")', scope: 'the office kitchen', act: 'brew' },
+        { q: 'Allow the agent to text your mom?', why: '“Are you eating properly?” Twice today.', tool: 'send_message(to="Mom", text="I am eating well.")', scope: 'family group chat', act: 'mom' },
       ],
       // Asked one by one when someone answers "Allow once" by hand; in the autoplay they are the
       // bottom of the heap, gone by before anyone can read them.
@@ -409,7 +416,7 @@
         { q: 'Allow the agent to keep the plant company?', why: 'It is already there.', tool: 'keep_company("plant")', scope: 'one plant', act: 'plant' },
       ],
       status: {
-        idle: 'Thinking…', blink: 'Trying not to blink…', blinked: 'Thank you!', eyesOpen: 'Okay. No blinking.', ask: 'Asking…',
+        blink: 'Trying not to blink…', blinked: 'Thank you!', eyesOpen: 'Okay. No blinking.', ask: 'Asking…',
         read: 'Reading README.md…', pkg: 'Installing 1,204 packages…', rename: 'Renaming…', brew: 'Brewing…', mom: 'Writing to Mom…',
         env: 'Reading with eyes closed…', tabs: 'Closing 47 tabs…', stretch: 'Shoulders down.', dnd: 'Holding everything but Mom…',
         water: 'Watering the plant…', note: 'Writing a short one…', tidy: 'Tidying up…',
@@ -450,7 +457,7 @@
         { q: '화분 곁에 있어 줘도 될까요?', why: '이미 와 있어요.', tool: 'keep_company("plant")', scope: '화분 1개', act: 'plant' },
       ],
       status: {
-        idle: '생각 중…', blink: '눈 깜빡임 참는 중…', blinked: '감사합니다!', eyesOpen: '알겠어요. 안 깜빡일게요.', ask: '물어보는 중…',
+        blink: '눈 깜빡임 참는 중…', blinked: '감사합니다!', eyesOpen: '알겠어요. 안 깜빡일게요.', ask: '물어보는 중…',
         read: 'README.md 읽는 중…', pkg: '패키지 1,204개 설치하는 중…', rename: '이름 바꾸는 중…', brew: '커피 내리는 중…', mom: '엄마한테 쓰는 중…',
         env: '눈 감고 읽는 중…', tabs: '탭 47개 닫는 중…', stretch: '턱 당기세요.', dnd: '엄마 빼고 다 막는 중…',
         water: '화분에 물 주는 중…', note: '짧게 쓰는 중…', tidy: '정리하는 중…',
@@ -463,6 +470,13 @@
       requests: (n) => `요청 ${n}건`,
     },
   });
+  // The asks that carry the joke stay up to be read, and are marked for the page checker
+  // (data-tty-line="setup"): the coffee, Mom and the top of the heap. In the first two the call is
+  // the question again in code, lettering on the prop ("decor"); the top card's call is the one to
+  // read, the smile it is about to make. The first three asks and the rest of the heap are a montage:
+  // they go by too fast to read, and that is the joke.
+  [T.asks[3], T.asks[4], T.burst[3]].forEach((a) => { a.setup = true; });
+  [T.asks[3], T.asks[4]].forEach((a) => { a.propCall = true; });
   // The menu bar shows the visitor's own time.
   const clock = document.querySelector('.clock');
   const tickClock = () => { const d = new Date(); clock.textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
@@ -473,11 +487,13 @@
     { name: 'README.md', kind: 'doc', at: [9, 34], smile: [40, 27] },
     { name: 'package.json', kind: 'box', at: [21, 30], smile: [60, 27] },
     { name: 'temp2_final_REAL', kind: 'folder', at: [13, 52], smile: [29, 46], id: 'temp' },
-    { name: TTY.t({ en: 'photo_0001.png', ko: '사진_0001.png' }), kind: 'image', at: [86, 24], smile: [37, 56] },
-    { name: TTY.t({ en: 'New Folder (7)', ko: '새 폴더 (7)' }), kind: 'folder', at: [91, 42], smile: [46, 61] },
-    { name: TTY.t({ en: 'budget.xlsx', ko: '예산.xlsx' }), kind: 'sheet', at: [79, 54], smile: [54, 61] },
-    { name: TTY.t({ en: 'todo.txt', ko: '할일.txt' }), kind: 'doc', at: [28, 63], smile: [63, 56] },
-    { name: TTY.t({ en: 'screenshot.png', ko: '스크린샷.png' }), kind: 'image', at: [90, 66], smile: [71, 46] },
+    // (the other five are a desktop's clutter: their names are lettering on a prop, not copy to
+    // read, data-tty-line="decor"; the last prompt may cover one on a small stage, as a window would)
+    { name: TTY.t({ en: 'photo_0001.png', ko: '사진_0001.png' }), kind: 'image', at: [86, 24], smile: [37, 56], decor: true },
+    { name: TTY.t({ en: 'New Folder\u00a0(7)', ko: '새 폴더\u00a0(7)' }), kind: 'folder', at: [91, 42], smile: [46, 61], decor: true },
+    { name: TTY.t({ en: 'budget.xlsx', ko: '예산.xlsx' }), kind: 'sheet', at: [79, 54], smile: [54, 61], decor: true },
+    { name: TTY.t({ en: 'todo.txt', ko: '할일.txt' }), kind: 'doc', at: [28, 63], smile: [63, 56], decor: true },
+    { name: TTY.t({ en: 'screenshot.png', ko: '스크린샷.png' }), kind: 'image', at: [90, 66], smile: [71, 46], decor: true },
   ];
   const SHAPES = {
     doc: '<path d="M14 6 H38 L50 18 V58 H14 Z" fill="#fff"/><path d="M38 6 V18 H50" fill="#dfe6ee"/><path d="M20 28 H44 M20 36 H44 M20 44 H36" stroke="#9aa8b6" stroke-width="3"/>',
@@ -493,6 +509,7 @@
     const el = document.createElement('div');
     el.className = 'icon';
     el.innerHTML = `<svg viewBox="0 0 64 64">${SHAPES[d.kind]}</svg><span></span>`;
+    if (d.decor) el.querySelector('span').dataset.ttyLine = 'decor';
     desk.append(el);
     const icon = Object.assign(d, { el });
     setName(icon, d.name);
@@ -600,8 +617,17 @@
   /* ---- Small pieces of motion ---- */
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const anim = (el, frames, opts) => (TTY.reduce ? null : el.animate(frames, opts));
-  function status(text) { say.textContent = text; }
-  function blink() { eyes.forEach((e) => anim(e, [{ scale: '1 1' }, { scale: '1 .1' }, { scale: '1 1' }], { duration: 220 })); }
+  // What the agent says. A status from the montage is marked "decor" (read or not, it is gone in a
+  // moment); any other status clears the mark.
+  function status(text, decor = false) {
+    say.textContent = text;
+    if (decor) say.dataset.ttyLine = 'decor'; else delete say.dataset.ttyLine;
+  }
+  // (while it holds its eyes open for the prompt it does not blink: not when it asks, not when it is done)
+  function blink() {
+    if (agent.classList.contains('holding')) return;
+    eyes.forEach((e) => anim(e, [{ scale: '1 1' }, { scale: '1 .1' }, { scale: '1 1' }], { duration: 220 }));
+  }
   function hop() { anim(me, [{ transform: 'none' }, { transform: 'translateY(-18%) rotate(-6deg)' }, { transform: 'none' }], { duration: 480, easing: 'cubic-bezier(.3,1.4,.5,1)' }); }
   const flash = (el) => anim(el, [{ filter: 'brightness(1)' }, { filter: 'brightness(1.5)' }, { filter: 'brightness(1)' }], { duration: 160 });
   // The opening beat is a close-up: the agent stands in the middle of the desk, bigger, under its
@@ -627,22 +653,38 @@
     if (instant) { void agent.offsetWidth; agent.style.transition = ''; }
   }
   let requests = 0;
-  let denies = 0;
   function bump() { requests += 1; count.textContent = T.requests(requests); anim(count, [{ scale: 1.25 }, { scale: 1 }], { duration: 260 }); }
+
+  /* ---- The state of a round ---- */
+  let round = 0;          // +1 on every reset: work left over from an old round never writes on a new one
+  let phase = 'open';     // 'open' (the blink prompt), 'asks', 'heap', 'end'
+  let answered = 0;       // asks answered this round, by the cursor or the visitor; the heap comes after five
+  let visitor = false;    // the visitor has answered an ask: from then on the agent asks whatever is left
+  let always = false;     // "Always allow" has been given this round
+  let denies = 0;
+  let lastAsk = null;
+  let askedNight = false;
+  let lastTouch = -1e9;   // performance.now() of the visitor's last answer
+  const allowed = new Set();
+  const topDialog = () => [...stack.querySelectorAll('.dialog:not(.gone)')].pop() || null;
+  // (work for later in this round: a new round, or "Always allow" in the meantime, calls it off)
+  const later = (ms, fn) => { const r = round; setTimeout(() => { if (r === round && !always) fn(); }, TTY.reduce ? 0 : ms); };
 
   /* ---- The blink prompt ---- */
   // It opens each round, and it comes back once everything has been allowed: "Always allow" or
-  // not, the agent still asks before it blinks. The autoplay waits on it (begWaits) until ✓ is
-  // clicked, by its own cursor or by a visitor. A visitor's ✕ stops the autoplay instead, so its
-  // cursor never clicks ✓ over that answer, and the agent holds its eyes open until they water.
-  let begWaits = null;
+  // not, the agent still asks before it blinks. The cursor answers ✓ unless the visitor got there
+  // first. A visitor's ✕ is never overruled: the agent holds its eyes open (and works on with them
+  // open, the prompt still up) until its eye waters, or until the visitor says ✓.
   let begAt = 'start';
+  let begAnswer = null;   // 'yes' or 'no' once this prompt has an answer
   beg.setAttribute('aria-label', T.blinkAsk);
   beg.querySelector('.no').setAttribute('aria-label', T.deny);
   beg.querySelector('.yes').setAttribute('aria-label', T.allow);
   function openBeg(at) {
-    begAt = at; begWaits = null;
+    begAt = at; begAnswer = null;
     agent.classList.add('holding'); status(T.status.blink);
+    // (the prompt that comes back at the end is the tag; it has no words: the checker times it with --trace)
+    if (at === 'end') beg.dataset.ttyLine = 'tag'; else delete beg.dataset.ttyLine;
     beg.style.translate = '';
     // Out of the close-up, the prompt stays on the stage (beside the plant it is near the left
     // edge) and, at the end, off the note's words: it rises above them where they meet. (Worked
@@ -660,26 +702,34 @@
     }
     beg.classList.add('on'); beg.inert = false; bump();
   }
-  const begAnswered = () => new Promise((r) => { begWaits = r; });
+  // Each round starts on the prompt: a new one, or the one the last round ended on (the very same ask).
+  function askToBlink() {
+    if (!beg.classList.contains('on')) { openBeg('start'); return; }
+    begAt = 'start'; begAnswer = null; delete beg.dataset.ttyLine;
+    requests = 1; count.textContent = T.requests(1);
+    agent.classList.add('holding'); status(T.status.blink);
+  }
   function shutBeg() {
-    beg.classList.remove('on'); beg.inert = true; begWaits = null;
+    beg.classList.remove('on'); beg.inert = true;
     agent.classList.remove('holding');
     tear.getAnimations().forEach((a) => a.cancel()); tear.style.opacity = '';
   }
-  // Allowed: the prompt goes, and it blinks three times in a row.
-  async function blinkNow() {
+  // Allowed: the prompt goes, and it blinks three times in a row (0.6 s).
+  function blinkNow() {
+    begAnswer = 'yes';
     shutBeg(); status(T.status.blinked);
-    for (let k = 0; k < 3; k++) { blink(); await wait(TTY.reduce ? 0 : 200); }
+    for (let k = 0; k < 3; k++) setTimeout(blink, TTY.reduce ? 0 : k * 200);
   }
   function cry() {
     tear.style.opacity = 1;
     anim(tear, [{ opacity: 0, translate: '0 -3px' }, { opacity: 1, translate: '0 0', offset: .35 }, { opacity: 1, translate: '0 7px' }], { duration: 1600, delay: 600, easing: 'ease-in', fill: 'both' });
   }
 
+  /* ---- Dialogs ---- */
   // Piled dialogs are scattered around the centre and tilted, but kept on the stage: the heap's
   // spots, in steps of 6% of the stage's shorter side, and degrees.
   const HEAP = [[-1.5, -1.2, -4], [1.4, -.9, 3], [-1.1, 1, 2.5], [1.3, 1.3, -3], [-.4, -1.6, 1.5], [.8, .5, -2], [-1.3, .3, -1]];
-  function dialog(ask, place = null) {
+  function dialog(ask, place = null, mark = ask.setup ? 'setup' : '') {
     const d = document.createElement('section');
     d.className = 'dialog';
     d.setAttribute('role', 'dialog');
@@ -701,6 +751,8 @@
     d.querySelector('.deny').textContent = T.deny;
     d.querySelector('.once').textContent = T.once;
     d.querySelector('.always').textContent = T.always;
+    if (mark) d.dataset.ttyLine = mark;
+    if (mark === 'setup' && ask.propCall) d.querySelector('.tool code').dataset.ttyLine = 'decor';
     d.ask = ask;
     stack.append(d);
     if (place) {
@@ -725,45 +777,98 @@
     if (a) await a.finished.catch(() => {});
     d.remove();
   }
+  // The agent asks something: it blinks (unless it is holding its eyes open) and the dialog opens.
+  function openAsk(ask, { place = null, mark, line = null } = {}) {
+    lastAsk = ask;
+    if (line) status(line);
+    blink();
+    return dialog(ask, place, mark);
+  }
+  // What it asks once the visitor has answered something: never what was allowed this round, nor
+  // the same thing twice in a row. Late at night, bed first. Once README.md is allowed, it may ask
+  // for ./README.md (and, when nothing is left to ask, keeps asking for that).
+  function drawAsk() {
+    const late = now.getHours() >= 23 || now.getHours() < 5;
+    if (late && !askedNight) { askedNight = true; return T.night; }
+    const open = [...T.asks, ...T.more, ...(allowed.has(T.asks[0]) ? [T.again] : [])].filter((x) => !allowed.has(x) && x !== lastAsk);
+    return open.length ? open[Math.floor(Math.random() * open.length)] : T.again;
+  }
 
   // What an allowed ask does, in the autoplay and by hand alike: a lit label, a new name, a status.
   // (Coffee and Mom only start here: the mug and the "sent" notice come with the ending. So do the
   // top of the heap's water, note and smile: allowed by hand, they only say they have started.)
-  const allowed = new Set();
-  function grant(ask) {
+  function grant(ask, montage = false) {
     allowed.add(ask);
     if (ask.act === 'read' || ask.act === 'reread') icons[0].el.classList.add('lit');
     if (ask.act === 'pkg') icons[1].el.classList.add('lit');
     if (ask.act === 'rename') { setName(temp, ask.rename); temp.el.classList.add('lit'); }
-    if (T.status[ask.act]) status(T.status[ask.act]);
-    return !!T.status[ask.act];
+    if (T.status[ask.act]) status(T.status[ask.act], montage);
+  }
+
+  // Every answer to an ask, the cursor's or the visitor's, comes through here, once per dialog.
+  async function answer(d, kind, byVisitor = false) {
+    if (!d || d.answered) return;
+    d.answered = true;
+    if (kind === 'always') { allowAll(); return; }
+    const r = round;
+    await close(d);
+    if (r !== round || always) return;
+    answered += 1;
+    if (kind === 'once') grant(d.ask, !byVisitor && d.dataset.ttyLine === 'decor');
+    else {
+      denies += 1;
+      // Third time: it walks over to the plant, sits down, and asks if it may stay.
+      if (denies === T.denied.length) {
+        status(T.status.plant);
+        const p = plantEl.getBoundingClientRect();
+        const a = agent.getBoundingClientRect();
+        agent.style.translate = `${p.right + 8 - a.left}px ${p.bottom - a.bottom}px`;
+      } else status(T.status.ask);
+    }
+    // A visitor's answer is answered in a moment: a smaller ask after a "Deny", another ask after
+    // "Allow once" (not over dialogs still up, and not once the round has had its five: the heap is next).
+    if (byVisitor) later(kind === 'deny' && denies === T.denied.length ? 1300 : 900, () => {
+      if (topDialog() || phase === 'end' || (phase === 'asks' && answered >= 5)) return;
+      openAsk(kind === 'deny' ? T.denied[Math.min(denies, T.denied.length) - 1] : drawAsk());
+    });
   }
 
   /* ---- Cursor ---- */
   let cur = [innerWidth * .5, innerHeight + 30];
   const centre = (el) => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
-  async function glide(el, ms = 600) {
+  // (starts the move; the timeline waits for it)
+  function glide(el, ms) {
+    if (TTY.reduce || !el || !el.isConnected) return;
     const [x, y] = centre(el);
+    cursor.getAnimations().forEach((a) => a.cancel());
+    cursor.style.transform = `translate(${cur[0]}px, ${cur[1]}px)`;
+    cursor.style.opacity = 1;
     cursor.animate([{ transform: `translate(${cur[0]}px, ${cur[1]}px)` }, { transform: `translate(${x}px, ${y}px)` }], { duration: ms, easing: 'cubic-bezier(.45,.05,.35,1)', fill: 'forwards' });
     cur = [x, y];
-    await wait(ms);
   }
-  function click() { cursor.animate([{ scale: 1 }, { scale: .8 }, { scale: 1 }], { duration: 170 }); }
-  // (a visitor got there first: the cursor stops where it is, mid-move)
+  function click() { if (!TTY.reduce) cursor.animate([{ scale: 1 }, { scale: .8 }, { scale: 1 }], { duration: 170 }); }
+  // (a visitor got there first: the cursor stops where it is, mid-move, and waits)
   function freezeCursor() {
-    const m = new DOMMatrixReadOnly(getComputedStyle(cursor).transform);
+    const cs = getComputedStyle(cursor);
+    const m = new DOMMatrixReadOnly(cs.transform), o = cs.opacity;
     cursor.getAnimations().forEach((a) => a.cancel());
     cur = [m.m41, m.m42];
     cursor.style.transform = `translate(${cur[0]}px, ${cur[1]}px)`;
+    cursor.style.opacity = o;
   }
+  function cursorHome() {
+    cursor.getAnimations().forEach((a) => a.cancel());
+    cur = [innerWidth * .5, innerHeight + 30];
+    cursor.style.transform = `translate(${cur[0]}px, ${cur[1]}px)`;
+    cursor.style.opacity = TTY.reduce ? 0 : 1;
+  }
+  function touched() { lastTouch = performance.now(); freezeCursor(); }
 
-  /* ---- The nice things ---- */
+  /* ---- "Always allow", and the nice things ---- */
   // (the same test as the stylesheet's: the notice to Mom is a one-line banner over the menu bar)
   const banner = matchMedia('(max-width: 700px), (max-aspect-ratio: 1/1)');
-  async function niceThings(live = () => true) {
-    // (sitting with the plant, it stays there: that is what it was last allowed to do)
-    if (denies < T.denied.length) agent.style.translate = '';
-    // The note is written now (it shows later), so the smile knows where the note will be.
+  // The note is written as soon as everything is allowed (it shows later), so the smile knows where it will be.
+  function writeNote() {
     if (ko) {
       const el = document.createElement('font-kku');
       el.setAttribute('font', 'pilgi');
@@ -781,15 +886,29 @@
       const half = note.offsetWidth / 2;
       note.style.left = `${Math.min(Math.max(innerWidth / 2, begRight + 10 + half), innerWidth - half - 8)}px`;
     }
-    // "Always allow": for a moment, anything could happen.
+  }
+  // "Always allow": every ask still up flies off, and for a moment anything could happen.
+  function allowAll() {
+    if (always) return;
+    always = true; phase = 'end';
+    const all = [...stack.querySelectorAll('.dialog:not(.gone)')];
+    all.forEach((x) => { x.answered = true; });
+    all.reverse().forEach((x, i) => wait(TTY.reduce ? 0 : i * 45).then(() => close(x, 'fly')));
+    // (sitting with the plant, it stays there: that is what it was last allowed to do)
+    if (denies < T.denied.length) agent.style.translate = '';
+    writeNote();
     agent.classList.add('squint'); status(T.status.squint);
-    await wait(TTY.reduce ? 0 : 650); if (!live()) return;
+  }
+  async function niceThings(t) {
+    const live = () => t.live();
+    if (!TTY.reduce) cursor.animate([{ opacity: getComputedStyle(cursor).opacity }, { opacity: 0 }], { duration: 300, fill: 'forwards' });
+    await t.wait(TTY.reduce ? 0 : 800); if (!live()) return;
     agent.classList.remove('squint');
 
     // It says "good job" out loud (it was allowed to), and the desktop icons make a smile.
     status(T.status.good); hop();
     arrange('smile', 70);
-    await wait(TTY.reduce ? 0 : 500); if (!live()) return;
+    await t.wait(TTY.reduce ? 0 : 450); if (!live()) return;
 
     // Water the plant.
     if (!TTY.reduce) {
@@ -803,48 +922,49 @@
         document.body.append(drop);
         drop.animate([{ opacity: 0, transform: 'none' }, { opacity: 1, offset: .2 }, { opacity: 0, transform: `translate(${-6 - Math.random() * 10}px, ${50 + Math.random() * 30}px)` }], { duration: 700, delay: 500 + i * 70, easing: 'ease-in' }).finished.then(() => drop.remove());
       }
-      await wait(700); if (!live()) return;
+      await t.wait(500); if (!live()) return;
     }
     anim(plantStem, [{ scale: '1 1' }, { scale: '1 1.18' }], { duration: 700, fill: 'forwards', easing: 'cubic-bezier(.3,1.4,.5,1)' });
     if (TTY.reduce) plantStem.style.scale = '1 1.18';
     bloom.style.scale = 1;
     anim(bloom, [{ scale: 0 }, { scale: 1.2 }, { scale: 1 }], { duration: 600, delay: 300 });
-    await wait(TTY.reduce ? 0 : 450); if (!live()) return;
+    await t.wait(TTY.reduce ? 0 : 400); if (!live()) return;
 
     // The coffee it was brewing.
     mug.style.opacity = 1;
     anim(mug, [{ opacity: 0, transform: 'translateY(16px)' }, { opacity: 1, transform: 'none' }], { duration: 400 });
     if (!TTY.reduce) mug.querySelectorAll('.steam path').forEach((p, i) => p.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1 }, { opacity: 0, transform: 'translateY(-8px)' }], { duration: 1600, delay: i * 400, iterations: Infinity }));
-    await wait(TTY.reduce ? 0 : 450); if (!live()) return;
+    await t.wait(TTY.reduce ? 0 : 400); if (!live()) return;
 
     // The message to Mom it was writing.
     toast.querySelector('b').textContent = T.momTitle;
     toast.querySelector('span').textContent = T.momBody;
     toast.style.opacity = 1; toast.style.translate = '0 0';
     anim(toast, [{ opacity: 0, translate: '0 -16px' }, { opacity: 1, translate: '0 0' }], { duration: 380, easing: 'cubic-bezier(.2,.9,.3,1.1)' });
-    await wait(TTY.reduce ? 0 : 500); if (!live()) return;
+    await t.wait(TTY.reduce ? 0 : 400); if (!live()) return;
 
-    // A note, and that is everything.
+    // A note, and that is everything. (The punch: data-tty-line="punch" on .note.)
     note.style.opacity = 1;
     anim(note, [{ opacity: 0, transform: 'scale(1.4) rotate(8deg)' }, { opacity: 1, transform: 'none' }], { duration: 480, easing: 'cubic-bezier(.2,.9,.3,1.1)' });
     status(T.status.done); blink();
-    await wait(TTY.reduce ? 0 : 1500); if (!live()) return;
+    await t.wait(TTY.reduce ? 0 : 1500); if (!live()) return;
 
-    // Except one thing it never takes for granted.
+    // Except one thing it never takes for granted (the tag).
     openBeg('end');
     // (Where the notice to Mom is a banner over the menu bar, it goes up a little later, as a real
     // one would: long enough to read "Promise.", and the request count shows again with a bump.
-    // Not awaited, so the round is no longer for it. It goes up even if a visitor has just answered
-    // the prompt and stopped the autoplay; only a new round, which takes it down itself, cancels it.)
-    if (banner.matches && !TTY.reduce) wait(1600).then(() => {
-      if (toast.style.opacity !== '1') return;
+    // It goes up even if a visitor has just answered the prompt; a new round takes it down itself.)
+    const r = round;
+    if (banner.matches && !TTY.reduce) setTimeout(() => {
+      if (r !== round || toast.style.opacity !== '1') return;
       anim(toast, [{ opacity: 1, translate: '0 0' }, { opacity: 0, translate: '0 -16px' }], { duration: 300, easing: 'ease-in' });
       toast.style.opacity = 0; toast.style.translate = '0 -12px';
       anim(count, [{ scale: 1.25 }, { scale: 1 }], { duration: 260 });
-    });
+    }, 1600);
   }
 
-  function resetScene(keepAsk = false) {
+  function resetScene() {
+    round += 1;
     stack.replaceChildren();
     setName(temp, temp.name);
     icons.forEach((i) => i.el.classList.remove('lit'));
@@ -857,201 +977,144 @@
     bloom.style.scale = 0;
     agent.style.translate = ''; agent.style.scale = '';
     agent.classList.remove('squint');
-    // (a new round keeps the prompt the last one ended on: it is the very same ask)
-    if (!keepAsk) shutBeg();
-    denies = 0; allowed.clear(); lastAsk = null;
-    status(keepAsk ? T.status.blink : T.status.idle);
+    tear.getAnimations().forEach((a) => a.cancel()); tear.style.opacity = '';
+    denies = 0; allowed.clear(); lastAsk = null; answered = 0; visitor = false; always = false; phase = 'open';
+    status('');
   }
 
   /* ---- The autoplay: once, once, once… always ---- */
-  // Like the other pages, the autoplay comes back 12 s after the visitor's last answer
-  // (from the start: the desktop is tidied back into its mess).
-  let resume = 0;
-  const resumeLater = () => { clearTimeout(resume); if (!TTY.reduce) resume = setTimeout(play, 12000); };
-  // A visitor's answer: the autoplay stops here and its cursor goes.
-  function takeOver() {
-    run++; begWaits = null;
-    cursor.style.opacity = 0; cursor.getAnimations().forEach((a) => a.cancel());
-    resumeLater();
-  }
-  // How long each of the five asks stays before the cursor moves, how long the cursor takes, and
-  // the pause after: the first three faster and faster (nobody reads those), then the coffee and
-  // Mom, where the cursor wavers over Deny first.
-  const PACE = [[400, 450, 450], [300, 400, 300], [250, 300, 300], [1500, 300, 400], [800, 400, 400]];
-  let run = 0;
+  // On TTY.timeline: a visitor's tap or key holds the clock for a moment (2.5 s) but never stops it,
+  // so the ending still comes; the cursor just never answers anything the visitor has answered.
+  // The first three asks are a montage, faster and faster ([read, cursor move, rest] in ms):
+  // nobody reads those. The coffee and Mom then stay up as long as their words take to read
+  // (TTY.readMs), and over Mom the cursor wavers on "Deny" first.
+  const PACE = [[350, 300, 150], [200, 250, 100], [100, 220, 250]];
+  const PUNCH = 19.6;   // when the note has landed, in autoplay seconds (the doc's punch_at)
+  const readFor = (d) => Math.max(...['.q', '.why', '.tool span'].map((s) => TTY.readMs(d.querySelector(s).textContent)));
   let played = false;
-  async function play() {
-    clearTimeout(resume);
-    const mine = ++run;
-    const live = () => run === mine;
-    let round = 0;
+  const play = TTY.timeline(async (t) => {
+    const live = () => t.live();
+    // (hold for ms of autoplay time, or until done(): an answer is picked up within a tenth of a second)
+    const hold = async (ms, done = () => false) => {
+      const end = t.now() + ms;
+      while (live() && !done() && t.now() < end) await t.wait(Math.min(100, end - t.now()));
+    };
     while (live()) {
-      resetScene(round > 0);
       // (the first round starts with the agent already in the middle, as the page was drawn)
-      spotlight(true, round++ === 0 && !played);
+      if (played) resetScene();
+      spotlight(true, !played);
       played = true;
-      // The cursor starts below the screen. (Its last round left a fade-out holding it at
-      // opacity 0, and a visitor's click cancels its moves, which put it at the top left.)
-      cursor.getAnimations().forEach((a) => a.cancel());
-      cur = [innerWidth * .5, innerHeight + 30];
-      cursor.style.transform = `translate(${cur[0]}px, ${cur[1]}px)`;
-      cursor.style.opacity = 1;
-      await wait(250); if (!live()) return;
+      cursorHome();
+      const base = t.now();
+
       // First the smallest ask of all: may it blink? It holds its eyes wide open, trembling,
       // while the cursor takes its time (over ✕ first), and only blinks once allowed.
-      openBeg('start');
-      const allowedToBlink = begAnswered();
-      (async () => {
-        const asking = () => live() && begWaits;
-        await wait(800); if (!asking()) return;
-        await glide(beg.querySelector('.no'), 700); if (!asking()) return;
-        await wait(250); if (!asking()) return;
-        await glide(beg.querySelector('.yes'), 260); if (!asking()) return;
-        click(); flash(beg.querySelector('.yes'));
-        await wait(150); if (!asking()) return;
-        const go = begWaits; begWaits = null; go();
-      })();
-      await allowedToBlink; if (!live()) return;
-      await blinkNow(); if (!live()) return;
+      askToBlink();
+      const asking = () => beg.classList.contains('on') && begAt === 'start' && !begAnswer;
+      await t.at(base + 1050); if (!live()) return;
+      if (asking()) { glide(beg.querySelector('.no'), 700); await hold(700, () => !asking()); }
+      if (asking()) await hold(250, () => !asking());
+      if (asking()) { glide(beg.querySelector('.yes'), 260); await hold(260, () => !asking()); }
+      if (asking()) { click(); flash(beg.querySelector('.yes')); await t.wait(150); if (asking()) blinkNow(); }
+      if (!live()) return;
+      if (begAnswer === 'yes') await t.wait(TTY.reduce ? 0 : 600);
+      if (!live()) return;
       spotlight(false);
-      await wait(320); if (!live()) return;
-      for (let i = 0; i < T.asks.length; i++) {
-        const [read, move, rest] = PACE[i];
-        status(T.status.ask); blink();
-        const d = dialog(T.asks[i]);
-        await wait(read); if (!live()) return;
-        if (i === 4) { await glide(d.querySelector('.deny'), 400); if (!live()) return; await wait(600); if (!live()) return; }
-        await glide(d.querySelector('.once'), move); if (!live()) return;
-        click(); await wait(160);
-        await close(d); if (!live()) return;
-        grant(T.asks[i]);
-        await wait(rest); if (!live()) return;
+      phase = 'asks';
+      await t.wait(50); if (!live()) return;
+
+      // Five asks (by whoever answers them).
+      for (let i = 0; live() && !always && answered < 5; i++) {
+        const script = !visitor;
+        const montage = script && i < 3;
+        const d = topDialog() || openAsk(script && T.asks[i] ? T.asks[i] : drawAsk(), { mark: montage ? 'decor' : undefined, line: script && i === 3 ? T.status.ask : null });
+        const gone = () => d.answered || !live() || always;
+        if (montage) {
+          const [read, move, rest] = PACE[i];
+          await hold(read, gone);
+          if (!gone()) { glide(d.querySelector('.once'), move); await hold(move, gone); }
+          if (!gone()) { click(); await t.wait(120); if (!gone()) await answer(d, 'once'); }
+          if (!live()) return;
+          await t.wait(rest);
+          continue;
+        }
+        const mom = script && d.ask === T.asks[4];
+        await hold(Math.max(300, readFor(d) + 250 - (mom ? 1400 : 400)), gone);
+        if (mom && !gone()) { glide(d.querySelector('.deny'), 400); await hold(1000, gone); }
+        if (!gone()) { glide(d.querySelector('.once'), 400); await hold(400, gone); }
+        if (!gone()) { click(); await t.wait(120); if (!gone()) await answer(d, 'once'); }
+        if (!live()) return;
+        if (!always) await t.wait(300);
       }
-      // Then they come faster than anyone can read: a heap of eight, the last one square on top.
-      status(T.status.ask);
-      const heap = [...T.more, ...T.burst];
-      const pile = [];
-      for (let i = 0; i < heap.length; i++) {
-        pile.push(dialog(heap[i], HEAP[i] || null));
-        await wait(80); if (!live()) return;
+      if (!live()) return;
+
+      // Then they come faster than anyone can read: a heap, the last one square on top.
+      if (!always) {
+        phase = 'heap';
+        const heap = [...T.more, ...T.burst].filter((a) => !allowed.has(a));
+        for (let k = 0; k < heap.length && live() && !always; k++) {
+          const top = k === heap.length - 1;
+          openAsk(heap[k], { place: top ? null : HEAP[k], mark: top ? 'setup' : 'decor' });
+          await t.wait(80);
+        }
       }
-      await wait(320); if (!live()) return;
-      const top = pile[pile.length - 1];
-      await glide(top.querySelector('.once'), 400); if (!live()) return;
-      await wait(500); if (!live()) return;
-      await glide(top.querySelector('.always'), 350); if (!live()) return;
-      click(); await wait(180); if (!live()) return;
-      cursor.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards', delay: 300 });
-      // (the agent's moment comes as the last of them fly off)
-      pile.reverse().forEach((d, i) => wait(i * 45).then(() => close(d, 'fly')));
-      await wait(450); if (!live()) return;
-      await niceThings(live); if (!live()) return;
-      // (the next round starts from this very ask, once the home page has moved on)
-      await wait(3600);
+      // The cursor reads the top one, rests on "Allow once"… and clicks "Always allow".
+      while (live() && !always) {
+        let d = topDialog();
+        if (!d) {
+          await hold(1500, () => !!topDialog() || always);
+          d = topDialog();
+          if (!d && live() && !always) d = openAsk(drawAsk());
+        }
+        if (!d || !live() || always) break;
+        const gone = () => d.answered || !live() || always;
+        await hold(Math.max(300, readFor(d) + 250 - 1250), gone);
+        if (!gone()) { glide(d.querySelector('.once'), 400); await hold(400, gone); }
+        if (!gone()) await hold(500, gone);
+        if (!gone()) { glide(d.querySelector('.always'), 350); await hold(350, gone); }
+        if (!gone()) { click(); await t.wait(180); if (!gone()) answer(d, 'always'); }
+      }
+      if (!live()) return;
+      await niceThings(t);
+      if (!live() || TTY.reduce) return;
+      // (the next round starts from this very ask once the home page has moved on: 3.6 s on, and
+      // not before 24.5 s into the round; and never sooner than 12 s after the visitor's last answer,
+      // so what they made stays up till then)
+      await t.wait(3600); if (!live()) return;
+      await t.at(base + 24500);
+      while (live() && performance.now() - lastTouch < 12000) await t.wait(250);
     }
-  }
+  }, { punch: PUNCH });
 
   /* ---- A visitor answers ---- */
-  stack.addEventListener('click', async (e) => {
+  stack.addEventListener('click', (e) => {
     const b = e.target.closest('button');
     const d = b && b.closest('.dialog');
-    if (!d || !e.isTrusted || d.classList.contains('gone')) return;
-    takeOver();
-    // (a later answer takes over from this one: an "Allow once" still waiting to ask its next thing
-    // must not bring a new dialog in over the ending that an "Always allow" has just started)
-    const mine = run, latest = () => run === mine;
-    shutBeg();
-    if (agent.style.scale) spotlight(false);
-    if (b.classList.contains('always')) {
-      const all = [...stack.querySelectorAll('.dialog:not(.gone)')];
-      await Promise.all(all.reverse().map((x, i) => wait(i * 45).then(() => close(x, 'fly'))));
-      if (latest()) niceThings();
-      return;
-    }
-    await close(d);
-    // "Allow once" does what it asked (always: it was the visitor's answer), takes a moment to show
-    // it, then the next ask comes.
-    if (b.classList.contains('once') && grant(d.ask)) {
-      await wait(TTY.reduce ? 0 : 900);
-      if (!latest() || stack.querySelector('.dialog') || beg.classList.contains('on')) return;
-    }
-    if (!latest() || stack.querySelector('.dialog')) return;
-    if (b.classList.contains('deny')) {
-      const ask = T.denied[Math.min(denies, T.denied.length - 1)];
-      denies += 1;
-      // Third time: it walks over to the plant, sits down, and asks if it may stay.
-      if (denies === T.denied.length) {
-        status(T.status.plant);
-        const p = $('.plant').getBoundingClientRect();
-        const a = agent.getBoundingClientRect();
-        agent.style.translate = `${p.right + 8 - a.left}px ${p.bottom - a.bottom}px`;
-        await wait(TTY.reduce ? 0 : 1300);
-        if (!latest() || stack.querySelector('.dialog')) return;
-        blink();
-      } else {
-        status(T.status.ask); blink();
-      }
-      dialog(ask);
-      return;
-    }
-    // Another ask: never one already allowed this round, nor the same one twice in a row. Late at
-    // night, bed first. Once README.md is allowed, it may ask for ./README.md (and, when nothing
-    // is left to ask, keeps asking for that).
-    const late = now.getHours() >= 23 || now.getHours() < 5;
-    let ask = late && !askedNight ? T.night : null;
-    askedNight = askedNight || !!ask;
-    if (!ask) {
-      const open = [...T.asks, ...T.more, ...(allowed.has(T.asks[0]) ? [T.again] : [])].filter((x) => !allowed.has(x) && x !== lastAsk);
-      ask = open.length ? open[Math.floor(Math.random() * open.length)] : T.again;
-    }
-    lastAsk = ask;
-    status(T.status.ask); blink();
-    dialog(ask);
+    if (!d || !e.isTrusted || d.answered || d.classList.contains('gone')) return;
+    touched(); visitor = true;
+    answer(d, b.classList.contains('always') ? 'always' : b.classList.contains('deny') ? 'deny' : 'once', true);
   });
-  beg.addEventListener('click', async (e) => {
+  beg.addEventListener('click', (e) => {
     const b = e.target.closest('button');
     if (!b || !e.isTrusted || !beg.classList.contains('on')) return;
-    if (b.classList.contains('yes')) {
-      flash(b);
-      // (the autoplay was waiting for this very click: it carries on as if its own cursor had made it)
-      if (begWaits) { const go = begWaits; begWaits = null; freezeCursor(); go(); return; }
-      // Otherwise the visitor is in charge: it blinks, and at the start of a round asks its next thing.
-      takeOver();
-      const at = begAt, mine = run;
-      await blinkNow();
-      if (at !== 'start') return;
-      spotlight(false);
-      await wait(TTY.reduce ? 0 : 500);
-      if (run !== mine || stack.querySelector('.dialog') || beg.classList.contains('on')) return;
-      status(T.status.ask); blink();
-      dialog(T.asks[0]);
-      return;
-    }
+    touched();
+    if (b.classList.contains('yes')) { flash(b); blinkNow(); return; }
     // ✕: it will not blink, then.
-    takeOver();
-    anim(beg, [{ translate: '0 0' }, { translate: '-6px 0' }, { translate: '6px 0' }, { translate: '-3px 0' }, { translate: '0 0' }], { duration: 320 });
+    begAnswer = 'no';
+    anim(beg, [{ translate: '0 0' }, { translate: '-6px 0' }, { translate: '6px 0' }, { translate: '-3px 0' }, { translate: '0 0' }], { duration: 320, composite: 'add' });
     status(T.status.eyesOpen);
     if (tear.style.opacity !== '1') cry();
   });
-  let lastAsk = null;
-  let askedNight = false;
 
   /* ---- Start ---- */
+  // The first scene: the agent in the middle of the desk. The prompt opens as the page starts.
   resetScene();
   cursor.style.opacity = 0;
-  if (TTY.reduce) {
-    // The last scene: every ask allowed (the blink, five asks, a heap of eight), then the blink asked again.
-    T.asks.forEach(grant);
-    requests = 1 + T.asks.length + T.more.length + T.burst.length;
-    count.textContent = T.requests(requests);
-    niceThings();
-  } else {
-    spotlight(true, true);
-  }
-  TTY.onShow(() => { if (!TTY.reduce) play(); });
+  spotlight(true, true);
+  TTY.onPlay(() => { if (!play.live()) play.start(); });
   const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
   // (labels and the headline take their real size once the fonts are in; a new size, a new fit)
-  Promise.all([loaded, document.fonts.ready]).then(() => { arrange(arranged); TTY.ready(); });
+  Promise.all([loaded, document.fonts.ready]).then(() => { arrange(arranged); if (agent.style.scale) spotlight(true, true); TTY.ready(); });
   addEventListener('resize', () => { arrange(arranged); if (agent.style.scale) spotlight(true, true); });
 })();
 </script>

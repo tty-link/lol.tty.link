@@ -82,7 +82,9 @@
     padding: 12px 14px 11px;
     border-bottom: 1px solid var(--rule);
   }
-  .appbar h1 { font-size: 16px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; }
+  /* The app's own title is no bigger than the lines that carry the joke (the "Your order" sticker
+     and the ingredients label, 12px on a phone): a header by weight, not by size. */
+  .appbar h1 { font-size: 12px; font-weight: 800; letter-spacing: -.01em; white-space: nowrap; }
   .appbar .back { font-size: 20px; line-height: 1; color: var(--muted); margin-top: -2px; }
   .logo {
     display: flex;
@@ -114,6 +116,8 @@
   .again:hover { background: var(--courier-tint); }
   .again.reorder { background: var(--courier); color: #fff; }
   .again.reorder:hover { background: var(--courier-dark); border-color: var(--courier-dark); }
+  /* While the first truck is still at the door there is nothing to order again. */
+  .again:disabled { opacity: .45; cursor: default; pointer-events: none; }
   .appbar .again { display: none; }
   /* Wide screens: both buttons under the app. Narrow ones have one button in the app bar:
      "Track again" until the show is over, then "Order again". */
@@ -327,21 +331,24 @@
   .door { left: 11cqw; bottom: 20cqw; width: 26cqw; height: 43cqw; }
   .door svg { display: block; width: 100%; height: 100%; }
   .plate {
-    left: 24cqw; bottom: 64cqw; height: 3.6cqw;
+    left: 24cqw; bottom: 64cqw; height: max(3.6cqw, 13px);
     translate: -50% 0;
     display: grid; place-items: center;
     padding: 0 1.2cqw;
     border-radius: .6cqw;
     background: #343a40;
     color: #f2efe7;
-    font: 600 max(8px, 1.65cqw)/1 'IBM Plex Mono', monospace;
+    font: 600 max(10px, 1.65cqw)/1 'IBM Plex Mono', monospace;
+    letter-spacing: -.02em;
     white-space: nowrap;
   }
   .lamp { left: 38.5cqw; bottom: 52cqw; width: 3cqw; height: 6cqw; }
   .lamp svg { display: block; width: 100%; height: 100%; }
 
+  /* The notice keeps its print at 10px or more: on a phone it is a little wider than its share of
+     the door, and its date goes (it is on the card, "March 22, 2016"). */
   .notice {
-    left: 14.5cqw; bottom: 51.2cqw; width: 15cqw; height: 10.4cqw;
+    left: 14.5cqw; bottom: 51.2cqw; width: max(15cqw, 58px); min-height: 10.4cqw;
     padding: 1.3cqw .9cqw .8cqw;
     border: 0;
     border-radius: .3cqw;
@@ -351,7 +358,7 @@
     display: grid;
     align-content: start;
     justify-items: center;
-    gap: .35cqw;
+    gap: max(.35cqw, 4px); /* the stencil's glyph boxes are taller than its 10px lines */
     color: #5a4a22;
     text-align: center;
     cursor: pointer;
@@ -361,9 +368,13 @@
     content: ""; position: absolute; left: 32%; top: -.9cqw; width: 36%; height: 1.8cqw;
     background: rgba(255,255,255,.6); rotate: 3deg;
   }
-  .notice .nt-title { font: 700 max(7px, 1.45cqw)/1 'Stardos Stencil', 'Inter', sans-serif; letter-spacing: .04em; color: var(--courier-dark); }
-  .notice .nt-name { font: 700 max(8px, 1.9cqw)/1 'IBM Plex Mono', monospace; color: #3c3216; }
-  .notice .nt-date { font: 500 max(7px, 1.25cqw)/1 'IBM Plex Mono', monospace; }
+  .notice .nt-title { font: 700 max(10px, 1.45cqw)/1 'Stardos Stencil', 'Inter', sans-serif; letter-spacing: .04em; color: var(--courier-dark); }
+  .notice .nt-name { font: 700 max(10px, 1.9cqw)/1 'IBM Plex Mono', monospace; color: #3c3216; }
+  .notice .nt-date { font: 500 max(10px, 1.25cqw)/1 'IBM Plex Mono', monospace; }
+  @container world (max-width: 470px) { .notice .nt-date { display: none; } }
+  /* In the smallest worlds the punchline card reaches over the door: the notice moves to the door's
+     left edge so its title is not under the card. */
+  @container world (max-width: 330px) { .notice { left: 11.5cqw; } }
   .notice.hot { box-shadow: 0 0 0 .6cqw var(--glow), 0 .3cqw .8cqw rgba(0,0,0,.18); }
   /* Once, after the show: there is something on the door you can read. */
   .notice.ping { animation: ping 1.2s ease-in-out; }
@@ -381,9 +392,10 @@
       repeating-linear-gradient(90deg, rgba(120, 80, 30, .07) 0 .3cqw, transparent .3cqw .6cqw),
       linear-gradient(#f3e7cb, #e6d4ad);
     color: #6b4318;
-    font: 800 max(7px, 1.9cqw)/1 'Inter', sans-serif;
+    font: 800 max(10px, 1.9cqw)/1 'Inter', sans-serif;
     letter-spacing: .3em;
   }
+  @container world (max-width: 470px) { .mat { letter-spacing: .18em; } }
   .mat::after { content: ""; position: absolute; inset: .6cqw 1.8cqw; border: .3cqw dashed rgba(107, 67, 24, .55); clip-path: inherit; }
   .mat font-kku { color: #6b4318; }
 
@@ -391,8 +403,11 @@
   .plant svg { display: block; width: 100%; height: 100%; }
 
   /* The dump truck. Its rear (left) faces the door; the bed tips around its back corner. */
-  .truck { left: 58cqw; bottom: .4cqw; width: 44cqw; height: 24.34cqw; z-index: 3; translate: 75cqw 0; }
-  .truck.here { translate: 0 0; }
+  /* Parked out of sight. A short, wide stage shows wall and street on both sides of the world, so
+     "off the world" is not off the stage: the truck drives in from, and out to, past the scene's edge
+     (truckIn/truckOut), and is hidden while it is not at the door. */
+  .truck { left: 58cqw; bottom: .4cqw; width: 44cqw; height: 24.34cqw; z-index: 3; translate: 75cqw 0; visibility: hidden; }
+  .truck.here { translate: 0 0; visibility: visible; }
   .truck svg { display: block; width: 100%; height: 100%; overflow: visible; }
   .truck .bed { transform-box: view-box; transform-origin: 1.5px 16.5px; }
   .truck .wheel { transform-box: fill-box; transform-origin: center; }
@@ -432,9 +447,9 @@
     line-height: 1;
   }
   .box .label b { font: 700 max(11px, 2.15cqw)/1 'IBM Plex Mono', monospace; white-space: nowrap; letter-spacing: -.02em; }
-  .box .label small { font: 500 max(9px, 1.45cqw)/1 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; color: var(--muted); white-space: nowrap; }
+  .box .label small { font: 500 max(10px, 1.45cqw)/1 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; color: var(--muted); white-space: nowrap; }
   /* is-odd is the narrowest labelled box: its sticker runs closer to the edges so
-     "0.1.2 · 20 lines" fits at the same size as the other boxes' lines. On a phone every
+     "20 lines" fits at the same size as the other boxes' lines. On a phone every
      sticker runs nearly edge to edge (95%), so the names stay at 10px or more. */
   .box[data-id="is-odd"] .label { left: 5%; right: 5%; }
   /* In a narrow world the names are all a sticker has room for: stickers nearly as wide as the box,
@@ -448,7 +463,7 @@
     position: absolute;
     left: 6%; top: 30%;
     color: rgba(110, 66, 22, .8);
-    font: 700 max(8px, 1.9cqw)/1 'Stardos Stencil', sans-serif;
+    font: 700 max(10px, 1.9cqw)/1 'Stardos Stencil', sans-serif;
     letter-spacing: .08em;
     rotate: -4deg;
   }
@@ -473,7 +488,8 @@
     content: ""; position: absolute; left: 0; right: 0; top: 0; height: 18%;
     background: linear-gradient(#5a3b17, rgba(90, 59, 23, 0));
   }
-  .box.glow { box-shadow: 0 0 0 .55cqw var(--glow), 0 .5cqw .7cqw rgba(60, 35, 10, .25); }
+  /* glow: the box a card's arrow points at; lit: the box whose line the packing list just printed */
+  .box.glow, .box.lit { box-shadow: 0 0 0 .55cqw var(--glow), 0 .5cqw .7cqw rgba(60, 35, 10, .25); }
 
   /* The box you ordered is tiny; its tag hangs off the side in the courier's red. */
   .box.mine { border-width: .2cqw; }
@@ -541,8 +557,9 @@
     border-radius: 999px;
     background: var(--courier);
     color: #fff;
-    font-size: max(11px, 1.7cqw);
+    font-size: max(12px, 1.7cqw);
     font-weight: 700;
+    line-height: 1.15; /* 12px, not 11, yet no taller: the phone card must not grow down over is-odd */
     white-space: nowrap;
   }
   .card code {
@@ -655,7 +672,7 @@
     font-weight: 500;
     white-space: nowrap;
     opacity: 0;
-    transition: opacity .6s;
+    transition: opacity .4s;
     pointer-events: none;
   }
   .hint.on { opacity: 1; }
@@ -671,7 +688,6 @@
     .scene { order: -1; border-radius: 14px; }
     .app { container-type: inline-size; border-radius: 14px; }
     .appbar { padding: 8px 11px 7px; gap: 5px; }
-    .appbar h1 { font-size: 14px; }
     .appbar .back { font-size: 17px; }
     .logo { font-size: 11.5px; }
     .logo svg { width: 15px; height: 15px; }
@@ -704,9 +720,11 @@
     .dnote::before { top: -3px; width: 46px; height: 8px; }
     html:not(.embedded) .layout { padding-bottom: 46px; }
   }
-  /* Short phone stages (the home stage on a 360×640 phone is about 330×410): the app keeps
-     the order, the count, the result and the steps; npm's note goes. */
-  @media (max-height: 480px) and (max-aspect-ratio: 1/1) {
+  /* Short phone stages (the home stage on a 360×640 phone is about 330×410, a phone on its side
+     508×339, the smallest 328×288): the app keeps the order, the count, the result and the steps;
+     npm's note goes. Any short stage in the stacked layout, not only an upright one: on its side
+     the full app left the doorstep 70px tall. */
+  @media (max-height: 480px) and (max-aspect-ratio: 1/1), (max-height: 480px) and (max-width: 620px) {
     .appbar { padding: 6px 10px 5px; }
     .appbody { gap: 6px; padding: 7px 10px 8px; }
     .product { grid-template-columns: 30px minmax(0, 1fr) auto; grid-template-areas: "thumb info qty"; }
@@ -715,6 +733,11 @@
     .order, .memo { display: none; }
     .qty { grid-auto-flow: column; align-items: center; gap: 6px; }
     .steps li { font-size: 10.5px; }
+  }
+  /* The shortest stacked stages (a 360×520 phone's 328×288, a phone on its side): the status line
+     says where the parcel is; the step dots go, so the doorstep keeps room for the joke. */
+  @media (max-height: 360px) and (max-aspect-ratio: 1/1), (max-height: 360px) and (max-width: 620px) {
+    .steps { display: none; }
   }
 </style>
 </head>
@@ -751,7 +774,7 @@
 
       <div class="waybill">
         <span data-lang="en">Tracking no.</span><span data-lang="ko">운송장번호</span>
-        <code class="mono">sha512-LEhnkAdJqic4Dbqn58A0y52IXoHWlsueqQkKfMfdEnIYG8A1sm/GHidKkS6yvXlMoRrkM34csHnXQtOqcb+Jzg==</code>
+        <code class="mono" data-tty-line="decor">sha512-LEhnkAdJqic4Dbqn58A0y52IXoHWlsueqQkKfMfdEnIYG8A1sm/GHidKkS6yvXlMoRrkM34csHnXQtOqcb+Jzg==</code>
       </div>
 
       <div class="status" aria-live="polite">
@@ -805,12 +828,12 @@
         </div>
 
         <button class="notice" type="button" data-id="left-pad">
-          <span class="nt-title" data-lang="en">RECALL</span><span class="nt-title" data-lang="ko"><font-kku font="gothic" size="max(7px, 1.45cqw)">회수 안내</font-kku></span>
+          <span class="nt-title" data-lang="en">RECALL</span><span class="nt-title" data-lang="ko"><font-kku font="gothic" size="max(10px, 1.45cqw)">회수 안내</font-kku></span>
           <span class="nt-name">left-pad</span>
           <span class="nt-date">2016.03.22</span>
         </button>
 
-        <div class="mat" aria-hidden="true"><span data-lang="en">WELCOME</span><font-kku data-lang="ko" font="jasu" size="max(9px, 2.6cqw)">어서 오세요</font-kku></div>
+        <div class="mat" aria-hidden="true" data-tty-line="decor"><span data-lang="en">WELCOME</span><font-kku data-lang="ko" font="jasu" size="max(10px, 2.6cqw)">어서 오세요</font-kku></div>
 
         <div class="plant" aria-hidden="true">
           <svg viewBox="0 0 12 26">
@@ -822,7 +845,7 @@
           </svg>
         </div>
 
-        <div class="truck" aria-hidden="true">
+        <div class="truck" aria-hidden="true" data-tty-line="decor">
           <svg viewBox="0 0 47 26">
             <ellipse cx="23" cy="24.6" rx="22" ry="1.1" fill="rgba(0,0,0,.25)"/>
             <rect x="1.5" y="16.2" width="43.5" height="2.8" fill="#3a3f44"/>
@@ -846,7 +869,7 @@
 
         <!-- Lowest first, so each box is drawn over the one it rests on. -->
         <button class="box" type="button" data-id="kind-of" style="--x:7; --b:9; --w:28; --h:21; --r:-1.5deg; z-index:4">
-          <span class="print" aria-hidden="true"><span data-lang="en">FRAGILE</span><font-kku data-lang="ko" font="gothic" size="max(8px, 2cqw)">취급주의</font-kku></span>
+          <span class="print" aria-hidden="true" data-tty-line="decor"><span data-lang="en">FRAGILE</span><font-kku data-lang="ko" font="gothic" size="max(10px, 2cqw)">취급주의</font-kku></span>
           <span class="flap l"></span><span class="flap r"></span>
           <span class="label"><b>kind-of</b><small></small></span>
         </button>
@@ -933,17 +956,18 @@
   const CHAIN = ['is-even', 'is-odd', 'is-number', 'kind-of', 'is-buffer'];
   const LANDING = ['kind-of', 'is-buffer', 'is-number', 'is-odd', 'is-even'];
   const linesText = (n) => TTY.t({ en: `${n} lines`, ko: `${n}줄` });
+  // A sticker prints the name and the size of its index.js (the version is on the card).
   Object.entries(PKG).forEach(([id, p]) => {
     const small = boxes[id].querySelector('small');
-    if (small) small.textContent = `${p.ver} · ${linesText(p.lines)}`;
+    if (small) small.textContent = linesText(p.lines);
     boxes[id].setAttribute('aria-label', TTY.t({ en: `Open ${id} ${p.ver}`, ko: `${id} ${p.ver} 상자 열기` }));
   });
   notice.setAttribute('aria-label', TTY.t({ en: 'Read the left-pad recall notice', ko: 'left-pad 회수 안내 읽기' }));
 
-  // Every sticker keeps its print on the white. Between a phone and a desktop the 11px/9px
-  // floors make the text wider than the smaller boxes: then all names (or all version lines)
-  // shrink together so they still look printed alike, and the version lines go if they
-  // would have to be smaller than 8px.
+  // Every sticker keeps its print on the white. Between a phone and a desktop the 11px/10px
+  // floors make the text wider than the smaller boxes: then all names (or all size lines)
+  // shrink together so they still look printed alike, and the size lines go if they
+  // would have to be smaller than 10px.
   const labels = $$('.box .label');
   const roomIn = (l) => { const cs = getComputedStyle(l); return l.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); };
   function fitLabels() {
@@ -956,7 +980,7 @@
       const scale = Math.min(1, ...shown.map((el) => (roomIn(el.parentElement) - 1) / el.offsetWidth));
       if (scale >= 1) continue;
       const size = parseFloat(getComputedStyle(shown[0]).fontSize) * scale;
-      if (sel === 'small' && size < 8) shown.forEach((el) => { el.hidden = true; });
+      if (sel === 'small' && size < 10) shown.forEach((el) => { el.hidden = true; });
       else shown.forEach((el) => { el.style.fontSize = size.toFixed(2) + 'px'; });
     }
   }
@@ -1008,9 +1032,11 @@
     en: [['registry.npmjs.org', 'Picked up'], ['Dependency check: +4 items', 'In transit'], ['npm cache', 'Arrived at hub'], ['Driver: npm', 'Delivering'], ['Front door · 5 items', 'Delivered']],
     ko: [['registry.npmjs.org', '집화처리'], ['의존성 확인: 4개 동봉', '간선상차'], ['npm 캐시', '허브 도착'], ['배송 기사 npm', '배송출발'], ['문 앞 · 5개', '배달완료']],
   });
+  // The status line under the big word. The show goes from "Preparing" straight to "Delivering"; the
+  // first three steps are in the tracking history (wide screens).
   const LIVE = TTY.t({
-    en: [['Picked up', 'registry.npmjs.org'], ['In transit', '+4 items added'], ['At hub', 'npm cache'], ['Delivering', 'arriving soon'], ['', 'is-even and 4 more items']],
-    ko: [['집화처리', 'registry.npmjs.org'], ['간선상차', '동봉 상품 4개 추가'], ['허브 도착', 'npm 캐시'], ['배송출발', '곧 도착해요'], ['', 'is-even 외 4건']],
+    en: [['Picked up', ''], ['In transit', ''], ['At hub', ''], ['Delivering', 'arriving soon'], ['', 'is-even and 4 more items']],
+    ko: [['집화처리', ''], ['간선상차', ''], ['허브 도착', ''], ['배송출발', '곧 도착해요'], ['', 'is-even 외 4건']],
   });
   const stepsEl = $('.steps');
   const rowsEl = $('.rows');
@@ -1059,10 +1085,16 @@
     overlay.setAttribute('height', world.clientHeight);
   }
   // ---------------- Scene pieces ----------------
+  // Steps the show does not wait for (a visitor's card drawing its arrow, Order again, a packing-list
+  // highlight fading) run on the wall clock; reset() (Track again) cancels them.
   const timers = [];
-  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
   const stopTimers = () => timers.splice(0).forEach(clearTimeout);
-  let openId = null;
+  const notCss = (a) => !(a instanceof CSSAnimation);
+  let openId = null;   // the card up in the sky
+  let cardBy = null;   // who opened it: 'auto' (the show) or 'visitor'
+  let cardToken = 0;   // a card's own steps check this, so a closed card never draws again
+  let mineAt = 0;      // autoplay time at which the visitor's card came up
 
   function shake(power = 1) {
     if (TTY.reduce) return;
@@ -1074,9 +1106,11 @@
   }
 
   // Each box flies out of the tipped bed in an arc and lands with a small squash.
-  function launch(id, delay) {
+  const flightMs = (id) => (id === 'is-even' ? 640 : 500);
+  function launch(id) {
     const box = boxes[id];
     box.classList.add('landed');
+    if (TTY.reduce) return;
     const r = rectIn(box);
     const u = cq();
     const from = { x: 61 * u, y: world.clientHeight - 16 * u };
@@ -1091,9 +1125,7 @@
     }
     frames.push({ transform: 'translate(0, 0) scale(1.07, .9)', offset: .9, opacity: 1 });
     frames.push({ transform: 'none', opacity: 1 });
-    const dur = id === 'is-even' ? 640 : 500;
-    box.animate(frames, { duration: dur, delay, easing: 'linear', fill: 'backwards' });
-    return dur;
+    box.animate(frames, { duration: flightMs(id), easing: 'linear' });
   }
   function bounce(el) {
     if (TTY.reduce) return;
@@ -1106,6 +1138,12 @@
   function pulse(el) {
     if (TTY.reduce) return;
     el.animate([{ transform: 'none' }, { transform: 'scale(1.08)' }, { transform: 'none' }], { duration: 380, easing: 'ease-out' });
+  }
+  function wiggle(el) {
+    if (TTY.reduce) return;
+    el.animate([
+      { transform: 'none' }, { transform: 'rotate(-5deg)' }, { transform: 'rotate(4deg)' }, { transform: 'rotate(-2deg)' }, { transform: 'none' },
+    ], { duration: 520, easing: 'ease-in-out' });
   }
 
   function drawPath(path, d, ms, marker) {
@@ -1122,22 +1160,23 @@
   const TREE = ['└─┬ is-even@1.0.0', '  └─┬ is-odd@0.1.2', '    └─┬ is-number@3.0.0', '      └─┬ kind-of@3.2.2', '        └── is-buffer@1.1.6'];
   function cardHTML(id) {
     if (id === 'list') {
-      return `<div class="head"><span class="name plain">${esc(TTY.t({ en: 'Packing list', ko: '동봉 내역' }))}</span><span class="meta">npm ls --all</span></div>`
+      return `<div class="head"><span class="name plain" data-tty-line="title">${esc(TTY.t({ en: 'Packing list', ko: '동봉 내역' }))}</span><span class="meta">npm ls --all</span></div>`
         + `<pre class="tree">${TREE.map((l) => `<span class="tl">${esc(l)}</span>`).join('')}</pre>`;
     }
     if (id === 'left-pad') {
-      return `<div class="head"><span class="name plain">${esc(NOTICE.title)}</span><span class="meta">${esc(NOTICE.meta)}</span></div>`
+      return `<div class="head"><span class="name plain" data-tty-line="title">${esc(NOTICE.title)}</span><span class="meta">${esc(NOTICE.meta)}</span></div>`
         + `<p class="body">${esc(NOTICE.body)}</p><p class="note">${esc(NOTICE.note)}</p>`;
     }
     const p = PKG[id], c = CARDS[id];
     const meta = TTY.t({ en: `${p.ver} · index.js, ${p.lines} lines`, ko: `${p.ver} · index.js ${p.lines}줄` });
     const needs = p.next && id !== 'is-even'
       ? `<span class="needs dep">${esc(TTY.t({ en: 'needs → ', ko: '필요 → ' }))}${p.next}</span>` : '';
-    const ingr = (where) => `<span class="ingr ${where}">${INGREDIENTS}</span>`;
+    // On the box you ordered: "Your order" sets it up, the one line is the punchline, the label is the tag.
+    const ingr = (where) => `<span class="ingr ${where}" data-tty-line="tag">${INGREDIENTS}</span>`;
     return `<div class="head"><span class="name">${id}</span><span class="meta">${esc(meta)}</span>`
-      + (c.sticker ? `<span class="slot"><span class="sticker">${esc(c.sticker)}</span>${ingr('in-slot')}</span>` : '') + `</div>`
+      + (c.sticker ? `<span class="slot"><span class="sticker" data-tty-line="setup">${esc(c.sticker)}</span>${ingr('in-slot')}</span>` : '') + `</div>`
       + (c.sticker ? ingr('row') : '')
-      + `<code>${c.code}</code>` + (c.note ? `<p class="note">${esc(c.note)}</p>` : '') + needs;
+      + `<code${c.big ? ' data-tty-line="punch"' : ''}>${c.code}</code>` + (c.note ? `<p class="note">${esc(c.note)}</p>` : '') + needs;
   }
   function target(id) { return PKG[id] ? PKG[id].next : null; }
   function drawLink(ms) {
@@ -1154,10 +1193,32 @@
     drawPath(link, `M${p.x} ${p.y}Q${c1.x} ${c1.y} ${q.x} ${q.y}`, ms, 'url(#arrow-blue)');
   }
   function sourceOf(id) { return id === 'left-pad' ? notice : boxes[id === 'list' ? 'is-even' : id]; }
+  // The arrow has found the next box: it lights up and shakes.
+  function glowNext(id) {
+    boxes[id].classList.add('glow');
+    wiggle(boxes[id]);
+  }
+  function stamp(el) {
+    el.classList.add('on');
+    if (TTY.reduce) return;
+    el.animate([
+      { transform: 'scale(1.7) rotate(-6deg)', opacity: 0 },
+      { transform: 'scale(.94) rotate(1deg)', opacity: 1, offset: .7 },
+      { transform: 'none', opacity: 1 },
+    ], { duration: 260, easing: 'ease-in' });
+  }
+  const stampLabel = () => $$('.ingr', card).forEach(stamp);
+  // From the arrow reaching is-odd to the ingredients label being stamped on, on every path.
+  const TAG_MS = 1300;
 
-  function openCard(id, { slow = false } = {}) {
+  // A card grows out of its box (or the notice). The show draws the punchline card's arrow and label
+  // on its own clock (punchBeat); a card the visitor opened draws them here.
+  function openCard(id, { slow = false, by = 'visitor' } = {}) {
     closeCard();
+    const token = ++cardToken;
     openId = id;
+    cardBy = by;
+    if (by === 'visitor') mineAt = run ? run.now() : 0;
     const src = sourceOf(id);
     card.className = 'card on' + (CARDS[id] && CARDS[id].big ? ' big' : '');
     card.innerHTML = cardHTML(id);
@@ -1171,68 +1232,49 @@
       if (next) boxes[next].classList.add('glow');
       return;
     }
-    // Grow the card out of the box (or the notice) it belongs to.
     const s = rectIn(src), c = rectIn(card);
     const grow = slow ? 520 : 300;
     card.animate([
       { transform: `translate(${s.cx - c.cx}px, ${s.cy - c.cy}px) scale(${Math.max(.08, s.w / c.w)})`, opacity: 0 },
       { transform: 'none', opacity: 1 },
     ], { duration: grow, easing: 'cubic-bezier(.2, .9, .3, 1.1)' });
-    if (!next) return;
-    const wait = grow + (slow ? 300 : 60);
-    const dur = slow ? 600 : 360;
-    at(wait, () => { if (openId === id) drawLink(dur); });
-    at(wait + dur, () => {
-      if (openId !== id) return;
-      boxes[next].classList.add('glow');
-      boxes[next].animate([
-        { transform: 'none' }, { transform: 'rotate(-5deg)' }, { transform: 'rotate(4deg)' }, { transform: 'rotate(-2deg)' }, { transform: 'none' },
-      ], { duration: 520, easing: 'ease-in-out' });
-    });
-    if (id === 'is-even') at(wait + dur + 600, () => { if (openId === id) $$('.ingr', card).forEach(stamp); });
+    if (by !== 'visitor' || !next) return;
+    const still = (fn) => () => { if (cardToken === token) fn(); };
+    const wait = grow + 60, dur = 360;
+    later(still(() => drawLink(dur)), wait);
+    later(still(() => glowNext(next)), wait + dur);
+    if (id === 'is-even') later(still(stampLabel), wait + dur + TAG_MS);
   }
-  function stamp(el) {
-    el.classList.add('on');
-    el.animate([
-      { transform: 'scale(1.7) rotate(-6deg)', opacity: 0 },
-      { transform: 'scale(.94) rotate(1deg)', opacity: 1, offset: .7 },
-      { transform: 'none', opacity: 1 },
-    ], { duration: 260, easing: 'ease-in' });
-  }
+  // Closing a card puts the sky back; a box that was opened stays open (flaps up) until Track again.
   function closeCard() {
+    cardToken++;
     if (!openId) return;
-    sourceOf(openId).classList.remove('open', 'hot');
-    $$('.box.open').forEach((b) => b.classList.remove('open'));
+    notice.classList.remove('hot');
     $$('.box.glow').forEach((b) => b.classList.remove('glow'));
     link.setAttribute('d', '');
     link.removeAttribute('marker-end');
+    card.getAnimations().forEach((a) => a.cancel());
     card.className = 'card';
     card.innerHTML = '';
     openId = null;
+    cardBy = null;
   }
 
   // Why five boxes? The packing list prints line by line; each box answers as its line appears.
-  function packingList(step = 520) {
-    openCard('list');
-    const lines = $$('.tl', card);
-    lines.forEach((l, k) => {
-      l.classList.add('off');
-      at(350 + k * step, () => {
-        if (openId !== 'list') return;
-        l.classList.remove('off');
-        const b = boxes[CHAIN[k]];
-        b.classList.add('glow');
-        pulse(b);
-        at(step * 1.4, () => b.classList.remove('glow'));
-      });
-    });
+  function listLine(k) {
+    if (openId !== 'list') return;
+    $$('.tl', card)[k].classList.remove('off');
+    const b = boxes[CHAIN[k]];
+    b.classList.add('lit');
+    pulse(b);
+    if (TTY.reduce) b.classList.remove('lit');
+    else later(() => b.classList.remove('lit'), 728);
   }
 
-  // The punchline: the box you ordered opens, its packing flies out, and inside is one line.
-  function punch() {
-    const box = boxes['is-even'];
-    box.classList.add('open');
-    const r = rectIn(box);
+  // The punchline: the box you ordered opens and its packing flies out.
+  function slips() {
+    if (TTY.reduce) return;
+    const r = rectIn(boxes['is-even']);
     const u = cq();
     ['README.md', 'LICENSE', 'package.json'].forEach((name, k) => {
       const slip = document.createElement('div');
@@ -1249,27 +1291,57 @@
         { transform: `translate(${x0 + dx * 1.15}px, ${y0 - up * .25}px) rotate(${[-40, 18, 36][k]}deg) scale(.95)`, opacity: 0 },
       ], { duration: 1300, delay: k * 120, easing: 'cubic-bezier(.2, .7, .4, 1)' }).onfinish = () => slip.remove();
     });
-    at(950, () => {
-      openCard('is-even', { slow: true });
-      box.classList.add('open');
-    });
+  }
+
+  // ---------------- The truck ----------------
+  const EASE_IN = 'cubic-bezier(.2, .7, .3, 1)', EASE_OUT = 'cubic-bezier(.5, 0, .9, .5)';
+  // How far right of the world the scene still shows (a short, wide stage centres a small world).
+  const beyond = () => Math.max(0, ($('.scene').clientWidth - world.clientWidth) / 2);
+  function truckIn() {
+    truck.getAnimations().forEach((a) => a.cancel());
+    bed.getAnimations().forEach((a) => a.cancel());
+    truck.classList.add('here');
+    if (TTY.reduce) return;
+    const u = cq();
+    truck.animate([{ translate: `${75 * u + beyond()}px 0` }, { translate: `${-1.2 * u}px 0`, offset: .85 }, { translate: '0 0' }], { duration: 750, easing: EASE_IN });
+    wheels.forEach((w) => w.animate([{ rotate: '0deg' }, { rotate: '-540deg' }], { duration: 750, easing: EASE_IN }));
+  }
+  function tipBed() {
+    if (!TTY.reduce) bed.animate([{ rotate: '0deg' }, { rotate: '-20deg' }], { duration: 280, easing: 'ease-in', fill: 'forwards' });
+  }
+  function lowerBed() {
+    if (!TTY.reduce) bed.animate([{ rotate: '-20deg' }, { rotate: '0deg' }], { duration: 320, easing: 'ease-out', fill: 'forwards' });
+  }
+  function truckOut() {
+    if (TTY.reduce) return;
+    const u = cq();
+    truck.animate([{ translate: '0 0' }, { translate: `${80 * u + beyond()}px 0` }], { duration: 800, easing: EASE_OUT, fill: 'forwards' });
+    wheels.forEach((w) => w.animate([{ rotate: '0deg' }, { rotate: '600deg' }], { duration: 800, easing: EASE_OUT }));
+  }
+  function truckGone() {
+    truck.classList.remove('here');
+    truck.getAnimations().forEach((a) => a.cancel());
+    bed.getAnimations().forEach((a) => a.cancel());
   }
 
   // ---------------- Whole scenes ----------------
   let arrived = 0;
-  let interactive = false;
-  let showing = false;
+  let interactive = false; // the boxes are delivered and can be opened
+  let showing = false;     // the show has not reached its last beat
   let reordering = false;
+  let tapped = false;      // the visitor has opened something: the hint has done its job
+  let run = null;          // the show's clock (TTY.timeline)
+  const reorderButtons = $$('.again.reorder');
   // The driver's note, first line: npm's output for the order, and for the same order again
   // (both from a real install on 2026-10-13).
   const noteLine = $('.dnote .l1');
   const NOTE_FIRST = { install: noteLine.textContent, again: 'up to date, audited 6 packages in 1s' };
   function reset() {
     stopTimers();
-    world.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+    world.getAnimations({ subtree: true }).filter(notCss).forEach((a) => a.cancel());
     closeCard();
     $$('.slip').forEach((s) => s.remove());
-    Object.values(boxes).forEach((b) => b.classList.remove('landed', 'open', 'glow'));
+    Object.values(boxes).forEach((b) => b.classList.remove('landed', 'open', 'glow', 'lit'));
     truck.classList.remove('here');
     photo.classList.remove('on');
     notice.classList.remove('hot', 'ping');
@@ -1277,6 +1349,7 @@
     $$('.dnote .line').forEach((l) => l.classList.remove('on'));
     noteLine.textContent = NOTE_FIRST.install;
     reordering = false;
+    reorderButtons.forEach((b) => { b.disabled = true; });
     app.classList.remove('after');
     $$('li', stepsEl).forEach((li) => li.classList.remove('done', 'now'));
     $$('li', rowsEl).forEach((li) => { li.classList.remove('on', 'last'); delete li.dataset.t; });
@@ -1288,107 +1361,132 @@
     hint.classList.remove('on');
     interactive = false;
     showing = false;
+    tapped = false;
+    mineAt = 0;
   }
 
-  // Everything delivered and noted, no motion. Used for reduced motion and when someone
-  // starts tapping before the show is over.
-  function delivered() {
-    stopTimers();
-    showing = false;
-    world.getAnimations({ subtree: true }).forEach((a) => a.cancel());
-    $$('.slip').forEach((s) => s.remove());
-    truck.classList.remove('here');
-    Object.values(boxes).forEach((b) => b.classList.add('landed'));
-    stepTo(4);
-    setArrived(5);
-    photo.classList.add('on');
-    $('.photo-time').textContent = clock(new Date()).slice(0, 5);
-    $('.memo').classList.add('on');
-    $$('.dnote .line').forEach((l) => l.classList.add('on'));
-    interactive = true;
-    hint.classList.add('on');
-    app.classList.add('after');
-  }
-
-  function play() {
-    reset();
-    if (TTY.reduce) {
-      delivered();
-      openCard('is-even');
-      return;
-    }
-    showing = true;
-    at(150, () => stepTo(0));
-    at(400, () => stepTo(1));
-    at(650, () => stepTo(2));
-    // The truck backs up to the door.
-    at(800, () => {
-      stepTo(3);
-      truck.classList.add('here');
-      const u = cq();
-      truck.animate([{ translate: `${75 * u}px 0` }, { translate: `${-1.2 * u}px 0`, offset: .85 }, { translate: '0 0' }],
-        { duration: 750, easing: 'cubic-bezier(.2, .7, .3, 1)' });
-      wheels.forEach((w) => w.animate([{ rotate: '0deg' }, { rotate: '-540deg' }], { duration: 750, easing: 'cubic-bezier(.2, .7, .3, 1)' }));
-    });
-    // Tip the bed and out they come, biggest first, the box you ordered last.
-    at(1550, () => bed.animate([{ rotate: '0deg' }, { rotate: '-20deg' }], { duration: 280, easing: 'ease-in', fill: 'forwards' }));
-    let t = 1700;
+  // The show as a list of moments (ms of autoplay time), up to the packing list.
+  const EVENTS = (() => {
+    const ev = [];
+    const on = (ms, fn) => ev.push([ms, fn]);
+    // "Preparing" until the truck backs up to the door: by then it is already out for delivery (the
+    // tracking history has the earlier steps). It tips the bed, and out they come: biggest first, the
+    // box you ordered last. The badge counts each one as it lands.
+    on(800, () => { stepTo(3); truckIn(); });
+    on(1550, tipBed);
     LANDING.forEach((id, k) => {
-      const delay = k === 4 ? 220 : 0;
-      const launchAt = t + delay;
-      at(launchAt, () => {
-        const dur = launch(id, 0);
-        at(dur * .85, () => {
-          arrived += 1;
-          setArrived(arrived);
-          pulse(q2);
-          if (id === 'kind-of') shake(1.2);
-          else if (id !== 'is-even') shake(.45);
-          else bounce(boxes[id]);
-        });
+      const go = 1700 + k * 170 + (id === 'is-even' ? 220 : 0);
+      on(go, () => launch(id));
+      on(go + Math.round(flightMs(id) * .85), () => {
+        arrived += 1;
+        setArrived(arrived);
+        pulse(q2);
+        if (id === 'kind-of') shake(1.2);
+        else if (id !== 'is-even') shake(.45);
+        else bounce(boxes[id]);
       });
-      t += 170;
     });
-    // Delivered: the courier's photo.
-    at(3250, () => {
+    // Delivered: the courier's photo. From now on the boxes can be opened.
+    on(3250, () => {
       stepTo(4);
-      flash.animate([{ opacity: 0 }, { opacity: .85 }, { opacity: 0 }], { duration: 380 });
+      if (!TTY.reduce) flash.animate([{ opacity: 0 }, { opacity: .85 }, { opacity: 0 }], { duration: 380 });
       photo.classList.add('on');
       $('.photo-time').textContent = clock(new Date()).slice(0, 5);
       interactive = true;
     });
-    at(3450, () => bed.animate([{ rotate: '-20deg' }, { rotate: '0deg' }], { duration: 320, easing: 'ease-out', fill: 'forwards' }));
-    at(3900, () => {
-      const u = cq();
-      truck.animate([{ translate: '0 0' }, { translate: `${80 * u}px 0` }], { duration: 800, easing: 'cubic-bezier(.5, 0, .9, .5)', fill: 'forwards' });
-      wheels.forEach((w) => w.animate([{ rotate: '0deg' }, { rotate: '600deg' }], { duration: 800, easing: 'cubic-bezier(.5, 0, .9, .5)' }));
-    });
-    at(4750, () => { truck.classList.remove('here'); truck.getAnimations().forEach((a) => a.cancel()); bed.getAnimations().forEach((a) => a.cancel()); });
+    on(3450, lowerBed);
     // The driver's note: npm's own words.
-    at(3600, () => $('.memo').classList.add('on'));
-    $$('.dnote .line').forEach((l, k) => at(3650 + k * 380, () => l.classList.add('on')));
-    // Why five? Each box needs the next one.
-    at(4700, () => packingList(520));
-    at(8100, () => closeCard());
-    // The box you actually ordered (the arrow reaches is-odd at 10.8 s, the label at 11.4 s).
-    at(8400, punch);
-    // The show is over: the notice on the door winks once, and the boxes are yours.
-    at(12500, () => {
-      showing = false;
-      hint.classList.add('on');
-      app.classList.add('after');
-      notice.classList.add('ping');
+    on(3600, () => $('.memo').classList.add('on'));
+    $$('.dnote .line').forEach((l, k) => on(3650 + k * 380, () => l.classList.add('on')));
+    on(3900, truckOut);
+    // Why five? Each box needs the next one. (Not over a card the visitor opened.)
+    on(4700, () => {
+      if (openId) return;
+      openCard('list', { by: 'auto' });
+      $$('.tl', card).forEach((l) => l.classList.add('off'));
     });
+    on(4750, () => { truckGone(); reorderButtons.forEach((b) => { b.disabled = false; }); });
+    TREE.forEach((_, k) => on(5050 + k * 520, () => listLine(k)));
+    on(8100, () => { if (openId === 'list') closeCard(); });
+    return ev.sort((a, b) => a[0] - b[0]);
+  })();
+
+  // A card the visitor opened stays up for VISITOR_MS of autoplay time (the show also stands still
+  // for 2.5 s after each tap), then the show takes the sky back for the punchline.
+  const VISITOR_MS = 3000;
+  async function yieldSky(t) {
+    while (t.live() && cardBy === 'visitor') {
+      const left = mineAt + VISITOR_MS - t.now();
+      if (left <= 0) return;
+      await t.wait(Math.min(left, 250)); // and look again: they may have put it away
+    }
   }
+  // The box you ordered opens; inside is one line, and its arrow finds is-odd (10.8 s); then the label
+  // is stamped on (12.1 s). If the visitor opens another card on the way, the beat starts again once
+  // their card has had its time, so the show still ends on the punchline and its label.
+  async function punchBeat(t) {
+    const box = boxes['is-even'];
+    const ours = () => openId === 'is-even' && cardBy === 'auto';
+    for (;;) {
+      await yieldSky(t);
+      if (!t.live()) return false;
+      // they opened the box you ordered themselves: their card draws its own arrow and label
+      if (openId === 'is-even') return true;
+      closeCard();
+      if (!box.classList.contains('open')) {
+        box.classList.add('open');
+        slips();
+        await t.wait(950);
+        if (!t.live()) return false;
+        if (openId) continue;
+      }
+      openCard('is-even', { slow: true, by: 'auto' });
+      await t.wait(820);
+      if (!t.live()) return false;
+      if (!ours()) continue;
+      drawLink(600);
+      await t.wait(600);
+      if (!t.live()) return false;
+      if (!ours()) continue;
+      glowNext('is-odd');
+      await t.wait(TAG_MS);
+      if (!t.live()) return false;
+      if (!ours()) continue;
+      stampLabel();
+      return true;
+    }
+  }
+
+  // Autoplay, on a clock the visitor's taps pause (TTY.timeline). With less motion the same show runs
+  // in no time and stops on its last scene.
+  const play = TTY.timeline(async (t) => {
+    run = t;
+    reset();
+    showing = true;
+    for (const [ms, fn] of EVENTS) {
+      await t.at(ms);
+      if (!t.live()) return;
+      fn();
+    }
+    await t.at(8400);
+    if (!(await punchBeat(t))) return;
+    await t.wait(1000);
+    if (!t.live()) return;
+    // The show is over: the notice on the door winks once, and the boxes are yours.
+    showing = false;
+    if (!tapped) hint.classList.add('on');
+    app.classList.add('after');
+    reorderButtons.forEach((b) => { b.disabled = false; });
+    if (!TTY.reduce) notice.classList.add('ping');
+  }, { punch: 10.8 });
   notice.addEventListener('animationend', () => notice.classList.remove('ping'));
 
   // The same order again: the truck comes back, tips its empty bed, shakes it twice, and
-  // leaves. npm has nothing to add.
+  // leaves. npm has nothing to add. What it leaves (the note, "0 new items") stays until Track again.
   function reorder() {
-    if (reordering) return;
-    if (showing || !interactive) delivered();
+    if (reordering || truck.classList.contains('here')) return;
+    tapped = true;
     hint.classList.remove('on');
-    closeCard();
     reordering = true;
     const lines = $$('.dnote .line');
     const done = () => {
@@ -1397,55 +1495,41 @@
     };
     if (TTY.reduce) { done(); reordering = false; return; }
     lines.forEach((l) => l.classList.remove('on'));
-    truck.getAnimations().forEach((a) => a.cancel());
-    bed.getAnimations().forEach((a) => a.cancel());
-    truck.classList.add('here');
-    const u = cq();
-    const ease = 'cubic-bezier(.2, .7, .3, 1)';
-    truck.animate([{ translate: `${75 * u}px 0` }, { translate: `${-1.2 * u}px 0`, offset: .85 }, { translate: '0 0' }], { duration: 750, easing: ease });
-    wheels.forEach((w) => w.animate([{ rotate: '0deg' }, { rotate: '-540deg' }], { duration: 750, easing: ease }));
-    at(750, () => bed.animate([{ rotate: '0deg' }, { rotate: '-20deg' }], { duration: 280, easing: 'ease-in', fill: 'forwards' }));
-    at(1030, () => bed.animate([{ rotate: '-20deg' }, { rotate: '-26deg' }, { rotate: '-20deg' }, { rotate: '-26deg' }, { rotate: '-20deg' }],
-      { duration: 600, easing: 'ease-in-out', fill: 'forwards' }));
-    at(1700, () => bed.animate([{ rotate: '-20deg' }, { rotate: '0deg' }], { duration: 320, easing: 'ease-out', fill: 'forwards' }));
-    at(1750, () => { done(); lines[0].classList.add('on'); });
-    at(2130, () => lines[1].classList.add('on'));
-    at(2100, () => {
-      truck.animate([{ translate: '0 0' }, { translate: `${80 * u}px 0` }], { duration: 800, easing: 'cubic-bezier(.5, 0, .9, .5)', fill: 'forwards' });
-      wheels.forEach((w) => w.animate([{ rotate: '0deg' }, { rotate: '600deg' }], { duration: 800, easing: 'cubic-bezier(.5, 0, .9, .5)' }));
-    });
-    at(2950, () => {
-      truck.classList.remove('here');
-      truck.getAnimations().forEach((a) => a.cancel());
-      bed.getAnimations().forEach((a) => a.cancel());
-      reordering = false;
-    });
+    truckIn();
+    later(tipBed, 750);
+    later(() => bed.animate([{ rotate: '-20deg' }, { rotate: '-26deg' }, { rotate: '-20deg' }, { rotate: '-26deg' }, { rotate: '-20deg' }],
+      { duration: 600, easing: 'ease-in-out', fill: 'forwards' }), 1030);
+    later(lowerBed, 1700);
+    later(() => { done(); lines[0].classList.add('on'); }, 1750);
+    later(truckOut, 2100);
+    later(() => lines[1].classList.add('on'), 2130);
+    later(() => { truckGone(); reordering = false; }, 2950);
   }
 
   // ---------------- Visitors ----------------
-  function tap(id) {
-    if (!interactive) return;
-    // Someone is playing: finish the show now and hand them the boxes.
-    if (showing) delivered();
+  // A tap opens that box's card (or the notice's) at once; the show stands still meanwhile and
+  // goes on afterwards. Tapping the same box again keeps its card up.
+  function open(id) {
+    if (!run) return; // the show has not started yet: nothing is here to open
+    tapped = true;
     hint.classList.remove('on');
-    if (openId === id) { closeCard(); return; }
+    if (openId === id) { wiggle(sourceOf(id)); return; }
     openCard(id);
   }
-  Object.entries(boxes).forEach(([id, b]) => b.addEventListener('click', (e) => { e.stopPropagation(); tap(id); }));
-  notice.addEventListener('click', (e) => {
+  Object.entries(boxes).forEach(([id, b]) => b.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (showing || !interactive) delivered();
-    hint.classList.remove('on');
-    if (openId === 'left-pad') { closeCard(); return; }
-    openCard('left-pad');
-  });
+    if (interactive) open(id);
+  }));
+  notice.addEventListener('click', (e) => { e.stopPropagation(); open('left-pad'); });
+  // An empty spot (or Esc) puts away the visitor's own card, and any card once the show is over.
+  const mayClose = () => openId && (cardBy === 'visitor' || !showing);
   $('.scene').addEventListener('click', (e) => {
     if (e.target.closest('.card')) return;
-    if (openId && !showing) closeCard();
+    if (mayClose()) closeCard();
   });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape' && openId) { if (showing) delivered(); closeCard(); } });
-  $$('.again.track').forEach((b) => b.addEventListener('click', () => { play(); }));
-  $$('.again.reorder').forEach((b) => b.addEventListener('click', () => { reorder(); }));
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && mayClose()) closeCard(); });
+  $$('.again.track').forEach((b) => b.addEventListener('click', () => play.start()));
+  reorderButtons.forEach((b) => b.addEventListener('click', reorder));
 
   // Sticker print, lines and arrows follow the boxes when the window changes size.
   new ResizeObserver(() => {
@@ -1456,8 +1540,7 @@
   }).observe(world);
 
   reset();
-  if (TTY.reduce) { delivered(); openCard('is-even'); }
-  TTY.onShow(() => { if (!TTY.reduce) play(); });
+  TTY.onPlay(play.start);
   const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
   Promise.all([loaded, document.fonts.ready]).then(() => {
     // Web fonts change the card's size; put the arrow back on the word it points from.

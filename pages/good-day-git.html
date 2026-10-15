@@ -7,7 +7,7 @@
 <script src="/pages/_kit.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Martian+Mono:wght@500;700&family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Martian+Mono:wdth,wght@75..112.5,500..700&family=Gowun+Dodum&display=swap">
 <script src="https://font.tty.link/lib/font-kku.js" data-fonts="dunggeun pilgi"></script>
 <style>
   /* A good day as a commit graph, drawn the way a metro map is: coloured lines, stations,
@@ -25,11 +25,17 @@
     --walk: #996cac;
     --conflict: #e5484d;
   }
+  /* --t: the size of the map's title strip and of the lunch merge's two lines, which carry the
+     joke. Worked out once on .page against the stage, then inherited in px into the map, so the
+     lunch merge is never smaller than the title (and the title is a metro map's caption, not a
+     poster headline). Phones: 11.5 px on the 288 px stage of a 320 px phone, where "CONFLICT
+     (content): stomach" still fits one line; 12.5 px from 312 px. */
+  @property --t { syntax: '<length>'; inherits: true; initial-value: 12px; }
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; }
   body {
-    container-type: size;
-    overflow: hidden;
+    container: stage / size;
+    overflow: clip;
     background: var(--paper);
     color: var(--ink);
     font-family: 'Bricolage Grotesque', 'Gowun Dodum', system-ui, sans-serif;
@@ -39,6 +45,7 @@
   :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
 
   .page {
+    --t: clamp(11.5px, 4cqw, 12.5px);
     position: absolute;
     inset: 0;
     display: grid;
@@ -46,22 +53,28 @@
     padding: 4.5cqmin 5cqmin 3.6cqmin;
     gap: 2cqmin;
   }
-  .top { display: flex; justify-content: space-between; align-items: start; gap: 3cqmin; }
-  .top h1 { font-weight: 800; font-size: clamp(26px, 6.4cqmin, 64px); line-height: .95; letter-spacing: -.02em; font-variation-settings: 'opsz' 96; }
-  .top p { margin-top: .5em; font-size: clamp(14px, 2.4cqmin, 21px); font-weight: 500; color: var(--muted); }
+  @container stage (min-width: 420px) and (min-height: 560px) {
+    .page { --t: clamp(13px, 2.2cqmin, 18px); }
+  }
+  /* The title strip: the title in a black plate like the tag at the end of the line, the
+     subtitle beside or under it, both at --t. Weight and the plate make it the heading. */
+  .top { display: flex; justify-content: space-between; align-items: start; gap: 2cqmin; }
+  .top .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35em .7em; min-width: 0; }
+  .top h1 { display: inline-block; padding: .22em .6em .26em; border-radius: .45em; background: var(--ink); color: #fff; font-weight: 800; font-size: var(--t); line-height: 1.1; letter-spacing: .03em; font-variation-settings: 'opsz' 12; white-space: nowrap; }
+  .top p { font-size: var(--t); line-height: 1.25; font-weight: 500; color: var(--muted); text-wrap: pretty; }
   .top p .short { display: none; }
   .lang-ko .top p { font-family: 'Gowun Dodum', sans-serif; }
-  /* dunggeun is drawn from a jamo sheet; a hairline shadow on both sides gives the headline weight */
-  .top .bold { color: var(--ink); filter: drop-shadow(.018em 0 0 currentColor) drop-shadow(-.018em 0 0 currentColor); }
+  /* dunggeun is drawn from a jamo sheet; a hairline shadow on both sides gives the title weight */
+  .top .bold { color: #fff; filter: drop-shadow(.03em 0 0 currentColor) drop-shadow(-.03em 0 0 currentColor); }
   .replay {
     flex: none;
-    min-height: 40px;
-    padding: 0 16px;
+    min-height: max(32px, calc(var(--t) * 2.7));
+    padding: 0 1em;
     border: 2px solid var(--ink);
     border-radius: 999px;
     background: #fff;
     font-weight: 700;
-    font-size: 15px;
+    font-size: var(--t);
     cursor: pointer;
   }
   /* (only where there is a real pointer: on a phone a tapped button would stay black) */
@@ -77,57 +90,62 @@
   .station.conflict { stroke: var(--conflict); }
   .bonk .pop { transform-box: fill-box; transform-origin: center; }
 
+  /* The wide map is used only where its labels come out at 10.5 px or more (the script picks the
+     layout), so the floors are plain 10 px. */
   .label {
     position: absolute;
     width: max-content;
     max-width: var(--w, 15%);
     font-size: 1.75cqw;
     line-height: 1.22;
+    text-wrap: pretty;
   }
-  .label .time { display: block; font-family: 'Martian Mono', monospace; font-weight: 500; font-size: max(.74em, min(10px, .9em)); color: var(--muted); letter-spacing: .02em; }
+  .label .time { display: block; font-family: 'Martian Mono', monospace; font-weight: 500; font-size: max(.74em, 10px); color: var(--muted); letter-spacing: .02em; }
   .label .msg { display: block; font-weight: 700; }
-  .label .type { font-family: 'Martian Mono', monospace; font-weight: 700; font-size: max(.78em, min(10px, .9em)); color: var(--c, var(--main)); }
-  .label .diff { display: block; margin-top: .2em; font-family: 'Martian Mono', monospace; font-weight: 500; font-size: max(.7em, min(10px, .85em)); color: var(--muted); }
+  .label .type { font-family: 'Martian Mono', monospace; font-weight: 700; font-size: max(.78em, 10px); color: var(--c, var(--main)); }
+  .label .diff { display: block; margin-top: .2em; font-family: 'Martian Mono', monospace; font-weight: 500; font-size: max(.7em, 10px); color: var(--muted); }
   .label .nw { white-space: nowrap; }
-  .label .diff.alarm { color: var(--conflict); font-weight: 700; }
-  .label .diff.fixed { color: var(--main); font-weight: 700; }
-  /* once resolved, the conflict stays on the label, struck out, above its resolution */
-  .label .diff .was { display: block; color: var(--muted); font-weight: 500; text-decoration: line-through var(--conflict); text-decoration-thickness: max(1px, .08em); }
-  /* the lunch merge's two lines carry the joke: larger than the other diffs, 11 px wherever the
-     label is big enough for it (the conflict fits one line of its 25% label from 1000 x 800 up;
-     on 868 x 633 the English one folds before "stomach") */
-  .label.knot .diff { font-size: max(.74em, min(11px, .85em)); }
+  /* the wide map's labels are narrow and centred: balanced lines, no word left alone */
+  .rig:not(.portrait) .label { text-wrap: balance; }
+  /* The lunch merge's two lines carry the joke: at --t (never smaller than the title) or the
+     label's own size, in Martian Mono's condensed width (.6 em a letter instead of .7) so the
+     conflict keeps to one line on phones. "Accept Both Changes" has its line from the start,
+     hidden until the conflict is resolved, so nothing moves when the punch lands. Then the
+     conflict stays, struck out, above its resolution. */
+  .label.knot .diff { font-size: max(var(--t), 1em); font-stretch: 75%; letter-spacing: 0; }
+  .label.knot .conf, .label.knot .fix { display: block; }
+  .label.knot .conf { color: var(--muted); font-weight: 500; text-decoration: line-through var(--conflict); text-decoration-thickness: max(1px, .08em); text-wrap: balance; }
+  .label.knot .fix { color: var(--main); font-weight: 700; }
+  .label.knot.open .conf { color: var(--conflict); font-weight: 700; text-decoration: none; }
+  .label.knot.open .fix { visibility: hidden; }
   .label.tag .msg { display: inline-block; padding: .25em .6em; background: var(--ink); color: #fff; border-radius: .4em; }
   .label.tag .type { color: #8ff0b6; }
   .label.tag .text { margin-left: .35em; }
-  /* The tall map is drawn small on phones (about 250 x 310 px on a 358 x 396 stage): the labels
-     keep a floor of 10.5 px (times and prefixes 10 px, the lunch merge's two lines 11 px, set
-     close so its three-line label still clears 12:40 and 15:00), and the map sits at the left so
-     they can run on into the room beside it (--spare, set by the script). Only a few diffs are
-     shown there: the lunch merge (conflict and resolution), the dessert's "0 tests" and "shipped".
-     Where the map fills the width (the 328 and 312 px stages of narrow phones) there is no room
-     beside it and a label gets about 215 px: the lunch merge's two lines and the tag stay on one
-     line each (nowrap) instead of folding into their neighbours. */
+  /* The tall map (phones, and every stage too small for the wide one's labels): labels at
+     10.5 px or more (times and prefixes 10 px) to the right of the line, the map at the left so
+     they can run on into the room beside it (--spare, set by the script). The script spaces the
+     stations for the labels' real heights, so a label that wraps pushes its neighbours apart
+     instead of running into them, and a tall stage stretches the line to fill it. Only a few
+     diffs are shown: the lunch merge (conflict and resolution), the dessert's "0 tests" and
+     "shipped". The lunch merge's two lines and the tag stay on one line each (nowrap). Times,
+     prefixes and diffs take Martian Mono's condensed width here too: on the 288 px stage of a
+     320 px phone that is what keeps "shipped" inside the stage. */
   .rig.portrait { justify-self: start; }
   .portrait .label { font-size: max(3.3cqw, 10.5px); line-height: 1.18; }
+  .portrait .label :is(.time, .type, .diff) { font-stretch: 75%; }
   .portrait .label .time { display: inline; margin-right: .5em; font-size: max(.74em, 10px); }
   .portrait .label .type { font-size: max(.78em, 10px); }
   .portrait .label .msg { display: inline; }
   .portrait .label .diff { display: none; }
   .portrait .label.knot .diff, .portrait .label.always .diff { display: block; margin-top: .1em; font-size: max(.74em, 10px); }
-  .portrait .label.knot .diff { font-size: max(.8em, 11px); line-height: 1.1; margin-top: 0; white-space: nowrap; }
+  .portrait .label.knot .diff { font-size: max(var(--t), 1em); line-height: 1.1; margin-top: 0; white-space: nowrap; }
   .portrait .label.tag .diff { display: inline; margin: 0 0 0 .5em; font-size: max(.74em, 10px); }
   .portrait .label.tag { white-space: nowrap; }
-  /* short screens: the subtitle shrinks to one short line (it sets up the bump), the legend goes.
-     The button and the gap beside it give up a few px so the English line stays one line on the
-     328 px stage of a 360 px phone (it needs 167 px). */
-  @container (max-height: 640px) {
-    .top { gap: 2cqmin; }
-    .top h1 { font-size: clamp(22px, 5.6cqmin, 40px); }
-    .top p { margin-top: .2em; font-size: 13px; }
+  .portrait .label.quiet { display: none; }
+  /* short screens: the subtitle takes its short form (it sets up the bump), the legend goes */
+  @container stage (max-height: 640px) {
     .top p .long { display: none; }
     .top p .short { display: inline; }
-    .replay { min-height: 34px; padding: 0 10px; font-size: 13px; }
     .page .legend { display: none; }
   }
 
@@ -146,11 +164,11 @@
 <body>
 <main class="page">
   <header class="top">
-    <div>
+    <div class="head">
       <h1 data-lang="en">Today, merged.</h1>
-      <h1 data-lang="ko" aria-label="오늘, 머지 완료."><font-kku class="bold" font="dunggeun" size="clamp(22px, 6.8cqmin, 68px)">오늘, 머지 완료.</font-kku></h1>
-      <p data-lang="en"><span class="long">A day with zero conflicts. Well, almost.</span><span class="short">Zero conflicts. Well, almost.</span></p>
-      <p data-lang="ko">충돌 하나 없던 하루. 음, 거의요.</p>
+      <h1 data-lang="ko" aria-label="오늘, 머지 완료."><font-kku class="bold" font="dunggeun" size="var(--t)">오늘, 머지 완료.</font-kku></h1>
+      <p data-lang="en" data-tty-line="setup"><span class="long">A day with zero conflicts. Well, almost.</span><span class="short">Zero conflicts. Well, almost.</span></p>
+      <p data-lang="ko" data-tty-line="setup">충돌 하나 없던 하루. 음, 거의요.</p>
     </div>
     <button class="replay" type="button"><span data-lang="en">Replay the day</span><span data-lang="ko">하루 다시 보기</span></button>
   </header>
@@ -222,8 +240,8 @@
         wake: [110, 200, 'below', 13.5], coffee: [260, 200, 'below', 13.5], plants: [410, 200, 'below', 13.5],
         cookie: [600, 200, 'below', 12],
         lunch: [580, 110, 'above-end'], dessert: [680, 110, 'above-start'],
-        // wide enough for "CONFLICT (content): stomach" on one line (Martian Mono is .7 em a
-        // character), short of the loop at x 933
+        // short of the loop at x 933: the conflict folds into two balanced lines when it is
+        // wider than that (Martian Mono condensed is .6 em a letter)
         'merge-lunch': [800, 200, 'below', 25],
         walk: [710, 540, 'below'],
         'merge-walk': [560, 450, 'above', 23], docs: [445, 450, 'below', 12.8], revert: [280, 450, 'below', 13.5], tag: [120, 450, 'below', 15],
@@ -234,28 +252,35 @@
     },
     portrait: {
       w: 600, h: 760,
-      // Stations are spaced for their labels at the 10.5 px floor: on a 358 x 396 stage one line
-      // needs about 45 units between neighbours and the three-line lunch merge about 95 either
-      // side. On narrower stages (328 px wide, 312 px on a fold phone's cover screen) the longer
-      // labels (07:40, 15:00, 17:20, 19:30) wrap to two lines, hence the wider gaps around them.
-      lines: {
-        main: 'M70 20 V712',
-        lunch: 'M70 152 L150 204 V322 L70 368',
-        walk: 'M70 410 L150 456 V510 L70 534',
-      },
+      // Where each station would like to be (y, on a 760-unit line): one-line labels 45–52 apart,
+      // two-line ones (12:40, and on narrow stages 07:40, 15:00, 17:20, 19:30) 58–64, the
+      // three-line lunch merge 96–98 either side. `place()` stretches these to the stage and
+      // pushes stations apart where their labels are taller than the room between them.
       at: {
-        wake: [70, 26], coffee: [70, 84], plants: [70, 136], cookie: [70, 181],
-        lunch: [150, 226], dessert: [150, 290],
-        'merge-lunch': [70, 388],
-        walk: [150, 484],
-        'merge-walk': [70, 548], docs: [70, 593], revert: [70, 654], tag: [70, 712],
+        wake: 26, coffee: 84, plants: 136, cookie: 181,
+        lunch: 226, dessert: 290,
+        'merge-lunch': 388,
+        walk: 484,
+        'merge-walk': 548, docs: 593, revert: 654, tag: 712,
       },
+      // the least room between a station and the one before it, for the branches' diagonals: the
+      // lunch branch leaves main between 09:10 and 11:00 (the cookie is main's, after the fork),
+      // 12:00 and 12:40 sit on its straight part, it rejoins 20 units before 13:10; the walk branch
+      // leaves after 13:10 and rejoins 14 units before 15:40
+      room: { cookie: 43, lunch: 33, dessert: 20, 'merge-lunch': 76, walk: 76, 'merge-walk': 48 },
       bonk: [-50, -20],
       tick: [-50, -20],
       car: 1.45, // the tall map is drawn small; the trains are drawn larger on it
     },
   };
+  const PORTRAIT_X = { main: 70, branch: 150 };
+  const LABEL_GAP = 4; // px between the text of two neighbouring labels on the tall map
+  // On a tall map too short for every label (a 360 x 520 phone's 328 x 288 stage) these go
+  // quiet, in this order, and keep only their station: the commits the conflict needs (the
+  // cookie, lunch, dessert, the two merges) and the tag always keep theirs.
+  const QUIET = ['plants', 'wake', 'docs', 'coffee', 'revert', 'walk'];
 
+  const map = $('.map'), pageEl = $('.page');
   const rig = $('.rig');
   const svgEl = $('.rig svg');
   const linesG = $('.lines');
@@ -268,18 +293,20 @@
     return (i ? 'L' : 'M') + (Math.cos(a) * r).toFixed(1) + ' ' + (Math.sin(a) * r).toFixed(1);
   }).join(' ') + 'Z');
   const COLORS = { main: 'var(--main)', lunch: 'var(--lunch)', walk: 'var(--walk)' };
+  const radius = (c) => (c.tag ? 17 : c.swap ? 14 : 10); // a station's circle: the tag, an interchange, a stop
+
+  // The wide map only where its labels (1.75% of the map's width) come out at 10.5 px or more:
+  // the map is 1000 x 660, so it needs a cell 600 px wide and 396 px high. Everything smaller
+  // (a phone on its side, a 360 x 520 phone's 328 x 288 stage) gets the tall map.
+  const wide = () => innerHeight <= innerWidth * 1.05 && Math.min(map.clientWidth, map.clientHeight * 1000 / 660) >= 600;
 
   let built = null;
-
   function build() {
-    const portrait = innerHeight > innerWidth * 1.05;
+    const portrait = !wide();
     const L = LAYOUTS[portrait ? 'portrait' : 'landscape'];
     if (built && built.L === L) return built;
 
     rig.classList.toggle('portrait', portrait);
-    rig.style.aspectRatio = `${L.w} / ${L.h}`;
-    rig.style.height = `min(100cqh, 100cqw * ${L.h} / ${L.w})`;
-    svgEl.setAttribute('viewBox', `0 0 ${L.w} ${L.h}`);
     linesG.replaceChildren();
     stationsG.replaceChildren();
     rig.querySelectorAll('.label').forEach((el) => el.remove());
@@ -288,7 +315,6 @@
     // Branches under main, so the interchanges sit on top of the main line.
     ['lunch', 'walk', 'main'].forEach((name) => {
       const p = document.createElementNS(NS, 'path');
-      p.setAttribute('d', L.lines[name]);
       p.setAttribute('class', 'line');
       p.setAttribute('stroke', COLORS[name]);
       linesG.append(p);
@@ -296,17 +322,14 @@
     });
 
     const items = COMMITS.map((c) => {
-      const [x, y, side, width] = L.at[c.id];
       const st = document.createElementNS(NS, 'circle');
-      st.setAttribute('cx', x);
-      st.setAttribute('cy', y);
-      st.setAttribute('r', c.tag ? 17 : c.swap ? 14 : 10);
+      st.setAttribute('r', radius(c));
       st.setAttribute('class', 'station' + (c.swap ? ' swap' : ''));
       if (c.tag) { st.style.fill = 'var(--main)'; st.style.stroke = 'var(--ink)'; }
       stationsG.append(st);
 
       const label = document.createElement('div');
-      label.className = 'label' + (c.tag ? ' tag' : '') + (c.conflict ? ' knot' : '') + (c.always ? ' always' : '');
+      label.className = 'label' + (c.tag ? ' tag' : '') + (c.conflict ? ' knot open' : '') + (c.always ? ' always' : '');
       label.style.setProperty('--c', COLORS[c.line === 'main' && c.swap ? c.swap : c.line]);
       // a diff wraps between its parts, never inside one; a one-part diff with a `fold` may also
       // wrap after that much (19:30's runs into 17:20 on small landscape stages otherwise)
@@ -314,6 +337,15 @@
       const parts = fold ? [fold, whole.slice(fold.length + 1)] : whole.split(', ');
       const diff = parts.map((part) => `<span class="nw">${part}</span>`).join(fold ? ' ' : ', ');
       label.innerHTML = `<span class="time">${c.time}</span><span class="msg"><span class="type">${c.type}</span> <span class="text"></span></span><span class="diff">${diff}</span>`;
+      if (c.conflict) {
+        // the conflict (setup) and its resolution (punch), each on its own line from the start
+        const d = label.querySelector('.diff');
+        d.innerHTML = '<span class="conf"></span><span class="fix"></span>';
+        d.firstChild.textContent = c.conflict[ko ? 1 : 0];
+        d.firstChild.dataset.ttyLine = 'setup';
+        d.lastChild.textContent = whole;
+        d.lastChild.dataset.ttyLine = 'punch';
+      }
       const text = label.querySelector('.text');
       if (c.git) {
         // branch 'name': the line may break before the name, not at its hyphens
@@ -331,13 +363,13 @@
       } else {
         text.textContent = c.en;
       }
-      const px = (x / L.w) * 100, py = (y / L.h) * 100;
       if (portrait) {
         label.style.left = (176 / L.w * 100) + '%';
-        label.style.top = py + '%';
         label.style.transform = 'translateY(-50%)';
         label.style.setProperty('--w', 'calc(70% + var(--spare, 0px))'); // from 29.3% into the page's right margin
       } else {
+        const [x, y, side, width] = L.at[c.id];
+        const px = (x / L.w) * 100, py = (y / L.h) * 100;
         const gap = (c.tag ? 32 : 26) / L.h * 100;
         label.style.left = px + '%';
         if (width) label.style.setProperty('--w', width + '%');
@@ -347,57 +379,155 @@
         if (side === 'above-start') { label.style.top = (py - gap) + '%'; label.style.transform = 'translate(-12%, -100%)'; }
       }
       rig.append(label);
-      return { c, st, label, x, y };
+      if (labelsSeen) labelsSeen.observe(label);
+      return { c, st, label, x: 0, y: 0 };
     });
+    built = { L, portrait, paths, items, H: 0, key: '' };
+    return built;
+  }
 
-    // Where along its own line each station sits, so the train reaches them in time.
-    const lenAt = (path, x, y) => {
-      const total = path.getTotalLength();
-      let best = 0, bestD = Infinity;
-      for (let i = 0; i <= 400; i++) {
-        const l = (total * i) / 400, p = path.getPointAtLength(l);
-        const d = (p.x - x) ** 2 + (p.y - y) ** 2;
-        if (d < bestD) { bestD = d; best = l; }
+  // How much room the tall map leaves beside it for its labels, plus half the page's right
+  // margin. On the 328 px stages of 360 px phones, whether the map is narrower than its cell
+  // (328 x 408) or fills its width (328 x 468–568), that keeps 13:10's branch name and 17:20 on
+  // one line; on the 312 and 288 px stages they fold to two lines and `place()` makes room.
+  const spare = () => Math.max(0, map.clientWidth - rig.offsetWidth - 2) + Math.round(parseFloat(getComputedStyle(pageEl).paddingRight) / 2);
+
+  // How far a label's text reaches above and below the middle of its box, in px: the boxes of
+  // its lines of text (font-kku by its host, the tag by its plate), not the label's box, whose
+  // line height is less than the letters' height.
+  const range = document.createRange();
+  const reach = (label) => {
+    if (label.classList.contains('quiet')) return [0, 0];
+    const box = label.getBoundingClientRect(), mid = (box.top + box.bottom) / 2;
+    let up = 0, down = 0;
+    const add = (q) => { if (q.width > 0 && q.height > 0) { up = Math.max(up, mid - q.top); down = Math.max(down, q.bottom - mid); } };
+    const walk = (node) => {
+      if (node.nodeType === 3) {
+        if (!node.data.trim()) return;
+        range.selectNodeContents(node);
+        for (const q of range.getClientRects()) add(q);
+        return;
       }
-      return best;
+      if (node.nodeType !== 1 || getComputedStyle(node).display === 'none') return;
+      if (node.tagName === 'FONT-KKU' || (label.classList.contains('tag') && node.classList.contains('msg'))) { for (const q of node.getClientRects()) add(q); return; }
+      node.childNodes.forEach(walk);
     };
+    walk(label);
+    return [up, down];
+  };
+
+  // Put the stations, labels and lines where they go on the current stage. Returns true when
+  // anything moved.
+  function place() {
+    const b = build();
+    const L = b.L;
+    let H = L.h;
+    if (b.portrait) {
+      // a tall cell stretches the line (up to 1.4 times) instead of leaving it short in the middle
+      const cw = map.clientWidth, ch = map.clientHeight;
+      if (cw > 0 && ch > cw * L.h / L.w) H = Math.round(Math.min(L.h * 1.4, L.w * ch / cw));
+    }
+    if (H !== b.H) {
+      b.H = H;
+      rig.style.aspectRatio = `${L.w} / ${H}`;
+      rig.style.height = `min(100cqh, 100cqw * ${H} / ${L.w})`;
+      svgEl.setAttribute('viewBox', `0 0 ${L.w} ${H}`);
+    }
+    let ys, d;
+    if (!b.portrait) {
+      b.items.forEach((it) => { [it.x, it.y] = L.at[it.c.id]; });
+      d = L.lines;
+    } else {
+      rig.style.setProperty('--spare', spare() + 'px');
+      const k = H / L.h;
+      const rigH = rig.offsetHeight || 1, unit = H / rigH; // map units per px
+      const ids = b.items.map((it) => it.c.id);
+      const pref = ids.map((id) => L.at[id] * k);
+      // the room the branches' diagonals need, and at least the two stations' circles and a gap
+      const rad = b.items.map((it) => radius(it.c));
+      const room = ids.map((id, i) => (i ? Math.max((L.room[id] || 0) * k, rad[i - 1] + rad[i] + 10) : 0));
+      const n = ids.length;
+      b.items.forEach((it) => it.label.classList.remove('quiet'));
+      let ext, need, top, bottom, pack, quiet = 0;
+      for (;;) {
+        // how far each label's text reaches above and below its station (in map units)
+        ext = b.items.map((it) => reach(it.label).map((v) => v * unit));
+        need = (i, s) => Math.max(room[i], s * (ext[i - 1][1] + ext[i][0] + LABEL_GAP * unit));
+        top = Math.max(16, ext[0][0]); bottom = H - Math.max(26, ext[n - 1][1]);
+        pack = (s) => {
+          const y = [Math.max(pref[0], top)];
+          for (let i = 1; i < n; i++) y[i] = Math.max(pref[i], y[i - 1] + need(i, s));
+          if (y[n - 1] > bottom) { y[n - 1] = bottom; for (let i = n - 2; i >= 0; i--) y[i] = Math.min(y[i], y[i + 1] - need(i + 1, s)); }
+          return y;
+        };
+        ys = pack(1);
+        if (ys[0] >= top || quiet >= QUIET.length) break;
+        b.items[ids.indexOf(QUIET[quiet++])].label.classList.add('quiet');
+      }
+      if (ys[0] < top) {
+        // too little room for every label: shrink the gaps between them evenly, the diagonals' room kept
+        let lo = 0, hi = 1;
+        for (let j = 0; j < 20; j++) { const s = (lo + hi) / 2; if (pack(s)[0] >= top) lo = s; else hi = s; }
+        ys = pack(lo);
+      }
+      const at = Object.fromEntries(ids.map((id, i) => [id, ys[i]]));
+      b.items.forEach((it, i) => { it.x = it.c.line === 'main' ? PORTRAIT_X.main : PORTRAIT_X.branch; it.y = ys[i]; });
+      const X = PORTRAIT_X.main, B = PORTRAIT_X.branch, r = (v) => v.toFixed(1);
+      const fl = Math.max(at.plants + 12 * k, Math.min(at.cookie - 29 * k, at.lunch - 60 * k));
+      const jl = at['merge-lunch'] - 20 * k;
+      const fw = Math.max(at['merge-lunch'] + 20 * k, at.walk - 74 * k);
+      const jw = at['merge-walk'] - 14 * k;
+      d = {
+        main: `M${X} ${r(at.wake - 6 * k)} V${r(at.tag)}`,
+        lunch: `M${X} ${r(fl)} L${B} ${r(fl + 52 * k)} V${r(jl - 46 * k)} L${X} ${r(jl)}`,
+        walk: `M${X} ${r(fw)} L${B} ${r(fw + 46 * k)} V${r(jw - 24 * k)} L${X} ${r(jw)}`,
+      };
+      b.items.forEach((it) => { it.label.style.top = (it.y / H * 100) + '%'; });
+    }
+    const key = JSON.stringify(d) + b.items.map((it) => it.y.toFixed(1)).join();
+    if (key === b.key) return false;
+    b.key = key;
+    Object.entries(d).forEach(([name, path]) => b.paths[name].setAttribute('d', path));
+    b.items.forEach((it) => { it.st.setAttribute('cx', it.x); it.st.setAttribute('cy', it.y.toFixed(1)); });
+    measure(b);
+    return true;
+  }
+
+  // Where along its own line each station sits, so the train reaches them in time.
+  const lenAt = (path, x, y) => {
+    const total = path.getTotalLength();
+    let best = 0, bestD = Infinity;
+    for (let i = 0; i <= 400; i++) {
+      const l = (total * i) / 400, p = path.getPointAtLength(l);
+      const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+      if (d < bestD) { bestD = d; best = l; }
+    }
+    return best;
+  };
+  function measure(b) {
+    const { paths } = b;
     const mainLen = paths.main.getTotalLength();
     const forkAt = (name) => {
       const p = paths[name].getPointAtLength(0);
-      return lenAt(paths.main, p.x, p.y) / mainLen;
+      return lenAt(paths.main, p.x, p.y);
     };
-    items.forEach((it) => {
-      const own = paths[it.c.line];
-      it.on = it.c.line === 'main' ? lenAt(own, it.x, it.y) / mainLen : null;
-      if (it.c.line !== 'main') it.branchFrac = lenAt(own, it.x, it.y) / own.getTotalLength();
-    });
-    // where each branch leaves and rejoins the main line, as lengths along it
+    // where each branch rejoins the main line, as a length along it
     const joinAt = (name) => {
       const p = paths[name].getPointAtLength(paths[name].getTotalLength());
       return lenAt(paths.main, p.x, p.y);
     };
-    built = {
-      L, paths, items, mainLen,
-      forks: { lunch: forkAt('lunch') * mainLen, walk: forkAt('walk') * mainLen },
-      joins: { lunch: joinAt('lunch'), walk: joinAt('walk') },
-    };
-    return built;
+    b.items.forEach((it) => {
+      const own = paths[it.c.line];
+      it.on = it.c.line === 'main' ? lenAt(own, it.x, it.y) / mainLen : null;
+      if (it.c.line !== 'main') it.branchFrac = lenAt(own, it.x, it.y) / own.getTotalLength();
+    });
+    Object.assign(b, { mainLen, forks: { lunch: forkAt('lunch'), walk: forkAt('walk') }, joins: { lunch: joinAt('lunch'), walk: joinAt('walk') } });
   }
 
   // The lunch merge: red while the conflict is open; then the conflict stays, struck out, with
   // the resolution in green under it, so the finished map still tells the whole joke.
   const setKnot = (it, open) => {
-    const d = it.label.querySelector('.diff');
-    const conflict = it.c.conflict[ko ? 1 : 0];
-    d.replaceChildren();
-    if (!open) {
-      const was = document.createElement('span');
-      was.className = 'was';
-      was.textContent = conflict;
-      d.append(was);
-    }
-    d.append(open ? conflict : it.c.diff[ko ? 1 : 0]);
-    d.className = 'diff ' + (open ? 'alarm' : 'fixed');
+    it.label.classList.toggle('open', open);
     it.st.classList.toggle('conflict', open);
   };
 
@@ -437,34 +567,53 @@
   const jolt = (g) => g.querySelector('.car').animate([{ transform: 'translate(0, 0)' }, { transform: 'translate(-7px, 0)', offset: .25 }, { transform: 'translate(1px, 0)', offset: .7 }, { transform: 'translate(0, 0)' }],
     { duration: 420, easing: 'ease-out' });
 
-  let run = 0;
-  function play() {
-    const b = build();
-    const me = ++run;
+  // The three states of the map: before the run (empty line, the main train at the start), the
+  // run, and the finished day (also what reduced motion shows, and what a resize after the run
+  // redraws).
+  let run = 0, state = 'idle';
+  const clear = () => {
+    run++;
+    Object.values(trains).forEach((g) => { g.getAnimations({ subtree: true }).forEach((a) => a.cancel()); g.style.display = ''; g.style.opacity = ''; });
+    bonk.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+    bonk.setAttribute('opacity', 0);
+  };
+  function still() {
+    const b = built;
+    clear();
+    Object.values(b.paths).forEach((p) => { p.style.strokeDasharray = ''; p.style.strokeDashoffset = ''; });
+    b.items.forEach((it) => { it.st.classList.remove('hidden'); it.label.classList.remove('hidden'); it.shown = true; });
+    setKnot(b.items.find((it) => it.c.conflict), false);
+    Object.values(trains).forEach((g) => { g.style.display = 'none'; });
+  }
+  function prime() {
+    const b = built;
+    if (TTY.reduce) return still();
+    clear();
     carScale = b.L.car;
+    Object.values(b.paths).forEach((p) => { const l = p.getTotalLength(); p.style.strokeDasharray = `${l} ${l}`; p.style.strokeDashoffset = l; });
+    b.items.forEach((it) => { it.st.classList.add('hidden'); it.label.classList.add('hidden'); it.shown = false; });
+    setKnot(b.items.find((it) => it.c.conflict), true);
+    put(trains.main, pose(b.paths.main, 0));
+    trains.lunch.style.visibility = trains.walk.style.visibility = 'hidden';
+  }
+
+  function play() {
+    place();
+    const b = built;
+    if (TTY.reduce) { still(); state = 'done'; return; }
+    prime();
+    state = 'running';
+    const me = run;
     const GAP = GAP_1 * carScale, NOSE = NOSE_1 * carScale, STOP_BACK = STOP_BACK_1 * carScale;
     const knot = b.items.find((it) => it.c.conflict);
     const lines = { main: b.paths.main, lunch: b.paths.lunch, walk: b.paths.walk };
     const totals = Object.fromEntries(Object.entries(lines).map(([k, p]) => [k, p.getTotalLength()]));
-    Object.values(trains).forEach((g) => { g.getAnimations({ subtree: true }).forEach((a) => a.cancel()); g.style.display = ''; g.style.opacity = ''; });
-    bonk.getAnimations({ subtree: true }).forEach((a) => a.cancel());
-    bonk.setAttribute('opacity', 0);
-    if (TTY.reduce) {
-      Object.values(lines).forEach((p) => { p.style.strokeDasharray = ''; p.style.strokeDashoffset = ''; });
-      b.items.forEach((it) => { it.st.classList.remove('hidden'); it.label.classList.remove('hidden'); });
-      setKnot(knot, false);
-      Object.values(trains).forEach((g) => { g.style.display = 'none'; });
-      return;
-    }
-    setKnot(knot, true);
     const [jx, jy] = (() => { const p = lines.lunch.getPointAtLength(totals.lunch); return [p.x, p.y]; })();
     bonk.setAttribute('transform', `translate(${jx + b.L.bonk[0]} ${jy + b.L.bonk[1]}) scale(${carScale})`);
     $('.bonk .star').style.fill = '';
     $('.bonk .bang').style.opacity = '';
     $('.bonk .tick').style.opacity = 0;
 
-    Object.entries(lines).forEach(([k, p]) => { p.style.strokeDasharray = `${totals[k]} ${totals[k]}`; p.style.strokeDashoffset = totals[k]; });
-    b.items.forEach((it) => { it.st.classList.add('hidden'); it.label.classList.add('hidden'); it.shown = false; });
     const draw = (k, len) => { lines[k].style.strokeDashoffset = totals[k] - Math.max(0, len); };
     const pop = (it) => {
       if (it.shown) return;
@@ -484,8 +633,6 @@
     const t0 = tGo - unease(stopLen / b.mainLen) * DURATION;
     const timeAt = (len) => t0 + unease(Math.min(1, len / b.mainLen)) * DURATION;
     let lunchOut = null, walkOut = null, walkIn = null, bumped = false, going = false, lunchAt = null, clean = false;
-    trains.lunch.style.visibility = trains.walk.style.visibility = 'hidden';
-    put(trains.main, pose(lines.main, 0));
     // The walk merge, the tag beat: the same badge as the lunch merge's, but green from the
     // start and a size smaller. No stop, no "!".
     const cleanTick = () => {
@@ -561,6 +708,7 @@
       if (len < b.mainLen - .5) requestAnimationFrame(frame);
       else {
         // the train pulls in and leaves the terminus to its sign
+        state = 'done';
         Object.values(trains).forEach((g) => g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' }));
         const tag = b.items[b.items.length - 1];
         pop(tag);
@@ -571,38 +719,30 @@
     requestAnimationFrame(frame);
   }
 
-  // How much room the tall map leaves beside it, for its labels, and half the page's right margin
-  // on top: where the map fills the width (a 360 px phone's 328 px stage) the labels would get
-  // only 70 % of the map, and 13:10's branch name and 17:20 wrapped there.
-  const map = $('.map'), pageEl = $('.page');
-  const spare = () => rig.style.setProperty('--spare', Math.max(0, map.clientWidth - rig.offsetWidth - 2) + Math.round(parseFloat(getComputedStyle(pageEl).paddingRight) / 2) + 'px');
-  // (both: the map changes size with the window, the map drawing when it switches layout)
-  if (window.ResizeObserver) { const ro = new ResizeObserver(spare); ro.observe(map); ro.observe(rig); }
+  // A change of stage (the home page shrinking its frame to the stage, a phone turned, fonts
+  // arriving, a label growing) can move the stations. Before the run that only redraws the empty
+  // map; during it the day starts again on the new map; after it the finished map is redrawn.
+  const relayout = () => {
+    const was = built && built.L;
+    const moved = place();
+    if (built.L === was && !moved) return;
+    if (state === 'running') play();
+    else if (state === 'done') still();
+    else prime();
+  };
+  let pending = 0;
+  const soon = () => { if (!pending) pending = requestAnimationFrame(() => { pending = 0; relayout(); }); };
+  const labelsSeen = window.ResizeObserver ? new ResizeObserver(soon) : null;
+  if (labelsSeen) { labelsSeen.observe(map); }
+  addEventListener('resize', soon);
 
-  $('.replay').addEventListener('click', play);
-  let resizeTimer;
-  addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      const before = built && built.L;
-      build();
-      if (built.L !== before) play();
-    }, 150);
-  });
-
-  build();
-  if (!TTY.reduce) {
-    built.items.forEach((it) => { it.st.classList.add('hidden'); it.label.classList.add('hidden'); });
-    Object.values(built.paths).forEach((p) => { const l = p.getTotalLength(); p.style.strokeDasharray = `${l} ${l}`; p.style.strokeDashoffset = l; });
-    carScale = built.L.car;
-    put(trains.main, pose(built.paths.main, 0));
-    trains.lunch.style.visibility = trains.walk.style.visibility = 'hidden';
-  }
-  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
-  const drawn = Promise.all([loaded, document.fonts.ready]);
-  drawn.then(TTY.ready);
-  // Opened on its own the page is shown at once; the day starts once it is drawn.
-  TTY.onShow(() => drawn.then(play));
+  place();
+  prime();
+  // The day starts once the page is on screen with its fonts; the button starts it again.
+  const begin = () => play();
+  $('.replay').addEventListener('click', begin);
+  TTY.onPlay(() => { if (state === 'idle') begin(); });
+  TTY.drawn.then(() => { relayout(); TTY.ready(); });
 })();
 </script>
 </body>

@@ -31,7 +31,7 @@
   body {
     container: page / size;
     position: relative;
-    overflow: hidden;
+    overflow: clip;   /* not hidden: a size container that hides its overflow becomes a scroll box, which focus can scroll */
     background-color: var(--desk);
     background-image:
       radial-gradient(rgba(38, 42, 108, .07) .7px, transparent 1px),
@@ -45,7 +45,12 @@
   :focus-visible { outline: 2.5px solid var(--blue); outline-offset: 2px; }
 
   /* ---------- The page ---------- */
+  /* --lt: the lesson title's size, and the floor for the lines that carry the joke (the moral band,
+     the goodbye-again bubbles, Mr. UDP): no heading but the book's own title is bigger than the
+     punch. Registered, so it is worked out once, on the sheet, in px. */
+  @property --lt { syntax: '<length>'; inherits: true; initial-value: 16px; }
   .sheet {
+    --lt: clamp(15px, 1.6cqi, 18px);
     --pad: clamp(10px, 2.2cqmin, 24px);
     --tabw: clamp(70px, 8.6cqw, 104px);
     position: absolute;
@@ -113,6 +118,7 @@
   }
   .title { line-height: 1; font-weight: 800; mix-blend-mode: multiply; }
   .title .en-t {
+    display: inline-block;   /* its own line box, so the subtitle under a big title does not ride up into it */
     font-family: 'Alegreya', serif;
     font-size: clamp(28px, 4.6cqi, 52px);
     letter-spacing: -.005em;
@@ -254,7 +260,8 @@
   .lang-ko .lno { font-family: 'Gowun Batang', serif; letter-spacing: 0; }
   .ltitle {
     min-width: 0;
-    font: italic 700 clamp(21px, 3cqi, 33px)/1.05 'Alegreya', serif;
+    font: italic 700 var(--lt)/1.05 'Alegreya', serif;
+    letter-spacing: .01em;
     color: var(--blue);
     text-shadow: .03em -.02em 0 rgba(255, 72, 176, .6);
     mix-blend-mode: multiply;
@@ -297,7 +304,7 @@
     align-items: center;
     gap: .8em;
     padding: .55em 1em .6em .7em;
-    font-size: clamp(12.5px, 1.75cqi, 18px);
+    font-size: max(var(--lt), clamp(12.5px, 1.75cqi, 18px));
     line-height: 1.35;
     font-weight: 700;
     isolation: isolate;
@@ -519,7 +526,7 @@
     .fig:not(.apart) .bub.c::after { left: auto; right: -10px; clip-path: polygon(0 0, 0 100%, 100% 30%); }
     .fig:not(.apart) .bub.s::after { right: auto; left: -10px; clip-path: polygon(100% 0, 100% 100%, 0 30%); }
   }
-  .bub .nw { white-space: nowrap; }
+  .bub .nw, .fig figcaption .nw { white-space: nowrap; }
   .bub .aside { font-size: max(11px, .86em); font-style: italic; opacity: .9; }
   .lang-ko .bub .aside { font-style: normal; font-weight: 400; }
   .bub.x3 { margin-right: 8px; margin-top: 8px; }
@@ -546,6 +553,8 @@
     rotate: -8deg;
   }
   .bubs .bub.old { opacity: .42; }
+  /* the punch (goodbye again, and the answer) and Mr. UDP's last word: never smaller than the lesson title */
+  .bub.again, .bub.udp { font-size: max(var(--lt), 1em); }
 
   /* The browser's note when the other side simply hung up. */
   .bub.note {
@@ -629,7 +638,11 @@
   @container art (min-aspect-ratio: 6 / 5) and (max-width: 429.9px) {
     .sfx { right: var(--side); bottom: min(calc(var(--h) + 4cqh), calc(100cqh - 1.45em)); transform-origin: 50% 100%; }
     .fig[data-id="rst"] .bubs { justify-content: flex-end; bottom: 9cqh; }
-    .bub.note { align-self: center; }
+    /* the note keeps to Mr. Client's side, without its page icon, clear of "Click." */
+    .sfx { font-size: clamp(20px, min(24cqh, 10cqi), 46px); }
+    .fig[data-id="rst"] .bubs { left: calc(var(--side) + var(--h) * .45); }
+    .bub.note { align-self: flex-start; grid-template-columns: minmax(0, 1fr); }
+    .bub.note svg { display: none; }
   }
 
   /* TIME_WAIT: an hourglass in Mr. Server's place, 60 seconds told in six */
@@ -739,6 +752,7 @@
   /* ---------- Narrow: tabs on top, one figure at a time, the diagram under it ---------- */
   @container page ((max-width: 759px) or (max-aspect-ratio: 21 / 20)) {
     .sheet {
+      --lt: clamp(13px, 2.8cqi, 18px);
       --pad: clamp(5px, 1.6cqmin, 14px);
       right: var(--pad);
       grid-template-columns: minmax(0, 1fr);
@@ -774,7 +788,6 @@
     .tab[aria-selected="true"]::before { left: 15%; right: 15%; top: auto; bottom: 3px; width: auto; height: 3px; }
     .tab .tn { font-size: clamp(11.5px, 3.3cqi, 15px); }
     .tab small { font-size: 11px; }
-    .ltitle { font-size: clamp(20px, 5.6cqi, 30px); }
     .lno { font-size: clamp(12px, 3.4cqi, 15px); }
     .hang { font-size: clamp(12.5px, 3.6cqi, 15px); padding: .42em .8em .45em .65em; }
     .hang-hint { font-size: clamp(11px, 3.2cqi, 12.5px); }
@@ -794,10 +807,12 @@
     }
     .seq-h { display: none; }
     .lanes { margin-top: .3em; }
-    .moral { font-size: clamp(12px, 3.5cqi, 16px); padding: .45em .7em .5em .55em; gap: .6em; }
+    .moral { font-size: max(var(--lt), clamp(12px, 3.5cqi, 16px)); padding: .45em .7em .5em .55em; gap: .6em; }
     /* Opened on its own, the kit's "? :)" sits over the band's right end: keep the words clear of it. */
     html:not(.embedded) .moral { padding-right: 78px; }
-    .fig[data-id="tw"] .bubs .bub.old { display: none; }
+    /* one figure at a time: speech that has stepped back (lesson 2's ③④⑤⑥ once "Sorry?" ×3 comes,
+       goodbyes before the last pair) leaves, so the newest lines do not spill onto the title or caption */
+    .bubs .bub.old { display: none; }
     /* Short phone stages (358×396: a figure strip about 70 px tall): figure 3-5's two-line
        caption goes beside the picture, so the goodbye-again bubbles get the strip's full height
        instead of landing on the caption. */
@@ -805,6 +820,7 @@
       .fig[data-id="tw"] { grid-template: minmax(0, 1fr) / minmax(0, 1fr) minmax(0, .78fr); column-gap: 4px; }
       .fig[data-id="tw"] figcaption { align-self: center; padding: 0 .3em 0 0; }
       .fig[data-id="tw"] .bubs { right: calc(var(--side) + var(--h) * .78); }   /* clear of "TIME_WAIT" */
+      .fig[data-id="tw"] .bub.again { padding-left: .45em; padding-right: .45em; }   /* "Bye now!" on one line at 13px */
       .bubs .bub.old { display: none; }   /* two bubbles at most fit the strip */
       /* 4-1: no room over Mr. Server's head, so "Click." lands beside him and the browser's
          note keeps to Mr. Client's side */
@@ -819,6 +835,52 @@
     .seq { height: clamp(74px, 17cqh, 120px); }
     /* the box is only about 50 px tall: a 14 px fade would eat the newest row ("FIN · again") */
     .seq-box { -webkit-mask: linear-gradient(transparent, #000 4px); mask: linear-gradient(transparent, #000 4px); }
+  }
+  /* Low stages (358×396, 328×408, a phone on its side at 508×339, the 360×520 phone's 328×288): the
+     figure strip is what is left over, so everything above it gets shorter. The tabs show only the
+     lesson's name (its number is on the chip below them), and the title band is sized by height. */
+  @container page (max-height: 440px) and (max-width: 759px) {
+    .tabs { grid-template-columns: repeat(4, auto); }   /* each as wide as its name, so none wraps */
+    .tab { padding: .4em .35em .45em .5em; }
+    .tab small { display: none; }
+    .tab .tn { white-space: nowrap; }
+    .cover { --kt: clamp(22px, 8.5cqh, 30px); }
+    .title .en-t { font-size: clamp(22px, 9cqh, 32px); }
+    .title .tcp { font-size: clamp(21px, 8.5cqh, 30px); }
+  }
+  /* A phone on its side (508×339): the sequence diagram goes beside the figure, as on a desktop, and
+     the figure gets the height. */
+  @container page (max-width: 759px) and (max-height: 440px) and (min-aspect-ratio: 5 / 4) {
+    .sheet {
+      grid-template-columns: minmax(0, 1fr) clamp(130px, 30cqw, 190px);
+      grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
+      grid-template-areas: "rh rh" "cov cov" "tabs tabs" "lh lh" "figs seq" "mor mor";
+    }
+    .seq { height: auto; padding: 0 0 0 .55em; border-top: 0; border-left: 1.5px dashed rgba(0, 120, 191, .5); }
+  }
+  /* The lowest (328×288, the 360×520 phone's stage): no running head and no sequence diagram, so the
+     figure has the whole width and about 100 px (beside the diagram it was 150 px wide, and the
+     goodbye-again bubbles landed on figure 3-5's caption; under it, 46 px). The dialogue, the
+     hourglass's TIME_WAIT and the moral still tell it. Figure 3-5 keeps its caption beside it. */
+  @container page (max-height: 320px) and (max-width: 759px) {
+    .runhead, .seq, .mtag { display: none; }   /* (.mtag: the band's "Remember" label; its line keeps the width) */
+    .sheet { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; grid-template-areas: "cov" "tabs" "lh" "figs" "mor"; }
+    /* every caption beside its picture, so the speech has the strip's whole height */
+    .fig { grid-template: minmax(0, 1fr) / minmax(0, 1fr) auto; column-gap: 4px; }
+    .fig figcaption { align-self: end; max-width: 5.6em; padding: 0 .3em .25em 0; }
+    .fig[data-id="tw"] { grid-template: minmax(0, 1fr) / minmax(0, 1fr) minmax(0, .6fr); }
+    .fig[data-id="tw"] figcaption { align-self: center; max-width: none; padding: 0 .3em 0 0; }
+    .fig[data-id="tw"] .bubs { right: calc(var(--side) + var(--h) * .78); }
+    .fig[data-id="tw"] .bub.again { padding-left: .45em; padding-right: .45em; }
+    .bubs .bub.old { display: none; }
+    .cover { --cvh: 30px; }
+    .hang { padding-top: .3em; padding-bottom: .32em; }
+    /* 4-1 in a figure about 150 px wide: "Click." at the top, the note (its line only) at the bottom */
+    .fig[data-id="rst"] .sfx { top: 0; bottom: auto; font-size: 18px; }
+    .fig[data-id="rst"] .bubs { top: auto; bottom: 1cqh; left: var(--side); }
+    .fig[data-id="rst"] .bub.note { padding: .3em .45em .35em; font-size: 11px; }
+    .fig[data-id="rst"] .bub.note .bar, .fig[data-id="rst"] .bub.note code { display: none; }
+    .fig[data-id="rst"] .bub.note strong { max-width: 8.5em; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -848,9 +910,10 @@
   </header>
 
   <div class="cover">
-    <h1 class="title" data-lang="en"><span class="en-t">TCP Etiquette</span></h1>
-    <h1 class="title" data-lang="ko"><span class="tcp">TCP</span><font-kku font="riso" size="clamp(27px, 4.6cqi, 52px)">예절 교실</font-kku></h1>
-    <p class="sub" data-lang="en">Good manners for opening and closing a connection</p>
+    <!-- the premise ("TCP, taught as manners") is the page's setup line -->
+    <h1 class="title" data-lang="en" data-tty-line="setup"><span class="en-t">TCP Etiquette</span></h1>
+    <h1 class="title" data-lang="ko" data-tty-line="setup"><span class="tcp">TCP</span><font-kku font="riso" size="var(--kt, clamp(27px, 4.6cqi, 52px))">예절 교실</font-kku></h1>
+    <p class="sub" data-lang="en">Good manners for opening and closing a&nbsp;connection</p>
     <p class="sub" data-lang="ko">연결을 맺고 끊는 바른 몸가짐</p>
     <div class="cvart" aria-hidden="true"></div>
   </div>
@@ -892,6 +955,13 @@
   // A trailing "~" stays on the line with its word.
   const say = (s) => esc(s).replace(/(\S+~+)/g, '<span class="nw">$1</span>').replace(/\(([^)]*)\)/g, '<span class="aside">($1)</span>');
   document.title = TTY.t({ en: 'TCP Etiquette', ko: 'TCP 예절 교실' }) + ' | tty.link';
+  // Faces the page only shows later (the moral band, the button's hint, the punch bubbles) are asked
+  // for now, so TTY.drawn (the load, then the fonts) waits for them too and no line changes width as
+  // they arrive (in a fallback face the 328×288 moral band took five lines instead of two).
+  if (document.fonts && document.fonts.load) {
+    ['800 12px "Alegreya Sans SC"', '700 12px "Alegreya Sans SC"', 'italic 700 12px Alegreya', 'italic 500 12px Alegreya', '500 12px Alegreya', '700 12px "Gowun Batang"']
+      .forEach((f) => document.fonts.load(f).catch(() => {}));
+  }
 
   /* ---------- Copy ---------- */
   const T = TTY.t({
@@ -906,14 +976,16 @@
       wrong: "Don't",
       // "How do you do?" is answered with "How do you do?": a greeting returned with your own, a SYN-ACK.
       l1: ["How do you do? (I'm number 100.)", 'How do you do? (From 101, please. I\'m number 300.)', 'Charmed. (From 301, please.)'],
-      m1: 'Offer your number with both hands. Return theirs, plus one.',
+      // (a no-break space before the last word of the longer lines: no one-word last line when they wrap)
+      m1: 'Offer your number with both hands. Return theirs, plus one.',
       ok: ['Mm-hm.', 'Mm-hm.'],
       sorry: 'Sorry? I got up to 2.',
       again: 'Third point, again:',
-      m2: "Nod at every sentence. Ask three times and they'll say it again.",
+      m2: "Nod at every sentence. Ask three times and they'll say it again.",
       l3: ['Well, we should probably get going.', 'Oh, sure!', 'Drive safe now!', 'You too!'],
-      tw: 'Keys in hand, still waving, in case they wave again. TIME_WAIT: 60 s (Linux).',
-      m3: 'Whoever says goodbye first waits the longest.',
+      // (the hourglass beside it says TIME_WAIT and 60 s; that it is Linux's 60 s is for the explanation)
+      tw: 'Keys in hand, still waving, in case they wave again.',
+      m3: 'Whoever says goodbye first waits the longest.',
       hang: 'Drive off',
       hangHint: ['Go on, try to leave →', 'Try to leave →'],
       // Mr. Server's goodbye, sent again each time (the autoplay uses the first): a new one every time.
@@ -922,8 +994,8 @@
       secs: (n) => `${n} s`,
       click: 'Click.',
       note: ['The connection was reset.', 'ERR_CONNECTION_RESET'],
-      udp: "I'd tell you a UDP joke, but you might not get it.",
-      m4: 'Never hang up without a goodbye. Never talk without checking.',
+      udp: "I'd tell you a UDP joke, but you might not get it.",
+      m4: 'Never hang up without a goodbye. Never talk without checking.',
       seqLabel: (l) => `Sequence diagram for lesson ${l}: Mr. Client on the left, Mr. Server on the right.`,
     },
     ko: {
@@ -940,10 +1012,10 @@
       ok: ['네,', '네.'],
       sorry: '네? 2번까지 들었어요.',
       again: '다시, 세 번째 말씀은요,',
-      m2: '말할 때마다 고개를 끄덕여 줍니다. 세 번 되물으면 다시 말해 줍니다.',
-      l3: ['그럼 이만 들어가세요~', '네~ 들어가세요~', '네 조심히 들어가시고요~', '네네~ 들어가세요~'],
-      tw: '마지막 "네네~"가 안 들렸을까 봐 수화기를 든 채 기다립니다. TIME_WAIT 60초(리눅스).',
-      m3: '먼저 작별을 꺼낸 쪽이 마지막까지 기다립니다.',
+      m2: '말할 때마다 고개를 끄덕여 줍니다. 세 번 되물으면 다시 말해 줍니다.',
+      l3: ['그럼 이만 들어가세요~', '네~ 들어가세요~', '네 조심히\u00a0들어가시고요~', '네네~ 들어가세요~'],
+      tw: '마지막 "네네~"가 안 들렸을까 봐 수화기를 든 채 기다립니다.',
+      m3: '먼저 작별을 꺼낸 쪽이 마지막까지 기다립니다.',
       hang: '전화 끊기',
       hangHint: ['끊을 수 있으면 끊어 보세요 →', '끊어 보세요 →'],
       byes: ['네~', '네 들어가세요~', '언제 밥 한번 먹어요~', '아 네네 조심히요~', '네~ 감사합니다~', '네네네~'],
@@ -952,8 +1024,8 @@
       click: '뚝.',
       note: ['연결이 재설정되었습니다', 'ERR_CONNECTION_RESET'],
       // 던지다/받다: a joke thrown and maybe caught, like a datagram sent and maybe received.
-      udp: 'UDP 농담 하나 던질게요. 받든 말든 상관없어요.',
-      m4: '인사 없이 끊지 않고, 확인 없이 말하지 않습니다.',
+      udp: 'UDP 농담 하나 던질게요. 받든 말든\u00a0상관없어요.',
+      m4: '인사 없이 끊지 않고, 확인 없이 말하지 않습니다.',
       seqLabel: (l) => `제${l}과 순서도: 왼쪽은 클라이언트 씨, 오른쪽은 서버 씨.`,
     },
   });
@@ -979,7 +1051,8 @@
     let extra = '';
     if (pose === 'card') {
       extra = `<rect class="paper" x="13" y="-33" width="18" height="11.5" rx="1.2"/>`
-        + `<g transform="translate(22 -27.2) scale(${m} 1)"><text class="cardtx" y="2.5">${esc(card || '')}</text></g>`;
+        // the number printed on the card: part of the drawing (the same number is in the speech bubble)
+        + `<g transform="translate(22 -27.2) scale(${m} 1)"><text class="cardtx" y="2.5" data-tty-line="decor">${esc(card || '')}</text></g>`;
     } else if (pose === 'phone') {
       extra = `<g class="suit" transform="translate(2.6 -44.5) rotate(60)" style="stroke:#fff;stroke-width:.8">${HANDSET}</g>`;
     } else if (pose === 'mega') {
@@ -1102,25 +1175,32 @@
   }
 
   /* ---------- Speech ---------- */
-  const bub = (who, k, html, cls = '') => `<p class="bub ${who} rv${cls ? ' ' + cls : ''}" data-k="${k}">${html}</p>`;
+  // line: the page checker's data-tty-line mark for the copy that carries the joke (_kit.js)
+  const bub = (who, k, html, cls = '', line = '') => `<p class="bub ${who} rv${cls ? ' ' + cls : ''}" data-k="${k}"${line ? ` data-tty-line="${line}"` : ''}>${html}</p>`;
   const sentence = (n, cls = '') => `<span class="${cls}"><span class="sn">${n}</span><i class="sq"></i></span>`;
   const NOTE_ICON = '<svg viewBox="0 0 20 24" aria-hidden="true"><path d="M3 2 H13 L17 6 V22 H3 Z M13 2 V6 H17"/><path d="M7.5 12 v.2 M12.5 12 v.2 M7 18 q3 -2.6 6 0"/></svg>';
 
   /* ---------- The four lessons ----------
      figs: the figures, drawn once per visit to the lesson.
      rows: the sequence diagram, top to bottom.
-     ms: how long the autoplay stays on the lesson (6 s unless given). On the home stage:
-       7.65 + 4.4 + 7.6 + 6.2 = 25.85 s, longer than the stage's 25 s, so the page leaves on Mr. UDP's
-       joke instead of a blank lesson 1 (on its own: 7.5 + 4.4 + 7.6 + 5 = 24.5 s a round).
-     steps: the lesson's timeline (ms from the start of the lesson). fig = print figure i,
-       on = cue keys (space separated) to switch on, row = draw diagram row i, nod = Mr. Server
-       nods, moral = print the lesson's moral, old = speech to step back (dimmed; gone where
-       the figure is a short strip, as on the 358×396 phone stage), fn = something special. */
-  const LESSON_MS = 6000;
+     ms: how long the autoplay stays on the lesson. steps: the lesson's timeline (ms from the start
+       of the lesson). fig = print figure i, on = cue keys (space separated) to switch on, row = draw
+       diagram row i, nod = Mr. Server nods, moral = print the lesson's moral, old = speech to step
+       back (dimmed; gone where the figure is a short strip, as on the 358×396 phone stage),
+       fn = something special. line = the moral's data-tty-line mark.
+     The autoplay opens the book at lesson 3 (START): the cover picture's goodbye that never ends
+     leads straight into the lesson on goodbyes, its punch lands with time to read every line on a
+     phone (one figure at a time), and lesson 4's "Click." follows it. Lessons 1 and 2 come after
+     (the next round on the page's own, or their tabs): on the home stage the page leaves on Mr.
+     UDP, 2.2 + 14.6 + 9.4 = 26.2 s into a 25 s stay.
+     Every line stays up at least as long as it takes to read (Korean letters / 8,
+     English words / 3, 2 s for a sentence); on a phone a figure's line goes when the next figure
+     prints, so the gaps between figures are those reading times. */
   const en = !ko;
-  // The cover picture's opening (the autoplay arriving at lesson 1): on the home stage it waits
+  const START = 2;
+  // The cover picture's opening (the autoplay arriving at lesson 3): on the home stage it waits
   // out the stage's wipe (0.6 s from the bottom up, but nine tenths open after 0.25 s), fills the
-  // lesson for 2 s, and flies to its corner; lesson 1's first figure prints as it leaves.
+  // lesson for 2 s, and flies to its corner; the lesson's first figure prints as it leaves.
   const COVER_IN = TTY.embedded ? 250 : 100;
   const COVER_HOLD = 2000;
   const COVER_FLY = 450;
@@ -1139,23 +1219,14 @@
         { f: 'c', label: 'ACK ack=301' },
         { band: 'ESTABLISHED' },
       ],
+      // 1-1 is up 2.65 s, 1-2 (the longest line) 3.5 s, 1-3 with the moral 3.6 s
       steps: [
         { t: 200, fig: 0 }, { t: 450, on: '1a', row: 0 },
-        { t: 1950, fig: 1 }, { t: 2200, on: '2a', row: 1 },
-        { t: 3650, fig: 2, moral: 1 }, { t: 3900, on: '3a', row: 2 },
-        { t: 4300, row: 3 },
+        { t: 3350, fig: 1 }, { t: 3550, on: '2a', row: 1 },
+        { t: 7300, fig: 2, moral: 1 }, { t: 7500, on: '3a', row: 2 },
+        { t: 7900, row: 3 },
       ],
-      // When the autoplay comes round to lesson 1, the cover picture first fills the lesson
-      // (the gag, big, 2 s), then flies up into its corner; the lesson follows a little faster
-      // than from its tab: 7.65 s on the home stage, 7.5 s on its own. The moral prints with the
-      // third picture, so it stays up a little over 2 s.
-      ms: L1 + 5250,
-      intro: [
-        { t: L1, fig: 0 }, { t: L1 + 200, on: '1a', row: 0 },
-        { t: L1 + 1600, fig: 1 }, { t: L1 + 1800, on: '2a', row: 1 },
-        { t: L1 + 3200, fig: 2, moral: 1 }, { t: L1 + 3400, on: '3a', row: 2 },
-        { t: L1 + 3750, row: 3 },
-      ],
+      ms: 11200,
     },
     {
       moral: T.m2,
@@ -1179,19 +1250,19 @@
         { f: 's', label: 'ACK ack=3 ×3', n: 3, note: 'dup ACK' },
         { f: 'c', label: 'seq=3', note: 'fast retransmit' },
       ],
-      // Two pictures: the ×3 "Sorry?" is the lesson's laugh, so it gets the last 2.15 s (phones
-      // show one picture at a time), with the moral. Figure 2-1 is only nods ("Mm-hm."), so it
-      // goes quickly, and the time saved is lesson 3's.
-      ms: 4400,
+      // Two pictures: 2-1 is only nods ("Mm-hm."), so it goes quickly; the ×3 "Sorry?" is the
+      // lesson's laugh, and it stays with the moral to the end (4.2 s).
       steps: [
         { t: 200, fig: 0 }, { t: 350, on: 'a1', row: 0 }, { t: 600, on: 'a2', row: 1, nod: 1 },
         { t: 850, on: 'a3', row: 2 }, { t: 1100, on: 'a4', row: 3, nod: 1 },
-        { t: 1400, fig: 1 }, { t: 1600, on: 'b1', row: 4 }, { t: 1900, on: 'b1b', row: 5 },
-        { t: 2250, on: 'b2', row: 6, moral: 1, old: 'b1' }, { t: 2750, on: 'b3', row: 7 },
+        { t: 2100, fig: 1 }, { t: 2300, on: 'b1', row: 4 }, { t: 2600, on: 'b1b', row: 5 },
+        { t: 2950, on: 'b2', row: 6, moral: 1, old: 'b1' }, { t: 3450, on: 'b3', row: 7 },
       ],
+      ms: 7450,
     },
     {
       moral: T.m3,
+      line: 'setup',
       // Korean: the goodbye is on the phone (and both bow to it). English: at the front door.
       figs: [0, 1, 2, 3].map((i) => {
         const speaker = i === 0 || i === 3 ? 'c' : 's';
@@ -1208,43 +1279,50 @@
         { f: 'c', label: 'FIN' }, { f: 's', label: 'ACK' }, { f: 's', label: 'FIN' }, { f: 'c', label: 'ACK' },
         { tag: ['c', 'TIME_WAIT'] },
       ],
-      // The punchline: at 5 s, with nobody touching anything, the button is pressed once by itself
-      // and Mr. Server says goodbye again; Mr. Client answers and the hourglass turns back to 60
-      // (hangOnce). Both bubbles then stay over 2 s, and the button 3.8 s for the visitor to try.
-      ms: 7600,
+      // The four lines of the goodbye 2.4 s apart (each is up 2.1 s on a phone, where the next
+      // figure takes its place), then figure 3-5 and the button. The punchline: 1.8 s later, with
+      // nobody touching anything, the button is pressed once by itself and Mr. Server says goodbye
+      // again; Mr. Client answers and the hourglass turns back to 60 (hangOnce). The lesson ends
+      // 2.2 s after that, figure 3-5's caption having had its 4 s.
       steps: [
-        { t: 200, fig: 0, on: 'a', row: 0 }, { t: 1100, fig: 1, on: 'b', row: 1 },
-        { t: 2000, fig: 2, on: 'c', row: 2 }, { t: 2900, fig: 3, on: 'd', row: 3 },
-        { t: 3800, fig: 4, row: 4, fn: 'timewait' }, { t: 4100, moral: 1 },
-        { t: 5000, fn: 'again' },
+        { t: 200, fig: 0, on: 'a', row: 0 }, { t: 2600, fig: 1, on: 'b', row: 1 },
+        { t: 5000, fig: 2, on: 'c', row: 2 }, { t: 7400, fig: 3, on: 'd', row: 3 },
+        { t: 9800, fig: 4, row: 4, fn: 'timewait' }, { t: 10100, moral: 1 },
+        { t: 11600, fn: 'again' },
       ],
+      ms: 14600,
     },
     {
       // The rule comes first, with the first picture; the two ✕ follow, and Mr. UDP has the
-      // last word (no moral after the joke). "Click." lands 2.4 s after lesson 3's endless
+      // last word (no moral after the joke). "Click." lands 2.7 s after lesson 3's endless
       // goodbye (Mr. Client's last "You too!"): the rude way to end a call. Mr. UDP's line prints
-      // with his picture, 1.65 s in, so on the home stage it is up about 3.75 s before the next
-      // page's wipe covers it (the lesson outlasts the stage: the joke is what the page leaves on).
+      // with his picture 2.75 s in, once "Click." has been up 2 s, and stays: on the home stage
+      // the page leaves on it.
       moral: T.m4,
+      line: 'setup',
       figs: [
         {
           id: 'rst', mark: 'x', apart: 1, c: { pose: 'phone' }, s: { pose: 'slam', front: TABLE },
-          props: `<p class="sfx rv" data-k="a">${ko ? `<font-kku font="sebul" size="1.25em">${esc(T.click)}</font-kku>` : esc(T.click)}</p>`,
+          props: `<p class="sfx rv" data-k="a" data-tty-line="tag">${ko ? `<font-kku font="sebul" size="1.25em">${esc(T.click)}</font-kku>` : esc(T.click)}</p>`,
           bubs: `<div class="bub note c rv" data-k="a2"><span class="bar"><i></i><i></i><i></i></span>${NOTE_ICON}<strong>${esc(T.note[0])}</strong><code>${esc(T.note[1])}</code></div>`,
         },
-        { mark: 'x', c: { pose: 'mega', op: 1, hat: 1 }, slot: chairs(), bubs: bub('c', 'b', say(T.udp)) },
+        // (apart: on a wide strip too, he stands at one end and the empty chairs at the other, and his
+        // line has the middle, not a narrow column of its own)
+        { mark: 'x', apart: 1, c: { pose: 'mega', op: 1, hat: 1 }, slot: chairs(), bubs: bub('c', 'b', say(T.udp), 'udp', 'tag') },
       ],
       rows: [
         { f: 's', label: 'RST', note: 'reset' },
         { f: 'c', label: 'UDP', dash: true }, { f: 'c', label: 'UDP', dash: true, lost: true }, { f: 'c', label: 'UDP', dash: true },
       ],
-      ms: TTY.embedded ? 6200 : 5000,
       steps: [
-        { t: 150, fig: 0, moral: 1 }, { t: 350, on: 'a', row: 0 }, { t: 650, on: 'a2' },
-        { t: 1650, fig: 1, on: 'b', row: 1 }, { t: 2000, row: 2 }, { t: 2350, row: 3 },
+        { t: 150, fig: 0, moral: 1 }, { t: 250, on: 'a', row: 0 }, { t: 600, on: 'a2' },
+        { t: 2750, fig: 1, on: 'b', row: 1 }, { t: 3100, row: 2 }, { t: 3450, row: 3 },
       ],
+      ms: 9400,
     },
   ];
+  // The opening runs lesson 3's own steps, moved to start as the cover picture leaves.
+  const OPEN = L1 - LESSONS[START].steps[0].t;
 
   /* ---------- Page furniture ---------- */
   const sheet = $('.sheet');
@@ -1273,8 +1351,10 @@
     b.id = 'tab-' + (i + 1);
     b.setAttribute('role', 'tab');
     b.setAttribute('aria-controls', 'lesson');
-    b.innerHTML = `<small>${esc(T.lessonNo(i + 1))}</small><span class="tn">${esc(name)}</span>`;
-    b.addEventListener('click', () => { interacted(); go(i); });
+    b.setAttribute('aria-label', `${T.lessonNo(i + 1)} ${name}`);   // (low stages show only the name)
+    // (the last two words of a Korean tab stay together: "이러면 / 안 돼요", never "이러면 안 / 돼요")
+    b.innerHTML = `<small>${esc(T.lessonNo(i + 1))}</small><span class="tn">${esc(name).replace(/ (\S+)$/, '&nbsp;$1')}</span>`;
+    b.addEventListener('click', () => visit(i));
     tabsEl.append(b);
     return b;
   });
@@ -1288,8 +1368,7 @@
     else return;
     e.preventDefault();
     tabs[i].focus();
-    interacted();
-    go(i);
+    visit(i);
   });
   const wideMQ = matchMedia('(min-width: 760px) and (min-aspect-ratio: 21/20)');
   const orient = () => tabsEl.setAttribute('aria-orientation', wideMQ.matches ? 'vertical' : 'horizontal');
@@ -1297,16 +1376,16 @@
   wideMQ.addEventListener('change', orient);
 
   /* ---------- Building a lesson ---------- */
-  let cur = 0;
+  let cur = START;
   let figs = [];
   let shownTitle = '';
   function figHTML(f, li, i) {
     const id = `${li + 1}-${i + 1}`;
-    const xo = f.mark === 'x' ? `<span class="xo">✕ ${esc(T.wrong)}</span>` : '';
+    const xo = f.mark === 'x' ? `<span class="xo">✕&nbsp;${esc(T.wrong)}</span>` : '';
     const who = (f.c ? person(Object.assign({ side: 'c' }, f.c)) : '') + (f.s ? person(Object.assign({ side: 's' }, f.s)) : '') + (f.slot || '');
     return `<figure class="fig blank${f.apart ? ' apart' : ''}" data-id="${f.id || ''}">
       <div class="art">${f.props || ''}${who}${f.mark === 'x' ? xmark() : ''}<div class="bubs">${f.bubs || ''}</div></div>
-      <figcaption><b>${esc(T.fig)} ${id}</b>${xo}${f.cap ? esc(f.cap) : ''}</figcaption>
+      <figcaption><b>${esc(T.fig)} ${id}</b>${xo}${f.cap ? esc(f.cap).replace(/(\S+~+\S*)/g, '<span class="nw">$1</span>') : ''}</figcaption>
     </figure>`;
   }
   function render(li) {
@@ -1333,7 +1412,7 @@
       if (ko) {
         const el = document.createElement('font-kku');
         el.setAttribute('font', 'sebul');
-        el.setAttribute('size', 'clamp(21px, 3.2cqi, 34px)');
+        el.setAttribute('size', 'var(--lt)');   // the same size as the punch, not bigger
         el.textContent = name;
         ltitle.replaceChildren(el);
       } else {
@@ -1341,7 +1420,10 @@
       }
       shownTitle = name;
     }
-    $('.mtext').textContent = L.moral;
+    const mtext = $('.mtext');
+    mtext.textContent = L.moral;
+    // lesson 3's moral sets up the punch, lesson 4's rule the two don'ts
+    if (L.line) mtext.dataset.ttyLine = L.line; else delete mtext.dataset.ttyLine;
     moral.classList.add('wait');
     hangBtn.hidden = true;
     hangHint.hidden = true;
@@ -1469,16 +1551,32 @@
     const xc = 6;
     const xs = W - 6;
     const planned = Math.max(LESSONS[cur].rows.length, seqRows.length);
-    // (a short box, as on the 358×396 phone stage, packs its rows tighter so the newest label clears the top)
-    const rowH = Math.max(H < 70 ? 22 : 27, Math.min(46, (H - 12) / planned));
-    const contentH = seqRows.length * rowH + (H < 70 ? 9 : 14);
-    const top = Math.min(4, H - contentH);
+    // (a short box, as on the 358×396 phone stage, packs its rows tighter so the newest label clears the
+    // top; and a lesson whose rows all fit at 22 px or more is drawn whole, its first label inside the
+    // box: lesson 4's "RST · reset" at 648×732)
+    const pad = H < 70 ? 9 : 14;
+    const fit = (H - pad - 4) / planned;
+    const rowH = Math.min(46, fit >= 22 ? fit : H < 70 ? 22 : 27);
+    const contentH = seqRows.length * rowH + pad;
+    let top = Math.min(4, H - contentH);
     // Once Mr. Server starts saying goodbye again, the older arrows fade.
     const extras = seqRows.filter((r) => r.extra).length;
     let rows = '';
     seqRows.forEach((r, i) => { rows += rowSVG(r, 8 + i * rowH, rowH, xc, xs, extras > 0 && i < seqRows.length - 2); });
     seqSvg.innerHTML = `<line class="lane c" x1="${xc}" x2="${xc}" y1="0" y2="${H}"/><line class="lane s" x1="${xs}" x2="${xs}" y1="0" y2="${H}"/><g class="rows">${rows}</g>`;
     const g = seqSvg.lastElementChild;
+    // Too many rows for the box: the oldest scroll up out of sight, and a label the top edge would
+    // cut in half comes down whole if the newest label still fits, or else goes all the way up
+    // (360×520's lesson 4: "UDP" was cut 6 px at the top).
+    if (contentH > H) {
+      let over = 0, cut = 0, low = 0;
+      $$('text', g).forEach((t) => {
+        const b = t.getBBox(), y0 = b.y + top, y1 = y0 + b.height;
+        low = Math.max(low, y1);
+        if (y0 < 0 && y1 > 0) { over = Math.max(over, -y0); cut = Math.max(cut, y1); }
+      });
+      if (over) top += low + over <= H - 1 ? Math.ceil(over) : -Math.ceil(cut);
+    }
     g.setAttribute('transform', `translate(0 ${top})`);
     if (fresh && seqTop !== null && seqTop !== top && !TTY.reduce) {
       g.animate([{ transform: `translate(0, ${seqTop}px)` }, { transform: `translate(0, ${top}px)` }], { duration: 380, easing: EASE });
@@ -1534,15 +1632,17 @@
 
   /* ---------- Hang up: Mr. Server says goodbye once more ----------
      (He never heard the last "네네~", so he sends his FIN again; Mr. Client answers, and the
-     60 seconds start over.) The autoplay does it once by itself (lesson 3 at 5 s, the page's
-     punchline); every press of the button does it again, and Mr. Server finds a new goodbye
-     each time (T.byes, round and round). Mr. Client's answer never changes. */
+     60 seconds start over.) The autoplay does it once by itself (lesson 3, 1.8 s after the
+     button comes: the page's punchline); every press of the button does it again, and Mr. Server
+     finds a new goodbye each time (T.byes, round and round). Mr. Client's answer never changes.
+     Every goodbye-again and its answer is the punch (data-tty-line="punch"). */
   let hangs = 0;
   function addBubble(who, text, anim) {
     const box = $('.fig[data-id="tw"] .bubs', figsEl);
     if (!box) return;
     const p = document.createElement('p');
-    p.className = `bub ${who} rv on`;
+    p.className = `bub ${who} rv on again`;
+    p.dataset.ttyLine = 'punch';
     p.innerHTML = say(text);
     box.append(p);
     const all = $$('.bub', box);
@@ -1551,12 +1651,16 @@
     if (anim) p.animate([{ opacity: 0, transform: 'scale(.86) translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'ease-out' });
   }
   const PRESS = [{ translate: '0 0', boxShadow: '2px 2px 0 #0078bf' }, { translate: '2px 2px', boxShadow: '0 0 0 #0078bf', offset: .3 }, { translate: '0 0', boxShadow: '2px 2px 0 #0078bf' }];
+  let pendingReply = null;
   function hangOnce(byVisitor, anim = !TTY.reduce) {
     if (cur !== 2) return;
-    if (byVisitor) interacted();
-    else if (anim) hangBtn.animate(PRESS, { duration: 380, easing: 'ease-out' });   // the page tries the button itself
+    // a press while Mr. Client is still to answer the last goodbye: he answers it first, so every
+    // goodbye stays next to its own "네네~" / "You too!"
+    if (pendingReply) pendingReply();
+    if (!byVisitor && anim) hangBtn.animate(PRESS, { duration: 380, easing: 'ease-out' });   // the page tries the button itself
     const bye = T.byes[hangs++ % T.byes.length];
     const reply = () => {
+      if (pendingReply === reply) pendingReply = null; else if (anim) return;   // answered already
       if (cur !== 2) return;
       addBubble('c', T.byeAck, anim);
       seqPush({ f: 'c', label: 'ACK', extra: 1 }, anim);
@@ -1567,41 +1671,97 @@
     };
     addBubble('s', bye, anim);
     seqPush({ f: 's', label: 'FIN', note: 'again', extra: 1 }, anim);
-    if (anim) later(520, reply); else reply();
+    if (anim) { pendingReply = reply; later(520, reply); } else reply();
   }
-  hangBtn.addEventListener('click', () => hangOnce(true));
+  // The visitor's goodbyes are theirs: lesson 3 stays until 12 s after the last press (keep).
+  hangBtn.addEventListener('click', () => { keep(); hangOnce(true); });
   // A mouse resting on the button or its hint is someone about to press it: stay on lesson 3.
   [hangBtn, hangHint].forEach((el) => el.addEventListener('pointerenter', (e) => {
-    if (e.pointerType !== 'touch' && cur === 2 && !el.hidden) interacted();
+    if (e.pointerType !== 'touch' && cur === 2 && !el.hidden) keep();
   }));
 
-  /* ---------- Playing ---------- */
+  /* ---------- Playing ----------
+     The autoplay is a TTY.timeline: a visitor's tap anywhere makes it stand still for a moment
+     (_kit.js) instead of breaking it, and a run that was replaced never draws again. It opens the
+     book at lesson 3 with the cover picture and goes on round the lessons (3, 4, 1, 2, 3 …). A
+     lesson the visitor opened from its tab plays on the clock, at once, and stays until 12 s after
+     their last touch; then the autoplay goes on from the next lesson. The same 12 s hold lesson 3
+     while the visitor's own goodbyes are on screen. */
   let timers = [];
-  let auto = true;
-  let resumeTimer = 0;
-  // Every pending cue of the lesson on screen (a lesson change cancels them all).
+  // Pending cues of the lesson on screen that are not on the autoplay's clock (the answer to a
+  // goodbye-again, a visited lesson's steps); a lesson change cancels them all.
   function later(ms, fn) { timers.push(setTimeout(fn, ms)); }
   function clearLater() { timers.forEach(clearTimeout); timers = []; }
-  function go(li, anim = !TTY.reduce) {
+  // (12.5 s: a little past the 12 s the home page gives a touch, so the page leaves the home stage
+  // with the visitor's own lesson or goodbyes still on it, not as the next lesson starts)
+  let keepUntil = 0;
+  const keep = () => { keepUntil = performance.now() + 12500; };
+  function show(li, opening) {
     clearLater();
+    pendingReply = null;
     render(li);
-    // Autoplay arriving at lesson 1 opens with the cover picture; a visitor's tab goes straight in.
-    const opening = anim && auto && li === 0 && LESSONS[0].intro;
-    const steps = opening ? LESSONS[0].intro : LESSONS[li].steps;
-    if (!anim) { steps.forEach((s) => apply(s, false)); return; }
     if (opening) coverIntro();
-    steps.forEach((s) => later(s.t, () => apply(s, true)));
-    // The page turns only if nobody has touched it since; otherwise interacted() turns it later.
-    if (auto) later(LESSONS[li].ms || LESSON_MS, () => { if (auto) go((li + 1) % LESSONS.length); });
   }
-  // Someone touched the page: let them read. Autoplay picks up 12 s after the last touch.
-  function interacted() {
-    if (TTY.reduce) return;
-    auto = false;
-    clearTimeout(resumeTimer);
-    resumeTimer = setTimeout(() => { auto = true; go((cur + 1) % LESSONS.length); }, 12000);
+  // With less motion: the lesson's last scene at once (lesson 3 with its goodbye-again, at first).
+  function still(li) {
+    show(li, false);
+    LESSONS[li].steps.forEach((s) => apply(s, false));
   }
-  addEventListener('pointerdown', (e) => { if (!e.target.closest('.tab, .hang')) interacted(); }, { passive: true });
+  let from = START;
+  // When the punch lands, in seconds of autoplay: "네네~" / "You too!" fully in (0.52 s after the
+  // goodbye-again, then a 0.3 s pop). A pause before it asks the home page for more time.
+  const PUNCH = (OPEN + LESSONS[START].steps.find((s) => s.fn === 'again').t + 820) / 1000;
+  const autoplay = TTY.timeline(async (t) => {
+    let li = from;
+    let opening = li === START;
+    clock = opening ? t : null;
+    for (;;) {
+      const L = LESSONS[li];
+      const t0 = t.now() + (opening ? OPEN : 0);
+      show(li, opening);
+      for (const s of L.steps) {
+        await t.at(t0 + s.t);
+        apply(s, true);
+      }
+      await t.at(t0 + L.ms);
+      while (performance.now() < keepUntil) await t.wait(250);
+      li = (li + 1) % LESSONS.length;
+      opening = li === START;
+    }
+  }, { punch: PUNCH });
+  // A tap makes the autoplay stand still for a moment (_kit.js), and the home page keeps a page 12 s
+  // after a tap: Mr. UDP's last line, 5 s after the punch, could then come just as the stage leaves.
+  // While it has not had its time yet, a tap asks for what it still needs (the kit asks the same for
+  // the punch, TTY.timeline's punch option).
+  let clock = null;
+  const LAST = OPEN + LESSONS[START].ms + LESSONS[3].steps.find((s) => s.on === 'b').t + 400 + TTY.readMs(T.udp);
+  // (Not for the tabs and the button: the page then stays with what the visitor chose, see keep.)
+  ['pointerdown', 'keydown'].forEach((type) => addEventListener(type, (e) => {
+    if (!e.isTrusted || !clock || !clock.live() || (e.target.closest && e.target.closest('.tab, .hang, .hang-hint'))) return;
+    const left = LAST - clock.now();
+    if (left > 0) TTY.hold(left + 3000);
+  }, { passive: true }));
+  // A tab: that lesson from its first figure, straight away (no cover picture), then the autoplay
+  // from the lesson after it.
+  let visiting = false;
+  function visit(li) {
+    if (TTY.reduce) { still(li); return; }
+    keep();
+    visiting = true;
+    autoplay.stop();
+    show(li, false);
+    const L = LESSONS[li];
+    L.steps.forEach((s) => later(s.t, () => apply(s, true)));
+    const end = performance.now() + L.ms;
+    const resume = () => {
+      const left = Math.max(end, keepUntil) - performance.now();
+      if (left > 0) { later(left, resume); return; }
+      from = (li + 1) % LESSONS.length;
+      visiting = false;
+      autoplay.start();
+    };
+    later(L.ms, resume);
+  }
 
   // The cover picture, blown up over the (still blank) figure area, then back to its corner. On
   // a short stage (the 358×396 phone stage's figure area is a strip about 80 px tall) it takes
@@ -1632,23 +1792,16 @@
     ], { duration: total });
     coverFades = under.map((el) => el.animate([{ opacity: 0 }, { opacity: 0, offset: off(COVER_IN + COVER_HOLD) }, { opacity: 1 }], { duration: total }));
   }
-  function printTitle() {
-    const t = $('.cover .title');
-    const s = $('.cover .sub');
-    t.animate([{ opacity: 0, transform: 'translate(6px, -4px)' }, { opacity: 1, transform: 'none' }], { duration: 500, easing: EASE });
-    if (s) s.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, delay: 200, fill: 'backwards' });
-  }
-
-  if (TTY.reduce) go(2, false);
-  else render(0);
-  // The opening measures the page (where the cover picture blows up to), so it waits for the
-  // fonts. On the home stage they are nearly always in by the time the page is shown; opened on
-  // its own, the title prints at once and the cover picture follows when the fonts are in.
-  TTY.onShow(() => {
+  if (TTY.reduce) still(START);
+  else render(START);
+  // The title band is printed from the start (the first seconds belong to the cover picture). The
+  // opening measures the page (where the cover picture blows up to), so it starts once the fonts are
+  // in (TTY.onPlay); on the home stage they nearly always are by the time the page is shown. A tab
+  // pressed before that keeps its lesson.
+  TTY.onPlay(() => {
     if (TTY.reduce) return;
-    printTitle();
-    // (a tab pressed before that keeps its lesson)
-    TTY.drawn.then(() => { $('.cover').classList.add('go'); if (auto) go(0); });
+    $('.cover').classList.add('go');
+    if (!visiting) autoplay.start();
   });
   const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
   Promise.all([loaded, document.fonts.ready]).then(TTY.ready);

@@ -58,10 +58,14 @@
     gap: 1.8cqh;
     padding: 3.6cqh 5cqw 3.4cqh;
   }
-  .head { --title-kku: clamp(28px, 6.6cqmin, 60px); }
-  .head h1 { font-family: 'Italiana', serif; font-weight: 400; font-size: clamp(28px, 7cqmin, 64px); line-height: 1; color: #f3e6c9; letter-spacing: .01em; }
+  /* The page's title is the wine list's header: small tracked capitals, never larger than the
+     SENT BACK stamp, the punch. The stamp is max(14px, 5.4cqi of the card) and
+     1.6cqw of the page stays under that on every stage; the big type is the bottle's name. */
+  .head { --title: clamp(14px, 1.6cqw, 22px); --title-kku: var(--title); }
+  .head h1 { font-family: 'Newsreader', 'Gowun Batang', serif; font-weight: 600; font-size: var(--title); line-height: 1.15; color: #f3e6c9; letter-spacing: .2em; text-transform: uppercase; }
+  .lang-ko .head h1 { letter-spacing: .06em; }
   .head h1 > font-kku { color: #f3e6c9; }
-  .head p { margin-top: .8cqh; font-size: clamp(13px, 2.2cqmin, 18px); font-style: italic; color: #cdb9cc; }
+  .head p { margin-top: .8cqh; font-size: min(var(--title), clamp(12px, 2.2cqmin, 18px)); font-style: italic; color: #cdb9cc; }
   .lang-ko .head p { font-style: normal; margin-top: 1.4cqh; }
   /* The one-line hint under the subtitle. */
   .head .hint { margin-top: .5cqh; font-size: clamp(11px, 1.7cqmin, 14px); font-style: normal; color: #b49fb3; }
@@ -133,9 +137,10 @@
   .lang-ko .now-score .stamp { font-size: max(15px, 6cqi); font-weight: 700; letter-spacing: .02em; line-height: 1.12; padding: 1cqi 1.2cqi .8cqi; }
   .lang-ko .now-score { font-family: 'Newsreader', serif; font-weight: 600; font-size: 6.6cqi; }
   .label { margin-top: 3.2cqi; font-size: max(11px, 2.9cqi); letter-spacing: .08em; color: var(--soft); }
-  .notes { margin-top: .8cqi; font-size: max(12px, 4.4cqi); line-height: 1.4; font-style: italic; min-height: 2.8em; }
+  /* text-wrap: pretty keeps a last word from sitting alone ("… Hints of" / "typos."). */
+  .notes { margin-top: .8cqi; font-size: max(12px, 4.4cqi); line-height: 1.4; font-style: italic; min-height: 2.8em; text-wrap: pretty; }
   .lang-ko .notes { font-style: normal; font-size: max(12px, 4.1cqi); line-height: 1.55; }
-  .pairs { margin-top: .6cqi; font-size: max(11.5px, 3.9cqi); }
+  .pairs { margin-top: .6cqi; font-size: max(11.5px, 3.9cqi); text-wrap: pretty; }
   .pairs .pl { display: none; color: var(--soft); font-style: italic; }
   .lang-ko .pairs .pl { font-style: normal; }
 
@@ -194,8 +199,8 @@
      tasting stage keeps a floor. */
   @container page (max-height: 540px) and (max-width: 599.98px) {
     .page { gap: 1.2cqh; padding-top: 2.6cqh; padding-bottom: 2.4cqh; grid-template-rows: auto minmax(88px, .9fr) auto; }
-    .head { --title-kku: clamp(24px, 6.6cqmin, 60px); }
-    .head h1 { font-size: clamp(26px, 7cqmin, 64px); }
+    /* The stamp is 13px here (Korean 14px): so is the title. */
+    .head { --title: 13px; }
     .head p { margin-top: .5cqh; line-height: 1.3; }
     .lang-ko .head p { margin-top: .9cqh; }
     .head .hint { margin-top: .3cqh; }
@@ -306,25 +311,26 @@
   // fixed them for free under a service program (not a recall), so the bottle was "sent back".
   const SWITCHES = TTY.t({
     en: [
-      { id: 'red', c: '#c0392b', name: 'Red', type: 'linear · 45 g · 2.0 / 4.0 mm', score: '92', notes: 'Light-bodied. Goes down at a touch, with hints of typos you never meant.', pairs: 'Gaming, and refactors after midnight.' },
-      { id: 'brown', c: '#8a5a35', name: 'Brown', type: 'tactile · 55 g · 2.0 / 4.0 mm', score: '90', notes: 'A small bump halfway down, like rereading an email before you send it.', pairs: 'Meetings and open-plan offices.' },
+      { id: 'red', c: '#c0392b', name: 'Red', type: 'linear · 45 g · 2.0 / 4.0 mm', score: '92', notes: 'Light-bodied. Goes down at a touch. Hints of typos.', pairs: 'Gaming, and refactors after midnight.' },
+      { id: 'brown', c: '#8a5a35', name: 'Brown', type: 'tactile · 55 g · 2.0 / 4.0 mm', score: '90', notes: 'Bumps halfway down, like rereading an email before sending.', pairs: 'Meetings and open-plan offices.' },
       { id: 'blue', c: '#2e6fd8', name: 'Blue', type: 'clicky · 60 g · 2.2 / 4.0 mm', score: '97', aside: 'to you.\n41 to the next desk', notes: 'Bold and clicky. Your coworkers will remember this vintage.', pairs: 'Working alone. Far away.' },
-      { id: 'silent', c: '#8c8f99', name: 'Silent', type: 'dampened linear · 45 g · 1.9 / 3.7 mm', score: '89', notes: "So quiet your manager thinks you've gone idle. Hints of library.", pairs: 'Shared flats, sleeping babies, secret side projects.' },
+      { id: 'silent', c: '#8c8f99', name: 'Silent', type: 'dampened linear · 45 g · 1.9 / 3.7 mm', score: '89', notes: "Hints of library. Your manager thinks you've gone idle.", pairs: 'Shared flats, sleeping babies, secret side projects.' },
       { id: 'black', c: '#2b2b30', name: 'Black', type: 'linear · 60 g · 2.0 / 4.0 mm', score: '93', notes: 'Full-bodied and heavy. Builds character, and forearms.', pairs: 'Typing with conviction.' },
       { id: 'butterfly', c: '#9aa3ad', name: 'Butterfly', type: 'vintage 2016 · all 0.5 mm of it', score: '—', stamp: 'Sent\nback', listScore: 'sent back', notes: 'Crisp and shallow, notes of toast crumb. The finish arrives twwice, or not at al.', pairs: 'A free repair program.' },
     ],
     ko: [
-      { id: 'red', c: '#c0392b', name: '적축', type: '리니어 · 45g · 입력 2.0 / 바닥 4.0mm', score: '92점', notes: '가벼운 바디. 손가락만 얹어도 술술 넘어가고, 뒷맛에 오타가 살짝 남아요.', pairs: '게임, 그리고 자정 넘은 리팩터링' },
+      { id: 'red', c: '#c0392b', name: '적축', type: '리니어 · 45g · 입력 2.0 / 바닥 4.0mm', score: '92점', notes: '가벼운 바디. 손가락만 얹어도 술술 넘어가요. 뒷맛은 오타.', pairs: '게임, 그리고 자정 넘은 리팩터링' },
       { id: 'brown', c: '#8a5a35', name: '갈축', type: '택타일 · 55g · 입력 2.0 / 바닥 4.0mm', score: '90점', notes: '중간에 한 번 멈칫합니다. 보내기 전에 다시 읽는 메일처럼요.', pairs: '회의, 그리고 개방형 사무실' },
       { id: 'blue', c: '#2e6fd8', name: '청축', type: '클리키 · 60g · 입력 2.2 / 바닥 4.0mm', score: '97점', aside: '내 귀엔.\n옆자리 귀엔 41점', notes: '묵직하고 경쾌한 클릭감. 동료들이 이 빈티지를 오래 기억할 거예요.', pairs: '혼자 일하는 날. 아주 멀리서.' },
-      { id: 'silent', c: '#8c8f99', name: '저소음', type: '리니어 · 45g · 입력 1.9 / 바닥 3.7mm', score: '89점', notes: '너무 조용해서 팀장님이 노는 줄 압니다. 도서관 향이 은은해요.', pairs: '룸메이트, 잠든 아기, 몰래 하는 사이드 프로젝트' },
+      { id: 'silent', c: '#8c8f99', name: '저소음', type: '리니어 · 45g · 입력 1.9 / 바닥 3.7mm', score: '89점', notes: '은은한 도서관 향. 너무 조용해서 팀장님이 노는 줄 압니다.', pairs: '룸메이트, 잠든 아기, 몰래 하는 사이드 프로젝트' },
       { id: 'black', c: '#2b2b30', name: '흑축', type: '리니어 · 60g · 입력 2.0 / 바닥 4.0mm', score: '93점', notes: '풀바디에 묵직한 키압. 인내심과 팔뚝을 함께 길러 줍니다.', pairs: '확신에 찬 타이핑' },
       { id: 'butterfly', c: '#9aa3ad', name: '버터플라이', type: '2016년산 · 이동 거리 0.5mm가 전부', score: '—', stamp: '돌려\n보냄', listScore: '돌려보냄', notes: '얕고 바삭한 맛, 빵 부스러기 향. 여운이 두 번 찍찍히거나, 아예 안 찍힙니.', pairs: '무상 수리 프로그램' },
     ],
   });
+  // "pl" goes in front of the pairing on small phone stages, where the label lines are gone.
   const L = TTY.t({
-    en: { notes: 'Tasting notes', pairs: 'Pairs with', score: 'points', key: 'Press the key' },
-    ko: { notes: '시음 노트', pairs: '추천 페어링', score: '', key: '키캡 누르기' },
+    en: { notes: 'Tasting notes', pairs: 'Pairs with', pl: 'Pairs with', score: 'points', key: 'Press the key' },
+    ko: { notes: '시음 노트', pairs: '추천 페어링', pl: '페어링', score: '', key: '키캡 누르기' },
   });
   $('.notes-label').textContent = L.notes;
   $('.pairs-label').textContent = L.pairs;
@@ -339,7 +345,7 @@
     li.style.setProperty('--c', sw.c);
     li.querySelector('.nm').textContent = sw.name;
     li.querySelector('.sc').textContent = sw.listScore || sw.score;
-    li.querySelector('button').addEventListener('click', (e) => { if (!e.isTrusted) return; const mine = takeOver(); taste(i, () => run === mine); });
+    li.querySelector('button').addEventListener('click', (e) => { if (e.isTrusted) visitorPour(i); });
     list.append(li);
     return li;
   });
@@ -385,16 +391,16 @@
     }
   }
 
-  /* ---- Tasting ---- */
+  /* ---- The card ---- */
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   let current = -1;
   let shownName = '';
   let stampEl = null;
   function show(i) {
     const sw = SWITCHES[i];
-    // Only a new bottle fades in. The first tasting re-shows the card already drawn before the
-    // page went on stage, and a fade there would flash it out and in at 0 s.
-    const fresh = current !== i;
+    // Only a new bottle fades in. The first card is drawn before the page goes on stage, and the
+    // first tasting re-shows it: a fade there would flash it out and in at 0 s.
+    const fresh = current !== -1 && current !== i;
     current = i;
     root.style.setProperty('--sw', sw.c);
     root.style.setProperty('--wave', WAVE[sw.id]);
@@ -412,9 +418,12 @@
       nowName.textContent = sw.name;
     }
     shownName = sw.name;
+    // Marks for the page checker (data-tty-line; they change nothing on screen): the last bottle's
+    // name is the setup, its stamp below the punch.
+    if (sw.stamp) nowName.dataset.ttyLine = 'setup'; else delete nowName.dataset.ttyLine;
     // Korean spec lines keep "입력 2.2" and "바닥 4.0mm" whole when they wrap (648 x 732 blue
     // broke as "… 입력 2.2 / 바닥" + "4.0mm"): a no-break space after the two words.
-    nowType.textContent = ko ? sw.type.replace(/(입력|바닥) /g, '$1\u00a0') : sw.type;
+    nowType.textContent = ko ? sw.type.replace(/(입력|바닥) /g, '$1 ') : sw.type;
     nowScore.classList.remove('stamped');
     stampEl = null;
     if (sw.stamp) {
@@ -424,6 +433,7 @@
       dash.textContent = sw.score;
       stampEl = document.createElement('small');
       stampEl.className = 'stamp';
+      stampEl.dataset.ttyLine = 'punch';
       stampEl.textContent = sw.stamp;
       nowScore.replaceChildren(dash, stampEl);
     } else {
@@ -439,9 +449,13 @@
     // "Pairs with:" in front of the line shows only on small stages, where its own line is gone.
     const pl = document.createElement('span');
     pl.className = 'pl';
-    pl.textContent = L.pairs + ': ';
+    pl.textContent = L.pl + ': ';
     pairs.replaceChildren(pl, sw.pairs);
-    if (fresh && !TTY.reduce) [nowName, notes, pairs].forEach((el, k) => el.animate([{ opacity: 0, filter: 'blur(3px)' }, { opacity: 1, filter: 'blur(0)' }], { duration: 420, delay: k * 90, easing: 'ease-out', fill: 'backwards' }));
+    if (fresh && !TTY.reduce) {
+      nowName.animate([{ opacity: 0, filter: 'blur(3px)' }, { opacity: 1, filter: 'blur(0)' }], { duration: 420, easing: 'ease-out' });
+      // The notes and the pairing come in at once: a bottle's whole stay is reading time.
+      [notes, pairs].forEach((el) => el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' }));
+    }
   }
   function stampIt() {
     if (!stampEl || nowScore.classList.contains('stamped')) return;
@@ -464,6 +478,7 @@
     key.animate(lap, { duration: 750, easing: 'ease-in-out' });
   }
 
+  /* ---- The key ---- */
   // The butterfly's key, when it sticks, stays down and crooked until it is freed. `press` keeps
   // the pose in its style; animations only travel to it.
   const STUCK = 'translateY(2px) rotate(-9deg)';
@@ -482,7 +497,7 @@
     stuck = true;
     stuckAnim = TTY.reduce ? null : press.animate(frames, { duration, easing });
   }
-  // Two tries to get back up, about 2.4 s after it stuck. Neither works.
+  // Two tries to get back up, 1.6 s after the stamp. Neither works.
   function strain() {
     if (!stuck || TTY.reduce) return;
     holdDown([
@@ -494,12 +509,14 @@
       { transform: STUCK },
     ], 640, 'ease-in-out');
   }
-  const strainLater = (live) => wait(2400).then(() => { if (live() && stuck) strain(); });
+  const STRAIN_AFTER = 1600;
 
   // One press of switch `id`, drawn into wave cell `k`. The butterfly brings a fault each time.
+  // Returns whether the key stuck and how long the press takes (a stuck key: a beat more before
+  // anything else happens, the verdict waits for the evidence to settle).
   const FAULTS = ['twice', 'none', 'stuck'];
   let nextFault = 0;
-  async function strike(id, k) {
+  function strike(id, k) {
     unstick();
     const fault = id === 'butterfly' ? FAULTS[nextFault] : null;
     if (fault) nextFault = (nextFault + 1) % FAULTS.length;
@@ -516,8 +533,7 @@
       press.animate(frames, { duration: down * 2.6, easing: 'ease-in-out' });
     }
     drawPulse(fault || id, id, k);
-    await wait(TTY.reduce ? 0 : down * 2.6 + (sticks ? 700 : 0) + 180);
-    return sticks;
+    return { sticks, ms: TTY.reduce ? 0 : down * 2.6 + (sticks ? 700 : 0) + 180 };
   }
   // Pressing a stuck key: the first press only jolts it (and types nothing), the second frees it,
   // with the butterfly's two ticks. Then its faults carry on: nothing, then stuck again.
@@ -533,62 +549,113 @@
     drawPulse('twice', 'butterfly', k);
     nextFault = 1;
   }
-  async function taste(i, live) {
+
+  /* ---- The glass on the card ---- */
+  // Which bottle the card shows, and the wave its presses go into. Pouring (the autoplay's next
+  // bottle, or a bottle the visitor taps on the list) shows the card, swirls and starts a new
+  // wave. A press on the key goes into the next empty cell of this wave; once the three are full,
+  // the next press starts a new wave. Whoever drives a tasting only ever fills empty cells, so
+  // a visitor's press is never drawn over.
+  let glass = null;
+  function pour(i) {
     unstick();
     show(i);
     clearWave();
-    cell = 0;
     nextFault = 0;
     swirl();
-    await wait(TTY.reduce ? 0 : 800); if (!live()) return false;
-    for (let k = 0; k < 3; k++) { await strike(SWITCHES[i].id, k); if (!live()) return false; }
-    if (stuck) { stampIt(); strainLater(live); }
-    return true;
+    glass = { i, wave: { cells: 0 } };
+    return glass;
   }
+  const pressInto = (g) => strike(SWITCHES[g.i].id, g.wave.cells++);
+  // One tasting: the swirl, then presses until the wave's three cells are full. `sleep` is the
+  // autoplay's clock (it stands still while the visitor is busy) or plain time for a visitor's pour.
+  async function taste(g, sleep, live) {
+    const w = g.wave;
+    await sleep(TTY.reduce ? 0 : 800);
+    while (live() && glass === g && w.cells < 3) await sleep(pressInto(g).ms);
+  }
+  // A tasting's length, swirl to the last press (the butterfly's third press sticks).
+  const tasteMs = (i) => {
+    const id = SWITCHES[i].id;
+    const down = id === 'black' ? 170 : id === 'blue' ? 90 : id === 'butterfly' ? 70 : 120;
+    return 800 + 3 * (down * 2.6 + 180) + (id === 'butterfly' ? 700 : 0);
+  };
+  // Once the butterfly's key has stuck in glass g: the stamp, and later two tries to get up, unless
+  // someone has pressed the key or poured another bottle by then.
+  const verdict = (g, sleep) => {
+    if (!stuck) return;
+    stampIt();
+    const w = g.wave;
+    return sleep(STRAIN_AFTER).then(() => { if (glass === g && g.wave === w && stuck) strain(); });
+  };
 
-  /* ---- Autoplay and taking over ---- */
-  // Six bottles, blue (the loudest) left up longest of the five, and the butterfly last: its key
-  // sticks at about 20.3 s, the stamp lands at 21.2, the key tries to get up at 23.6, and the
-  // round starts again at about 26.4 s.
-  let run = 0;
-  async function play(from) {
-    const mine = ++run;
-    const live = () => run === mine;
-    for (let i = from; live(); i = (i + 1) % SWITCHES.length) {
-      if (!await taste(i, live)) return;
-      await wait(i === SWITCHES.length - 1 ? 5200 : i === 2 ? 2200 : 1200); if (!live()) return;
+  /* ---- Autoplay ---- */
+  // Six bottles, blue (the loudest) up longest of the five, and the butterfly last: its key sticks
+  // at about 20.6 s, the stamp lands at 21.8, the key tries to get up at 23.4, and the round starts
+  // again at about 26.6 s. A bottle stays as long as its notes take to read (TTY.readMs): 3.5–4.1 s.
+  // A visitor's tap only pauses this clock (TTY.busy); it never stops it.
+  const PAUSE = [1300, 1500, 2100, 1400, 1200];
+  const LAST_REST = 3400;
+  const opts = { punch: 21.9 }; // autoplay seconds when the stamp has landed (_kit.js asks the home page for that long)
+  let auto = null; // the autoplay's clock and its glass while it tastes: { t, g, from }
+  let lastTap = -Infinity;
+  ['pointerdown', 'keydown'].forEach((type) => addEventListener(type, (e) => { if (e.isTrusted) lastTap = performance.now(); }, { capture: true, passive: true }));
+  const play = TTY.timeline(async (t) => {
+    // Someone tapped before the autoplay began (the page alone, while its fonts come in): their
+    // glass stays up until they are done. A glass they started on the key is the first tasting's.
+    if (glass) await t.wait(1);
+    if (!t.live()) return;
+    let due = 0;
+    const step = (ms) => t.at(due += ms);
+    for (;;) {
+      for (let i = 0; i < SWITCHES.length; i++) {
+        let g;
+        do {
+          g = glass && glass.early ? glass : pour(i);
+          g.early = false;
+          due = t.now();
+          auto = { t, g, from: due };
+          await taste(g, step, t.live);
+          auto = null;
+          if (!t.live()) return;
+          // Another bottle was poured in the middle (a tap on the list): this one again, after it.
+        } while (glass !== g);
+        if (i < SWITCHES.length - 1) { await step(PAUSE[i]); continue; }
+        await verdict(g, step);
+        await step(LAST_REST);
+        // Someone tapped in the last 12 s, the time the home page holds the page for a tap: the last
+        // scene stays until that is over, so a new round never comes in just as the page leaves.
+        while (t.live() && performance.now() - lastTap < 12000) await t.wait(250);
+        if (!t.live()) return;
+      }
+      if (TTY.reduce) return; // the last scene: the butterfly's three faults, the key stuck, the stamp on
     }
+  }, opts);
+
+  /* ---- Taps ---- */
+  // A bottle on the list: the visitor's own tasting of it, start to finish. The autoplay stands still
+  // until it has been tasted and read (3 s more); if it was in the middle of a bottle, it tastes that
+  // one again afterwards, so its stamp comes that much later.
+  function visitorPour(i) {
+    if (auto && auto.g === glass) opts.punch += (auto.t.now() - auto.from) / 1000;
+    const g = pour(i);
+    TTY.busy(tasteMs(i) + 3000);
+    taste(g, wait, () => true).then(() => { if (glass === g) verdict(g, wait); });
   }
-  // A visitor's tap stops the round where it is; whatever they started plays out and stays.
-  // After 12 s with no taps the round carries on from the next bottle. (The kit already asks the
-  // home page for 12 s more on every pointerdown and keydown.)
-  let idle = 0;
-  function takeOver() {
-    const mine = ++run;
-    clearTimeout(idle);
-    if (!TTY.reduce) idle = setTimeout(() => { if (run === mine) play((current + 1) % SWITCHES.length); }, 12000);
-    return mine;
-  }
-  // The keycap: a click, a tap, or Enter / Space when it has focus. One press of the bottle on
-  // the card; the visitor's presses fill the wave's three cells, then start it again.
+  // The keycap: a click, a tap, or Enter / Space when it has focus. One press of the bottle on the
+  // card, into the wave's next empty cell.
   const key = $('.key');
   key.setAttribute('aria-label', L.key);
-  let cell = 0;
   function pressKey() {
-    const mine = takeOver();
-    if (current < 0) show(0);
-    const sw = SWITCHES[current];
-    if (cell === 0) clearWave();
-    const k = cell;
-    cell = (cell + 1) % 3;
-    // A press on the key autoplay has just stuck, before its stamp (20.3-21.2 s), stops the
-    // round that would have stamped it: the stamp lands here instead. (Once on, it stays.)
-    if (stuck) { pressStuck(k); stampIt(); return; }
-    strike(sw.id, k).then((sticks) => {
-      if (!sticks || run !== mine) return;
-      stampIt();
-      strainLater(() => run === mine);
-    });
+    if (!glass) { nextFault = 0; glass = { i: Math.max(current, 0), wave: { cells: 0 }, early: true }; }
+    const g = glass;
+    if (g.wave.cells >= 3) { g.wave = { cells: 0 }; clearWave(); }
+    const w = g.wave;
+    // A press on a stuck key, even before the autoplay's stamp (the key sticks 1.1 s before it):
+    // the stamp lands here. (Once on, it stays.)
+    if (stuck) { pressStuck(w.cells++); stampIt(); return; }
+    const { sticks, ms } = pressInto(g);
+    if (sticks) wait(ms).then(() => { if (glass === g && g.wave === w) verdict(g, wait); });
   }
   key.addEventListener('click', (e) => { if (e.isTrusted) pressKey(); });
   key.addEventListener('keydown', (e) => {
@@ -598,15 +665,10 @@
   });
 
   /* ---- Start ---- */
-  if (TTY.reduce) {
-    // The last scene: the butterfly's three faults on the wave, the key stuck, the stamp on.
-    show(SWITCHES.length - 1);
-    for (let k = 0; k < 3; k++) strike('butterfly', k);
-    stampIt();
-  } else {
-    show(0);
-  }
-  TTY.onShow(() => { if (!TTY.reduce) play(0); });
+  // The first card is up before the page is on stage. With less motion the same timeline runs
+  // at once and stops on its last scene.
+  show(0);
+  TTY.onPlay(play.start);
   const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
   Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
 })();

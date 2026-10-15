@@ -114,13 +114,22 @@
   /* ---- Dialog ---- */
   .dialog { left: 1.6cqw; right: 1.6cqw; bottom: 1.6cqh; height: calc(var(--dialog-h) - 3.2cqh); display: grid; grid-template-columns: 1fr auto; }
   .say { position: relative; padding: 2.4cqmin 3.2cqmin; font-size: var(--t); line-height: 1.5; overflow: hidden; }
-  .say-text { margin: 0; white-space: pre-line; }
+  /* balance: beside the moves the question wraps as "What will / DEV do?", not "… DEV / do?" */
+  .say-text { margin: 0; white-space: pre-line; text-wrap: balance; }
   .say .more {
     position: absolute; right: 3cqmin; bottom: 2.2cqmin; width: 1.6cqmin; height: 1.1cqmin; min-width: 9px; min-height: 6px;
+    margin: 0; padding: 0; border: 0;
     background: var(--navy); clip-path: polygon(0 0, 100% 0, 50% 100%); opacity: 0;
   }
   .say.waiting .more { opacity: 1; animation: bob .7s steps(2) infinite; }
   @keyframes bob { 50% { translate: 0 .5cqmin; } }
+  /* After a battle the ▼ is a button: the whole dialog starts the next battle (see rest()). */
+  .dialog:not(.next) .more { pointer-events: none; }
+  .dialog.next { cursor: pointer; }
+  /* The boxes clip their corners (clip-path), which would clip a focus ring too: keyboard focus on
+     the ▼ shades the dialog instead. */
+  .say .more:focus-visible { outline: none; }
+  .dialog.next:has(.more:focus-visible) .say { background: var(--paper-shade); }
 
   .menu {
     display: grid;
@@ -169,8 +178,13 @@
   @container (max-width: 640px) {
     /* On a phone the moves sit under the question, inside the same box. */
     .dialog { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-    .menu { grid-template-columns: 1fr 1fr; gap: 0 1em; padding: 0 3cqmin 1.4cqmin; border-left: 0; }
+    .menu { grid-template-columns: 1fr 1fr; gap: 0 1em; padding: 0 3cqmin .8cqmin; border-left: 0; }
     .menu:not(.open) { display: none; }
+    /* The question, the hint and two rows of moves share a 118px box at 358×396: a little less
+       air, or the hint's last pixels were cut off (Korean, where it is 16px font-kku). */
+    .say { padding: 1.8cqmin 3.2cqmin; }
+    .pick { margin-top: .1em; }
+    .menu button { padding-top: .14em; padding-bottom: .14em; }
     .info { width: 56cqw; }
     .info.foe-info { left: 3cqw; top: 3cqh; }
     .foe { right: 1cqw; top: 30%; width: 46cqmin; }
@@ -241,7 +255,7 @@
       <font-kku class="say-text" data-lang="ko" font="pixel" size="clamp(16px, 3.5cqmin, 30px)"> </font-kku>
       <span class="pick" data-lang="en" aria-hidden="true">Pick a move.</span>
       <span class="pick" data-lang="ko" aria-hidden="true"><font-kku font="pixel" size="clamp(16px, 2.7cqmin, 23px)">기술을 골라 보세요.</font-kku></span>
-      <span class="more" aria-hidden="true"></span>
+      <button class="more" type="button" tabindex="-1" aria-hidden="true"></button>
     </div>
     <div class="menu" role="group"></div>
   </div>
@@ -262,19 +276,20 @@
   const batchim = (w) => { const c = w.charCodeAt(w.length - 1) - 0xac00; return c >= 0 && c < 11172 && c % 28 > 0; };
   const L = TTY.t({
     en: {
-      // A different bug each battle. hold: a line after the super-effective hit (the bug is left
-      // on 1 HP); log: what console.log does to it instead of printing; reboot: what a restart
-      // does to it instead of confusing it (a leak really is emptied, for now); lv: a number climbs.
+      // A different bug each battle. hold: the line after the super-effective hit, which leaves the
+      // bug on 1 HP (it is also the battle's last line); log: what console.log does to it instead of
+      // printing; reboot: what a restart does to it instead of confusing it (a leak really is
+      // emptied, for now); lv: a number climbs.
       species: [
         { id: 'bug', name: 'BUG', lv: '404', appear: 'A wild BUG appeared!', fixed: 'The wild BUG was fixed.\nDEV gained a quiet afternoon.' },
-        { id: 'off', name: 'OFF-BY-ONE', lv: '405', appear: 'A wild OFF-BY-ONE appeared!', hold: 'OFF-BY-ONE hung on with 1 HP!\nDEV changed <= to <.', fixed: 'The wild OFF-BY-ONE was fixed.\nDEV gained a quiet afternoon.' },
+        { id: 'off', name: 'OFF-BY-ONE', lv: '405', appear: 'A wild OFF-BY-ONE appeared!', hold: 'OFF-BY-ONE hung on with 1 HP!\nDEV changed <= to <.' },
         { id: 'heisen', name: 'HEISENBUG', lv: '??', appear: 'A wild HEISENBUG appeared!', log: ['DEV used console.log!', 'HEISENBUG vanished while watched!', '…and came back once the logs were gone.'], fixed: 'The wild HEISENBUG was fixed.\nAt least, nobody has seen it since.' },
-        { id: 'leak', name: 'MEMORY LEAK', lv: 512, appear: 'A wild MEMORY LEAK appeared!', reboot: 'MEMORY LEAK is back to Lv.512.\nFor now.', fixed: 'The wild MEMORY LEAK was fixed.\nDEV got 11 GB of RAM back.' },
+        { id: 'leak', name: 'MEMORY LEAK', lv: 512, appear: 'A wild MEMORY LEAK appeared!', reboot: 'MEMORY LEAK is back to Lv.512.\nFor now.', fixed: 'The wild MEMORY LEAK was fixed.\nDEV got 11 GB back.' },
       ],
       ask: 'What will DEV do?',
       moves: [['log', 'console.log'], ['duck', 'Ask the duck'], ['stash', 'git stash & run'], ['reboot', 'Off and on']],
       log: ['DEV used console.log!', 'It printed "here".\nThen "here 2".', 'It’s not very effective…'],
-      duck: ['Go! RUBBER DUCK!', 'DEV explained the code to the duck,\nline by line…', '…and spotted the bug halfway through!', 'It’s super effective!'],
+      duck: ['Go! RUBBER DUCK!', 'DEV explained every line\nto the duck…', '…and spotted the bug halfway through!', 'It’s super effective!'],
       // Lines that take the species' name are functions of it.
       stash: ['DEV stashed everything and ran!', 'Got away safely…', (n) => `…but ${n} will still be here on Monday.`],
       reboot: ['DEV used Off and on!', '…', 'It works?!', (n) => `Nobody knows why.\n${n} is confused!`],
@@ -290,7 +305,7 @@
     ko: {
       species: [
         { id: 'bug', name: '버그', lv: '404', appear: '앗! 야생의 버그가 나타났다!', fixed: '야생의 버그를 고쳤다!\n평화로운 오후를 얻었다.' },
-        { id: 'off', name: '오프바이원', lv: '405', appear: '앗! 야생의 오프바이원이 나타났다!', hold: '오프바이원은 HP 1로 버텼다!\n개발자는 <=를 <로 고쳤다.', fixed: '야생의 오프바이원을 고쳤다!\n평화로운 오후를 얻었다.' },
+        { id: 'off', name: '오프바이원', lv: '405', appear: '앗! 야생의 오프바이원이 나타났다!', hold: '오프바이원은 HP 1로 버텼다!\n개발자는 <=를 <로 고쳤다.' },
         { id: 'heisen', name: '하이젠버그', lv: '??', appear: '앗! 야생의 하이젠버그가 나타났다!', log: ['개발자의 console.log!', '지켜보자 하이젠버그가 사라졌다!', '…로그를 지우자 다시 나타났다.'], fixed: '야생의 하이젠버그를 고쳤다!\n…적어도 그 뒤로 본 사람은 없다.' },
         { id: 'leak', name: '메모리 누수', lv: 512, appear: '앗! 야생의 메모리 누수가 나타났다!', reboot: '메모리 누수가 Lv.512로 돌아왔다.\n…당분간은.', fixed: '야생의 메모리 누수를 고쳤다!\nRAM 11GB를 되찾았다.' },
       ],
@@ -454,7 +469,9 @@
   }
 
   /* ---------- Elements ---------- */
+  const dialog = $('.dialog');
   const say = $('.say');
+  const more = $('.say .more');
   const text = $('.say-text[data-lang="' + TTY.lang + '"]');
   const menu = $('.menu');
   const bug = $('.bug');
@@ -466,10 +483,21 @@
   const foeName = $('.foe-name');
   const foeLv = $('.foe-lv');
 
-  // Battles draw species from a shuffled bag, so the same bug never comes twice in a row.
+  // A visit's first battle takes turns, one visit after another: BUG, OFF-BY-ONE, MEMORY LEAK
+  // (where the visit cannot be counted, BUG). The HEISENBUG, whose battle runs past the time the
+  // home page gives a page, never opens one. After that, battles draw species from a shuffled bag,
+  // so the same bug never comes twice in a row.
+  const OPENERS = ['bug', 'off', 'leak'];
+  let opener = 'bug';
+  try {
+    const turn = Math.abs(parseInt(localStorage.getItem('tty.wildbug.turn'), 10) || 0) % OPENERS.length;
+    opener = OPENERS[turn];
+    localStorage.setItem('tty.wildbug.turn', String((turn + 1) % OPENERS.length));
+  } catch (e) { /* storage blocked: the plain BUG */ }
   let bag = [];
   let sp = null;
   function nextSpecies() {
+    if (!sp) return L.species.find((s) => s.id === opener);
     if (!bag.length) {
       bag = L.species.slice().sort(() => Math.random() - .5);
       if (sp && bag[bag.length - 1] === sp) bag.unshift(bag.pop());
@@ -522,28 +550,45 @@
     shown = t;
     text.textContent = t || (KO ? ' ' : '');
   };
-  async function type(line) {
+  // kind: the line's part in the joke ("setup", "punch", "tag") for the page checker, put on the
+  // line once it is all there (not on the half-typed frames). Returns when the line was complete.
+  let typedAt = 0;
+  async function type(line, kind) {
     skip = false;
     say.classList.remove('waiting');
-    if (TTY.reduce) { put(line); return; }
+    delete text.dataset.ttyLine;
+    const done = () => { put(line); typedAt = performance.now(); if (kind) text.dataset.ttyLine = kind; };
+    if (TTY.reduce) { done(); return typedAt; }
     const frames = KO ? FontKkuFx.typingFrames(line) : [...line].map((_, i) => line.slice(0, i + 1));
     for (const f of frames) {
       if (skip) break;
+      if (f === frames[frames.length - 1]) break;
       put(f);
       const last = f[f.length - 1];
-      await sleep(/[.!?…,\n]/.test(last) ? 130 : last === ' ' ? 40 : KO ? 26 : 30);
+      await sleep(/[.!?…,\n]/.test(last) ? 120 : last === ' ' ? 30 : KO ? 18 : 20);
     }
-    put(line);
+    done();
+    return typedAt;
   }
-  async function lines(list, pause = 820) {
+  // A line stays up, fully typed, as long as it takes to read (TTY.readMs: Korean 8 letters and
+  // English 3 words a second, never under min) and a beat more, counted from when it was complete
+  // (since; other things may happen meanwhile).
+  const readMs = (line, min = 2000) => TTY.readMs(line, min) + 250;
+  const readOn = (line, since, min) => sleep(Math.max(0, readMs(line, min) - (performance.now() - since)));
+  async function lines(list, kind, min) {
     for (const line of list) {
-      await type(line);
+      const at = await type(line, kind);
       say.classList.add('waiting');
-      await sleep(pause);
+      await readOn(line, at, min);
       say.classList.remove('waiting');
     }
   }
-  say.addEventListener('click', () => { skip = true; });
+  // Pressing the dialog shows the line being typed at once; at the ▼ after a battle it starts the
+  // next one (see rest()).
+  dialog.addEventListener('click', (e) => {
+    if (e.target.closest('.menu')) return;
+    if (nextBattle) nextBattle(); else skip = true;
+  });
 
   /* ---------- Effects ---------- */
   const anim = (el, frames, opts) => (TTY.reduce ? null : el.animate(frames, opts));
@@ -552,9 +597,10 @@
     hp.classList.toggle('mid', v <= 50 && v > 20);
     hp.classList.toggle('low', v <= 20);
   };
-  function pop(label, x, y, hold = 1100) {
+  function pop(label, x, y, hold = 1100, kind) {
     const el = document.createElement('div');
     el.className = 'box pop';
+    if (kind) el.dataset.ttyLine = kind;
     if (KO && /[가-힣]/.test(label)) {
       const host = document.createElement('font-kku');
       host.setAttribute('font', 'pixel');
@@ -576,8 +622,8 @@
   }
   // A pop just over a sprite's head (the duck's "Quack."), inside the field and never under
   // DEV's info box, which is drawn over the field.
-  function popOver(label, sprite, hold) {
-    const el = pop(label, '0px', '0px', hold);
+  function popOver(label, sprite, hold, kind) {
+    const el = pop(label, '0px', '0px', hold, kind);
     const f = field.getBoundingClientRect(), s = sprite.getBoundingClientRect(), info = meInfo.getBoundingClientRect();
     const w = el.offsetWidth, h = el.offsetHeight;
     // The duck's head is the right part of its sprite; its top rows are empty.
@@ -621,10 +667,16 @@
   const shake = (el) => anim(el, [{ translate: '-50% 0' }, { translate: 'calc(-50% - 4%) 0' }, { translate: 'calc(-50% + 4%) 0' }, { translate: '-50% 0' }], { duration: 240, iterations: 2, easing: 'steps(3)' });
 
   /* ---------- Moves ---------- */
+  // The bug goes down: it sinks out of sight.
+  const sink = () => {
+    anim(bug, [{ translate: '-50% 0', opacity: 1 }, { translate: '-50% 45%', opacity: 0 }], { duration: 700, easing: 'steps(7)', fill: 'forwards' });
+    if (TTY.reduce) bug.style.opacity = 0;
+  };
+  let tagQuack = null; // the duck's word after the punch, up until the next battle
   const MOVES = {
     async log() {
       const said = sp.log || L.log;
-      await type(said[0]);
+      const typed = await type(said[0]);
       await sleep(300);
       // On a phone the bug's info box reaches past the middle, so the log lines start lower and
       // just right of it (and still below the tty.link links pinned to the top right).
@@ -635,10 +687,11 @@
         await sleep(260);
       }
       await sleep(500);
+      await readOn(said[0], typed);
       if (sp.log) {
         // Watched, the HEISENBUG is simply not there.
         bug.style.visibility = 'hidden';
-        await lines([said[1]], 1100);
+        await lines([said[1]]);
         bug.style.visibility = '';
         await lines([said[2]]);
         return;
@@ -649,86 +702,98 @@
       await lines(said.slice(1));
     },
     async duck() {
-      await type(L.duck[0]);
+      const called = await type(L.duck[0]);
       duck.style.opacity = 1;
       anim(duck, [{ translate: '0 -160%', opacity: 1 }, { translate: '0 8%', offset: .7 }, { translate: '0 -6%', offset: .85 }, { translate: '0 0' }], { duration: 650, easing: 'steps(8)' });
       await sleep(700);
       // The duck's one word stays up while DEV explains, and goes just before the bug is found.
       const quack = popOver(L.quack, duck, 0);
-      await sleep(700);
-      await type(L.duck[1]);
+      await readOn(L.duck[0], called);
+      const told = await type(L.duck[1], 'setup');
       say.classList.add('waiting');
-      await sleep(500);
+      await readOn(L.duck[1], told - 500);
       unpop(quack);
       await sleep(500);
       say.classList.remove('waiting');
-      await type(L.duck[2]);
+      const found = await type(L.duck[2], 'setup');
       await sleep(300);
       anim($('.flash'), [{ opacity: 0 }, { opacity: .9 }, { opacity: 0 }], { duration: 300, easing: 'steps(3)' });
       blink(bug, 3);
       setHp(sp.hold ? 1 : 0);
       stopLeak();
-      await sleep(1000);
-      // OFF-BY-ONE's next line takes the place of this one, so it stays a little longer there.
-      await lines([L.duck[3]], sp.hold ? 1200 : 700);
+      await readOn(L.duck[2], found);
+      // The punch. The bug goes down (the OFF-BY-ONE only blinks), and the duck, which has said
+      // nothing but its one word, takes the credit with it.
+      const hit = await type(L.duck[3], 'punch');
+      say.classList.add('waiting');
+      await sleep(700);
+      if (sp.hold) blink(bug, 2); else sink();
+      await sleep(750);
+      tagQuack = popOver(L.quack, duck, 0, 'tag');
+      anim(duck, [{ translate: '0 0' }, { translate: '0 -14%' }, { translate: '0 0' }], { duration: 320, easing: 'steps(4)' });
+      await readOn(L.duck[3], hit);
       if (sp.hold) {
-        // The OFF-BY-ONE survives on exactly one HP, until the loop is fixed.
-        await type(sp.hold);
+        // The OFF-BY-ONE hangs on with exactly one HP, until the loop is fixed: that line ends it.
+        await type(sp.hold, 'tag');
         await sleep(300);
         blink(bug, 2);
         setHp(0);
         await sleep(450);
+        sink();
+        return 'won';
       }
-      anim(bug, [{ translate: '-50% 0', opacity: 1 }, { translate: '-50% 45%', opacity: 0 }], { duration: 700, easing: 'steps(7)', fill: 'forwards' });
-      if (TTY.reduce) bug.style.opacity = 0;
-      await sleep(700);
-      await type(sp.fixed);
+      await type(sp.fixed, 'tag');
       return 'won';
     },
     // Running away works, for now. The second time in a row the bug, left alone, glows;
     // the third time it evolves.
     async stash() {
       const n = ++stashes;
-      await type(L.stash[0]);
+      const ran = await type(L.stash[0]);
       anim(dev, [{ translate: '-50% 0' }, { translate: '-260% 0' }], { duration: 600, easing: 'steps(6)', fill: 'forwards' });
-      await sleep(900);
+      await readOn(L.stash[0], ran);
       if (n >= 3) {
-        await lines([L.stash[1]], 900);
+        await lines([L.stash[1]]);
         return evolve();
       }
       if (n === 2) {
-        await lines([L.stash[1]], 700);
+        await lines([L.stash[1]]);
         await glimmer();
-        await lines([L.glow(sp.name)], 1100);
+        await lines([L.glow(sp.name)]);
       } else {
-        await lines([L.stash[1], L.stash[2](sp.name)], 1100);
+        await lines([L.stash[1], L.stash[2](sp.name)]);
       }
       // Cut to Monday: DEV is back, and so is everything DEV left.
       anim(dev, [{ translate: '-260% 0' }, { translate: '-50% 0' }], { duration: 600, easing: 'steps(6)', fill: 'forwards' });
       await sleep(600);
-      await lines([L.back(sp.name)], 1300);
+      await lines([L.back(sp.name)]);
     },
     async reboot() {
-      await type(L.reboot[0]);
+      const used = await type(L.reboot[0]);
+      say.classList.add('waiting');
+      // Read before the lights go out (they are fully out about 0.4 s in).
+      await readOn(L.reboot[0], used - 300);
+      say.classList.remove('waiting');
       anim($('.dark'), [{ opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: 1, offset: .8 }, { opacity: 0 }], { duration: 1500, easing: 'steps(4)' });
       // (Dark from about 0.4 s to 1.5 s: the easing is steps(4) over the whole run.)
       await sleep(600);
       // The one bug a restart really fixes: in the dark the MEMORY LEAK is back to where it began.
       if (sp.reboot) emptyLeak();
       await sleep(1000);
-      await lines(L.reboot.slice(1, 3), 700);
+      await lines([L.reboot[1]], undefined, 650);
+      await lines([L.reboot[2]], undefined, 1200);
       if (sp.reboot) {
         // "…for now": it starts climbing again as soon as that is said.
-        await type(sp.reboot);
+        const back = await type(sp.reboot);
         startLeak();
         say.classList.add('waiting');
-        await sleep(1500);
+        await readOn(sp.reboot, back);
         say.classList.remove('waiting');
         return;
       }
       pop('?', '68%', '10%', 1800);
       anim(bug, [{ rotate: '0deg' }, { rotate: '-8deg' }, { rotate: '8deg' }, { rotate: '0deg' }], { duration: 500, iterations: 3, easing: 'steps(4)' });
-      await lines([L.reboot[3](sp.name)], 1300);
+      await lines([L.reboot[3](sp.name)]);
     },
   };
 
@@ -749,7 +814,10 @@
     bug.classList.remove('heisen');
     anim(dim, [{ opacity: 0 }, { opacity: .74 }], { duration: 600, easing: 'steps(4)', fill: 'forwards' });
     if (!TTY.reduce) field.classList.add('evolving');
-    await lines([L.evolving(name)], 300);
+    const asked = await type(L.evolving(name));
+    say.classList.add('waiting');
+    await sleep(300);
+    say.classList.remove('waiting');
     if (!TTY.reduce) {
       const a = silhouette(was), b = silhouette(now);
       a.paint(bug);
@@ -759,6 +827,8 @@
       anim($('.flash'), [{ opacity: 0 }, { opacity: 1, offset: .3 }, { opacity: 1, offset: .5 }, { opacity: 0 }], { duration: 1000, easing: 'steps(6)' });
       await sleep(420);
     }
+    // With reduced motion there is no flicker to watch: the line still stays long enough to read.
+    await readOn(L.evolving(name), asked);
     now.paint(bug);
     foeName.textContent = L.feature;
     anim(dim, [{ opacity: .74 }, { opacity: 0 }], { duration: 500, easing: 'steps(4)', fill: 'forwards' });
@@ -777,12 +847,17 @@
   let autoTimer = 0;
   let autoRun = 0; // every new plan for the cursor calls off the one already walking
   let autoMove = 'duck'; // where the cursor goes on its own in this menu
-  let autoHold = 0; // ms the home page is asked to keep this page up when the cursor picks the duck
+  let autoHold = false; // when the cursor picks the duck, ask the home page for the time it takes to win
   let autoPicked = false; // the last move was the cursor's own, not the visitor's
   let byKeyboard = false; // the last move was chosen from the keyboard: focus the next menu
-  const dialog = $('.dialog');
   const cursorTo = (b) => buttons.forEach((x) => x.classList.toggle('on', x === b));
   const button = (id) => buttons.find((x) => x.dataset.move === id);
+  // From the pick to the last line typed, a duck takes about 13.8 s (the OFF-BY-ONE's last line
+  // too) and a third git stash about 11.7 s. The home page is asked for that, a little more, and
+  // the time to read the last line (TTY.hold keeps at least that much left; a visitor's press
+  // alone buys 12 s).
+  const winHold = () => 14500 + TTY.readMs(sp.hold || sp.fixed);
+  const evolveHold = () => 13000 + TTY.readMs(L.evolved(sp.name));
   // While a move has keyboard focus, the visitor is choosing: the cursor does not move on its own.
   // (The mouse only puts it off: see the menu's mouse handlers.)
   const steering = () => menu.contains(document.activeElement);
@@ -800,11 +875,11 @@
       await sleep(520);
       if (!still()) return;
       // A duck that comes after another move would win after the home page has moved on.
-      if (autoMove === 'duck' && autoHold) TTY.hold(autoHold);
+      if (autoMove === 'duck' && autoHold) TTY.hold(winHold());
       choose(autoMove, true);
     }, after);
   }
-  function openMenu(autoAfter, move, hold = 0) {
+  function openMenu(autoAfter, move, hold = false) {
     menu.classList.add('open');
     dialog.classList.add('choosing');
     cursorTo(buttons[0]);
@@ -821,6 +896,8 @@
     clearTimeout(autoTimer);
     autoRun++;
     autoPicked = auto;
+    if (!auto && id === 'duck') TTY.hold(winHold());
+    if (!auto && id === 'stash' && stashes >= 2) TTY.hold(evolveHold());
     const b = button(id);
     byKeyboard = steering() && document.activeElement.matches(':focus-visible');
     cursorTo(b);
@@ -855,13 +932,16 @@
     stopLeak();
     bug.getAnimations().forEach((a) => a.cancel());
     dev.getAnimations().forEach((a) => a.cancel());
+    duck.getAnimations().forEach((a) => a.cancel());
     bug.style.opacity = ''; bug.style.visibility = ''; duck.style.opacity = 0;
+    if (tagQuack) { tagQuack.remove(); tagQuack = null; }
     dim.getAnimations().forEach((a) => a.cancel());
     field.classList.remove('evolving');
     dialog.classList.remove('asking');
     stashes = 0;
     autoPicked = false;
     put('');
+    delete text.dataset.ttyLine;
     sp = nextSpecies();
     SPRITES.bug(sp.id).paint(bug);
     bug.classList.toggle('heisen', sp.id === 'heisen');
@@ -869,7 +949,7 @@
     foeLv.textContent = 'Lv.' + sp.lv;
   }
 
-  async function battle() {
+  async function fight() {
     reset();
     document.querySelectorAll('.wipe i').forEach((bar, i) => {
       if (TTY.reduce) { bar.style.transform = 'scaleX(0)'; return; }
@@ -879,31 +959,67 @@
     });
     anim($('.foe'), [{ translate: '120cqw 0' }, { translate: '0 0' }], { duration: 900, delay: 350, easing: 'steps(10)', fill: 'backwards' });
     anim($('.me'), [{ translate: '-120cqw 0' }, { translate: '0 0' }], { duration: 900, delay: 350, easing: 'steps(10)', fill: 'backwards' });
-    await sleep(1350);
+    await sleep(1250);
     if (sp.id === 'leak') startLeak();
-    // The setup line stays up 2 s (A wild BUG appeared!) before the question replaces it.
-    await lines([sp.appear], 1250);
+    // The setup line (A wild BUG appeared!) stays up long enough to read before the question.
+    await lines([sp.appear], 'setup');
     let first = true;
     for (;;) {
+      // The moves open as the question is asked. The first menu waits 3 s (with the hint) before
+      // the cursor picks the duck itself. Against a HEISENBUG it tries console.log first (watch it
+      // vanish), and 2 s into the next menu goes for the duck, asking the home page for the time it
+      // takes to win (winHold).
       dialog.classList.add('asking');
-      await type(L.ask);
-      // The first menu waits about 3.8 s (with the hint) before the cursor picks the duck itself.
-      // Against a HEISENBUG it tries console.log first (watch it vanish), and 2 s into the next
-      // menu goes for the duck. A duck picked after the first menu asks the home page for the
-      // time it takes to win and to read the last line (TTY.hold keeps at least that much left):
-      // the last line is typed about 12.5 s after the pick, 15.7 s against OFF-BY-ONE.
-      const id = await openMenu(first ? 3000 : autoPicked ? 2000 : 4200, first && sp.log ? 'log' : 'duck', first ? 0 : sp.hold ? 19000 : 16000);
+      const asked = type(L.ask);
+      const id = await openMenu(first ? 3000 : autoPicked ? 2000 : 4200, first && sp.log ? 'log' : 'duck', !first);
+      await asked;
       first = false;
       if (id !== 'stash') stashes = 0;
       const result = await MOVES[id]();
-      if (result === 'won' || result === 'evolved') break;
+      if (result === 'won' || result === 'evolved') return;
       await sleep(400);
     }
+  }
+
+  // The ▼ after a battle: pressing the dialog starts the next one at once, or it starts on its own
+  // 10 s after the last line, and never sooner than 12.5 s after the visitor last pressed anything
+  // (a press keeps the page on the home stage 12 s more: it leaves on the win and its ▼, not on
+  // the next battle's first half-typed line). With reduced motion only a press starts it: the page
+  // rests on the win. Not in the first 0.6 s, so taps that hurried the last line along do not skip
+  // the battle too.
+  let nextBattle = null;
+  let pressedAt = -Infinity;
+  ['pointerdown', 'keydown'].forEach((t) => addEventListener(t, (e) => { if (e.isTrusted) pressedAt = performance.now(); }, { capture: true, passive: true }));
+  more.setAttribute('aria-label', TTY.t({ en: 'Next battle', ko: '다음 배틀' }));
+  async function rest() {
     say.classList.add('waiting');
-    // With reduced motion the battle is played once (still playable) and rests on the win.
-    if (TTY.reduce) return;
-    await sleep(7000);
-    battle();
+    await sleep(600);
+    dialog.classList.add('next');
+    more.tabIndex = 0;
+    more.removeAttribute('aria-hidden');
+    if (byKeyboard) more.focus({ preventScroll: true });
+    await new Promise((resolve) => {
+      const until = performance.now() + 9400;
+      let timer = 0;
+      const later = () => {
+        const left = Math.max(until, pressedAt + 12500) - performance.now();
+        if (left > 0) timer = setTimeout(later, left); else resolve();
+      };
+      if (!TTY.reduce) later();
+      nextBattle = () => { clearTimeout(timer); resolve(); };
+    });
+    nextBattle = null;
+    dialog.classList.remove('next');
+    more.tabIndex = -1;
+    more.setAttribute('aria-hidden', 'true');
+    say.classList.remove('waiting');
+  }
+
+  async function battle() {
+    for (;;) {
+      await fight();
+      await rest();
+    }
   }
 
   // Reduced motion still gets the whole battle and the move menu, just without movement.

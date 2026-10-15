@@ -30,9 +30,11 @@
   }
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; }
+  /* clip, not hidden: with container-type: size, hidden would make the body a scroll box of its
+     own, and focusing the garden would push the whole stage up. */
   body {
     container-type: size;
-    overflow: hidden;
+    overflow: clip;
     color: var(--text);
     background: linear-gradient(180deg, var(--sky) 0%, var(--sky-low) 100%);
     font-family: 'Petrona', Georgia, serif;
@@ -52,7 +54,9 @@
        than the title without one. */
     --big: max(22px, 4cqmin);
   }
-  @container (orientation: portrait) {
+  /* Stacked (garden, hint, card) on portrait stages, and on any stage under 440px wide: the smallest
+     phone stage, 328 × 288, is landscape but too narrow for the card beside the garden. */
+  @container (orientation: portrait) or (max-width: 440px) {
     .wrap { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr) auto auto; grid-template-areas: "head" "garden" "hint" "card"; gap: 1.6cqmin; --big: max(20px, 4.4cqmin); }
   }
 
@@ -66,8 +70,13 @@
   .garden svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; cursor: pointer; }
   .garden svg:focus { outline: none; }
   .garden svg:focus-visible { outline: 2px solid var(--head, var(--text)); outline-offset: 2px; border-radius: 8px; }
-  /* The one-line hint under the bed; it takes the title's colour, so it stays readable at night. */
+  /* The one-line hint under the bed; it takes the title's colour, so it stays readable at night.
+     Where it can be, it is dimmed in its colour rather than with opacity: it is on screen the whole
+     time, and the page checker counts text under .9 opacity as not yet shown. */
   .hint { grid-area: hint; text-align: center; font-size: max(11px, 1.7cqmin); line-height: 1.3; color: var(--head, var(--text)); opacity: .78; }
+  @supports (color: color-mix(in srgb, red 50%, transparent)) {
+    .hint { opacity: 1; color: color-mix(in srgb, var(--head, var(--text)) 78%, transparent); }
+  }
   .lang-ko .hint { word-break: keep-all; }
   .star { animation: twinkle 2.6s ease-in-out infinite; }
   @keyframes twinkle { 50% { opacity: .35; } }
@@ -100,13 +109,16 @@
   .job:first-child { border-top: 1px solid var(--rule); }
   .job .n { color: rgba(35, 65, 47, .5); }
   .job .expr { font-size: .92em; white-space: nowrap; }
-  .job .what { line-height: 1.3; }
+  /* A habit that wraps splits evenly ("eat lunch away / from your desk"), never leaving one word. */
+  .job .what { line-height: 1.3; text-wrap: balance; }
   .lang-ko .job .what { word-break: keep-all; }
   .job .st { grid-column: 3; font-size: .86em; color: rgba(35, 65, 47, .55); white-space: nowrap; }
   .job.done .st { color: var(--green); font-weight: 600; }
   /* The tail of cron's own log, the way syslog writes it. Its lines are reserved from the start,
-     so the card (and the garden above it) never changes height. */
-  .cronlog { min-height: 4.5em; margin-top: .8em; font-size: .74em; line-height: 1.5; color: rgba(35, 65, 47, .62); }
+     so the card (and the garden above it) never changes height. During the day it scrolls past too
+     fast to read (a montage, marked "decor" for the page checker); its last lines stay to the end,
+     so it is never under 10px (.74em of the card's 12px was 8.9px on a 1280 × 720 desktop stage). */
+  .cronlog { min-height: 4.5em; margin-top: .8em; font-size: max(10px, .74em); line-height: 1.5; color: rgba(35, 65, 47, .62); }
   .cronlog span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cronlog span:last-child { color: rgba(35, 65, 47, .9); }
   /* The closing line is in place (transparent) from the start, so its two halves appearing never
@@ -123,7 +135,7 @@
   /* What the seedling in pot 6 says when the garden is watered. */
   .say text { font-family: 'Petrona', Georgia, serif; font-weight: 600; fill: #23412f; }
   .lang-ko .say text { font-family: 'Gowun Dodum', sans-serif; font-weight: 400; }
-  @container (orientation: portrait) {
+  @container (orientation: portrait) or (max-width: 440px) {
     .card { padding: 2.6cqmin 3.4cqmin; font-size: 12px; }
     .card h2 { display: none; }
     .job { padding: .3em .2em; grid-template-columns: 1.2em 7.6em 1fr auto; }
@@ -133,19 +145,20 @@
     .mailto { padding: 0 .2em .3em; }
     .final { margin-top: .3em; }
   }
-  /* A narrow phone stage (the home stage on a 360 × 800 phone is 328 × 568): at 20px the English
-     closing line takes two lines and the garden loses a quarter of its size, so the title and the
-     closing line both drop to 18px, and the number and expression columns take the short stage's
-     widths, so fewer habits wrap and the card stays short. (The short-stage rules below still
-     win: they come later.) */
-  @container (orientation: portrait) and (max-width: 340px) {
+  /* A narrow phone stage (the home stage is 328 × 568 on a 360 × 800 phone and 343 × 580 on a
+     375 × 812 one): at 20px the English closing line wraps onto two lines on stages up to 348px
+     wide, and the garden loses up to a quarter of its size, so the title and the closing line both
+     drop to 18px, and the number and expression columns take the short stage's widths, so fewer
+     habits wrap and the card stays short. (The short-stage rules below still win: they come
+     later.) */
+  @container (max-width: 350px) {
     .wrap { --big: 18px; }
     .job { grid-template-columns: 1em 7.2em 1fr auto; gap: .2em .55em; }
   }
-  /* Short portrait stages (a phone opening the page on its own, about 360 × 520, and the home
+  /* Short stacked stages (a phone opening the page on its own, about 360 × 520, and the home
      page's phone stage, which can be under 400px tall): the clock sits beside the title, and under
      470px the log goes and the card tightens, so the garden and its mailbox keep their room. */
-  @container (orientation: portrait) and (max-height: 560px) {
+  @container (max-height: 560px) and ((orientation: portrait) or (max-width: 440px)) {
     .wrap { padding: 3cqmin 5cqmin; gap: 1.2cqmin; --big: 18px; }
     .head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 3cqmin; }
     .clock { margin-top: 0; font-size: 12px; }
@@ -155,7 +168,7 @@
        "You did, too." goes to a second line instead (on the home stage there is no nav). */
     html:not(.embedded) .final { padding-right: 62px; }
   }
-  @container (orientation: portrait) and (max-height: 470px) {
+  @container (max-height: 470px) and ((orientation: portrait) or (max-width: 440px)) {
     .wrap { --big: 16px; }
     .cronlog, .mailto { display: none; }
     .card { padding: 2cqmin 3cqmin; font-size: 11px; }
@@ -166,9 +179,17 @@
     .job .st { font-size: 10.2px; }
     .final { margin-top: .2em; }
   }
+  /* The smallest stage (a 360 × 520 phone's home stage, 328 × 288): the garden goes up beside the
+     title, so the card below has room for every row and the closing line. Before 2026-10-15 it had
+     the sideways-phone layout below: a 162px card, 345px tall, with the closing line off the stage. */
+  @container (max-width: 440px) and (max-height: 330px) {
+    .wrap { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto; grid-template-areas: "head garden" "hint hint" "card card"; column-gap: 3cqmin; }
+    .head { display: block; }
+    .clock { margin-top: .3em; }
+  }
   /* A phone held sideways (the home stage is then about 508 × 339): the card gets the wider column
      and only the rows and the closing line, so the closing line is not pushed off the stage. */
-  @container (orientation: landscape) and (max-height: 420px) {
+  @container (orientation: landscape) and (max-height: 420px) and (min-width: 441px) {
     .wrap { grid-template-columns: 1fr 1.2fr; padding: 3cqmin 4cqmin; gap: 1.4cqmin 3cqmin; --big: 18px; }
     .card { padding: 2.2cqmin 3cqmin; font-size: 11px; }
     .card h2, .cronlog, .mailto { display: none; }
@@ -225,10 +246,10 @@
     <h2 data-lang="ko">오늘의 크론탭</h2>
     <p class="mailto mono"># MAILTO=""</p>
     <ol class="jobs"></ol>
-    <p class="cronlog mono" aria-hidden="true"></p>
+    <p class="cronlog mono" data-tty-line="decor" aria-hidden="true"></p>
     <p class="final" aria-live="polite">
-      <span data-lang="en"><span class="fa" aria-hidden="true">All jobs succeeded.</span> <span class="fb" aria-hidden="true">You did, too.</span></span>
-      <span data-lang="ko"><font-kku class="fa" aria-hidden="true" font="dunggeun" size="1em">모든 작업 성공.</font-kku> <font-kku class="fb" aria-hidden="true" font="dunggeun" size="1em">당신도요.</font-kku></span>
+      <span data-lang="en"><span class="fa" data-tty-line="setup" aria-hidden="true">All jobs succeeded.</span> <span class="fb" data-tty-line="punch" aria-hidden="true">You did, too.</span></span>
+      <span data-lang="ko"><font-kku class="fa" data-tty-line="setup" aria-hidden="true" font="dunggeun" size="1em">모든 작업 성공.</font-kku> <font-kku class="fb" data-tty-line="punch" aria-hidden="true" font="dunggeun" size="1em">당신도요.</font-kku></span>
     </p>
   </section>
 </main>
@@ -311,7 +332,7 @@
     return { x: job.x, board, t };
   });
   function sizeStakes(scale) {
-    const fs = Math.max(11, 10.6 / Math.max(scale, .2));
+    const fs = Math.max(11, 10.6 / Math.max(scale, .1));
     const w = Math.max(25, fs + 4), h = Math.max(18, fs + 5);
     STAKES.forEach(({ x, board, t }) => {
       const left = x + 16 + (SEED - 1) * 6, top = 268 - h;
@@ -489,7 +510,7 @@
     mailbox.setAttribute('transform', `translate(${FOOT} 354) scale(${MB}) translate(-638 -354)`);
     MOUTH = ROOT(588, 212);
     // The count on the badge stays 10px or more on screen, however small the garden is drawn.
-    const fs = Math.max(13, 10.6 / (MB * Math.max(scale, .2)));
+    const fs = Math.max(13, 10.6 / (MB * Math.max(scale, .1)));
     badge.querySelector('circle').setAttribute('r', Math.max(12, fs * .9).toFixed(1));
     const n = badge.querySelector('text');
     n.setAttribute('font-size', fs.toFixed(1)); n.setAttribute('y', (200 + fs * .35).toFixed(1));
@@ -655,11 +676,14 @@
     showHalf(half, true);
     if (!still) half.animate([{ transform: 'translateY(30%)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 500, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
   };
-  // The seedling in pot 6 moves on its own (the plant group around it sways when watered).
-  const seedling6 = (frames, ms) => {
+  // The seedling in pot 6 moves on its own (the plant group around it sways when watered). While it
+  // moves it carries a class named for the move ('looking', 'hopping'), which changes nothing on
+  // screen: the page checker's --trace reads it to time these beats.
+  const seedling6 = (frames, ms, move) => {
     const s = plants[5].sprout;
     s.style.transformBox = 'fill-box'; s.style.transformOrigin = '50% 100%';
-    s.animate(frames, { duration: ms, easing: 'ease-in-out' });
+    s.classList.add(move);
+    s.animate(frames, { duration: ms, easing: 'ease-in-out' }).finished.then(() => s.classList.remove(move), () => s.classList.remove(move));
   };
   // The end of the day, in beats: "All jobs succeeded." Job 6's row gets a grey pulse (cron looked,
   // nothing was due) and its seedling looks around; its status stays "next Feb 31". Then
@@ -671,20 +695,23 @@
     later(1200, () => {
       rows[5].animate([{ background: 'rgba(35, 65, 47, 0)' }, { background: 'rgba(35, 65, 47, .16)', offset: .2 }, { background: 'rgba(35, 65, 47, 0)' }],
         { duration: 1100, easing: 'ease-out' });
-      seedling6([{ transform: 'rotate(0)' }, { transform: 'rotate(-18deg)', offset: .3 }, { transform: 'rotate(18deg)', offset: .65 }, { transform: 'rotate(0)' }], 900);
+      seedling6([{ transform: 'rotate(0)' }, { transform: 'rotate(-18deg)', offset: .3 }, { transform: 'rotate(18deg)', offset: .65 }, { transform: 'rotate(0)' }], 900, 'looking');
     });
     later(2400, () => rise(finalB));
     // The hop is 26 svg units, and at least 12px on screen where the garden is drawn small.
     later(4000, () => {
-      const hop = Math.max(26, 12 / Math.max(gardenScale, .2));
+      const hop = Math.max(26, 12 / Math.max(gardenScale, .1));
       seedling6([{ transform: 'none' }, { transform: `translateY(${-hop.toFixed(1)}px)`, offset: .35 }, { transform: 'scale(1.12, .86)', offset: .6 },
-        { transform: `translateY(${-(hop * 9 / 26).toFixed(1)}px)`, offset: .78 }, { transform: 'none' }], 750);
+        { transform: `translateY(${-(hop * 9 / 26).toFixed(1)}px)`, offset: .78 }, { transform: 'none' }], 750, 'hopping');
     });
   }
 
+  // The garden was set up once before the first day (reset() below), so the first day does not
+  // reset it again: a visitor who waters it in the half second before the day starts keeps their
+  // drops and wiggles.
   function day() {
     const mine = ++run;
-    reset();
+    if (mine > 1) reset();
     if (still) {
       // the whole day at once, in the order cron would have run it, so the log tail is right
       JOBS.flatMap((job, i) => job.at.map((m) => [m, i])).sort((a, b) => a[0] - b[0] || a[1] - b[1]).forEach(([m, i]) => fire(i, m));
@@ -702,19 +729,26 @@
       if (m < END) requestAnimationFrame(tick);
       else {
         setTimeout(() => { if (mine === run) finish(mine); }, 1200);
-        setTimeout(() => { if (mine === run) day(); }, 12000);
+        setTimeout(() => { if (mine === run) again(mine); }, 12000);
       }
     };
     requestAnimationFrame(tick);
   }
+  // The day starts over only once the visitor's watering is done (the last pot's wiggle, and the
+  // seedling's bubble with its fade), so a tap just before the loop is not wiped half way.
+  const again = (mine) => {
+    const wait = Math.max(wateredAt + WATER_MS, sayUntil + 300) - performance.now();
+    if (wait > 0) setTimeout(() => { if (mine === run) again(mine); }, wait);
+    else day();
+  };
 
   // Watered, the seedling in pot 6 promises to start, on the day in its crontab line. A paper
-  // bubble above and to the left of it for 2.2 s (a line with a joke stays up 2 s or more);
-  // watering again while it is up keeps it up longer. Its text is sized in garden units so it is
-  // 11px or more on screen.
+  // bubble above and to the left of it stays up for its reading time plus 0.4 s for the fade-in
+  // (2.4 s in all, so it is fully up 2 s or more); watering again while it is up keeps it up
+  // longer. Its text is sized in garden units so it is 11px or more on screen.
   const say = $('.say'), sayBox = say.querySelector('.say-box'), sayText = say.querySelector('.say-text');
   sayText.textContent = SAY;
-  const SAY_MS = 2200;
+  const SAY_MS = TTY.readMs(SAY) + 400;
   let sayUntil = 0, sayTimer = 0, sayScale = 1;
   function speak() {
     const shown = performance.now() < sayUntil;
@@ -727,7 +761,7 @@
       }, () => {});
     }, SAY_MS);
     if (shown) return;
-    const fs = Math.max(18, 11.5 / Math.max(sayScale, .2));
+    const fs = Math.max(18, 11.5 / Math.max(sayScale, .1));
     sayText.setAttribute('font-size', fs.toFixed(1));
     sayText.setAttribute('x', 0); sayText.setAttribute('y', 0);
     const tw = sayText.getComputedTextLength();
@@ -749,10 +783,14 @@
     if (!still) say.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 180, easing: 'ease-out' });
   }
 
+  // A watering lasts WATER_MS: the last pot's drop falls 0.35 s late and its wiggle ends 1.43 s in.
+  const WATER_MS = 1500;
+  let wateredAt = -Infinity;
   // Tap the garden (or Enter / Space on it) to water everything once more: a drop falls on
   // each pot and every plant gives a little wiggle; the seedling in pot 6 answers but does not
   // grow. With reduced motion, the plants just brighten.
   function water() {
+    wateredAt = performance.now();
     speak();
     plants.forEach((p, i) => {
       if (still) { p.g.animate([{ filter: 'brightness(1.25) saturate(1.3)' }, { filter: 'none' }], { duration: 900, easing: 'ease-out' }); return; }
@@ -789,12 +827,12 @@
   }
 
   // Landscape screens get a taller sky above the bed so the garden fills its column. Short
-  // portrait stages (the CSS rules for 560px and under) lose the top 40 of sky instead, so the bed,
+  // stacked stages (the CSS rules for 560px and under) lose the top 40 of sky instead, so the bed,
   // the letters and the mailbox are drawn larger; the sun and moon then keep to a lower arc.
   let tall = false, short = false;
   let lastMinute = START;
   const fit = () => {
-    tall = innerWidth > innerHeight;
+    tall = innerWidth > innerHeight && innerWidth > 440; // the CSS stacks stages under 440px wide
     short = !tall && innerHeight <= 560;
     const [vy, vh] = tall ? [-220, 580] : short ? [40, 320] : [0, 360];
     svg.setAttribute('viewBox', `0 ${vy} 700 ${vh}`);

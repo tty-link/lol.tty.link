@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-tty-nav-phone="bottom right">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -30,13 +30,16 @@
     --warm-3: #8fd3ff;
     --text: #e9eef8;
     --hint: calc(clamp(11px, 1.8cqmin, 14px) * 1.6 + .8cqh); /* the hint line and its margin, taken from the rack */
+    /* Every line that carries the joke starts from this size, and the page title is no bigger:
+       the title is a label, set apart by its face, case and tracking. */
+    --line: clamp(13px, calc(2.4vmin + 4px), 22px);
   }
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; }
   body {
     container-type: size;
     position: relative;
-    overflow: hidden;
+    overflow: clip; /* not hidden: with container-type: size that makes the body a scroll box (focus would shift the stage) */
     background: radial-gradient(90cqmax 70cqmax at 50% 0%, var(--night-1), var(--night-2) 70%);
     color: var(--text);
     font-family: 'Lexend', 'Gowun Dodum', system-ui, sans-serif;
@@ -60,11 +63,11 @@
     padding: 3.4cqh 4cqw;
   }
   .title { text-align: center; }
-  .title h1 { font-family: 'Lilita One', 'Lexend', sans-serif; font-weight: 400; font-size: clamp(26px, 6.8cqmin, 58px); line-height: 1; color: #fff3cf; letter-spacing: .01em; text-shadow: 0 3px 0 rgba(0,0,0,.25); }
-  .title p { margin-top: .9cqh; font-size: clamp(12px, 2.2cqmin, 17px); color: #b8c4dc; }
-  .lang-ko .title p { margin-top: 1.4cqh; }
+  .title h1 { font-family: 'Lilita One', 'Lexend', sans-serif; font-weight: 400; font-size: var(--line); line-height: 1.1; color: #fff3cf; letter-spacing: .09em; text-transform: uppercase; text-shadow: 0 2px 0 rgba(0,0,0,.25); }
+  .title p { margin-top: .6cqh; font-size: var(--line); color: #c9d3e8; } /* the promise the ending breaks */
+  .lang-ko .title p { margin-top: .9cqh; }
   /* The one-line hint under the subtitle: a door can be opened any time. It fades in once the
-     first doors have opened, and stays. */
+     first doors have opened, and goes once a visitor has pressed something. */
   .title .hint { margin-top: .5cqh; font-size: clamp(11px, 1.8cqmin, 14px); color: #8e9cc0; opacity: 0; transition: opacity .6s; }
   .lang-ko .title .hint { margin-top: .7cqh; }
   .title .hint.on { opacity: 1; }
@@ -165,7 +168,7 @@
     cursor: pointer;
   }
   .extra[hidden] { display: none; }
-  .extra b { font-family: 'Lexend', sans-serif; font-size: max(11px, 4.2cqi); font-weight: 700; line-height: 1; text-align: left; }
+  .extra b { font-family: 'Lexend', sans-serif; font-size: max(var(--line), 4.2cqi); font-weight: 700; line-height: 1; text-align: left; }
   .extra .led { width: 2.1cqi; height: 2.1cqi; border-radius: 50%; background: #ff7413; box-shadow: 0 0 0 .4cqi #7a3a06, 0 0 2cqi #ff8a1a; animation: blink 1s steps(2, end) infinite; } /* deeper than the bays' amber: it sits on gold */
   .extra .tape { position: absolute; left: -18%; top: -40%; width: 54%; overflow: visible; pointer-events: none; }
   .rack.dark .extra { filter: brightness(.45); }
@@ -194,12 +197,15 @@
     padding-bottom: 1.4em;
   }
   .lang-ko .receipt { font-family: 'Gowun Dodum', 'Red Hat Mono', sans-serif; }
-  .receipt .row { display: grid; grid-template-columns: 2.6em 1fr; gap: .5em; opacity: .55; }
-  .receipt .row:last-child { opacity: 1; font-weight: 700; }
+  .receipt .row > span:last-child { text-wrap: balance; } /* no one-word last line ("'Summer2026!'.") */
+  /* Older slips in lighter ink (not faded out: they can still be read), the newest bold. */
+  .receipt .row { display: grid; grid-template-columns: 2.6em 1fr; gap: .5em; color: #6b7180; }
+  .receipt .row:last-child { color: var(--ink); font-weight: 700; }
   .lang-ko .receipt .row:last-child { font-weight: 400; }
-  .receipt .no { color: #8a8f99; }
+  .receipt .no { color: #a3a8b1; }
+  .receipt .row:last-child .no { color: #8a8f99; }
   .receipt:empty { display: none; }
-  .receipt.again { padding-top: 1em; padding-bottom: 1.2em; font-size: clamp(12px, 2.6cqmin, 20px); }
+  .receipt.again { padding: 1em 1em 1.2em; font-size: max(var(--line), clamp(12px, 2.6cqmin, 20px)); }
 
   /* ---- Restart ---- */
   .restart {
@@ -224,7 +230,8 @@
   /* The second time round, the title counts: (2/∞). */
   .restart h2 .round { margin-left: .25em; font-family: 'Lexend', sans-serif; font-weight: 700; font-size: .62em; color: #a8681a; white-space: nowrap; }
   .restart p { margin-top: 2cqi; font-size: max(11px, 4.2cqi); color: #5a6274; }
-  .restart .why { text-wrap: pretty; }
+  .restart .why { font-size: max(var(--line), 4.2cqi); text-wrap: pretty; }
+  .restart .why:empty { display: none; } /* a snoozed window has only its title */
   .restart .why span { display: inline-block; } /* on two lines, break between the sentences */
   .restart .now {
     display: grid;
@@ -269,15 +276,18 @@
     background: #fff3cf;
     color: var(--ink);
     font-weight: 700;
-    font-size: clamp(12px, 2.4cqmin, 19px);
+    font-size: max(var(--line), clamp(12px, 2.4cqmin, 19px));
     white-space: nowrap;
     translate: -50% 0;
     opacity: 0;
   }
   .done-line > font-kku { color: var(--ink); }
-  /* Opened on its own on a narrow screen, the band takes two lines and keeps clear of the corner nav. */
+  @container (max-width: 345px) { .done { padding: .6em .8em; } } /* one line on the 328-wide stages */
+  /* Opened on its own on a narrow screen, the band takes two lines and keeps clear of the corner
+     nav, which this page keeps at the bottom right on phones (data-tty-nav-phone): the band is
+     centred in what is left of the bottom edge (the folded nav is about 84 px wide). */
   @media (max-width: 450px) {
-    html:not(.embedded) .done { white-space: normal; text-align: center; line-height: 1.3; padding: .55em 1.3em; }
+    html:not(.embedded) .done { left: 8px; right: 92px; width: fit-content; margin-inline: auto; translate: none; white-space: normal; text-align: center; line-height: 1.3; padding: .55em 1.1em; }
     html:not(.embedded) .done-line { display: block; white-space: nowrap; }
   }
   .ring { position: absolute; left: 50%; top: 50%; width: clamp(60px, 14cqmin, 110px); translate: -50% -50%; opacity: 0; pointer-events: none; }
@@ -286,7 +296,7 @@
   .progress b { display: block; font-weight: 600; }
   .progress span { display: block; margin-top: .3em; color: #c9d3e8; } /* carries the joke: as big as the line above */
   /* The answer comes in under the warning, which stays up for the whole ring. */
-  .progress .still { color: #fff3cf; opacity: 0; transition: opacity .25s; }
+  .progress .still { color: #fff3cf; opacity: 0; transition: opacity .15s; }
   .progress .still.on { opacity: 1; }
 
   .title h1 > font-kku { color: #fff3cf; }
@@ -315,9 +325,9 @@
   <header class="title">
     <h1>
       <span data-lang="en">The Patch Calendar</span>
-      <span data-lang="ko"><font-kku font="geumbak" size="clamp(28px, 7cqmin, 60px)">패치 달력</font-kku></span>
+      <span data-lang="ko"><font-kku font="geumbak" size="var(--line)">패치 달력</font-kku></span>
     </h1>
-    <p>
+    <p data-tty-line="setup">
       <span data-lang="en">Counting down to the last patch.</span>
       <span data-lang="ko">마지막 패치까지 카운트다운.</span>
     </p>
@@ -334,7 +344,7 @@
     <div class="ear l"><i></i><i></i><i></i></div>
     <div class="ear r"><i></i><i></i><i></i></div>
     <div class="bays" role="group" aria-describedby="door-hint">
-      <button class="extra" type="button" hidden><b>25</b><i class="led"></i><svg class="tape" viewBox="0 0 40 40" aria-hidden="true"><g transform="rotate(38 20 20)"><rect x="1" y="15" width="38" height="10" rx="5" fill="#f2c9a0"/><rect x="15" y="15" width="10" height="10" fill="#e7b386"/></g><g transform="rotate(-38 20 20)"><rect x="1" y="15" width="38" height="10" rx="5" fill="#f5d2ad"/><rect x="15" y="15" width="10" height="10" fill="#e7b386"/><circle cx="18" cy="18" r=".9" fill="#c98f5f"/><circle cx="22" cy="18" r=".9" fill="#c98f5f"/><circle cx="18" cy="22" r=".9" fill="#c98f5f"/><circle cx="22" cy="22" r=".9" fill="#c98f5f"/></g></svg></button>
+      <button class="extra" type="button" data-tty-line="tag" hidden><b>25</b><i class="led"></i><svg class="tape" viewBox="0 0 40 40" aria-hidden="true"><g transform="rotate(38 20 20)"><rect x="1" y="15" width="38" height="10" rx="5" fill="#f2c9a0"/><rect x="15" y="15" width="10" height="10" fill="#e7b386"/></g><g transform="rotate(-38 20 20)"><rect x="1" y="15" width="38" height="10" rx="5" fill="#f5d2ad"/><rect x="15" y="15" width="10" height="10" fill="#e7b386"/><circle cx="18" cy="18" r=".9" fill="#c98f5f"/><circle cx="22" cy="18" r=".9" fill="#c98f5f"/><circle cx="18" cy="22" r=".9" fill="#c98f5f"/><circle cx="22" cy="22" r=".9" fill="#c98f5f"/></g></svg></button>
     </div>
   </div>
 
@@ -344,9 +354,9 @@
   </div>
 </div>
 
-<section class="restart" role="dialog" aria-modal="false">
-  <h2></h2>
-  <p class="why"></p>
+<section class="restart" role="dialog" aria-modal="false" inert>
+  <h2 data-tty-line="setup"></h2>
+  <p class="why" data-tty-line="setup"></p>
   <div class="deadline"><span class="track"><i></i></span><b></b></div>
   <button class="now" type="button"></button>
   <button class="later" type="button"></button>
@@ -358,7 +368,7 @@
   <circle class="arc" cx="50" cy="50" r="42" stroke="#38d996" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" transform="rotate(-90 50 50)"/>
 </svg>
 <p class="progress" aria-hidden="true"><b></b><span class="unplug"></span><span class="still"></span></p>
-<p class="done"></p>
+<p class="done" data-tty-line="setup"></p>
 
 <script>
 (() => {
@@ -373,6 +383,7 @@
   const done = $('.done');
   const ring = $('.ring');
   const progress = $('.progress');
+  const hint = $('.title .hint');
 
   const T = TTY.t({
     en: {
@@ -415,7 +426,7 @@
       backups: 'Backed up: the backups.',
       required: 'Restart required.',
       restartTitle: 'Restart required.',
-      restartWhy: '23 patches are waiting for one small act of courage.',
+      restartWhy: '23 patches await one small act of courage.',
       restartAgainWhy: 'The last restart needs a restart. One more small act of courage.',
       now: 'Restart now',
       later: 'Remind me in 10 minutes',
@@ -435,7 +446,7 @@
       pool: [
         '업데이트: 전 직원 프린터 드라이버. 또.',
         "삭제: 너무 많은 걸 기억하던 '로그인 유지' 체크박스",
-        "변경: 'Spring2026!'을 'Summer2026!'로",
+        '변경: 비밀번호. 끝에 ! 하나 더.',
         '차단: 커피 머신의 22번 포트',
         '삭제: 인터넷 뱅킹이 깔아 둔 보안 프로그램 일곱 개',
         "정리: 인턴의 '임시' 관리자 계정 (2019년부터 임시)",
@@ -489,20 +500,17 @@
     },
   });
 
-  // Behind the doors: 22 notes, then the backups, then the one everyone knows. A 25th slip
-  // prints after the restart. Only doors 1-4 open slowly enough to read, so they get strong
-  // notes: in the first round always the same four (the port-22 coffee machine and the
-  // Spring-to-Summer password are the ones the explanation quotes), from the second round on
-  // those two plus two from STRONG, shuffled. The fast doors 5-22 draw from the rest.
-  const FIRST = TTY.t({ en: [3, 2, 32, 25], ko: [3, 2, 4, 25] });
-  const STRONG = TTY.t({ en: [5, 25, 32, 16, 29, 14, 17], ko: [4, 5, 6, 25, 32, 16, 29, 14, 17] });
+  // Behind the doors: 22 notes, then the backups, then the one everyone knows. A 25th slip prints
+  // after the restart. Only doors 1-2 open slowly enough to read, so they always get the two the
+  // explanation quotes (port 22 on the coffee machine; the password changed as little as possible).
+  // Doors 3-22 are the rush, a fresh draw from the other 32 every round: seen going by, not read.
+  const LEAD = [3, 2];
+  const SLOW = LEAD.length;
   const mix = (a) => a.map((v) => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
   let notes = [];
-  let deals = 0;
   const shuffleNotes = () => {
-    const lead = deals++ ? mix([3, 2, ...mix(STRONG).slice(0, 2)]) : FIRST;
-    const rest = mix(T.pool.map((_, i) => i).filter((i) => !lead.includes(i))).slice(0, 22 - lead.length);
-    notes = lead.concat(rest).map((i) => T.pool[i]).concat(T.backups, T.required, T.required);
+    const rest = mix(T.pool.map((_, i) => i).filter((i) => !LEAD.includes(i))).slice(0, 22 - SLOW);
+    notes = LEAD.concat(rest).map((i) => T.pool[i]).concat(T.backups, T.required, T.required);
   };
   shuffleNotes();
   const noteAt = (n) => notes[n] || T.required; // #26, #27 … after more restarts
@@ -556,6 +564,7 @@
   });
   const extra = $('.extra');
   bays.append(extra); // after door 24 in the tab order
+  const isOpen = (i) => all[i].classList.contains('open');
   // Tall screens get a 4 × 6 rack.
   const fit = () => {
     const tall = innerWidth < innerHeight * .9;
@@ -568,15 +577,22 @@
 
   /* ---- Receipt ---- */
   const printed = [];
+  const rush = new Set(); // slips printed in the rush: data-tty-line="decor" (montage)
   const printer = $('.printer');
   // The last three slips, newest (bold) at the bottom. Where the printer's room ends above that
   // (short stages, a 360 x 520 phone with the 4 x 6 rack), the oldest lines give way, so the
   // newest one is always on screen. Layout boxes only: the print animation moves the paper.
+  // #25 on (a slip after a restart) is the punchline: data-tty-line="punch".
   function renderReceipt() {
     const last = printed.slice(-3);
     receipt.innerHTML = last.map((n) => `<p class="row"><span class="no">#${String(n + 1).padStart(2, '0')}</span><span></span></p>`).join('');
     receipt.classList.toggle('again', last[last.length - 1] >= 24);
-    receipt.querySelectorAll('.row').forEach((row, k) => { row.lastChild.textContent = noteAt(last[k]); });
+    receipt.querySelectorAll('.row').forEach((row, k) => {
+      const n = last[k];
+      row.lastChild.textContent = noteAt(n);
+      if (n >= 24) row.dataset.ttyLine = 'punch';
+      else if (rush.has(n)) row.dataset.ttyLine = 'decor';
+    });
     while (receipt.children.length > 1 && receipt.offsetTop + receipt.offsetHeight > printer.clientHeight + 1) receipt.firstElementChild.remove();
   }
   function print(i, quick) {
@@ -585,11 +601,17 @@
     if (!TTY.reduce && !quick) receipt.animate([{ transform: 'translateY(-14%)', clipPath: 'inset(0 0 40% 0)' }, { transform: 'none', clipPath: 'inset(0)' }], { duration: 380, easing: 'steps(6, end)' });
   }
   addEventListener('resize', () => { if (receipt.children.length) renderReceipt(); });
-  function open(i, quick) {
+  // quick: no print animation. decor: a slip of the rush. silent: no slip at all (door 24 is open
+  // and its slip stays the newest; the visitor's own doors still print).
+  function open(i, { quick = false, decor = false, silent = false } = {}) {
     const bay = all[i];
     if (bay.classList.contains('open')) return false;
     bay.classList.add('open');
-    print(i, quick);
+    bay.querySelector('.door').tabIndex = -1; // an open door is see-through and lets clicks through
+    if (!silent) {
+      if (decor) rush.add(i);
+      print(i, quick);
+    }
     return true;
   }
 
@@ -601,6 +623,7 @@
   let roundSnoozes = 0; // this round's snoozes: five of them and the policy takes over
   let round = 1;        // the restart window's title counts from the second time: (2/∞)
   let restartsDone = 0; // slips #25, #26 … and the door taped onto the rack
+  let armedAt = 0;      // a window's buttons answer only once it is up (a double tap on door 24 or 25 lands on it)
   // 10 minutes per snooze, added up the way a calendar would: 1 h 20 min, 2 d 3 h.
   const snoozedFor = () => {
     const m = snoozes * 10, u = T.units;
@@ -610,6 +633,11 @@
     if (h) return join(h + (ko ? u.h : ' ' + u.h), r ? r + (ko ? u.m : ' ' + u.m) : '');
     return r + (ko ? u.m : ' ' + u.m);
   };
+  const windowUp = () => restart.classList.contains('on');
+  function hideRestart() {
+    restart.classList.remove('on');
+    restart.inert = true; // not pressable or focusable while it is not there
+  }
   function showRestart(snoozed) {
     const title = snoozed ? T.snoozed[Math.min(snoozes, 2) - 1] : T.restartTitle;
     const count = !snoozed && round > 1 ? `(${round}/∞)` : '';
@@ -638,10 +666,11 @@
     laterBtn.setAttribute('aria-disabled', String(forced));
     managed.classList.remove('on');
     if (forced) startDeadline();
-    // From the second window on, the 23 patches are already in ("All 23 patches applied."):
-    // what is waiting now is the restart the last restart asked for.
-    const why = forced ? T.forced : round > 1 ? T.restartAgainWhy : T.restartWhy;
-    restart.querySelector('.why').replaceChildren(...why.split(/(?<=\.) /).flatMap((text, k) => {
+    // The first window says why; a snoozed one has only its title ("It has been 10 minutes.").
+    // From the second round on, the 23 patches are already in ("All 23 patches applied."): what is
+    // waiting now is the restart the last restart asked for.
+    const why = forced ? T.forced : snoozed ? '' : round > 1 ? T.restartAgainWhy : T.restartWhy;
+    restart.querySelector('.why').replaceChildren(...(why ? why.split(/(?<=\.) /) : []).flatMap((text, k) => {
       const sentence = document.createElement('span');
       sentence.textContent = text;
       return k ? [' ', sentence] : [sentence];
@@ -650,6 +679,8 @@
     nowBtn.textContent = T.now;
     laterBtn.textContent = T.later;
     restart.classList.add('on');
+    restart.inert = false;
+    armedAt = performance.now() + (TTY.reduce ? 0 : 350);
     if (!TTY.reduce) restart.animate([{ opacity: 0, transform: 'scale(.85)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
   }
   let snoozing = false;
@@ -658,7 +689,7 @@
     snoozes += 1;
     roundSnoozes += 1;
     if (!TTY.reduce) await restart.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(30%) scale(.9)' }], { duration: 260, easing: 'ease-in' }).finished;
-    restart.classList.remove('on');
+    hideRestart();
     snoozing = false;
   }
   // The faded snooze button still answers: a shake, and the line from every managed PC's settings.
@@ -679,7 +710,7 @@
     const sec = Math.ceil(left / 1000);
     deadlineLeft.textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
     deadlineBar.style.width = (left / FORCE_MS * 100).toFixed(2) + '%';
-    if (!left) { stopDeadline(); run++; doRestart(); }
+    if (!left) { stopDeadline(); doRestart(); }
   }
   function startDeadline() {
     if (deadlineAt) return;
@@ -711,24 +742,25 @@
   let restarting = false;
   let finished = false; // the restart has played out to the taped-on door; that door asks again
   let restartId = 0;
+  // Its own timers, not the autoplay's: once the rack restarts, the slip and the door always follow.
   async function doRestart() {
     if (restarting) return;
     restarting = true;
     finished = false;
     const me = ++restartId;
     stopDeadline();
-    restart.classList.remove('on');
+    hideRestart();
     done.style.opacity = 0;
     extra.hidden = true; // this restart takes care of it; the next one drops in at the end
-    all.forEach((b, i) => { if (!b.classList.contains('open')) { b.classList.add('open'); if (i < 23) printed.push(i); } });
+    all.forEach((b) => { if (!b.classList.contains('open')) { b.classList.add('open'); b.querySelector('.door').tabIndex = -1; } });
     rack.classList.add('dark');
     printer.classList.add('dark');
     ring.style.opacity = 1;
     const arc = ring.querySelector('.arc');
     if (!TTY.reduce) {
-      // Quick to 99%, then the long 99%, as every restart does: half a second to 99, 1.7 s there.
-      const RING = 2400;
-      const steps = [[0, 0], [.05, 7], [.12, 31], [.18, 64], [.22, 99], [.92, 99], [1, 100]];
+      // Quick to 99%, then the long 99%, as every restart does: half a second to 99, 2.1 s there.
+      const RING = 2800;
+      const steps = [[0, 0], [.04, 7], [.1, 31], [.15, 64], [.18, 99], [.93, 99], [1, 100]];
       const still = progress.querySelector('.still');
       progress.querySelector('.unplug').textContent = T.unplug;
       still.textContent = T.still;
@@ -737,13 +769,20 @@
       say(0);
       progress.style.opacity = 1;
       steps.forEach(([at, pct]) => setTimeout(() => say(pct), at * RING));
-      setTimeout(() => still.classList.add('on'), 1000); // half a second into the long 99%, under the warning
+      // Just after it reaches 99%, under the warning, which stays up for the whole ring.
+      setTimeout(() => { if (me === restartId) still.classList.add('on'); }, 650);
       await arc.animate(steps.map(([at, pct]) => ({ offset: at, strokeDashoffset: 1 - pct / 100 })), { duration: RING, easing: 'linear', fill: 'forwards' }).finished;
-      progress.style.opacity = 0;
     }
-    ring.style.opacity = 0;
+    if (me !== restartId) return;
     rack.classList.remove('dark');
-    for (const b of all) { b.classList.add('green'); if (!TTY.reduce) await wait(22); }
+    for (const b of all) { b.classList.add('green'); if (!TTY.reduce) await wait(12); }
+    if (me !== restartId) return;
+    // The ring and its lines stay up through the green lights, so the answer under the warning
+    // gets its two seconds; they go as the band comes.
+    ring.style.opacity = 0;
+    progress.style.opacity = 0;
+    printed.length = 0;
+    rush.clear();
     receipt.innerHTML = '';
     printer.classList.remove('dark');
     // Two sentences, each in its own span: on narrow screens opened on their own they go on two
@@ -755,7 +794,7 @@
       if (ko) {
         const el = document.createElement('font-kku');
         el.setAttribute('font', 'dunggeun');
-        el.setAttribute('size', 'clamp(13px, 2.6cqmin, 21px)');
+        el.setAttribute('size', 'max(var(--line), clamp(13px, 2.6cqmin, 21px))');
         el.textContent = text;
         line.append(el);
       } else {
@@ -768,19 +807,31 @@
     // And then, on a fresh slip: one more.
     if (!TTY.reduce) await wait(1000);
     if (me !== restartId) return;
-    printed.length = 0;
     const n = 24 + restartsDone++;
     print(n);
-    // A beat later the calendar grows a door for it.
-    if (!TTY.reduce) await wait(700);
+    // A beat after the slip has printed, the calendar grows a door for it (the tag
+    // lands 1-3 s after the punch).
+    if (!TTY.reduce) await wait(1100);
     if (me !== restartId) return;
     showExtra(n + 1);
     finished = true;
   }
+
+  /* ---- Who answers the window ---- */
+  // The autoplay answers the restart window until a visitor presses one of its buttons or the
+  // taped-on door. From then on the window is theirs (the autoplay does not answer
+  // for them, and never presses "Restart now" on someone who chose "later"); it comes back from
+  // the start 12 s after their last press, as the home stage moves on by then anyway.
+  let owner = 'auto';
+  let lastInput = -Infinity;
+  let pressed = false;
+  ['pointerdown', 'keydown'].forEach((type) => addEventListener(type, (e) => { if (e.isTrusted) lastInput = performance.now(); }, { capture: true, passive: true }));
+  // "Tap a door" goes once someone has.
+  const firstPress = () => { pressed = true; hint.classList.remove('on'); };
   // The taped-on door opens the same window again, counting.
   function again() {
     if (!finished) return;
-    run++;
+    owner = 'visitor';
     finished = false;
     restarting = false;
     round += 1;
@@ -790,98 +841,118 @@
   }
 
   /* ---- Autoplay ---- */
-  let run = 0;
+  let windowAt = 0; // when the first window went up (by the autoplay, or by a visitor opening door 24)
   function resetAll() {
     restartId++;
     restarting = false;
     finished = false;
+    owner = 'auto';
     snoozes = roundSnoozes = restartsDone = 0;
     round = 1;
     stopDeadline();
-    all.forEach((b) => b.classList.remove('open', 'green'));
+    all.forEach((b) => { b.classList.remove('open', 'green'); b.querySelector('.door').removeAttribute('tabindex'); });
     extra.hidden = true;
     printed.length = 0;
+    rush.clear();
     receipt.innerHTML = '';
-    restart.classList.remove('on');
+    hideRestart();
     done.style.opacity = 0;
     rack.classList.remove('dark');
     printer.classList.remove('dark');
     ring.style.opacity = 0;
+    progress.style.opacity = 0;
   }
-  async function play() {
-    const mine = ++run;
-    const live = () => run === mine;
-    let first = true;
-    while (live()) {
-      resetAll();
-      if (!first) shuffleNotes(); // the first round keeps the notes dealt at load
-      first = false;
-      await wait(400);
-      // Doors 1-4 slowly, one readable note each (the fourth a little longer: the rush wipes it
-      // off the paper); then the rest in a rush.
-      for (let i = 0; i < 23; i++) {
-        if (!live()) return;
-        open(i, i >= 4);
-        await wait(i < 3 ? 1400 : i === 3 ? 1800 : 100);
+  const PUNCH = 19.4; // slip #25 fully printed, in seconds of autoplay (measured 19.1, plus 0.3 for a loaded machine): TTY.timeline holds the home stage for it
+  const FIRST_WINDOW = TTY.readMs(T.restartWhy) + 150; // the first window stays until its line is read
+  const press = (btn, ms) => { if (!TTY.reduce) btn.animate([{ transform: 'none' }, { transform: 'scale(.92)' }, { transform: 'none' }], { duration: ms }); };
+  const autoTurn = () => owner === 'auto' && !restarting;
+  const play = TTY.timeline(async (t) => {
+    for (let turn = 0; ; turn++) {
+      if (turn) { resetAll(); shuffleNotes(); } // the first round keeps the notes dealt at load, and anything a visitor opened already
+      await t.wait(400);
+      // Doors 1-2 slowly, each slip up until it is read; skipped once door 24 is open.
+      for (let i = 0; i < SLOW && !isOpen(23); i++) if (open(i)) await t.wait(TTY.readMs(noteAt(i)) + 150);
+      // Doors 3-22: the rush (montage). Behind an open door 24 they open without slips,
+      // and so do the slow doors it skipped.
+      for (let i = 0; i < 22; i++) if (open(i, { quick: true, decor: true, silent: isOpen(23) })) await t.wait(50);
+      if (!isOpen(23)) {
+        // #23 lands and stays up while door 24 beats twice: the backups.
+        if (open(22)) await t.wait(600);
+        if (!isOpen(23)) {
+          all[23].animate([{ transform: 'none' }, { transform: 'scale(1.08)' }, { transform: 'none' }], { duration: 450, iterations: 2 });
+          await t.wait(900);
+        }
+        if (open(23)) await t.wait(450);
+      } else open(22, { silent: true });
+      // The window: read once, snoozed once, then the restart. A window a visitor opened with door
+      // 24 counts from when it went up.
+      if (autoTurn()) {
+        if (!windowUp()) { showRestart(false); windowAt = performance.now(); }
+        await t.wait(Math.max(0, FIRST_WINDOW - (performance.now() - windowAt)));
+        if (autoTurn() && windowUp() && !snoozing) {
+          press(laterBtn, 200);
+          await t.wait(200);
+          if (autoTurn() && windowUp() && !snoozing) await snooze();
+          if (!t.live()) return;
+          await t.wait(500); // the window is back before ten minutes could pass
+          if (autoTurn() && !windowUp()) showRestart(true);
+          await t.wait(2200); // "It has been 10 minutes." and the snooze total, read
+          if (autoTurn() && windowUp()) {
+            press(nowBtn, 220);
+            await t.wait(220);
+            if (autoTurn()) await doRestart();
+            if (!t.live()) return;
+          }
+        }
       }
-      await wait(500); if (!live()) return;
-      all[23].animate([{ transform: 'none' }, { transform: 'scale(1.08)' }, { transform: 'none' }], { duration: 500, iterations: 2 });
-      await wait(900); if (!live()) return;
-      open(23);
-      await wait(600); if (!live()) return;
-      showRestart(false);
-      for (let k = 0; k < 2; k++) {
-        await wait(k === 0 ? 1400 : 1000); if (!live()) return; // the first window has a line to read
-        laterBtn.animate([{ transform: 'none' }, { transform: 'scale(.92)' }, { transform: 'none' }], { duration: 200 });
-        await snooze(); await wait(500); if (!live()) return;
-        showRestart(true);
-      }
-      await wait(1000); if (!live()) return;
-      nowBtn.animate([{ transform: 'none' }, { transform: 'scale(.9)' }, { transform: 'none' }], { duration: 220 });
-      await wait(220);
-      await doRestart();
-      await wait(5000);
+      if (TTY.reduce) return; // the last scene
+      // The next round five seconds after the taped-on door. What a visitor made stays until 12 s
+      // after their last press (the home stage keeps the page that long), and never goes while the
+      // rack restarts or the organization's countdown runs.
+      if (owner === 'auto' && finished) await t.wait(5000);
+      while (performance.now() - lastInput < 12000 || (restarting && !finished) || deadlineAt) await t.wait(250);
     }
-  }
+  }, { punch: PUNCH });
 
   /* ---- A visitor opens doors ---- */
   // Open doors let clicks through (pointer-events: none), so after a restart the only door left
-  // to press is the taped-on one.
+  // to press is the taped-on one. The autoplay goes on around what a visitor opens: it stands still
+  // while they read their slip, and skips the doors they have opened.
   bays.addEventListener('click', (e) => {
     if (!e.isTrusted) return;
-    if (e.target.closest('.extra')) { again(); return; }
+    if (e.target.closest('.extra')) { firstPress(); again(); return; }
     const door = e.target.closest('.door');
     if (!door) return;
-    run++;
     const i = all.indexOf(door.closest('.bay'));
-    open(i);
-    if (i === 23) setTimeout(() => showRestart(false), 400);
+    if (!open(i)) return;
+    firstPress();
+    TTY.busy(TTY.readMs(noteAt(i)) + 500);
+    if (i === 23) setTimeout(() => { if (!windowUp() && !restarting && !finished) { showRestart(false); windowAt = performance.now(); } }, TTY.reduce ? 0 : 400);
   });
   laterBtn.addEventListener('click', async (e) => {
-    if (!e.isTrusted || snoozing) return;
+    if (!e.isTrusted || snoozing || !windowUp() || performance.now() < armedAt) return;
+    firstPress();
     if (laterBtn.getAttribute('aria-disabled') === 'true') { refuse(); return; }
-    run++;
+    owner = 'visitor';
     await snooze();
-    setTimeout(() => { if (!restarting) showRestart(true); }, 1500);
+    setTimeout(() => { if (!restarting && !windowUp()) showRestart(true); }, 1500);
   });
-  nowBtn.addEventListener('click', (e) => { if (!e.isTrusted) return; run++; doRestart(); });
+  nowBtn.addEventListener('click', (e) => {
+    if (!e.isTrusted || restarting || !windowUp() || performance.now() < armedAt) return;
+    firstPress();
+    owner = 'visitor';
+    doRestart();
+  });
 
   /* ---- Start ---- */
-  const hint = $('.title .hint');
-  if (TTY.reduce) {
-    hint.classList.add('on');
-    for (let i = 0; i < 24; i++) all[i].classList.add('open');
-    printed.push(21, 22, 23);
-    doRestart();
-  }
-  TTY.onShow(() => {
-    document.documentElement.classList.remove('waiting');
-    if (TTY.reduce) return;
-    play();
-    setTimeout(() => hint.classList.add('on'), 2500); // after the first doors have shown how they open
+  // The first second is the gag (door 1 and its plaster) and the receipt measures its lines, so
+  // the timeline waits for the fonts (TTY.onPlay). With less motion it runs at once to its last scene.
+  TTY.onShow(() => document.documentElement.classList.remove('waiting'));
+  TTY.onPlay(() => {
+    play.start();
+    setTimeout(() => { if (!pressed) hint.classList.add('on'); }, TTY.reduce ? 0 : 3600); // once doors 1 and 2 have shown how they open, clear of the 3 s gag
   });
-  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
-  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+  TTY.drawn.then(TTY.ready);
 })();
 </script>
 </body>

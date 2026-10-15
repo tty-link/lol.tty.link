@@ -28,9 +28,11 @@
   }
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; }
+  /* clip, not hidden: a size container that hides its overflow scrolls itself, and focus or a tap
+     would shift the whole table */
   body {
     container-type: size;
-    overflow: hidden;
+    overflow: clip;
     color: var(--light);
     font-family: 'Fredoka', system-ui, sans-serif;
     background:
@@ -41,9 +43,12 @@
   }
   .lang-ko body { font-family: 'Gowun Dodum', 'Fredoka', sans-serif; }
 
+  /* Nothing on the table reaches past the sides of the stage: a stamp that starts big on a narrow
+     slip, a slip tucked away to the right. Up and down stay open for the cookie that drops in. */
   .room {
     display: grid;
     height: 100%;
+    overflow-x: clip;
     padding: 5cqmin 6cqmin;
     grid-template-rows: auto 1fr auto;
     gap: 2cqmin;
@@ -52,7 +57,7 @@
      the fortune, the lucky numbers or the reviewer's slip. */
   .head h1 { font-size: max(14px, 2.8cqmin); font-weight: 700; line-height: 1.1; letter-spacing: -.01em; }
   .head h1 > font-kku { color: var(--light); }
-  .sub { margin-top: 1cqmin; font-size: max(13px, 2.3cqmin); opacity: .82; }
+  .sub { margin-top: 1cqmin; font-size: max(13px, 2.3cqmin); color: rgb(243 239 226 / .82); text-wrap: pretty; }
   /* Opened on its own on a narrow phone, the subtitle wraps before the "?" and ":)" buttons
      _kit.js pins top right (the short title no longer pushes it below them). */
   @container (max-width: 359px) { html:not(.embedded) .sub { padding-right: 84px; } }
@@ -132,12 +137,17 @@
   .fortune { min-height: 2.6em; font-family: 'Mali', cursive; font-size: max(17px, 4.2cqmin); font-weight: 500; line-height: 1.3; }
   .fortune > font-kku { color: #2b2a6b; }
   /* The lucky numbers are the tag joke, as big as the title and stamped on a beat after the
-     fortune; the stamp grows from the left. */
-  .lucky { margin-top: 1.8cqmin; font-size: max(14px, 2.8cqmin); line-height: 1.4; color: var(--red); font-weight: 600; letter-spacing: .02em; transform-origin: 0 50%; }
+     fortune; the stamp grows from the left. The line is only as wide as its numbers, so the big
+     start of the stamp stays on the slip instead of pushing past the edge of a phone. */
+  .lucky { width: fit-content; max-width: 100%; margin-top: 1.8cqmin; font-size: max(14px, 2.8cqmin); line-height: 1.4; color: var(--red); font-weight: 600; letter-spacing: .02em; transform-origin: 0 50%; }
   /* The word line is the small print on the back of the slip: it stays small, or a double's
      second slip would run into the footer on a 358 × 396 stage. */
   .learn { margin-top: .6cqmin; font-size: max(12px, 2.1cqmin); line-height: 1.4; color: #6b6253; }
   .lang-ko .lucky, .lang-ko .learn { word-break: keep-all; }
+  /* No fortune ends on a lone word: the slips' lines are balanced (this reaches inside the Korean
+     handwriting too), and the small print avoids a short last line. */
+  .fortune, .twin { text-wrap: balance; }
+  .learn { text-wrap: pretty; }
   .lang-ko .lucky { font-weight: 400; }
   /* Short portrait stages (the home stage on a 390 × 600 phone is about 358 × 396, a small phone
      opened on its own about 320 × 480): a smaller plate and fortune, stacked from the top, so the
@@ -159,6 +169,19 @@
     .slip { width: 100%; padding: 3cqmin 4cqmin 2.6cqmin; }
     .fortune { min-height: 0; font-size: 16px; }
     .lucky { margin-top: 1.2cqmin; }
+  }
+
+  /* The smallest stage (the home stage on a 360 × 520 phone is about 328 × 288): a smaller plate and
+     a wider slip column, tighter type, and no small print on the back of the slip, so a double's
+     second slip still ends above the footer. */
+  @container (max-height: 300px) {
+    .room { padding: 2.4cqmin 3.6cqmin; gap: 1cqmin; }
+    .sub { margin-top: .4cqmin; }
+    .scene { grid-template-columns: .55fr 1.45fr; gap: 2.4cqw; }
+    .slip { padding: 2.4cqmin 3.6cqmin 2cqmin; }
+    .fortune { font-size: 15px; line-height: 1.25; }
+    .lucky { margin-top: .8cqmin; }
+    .learn { display: none; }
   }
 
   /* The second slip of a double: it hangs out from under the first. JS places it. */
@@ -183,9 +206,11 @@
 
   /* Opened on its own, _kit.js's "?" and ":)" buttons are pinned top right (data-tty-nav="top"),
      where the title leaves room, so the footer can use the full width. */
-  .foot { display: flex; justify-content: space-between; gap: 2cqmin; font-size: max(12px, 2cqmin); opacity: .78; }
+  .foot { display: flex; justify-content: space-between; gap: 2cqmin; font-size: max(12px, 2cqmin); opacity: .78; text-wrap: pretty; }
   .lang-ko .foot { word-break: keep-all; }
-  .hint { text-align: right; }
+  .hint { text-align: right; text-wrap: balance; transition: opacity .4s; }
+  /* once the visitor has tapped, they know; its room stays, so the footer holds still */
+  .hint.done { opacity: 0; }
 
   .crumbs { position: fixed; inset: 0; pointer-events: none; }
   .crumb { position: absolute; width: var(--s); height: calc(var(--s) * .8); border-radius: 40% 55% 45% 50%; background: var(--gold); box-shadow: inset -1px -1px 0 var(--gold-deep); }
@@ -240,11 +265,11 @@
     </button>
 
     <article class="slip" aria-live="polite">
-      <p class="fortune"></p>
-      <p class="lucky"></p>
+      <p class="fortune" data-tty-line="punch"></p>
+      <p class="lucky" data-tty-line="tag"></p>
       <p class="learn"></p>
     </article>
-    <p class="twin" aria-live="polite"><b></b><span></span></p>
+    <p class="twin" aria-live="polite" data-tty-line="tag"><b></b><span></span></p>
   </div>
 
   <footer class="foot">
@@ -436,21 +461,23 @@
   };
   // The short stages above: portrait up to 500px high, sideways up to 470px.
   const short = matchMedia('(orientation: portrait) and (max-height: 500px), (max-height: 470px)');
-  function write(kind) {
+  // The words on the slip; `first` is the first cookie of the visit.
+  function write(kind, first) {
     const review = kind === 'review';
-    const i = review ? -1 : opened === 0 ? opener : nextIndex();
+    const i = review ? -1 : first ? opener : nextIndex();
     const text = review ? IN_REVIEW[0] : FORTUNES[i];
     if (TTY.lang === 'ko') fortune.replaceChildren(pilgi(text, short.matches ? '17px' : 'max(19px, 4.6cqmin)'));
     else fortune.textContent = text;
     lucky.getAnimations().forEach((a) => a.cancel());
+    lucky.classList.remove('stamped');
     lucky.textContent = review ? IN_REVIEW[1] : luckyLabel + shuffle(CODES.slice()).slice(0, 3).sort((a, b) => a - b).join(', ');
     let w = nextWord();
     while (i === ONE_COMMENT && w === NIT) w = nextWord();
     learn.textContent = WORDS[w];
-    opened += 1;
-    count.textContent = countText(opened);
     return i;
   }
+  // The count goes up as a cookie starts to crack.
+  const countUp = () => { opened += 1; count.textContent = countText(opened); };
 
   const twin = $('.twin');
   const twinHead = twin.querySelector('b');
@@ -615,10 +642,8 @@
   const ease = 'cubic-bezier(.2, .9, .3, 1.2)';
   const SLIP_MS = 820;
   const STAMP_AFTER = 1200; // the lucky numbers are stamped this long after the slip has landed
-  let busy = false;
-  let cracked = false;
-  let auto = null;
-  let lastTouch = 0;
+  let cracked = false; // a cracked cookie is on the plate
+  let cracking = null; // the crack in progress: a promise of whether it held two slips
 
   function settleCracked() {
     left.style.transform = 'translate(-17%, 4%) rotate(-17deg)';
@@ -627,40 +652,53 @@
     tail.style.opacity = '0';
   }
 
-  async function crack() {
-    if (busy) return;
-    busy = true;
-    clearTimeout(auto);
+  // The slips on the table are tucked away, the second one a little ahead of the first.
+  const TUCK_MS = 340;
+  function tuck() {
+    if (twin.style.visibility === 'visible') {
+      twin.animate([{ opacity: 1 }, { transform: 'translate(10%, -30%) rotate(8deg) scale(.8)', opacity: 0 }], { duration: 300, easing: 'ease-in', fill: 'forwards' })
+        .finished.then(() => { twin.style.visibility = 'hidden'; twin.getAnimations().forEach((a) => a.cancel()); });
+    }
+    return slip.animate([{ transform: 'none', opacity: 1 }, { transform: 'translate(14%, -22%) rotate(10deg) scale(.8)', opacity: 0 }],
+      { duration: TUCK_MS, easing: 'cubic-bezier(.5, 0, .8, .4)', fill: 'forwards' }).finished.then(() => {
+      slip.style.visibility = 'hidden';
+      slip.getAnimations().forEach((a) => a.cancel());
+    });
+  }
+
+  // One cookie from drop to slip. While one is cracking, asking again gets that same crack: a
+  // cookie is never cut short. `keep` (a cookie the visitor asked for) leaves the slips on the
+  // table until the new slip comes out, so a tap never takes a fortune away while it is being read.
+  const crack = (keep = false) => cracking || (cracking = openCookie(keep).finally(() => { cracking = null; }));
+
+  async function openCookie(keep) {
     const kind = plan();
     verdictDue = kind === 'review';
     const double = kind === 'double' || kind === 'approved';
+    const first = opened === 0;
+    const holdSlips = keep && cracked; // the slips on the table stay until the new one comes out
 
     if (TTY.reduce) {
-      const i = write(kind);
+      const i = write(kind, first);
+      countUp();
       settleCracked();
       landCheck(kind === 'review');
       slip.style.visibility = 'visible';
+      lucky.classList.add('stamped');
       twin.style.visibility = 'hidden';
       if (double) showTwin(kind, i);
-      busy = false;
-      return;
+      cracked = true;
+      return double;
     }
 
-    // Clear the table: the old slips are tucked away as the cracked cookie sinks into the plate,
-    // then a fresh cookie drops on it.
+    // Clear the table: the old slips are tucked away as the cracked cookie sinks into the plate
+    // (unless they stay for now), then a fresh cookie drops on it.
     if (cracked) {
-      if (twin.style.visibility === 'visible') {
-        twin.animate([{ opacity: 1 }, { transform: 'translate(10%, -30%) rotate(8deg) scale(.8)', opacity: 0 }], { duration: 300, easing: 'ease-in', fill: 'forwards' })
-          .finished.then(() => { twin.style.visibility = 'hidden'; twin.getAnimations().forEach((a) => a.cancel()); });
-      }
       await Promise.all([
-        slip.animate([{ transform: 'none', opacity: 1 }, { transform: 'translate(14%, -22%) rotate(10deg) scale(.8)', opacity: 0 }],
-          { duration: 340, easing: 'cubic-bezier(.5, 0, .8, .4)', fill: 'forwards' }).finished,
+        holdSlips ? null : tuck(),
         cookie.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(12%) scale(.92)', opacity: 0 }],
           { duration: 300, delay: 40, easing: 'ease-in', fill: 'forwards' }).finished,
       ]);
-      slip.style.visibility = 'hidden';
-      slip.getAnimations().forEach((a) => a.cancel());
       // Forward-filled animations would win over anything newer once that ends; clear them.
       [cookie, left, right, crease, tail].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
       hideCheck();
@@ -671,8 +709,11 @@
         { transform: 'translateY(-12%) rotate(2deg)', opacity: 1, offset: .75, easing: 'cubic-bezier(.55, 0, 1, .45)' },
         { transform: 'translateY(0) rotate(0)', opacity: 1 },
       ], { duration: 720, fill: 'forwards' }).finished;
+    } else if (!sweatDrop.getAnimations().length) {
+      sweat(900); // a visitor tapped before the first drop came: it sweats through the shiver
     }
-    const i = write(kind);
+    countUp();
+    let i = holdSlips ? null : write(kind, first);
 
     // A nervous shiver, big enough to see on a phone, then the snap.
     await cookie.animate([
@@ -690,9 +731,15 @@
     landCheck(kind === 'review');
 
     // The crumbs have their say first; then the slip is pulled out of the crease and lands on
-    // the table, and a beat later its lucky numbers are stamped.
-    await wait(SLIP_AFTER_CRACK);
+    // the table, and a beat later its lucky numbers are stamped. (The classes .pulling and
+    // .stamped only say when each has landed, for a test's --trace.)
+    if (holdSlips) {
+      await wait(SLIP_AFTER_CRACK - TUCK_MS);
+      await tuck();
+      i = write(kind, first);
+    } else await wait(SLIP_AFTER_CRACK);
     slip.style.visibility = 'visible';
+    slip.classList.add('pulling');
     const from = cookie.getBoundingClientRect();
     const to = slip.getBoundingClientRect();
     const dx = from.left + from.width / 2 - (to.left + to.width / 2);
@@ -701,37 +748,55 @@
       { transform: 'scale(1.35) rotate(-3deg)', opacity: 0 },
       { transform: 'scale(.94) rotate(0)', opacity: 1, offset: .6 },
       { transform: 'none', opacity: 1 },
-    ], { duration: 300, delay: SLIP_MS + STAMP_AFTER, easing: 'cubic-bezier(.3, .7, .4, 1)', fill: 'backwards' });
+    ], { duration: 300, delay: SLIP_MS + STAMP_AFTER, easing: 'cubic-bezier(.3, .7, .4, 1)', fill: 'backwards' })
+      .finished.then(() => lucky.classList.add('stamped'), () => {});
     await slip.animate([
       { transform: `translate(${dx}px, ${dy}px) scale(.12, .08) rotate(-20deg)`, clipPath: 'inset(0 86% 0 0)' },
       { transform: `translate(${dx * .4}px, ${dy * .4 - to.height * .25}px) scale(.55, .4) rotate(-8deg)`, clipPath: 'inset(0 40% 0 0)', offset: .45 },
       { transform: 'none', clipPath: 'inset(0 0 0 0)' },
     ], { duration: SLIP_MS, easing: 'cubic-bezier(.25, .8, .3, 1.08)' }).finished;
+    slip.classList.remove('pulling');
     // A double: the second slip follows the first out of the cookie.
     if (double) await showTwin(kind, i);
 
     cracked = true;
-    busy = false;
-    scheduleAuto(double);
+    return double;
   }
 
-  // The next cookie comes by itself: 5.2 s after a single, 9 s after a double (two slips to read;
-  // on the home stage the visit then ends on the double). A cookie the visitor cracked stays 15 s,
-  // longer than the home stage keeps the page after a tap, so autoplay never takes it away.
-  function scheduleAuto(double = false) {
-    clearTimeout(auto);
-    const theirs = Date.now() - lastTouch < 8000;
-    auto = setTimeout(crack, theirs ? 15000 : double ? 9000 : 5200);
-  }
-  plate.addEventListener('click', () => { lastTouch = Date.now(); crack(); });
+  // Autoplay, on a clock the visitor's taps pause (TTY.timeline): the first cookie sweats from
+  // 0.1 s and cracks at 0.9 s. The next one comes 5.2 s after a single has landed and 9 s after a
+  // double (two slips to read; on the home stage the visit then ends on the double). A cookie the
+  // visitor asked for stays 15 s, longer than the home stage keeps the page after a tap, so
+  // autoplay never takes it away. With less motion every cookie is one tap.
+  let theirs = false; // the cookie cracking or on the plate is one the visitor asked for
+  const play = TTY.timeline(async (t) => {
+    let keep = theirs; // started by a tap: the slips on the table stay until the new one is out
+    if (!theirs) {
+      await t.at(100);
+      sweat(1500); // the first cookie sweats longest: it has been waiting for this review
+      await t.at(900);
+    }
+    for (;;) {
+      const double = await crack(keep);
+      keep = false;
+      if (!t.live() || TTY.reduce) return;
+      const stay = theirs ? 15000 : double ? 9000 : 5200;
+      theirs = false;
+      await t.wait(stay);
+    }
+  }, { punch: 3.8 });
+
+  // A tap cracks the next cookie at once and the autoplay waits after it. A tap while a cookie is
+  // still cracking makes that one theirs: it is never cut short, and it stays 15 s as well.
+  const hints = document.querySelectorAll('.hint');
+  plate.addEventListener('click', () => {
+    hints.forEach((h) => h.classList.add('done'));
+    theirs = true;
+    if (!cracking) play.start();
+  });
 
   count.textContent = countText(0);
-  TTY.onShow(() => {
-    if (TTY.reduce) { crack(); return; }
-    // The first cookie sweats longest: it has been waiting for this review.
-    setTimeout(() => sweat(1500), 100);
-    setTimeout(crack, 900);
-  });
+  TTY.onPlay(() => { if (!play.live()) play.start(); });
   const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
   Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
 })();

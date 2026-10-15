@@ -533,7 +533,7 @@
           <span data-lang="ko">가택 무선 기운 감정 · <span class="client">의뢰인: 서재에서 화상 회의가 끊기는 집</span></span>
         </p>
       </div>
-      <div class="chop" aria-hidden="true">風水</div>
+      <div class="chop" aria-hidden="true" data-tty-line="decor">風水</div>
     </header>
 
     <div class="planwrap">
@@ -557,7 +557,7 @@
           <g class="sparks"></g>
         </svg>
         <svg class="walls" viewBox="-0.75 -0.85 13.05 9.2" aria-hidden="true"></svg>
-        <div class="compass" aria-hidden="true"></div>
+        <div class="compass" aria-hidden="true" data-tty-line="decor"></div>
         <p class="tag installer"></p>
         <p class="tag micro"></p>
         <p class="tag call"><span class="dot"></span><span class="txt"></span></p>
@@ -972,7 +972,7 @@
   el('rect', { class: 'f', x: 5.56, y: 1.74, width: .5, height: .44, rx: .03 }, mw);
   el('rect', { class: 'fl', x: 5.61, y: 1.8, width: .3, height: .32 }, mw);
   el('rect', { class: 'mw-disp', x: 5.93, y: 1.8, width: .1, height: .16 }, mw);
-  const mwText = el('text', { class: 'mw-text', x: 5.81, y: 1.96 }, mw);
+  const mwText = el('text', { class: 'mw-text', x: 5.81, y: 1.96, 'data-tty-line': 'decor' }, mw);
   F('rect', { x: 7.2, y: 0.1, width: 1.3, height: .74, rx: .04 });
   F('rect', { x: 7.36, y: 0.94, width: .36, height: .34, rx: .06 }); F('rect', { x: 8.12, y: 0.94, width: .36, height: .34, rx: .06 });
   F('rect', { x: 8.62, y: 0.43, width: .72, height: .78, rx: .03 });
@@ -1520,6 +1520,7 @@
     tagCallTxt.textContent = L.call[cs];
     tagCall.classList.toggle('down', cs === 'hear' || cs === 'frozen');
     tagCall.classList.toggle('back', cs === 'back');
+    if (cs === 'back') tagCall.dataset.ttyLine = 'tag'; else tagCall.removeAttribute('data-tty-line');
     if (cs === 'back' && animateNow()) tagCall.animate([{ transform: 'scale(1.35)' }, { transform: 'scale(.95)', offset: .6 }, { transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
   }
   let readGen = 0;
@@ -1545,6 +1546,7 @@
         if (note) { row.ntL.textContent = note[0]; row.ntS.textContent = note[1]; row.ntXs.textContent = note[2] || note[1]; }
         row.nt.hidden = !note;
         row.nt.classList.toggle('ok', r.id === 'study' && cs === 'back');
+        if (r.id === 'study' && cs === 'back') row.nt.dataset.ttyLine = 'tag'; else row.nt.removeAttribute('data-tty-line');
         if (note && note[1] !== was && r.id === 'study' && cs === 'back' && animateNow()) {
           row.nt.animate([{ opacity: 0, transform: 'translateY(40%)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: 'ease-out' });
           row.li.animate([{ backgroundColor: 'rgba(79, 138, 122, .3)' }, { backgroundColor: 'rgba(79, 138, 122, 0)' }], { duration: 1100, easing: 'ease-out' });
@@ -1601,7 +1603,9 @@
   function setComment(key) {
     if (key === commentKey) return;
     commentKey = key;
-    if (!key) { commentEl.replaceChildren(); return; }
+    if (!key) { commentEl.replaceChildren(); commentEl.removeAttribute('data-tty-line'); return; }
+    // The remedy is the punch; every other reading sets it up (marks for tests, no change on screen).
+    commentEl.dataset.ttyLine = key === 'mesh' ? 'punch' : 'setup';
     const text = commentText(key);
     if (ko) commentEl.replaceChildren(kk('butgeul', 'clamp(15px, 2.6cqmin, 24px)', text, 'kk-ink'));
     else commentEl.textContent = text;

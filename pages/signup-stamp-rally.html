@@ -95,7 +95,9 @@
      panel, font-kku glyphs and all, and the Korean unfold stalled up to 1.6 s on the home stage). */
   .face::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--u) * 3); background: linear-gradient(90deg, rgba(90,70,30,.13), transparent); pointer-events: none; }
   .panel.first .face::before { display: none; }
-  .shade { position: absolute; inset: 0; background: #20180c; opacity: 0; pointer-events: none; }
+  /* Its own layer: the opacity changes every frame of the unfold, and repainting the panel under it
+     repainted the Korean stamps' dojang sprite (a 141 KB SVG, about 5 ms a letter) every frame. */
+  .shade { position: absolute; inset: 0; background: #20180c; opacity: 0; pointer-events: none; will-change: opacity; }
   .panel:not(.first) .face { box-shadow: inset 1px 0 0 rgba(120,100,60,.18); }
 
   /* ---------- A station panel ---------- */
@@ -105,7 +107,7 @@
     width: calc(var(--u) * 10.5); height: calc(var(--u) * 10.5);
     border-radius: 50%;
     background: var(--pink); color: #fff;
-    font: calc(var(--u) * 5.6)/1 'Dela Gothic One', sans-serif;
+    font: max(10px, calc(var(--u) * 5.6))/1 'Dela Gothic One', sans-serif;
   }
   .name { font-weight: 800; font-size: calc(var(--u) * 6.2); line-height: 1.12; letter-spacing: -.01em; }
   .lang-ko .name { font-weight: 700; font-size: calc(var(--u) * 6.4); }
@@ -218,7 +220,7 @@
   .prog { display: grid; grid-template-columns: 1fr auto; gap: calc(var(--u) * .8) calc(var(--u) * 2); align-items: center; font-size: max(11px, calc(var(--u) * 3.8)); }
   .bar { grid-column: 1 / -1; height: calc(var(--u) * 1.8); border-radius: 99px; background: #ece5d6; overflow: hidden; }
   .bar i { display: block; height: 100%; width: 0; background: var(--ok); }
-  .go .bar i.b { width: 100%; transition: width .5s var(--d, 0ms) cubic-bezier(.5,0,.3,1); }
+  .go .bar i.b { width: 100%; transition: width .3s var(--d, 0ms) cubic-bezier(.5,0,.3,1); }
   .prog .ok { color: var(--ok); font-weight: 700; font-size: max(10px, calc(var(--u) * 3.3)); opacity: 0; }
   .go .prog .ok.b { opacity: 1; }
   .restart { color: var(--bad); font-weight: 700; font-size: max(10.5px, calc(var(--u) * 3.6)); opacity: 0; }
@@ -237,7 +239,7 @@
   .go .pole-note.b { opacity: 1; }
   .squiggle { align-self: center; width: calc(var(--u) * 62); height: calc(var(--u) * 15); border-radius: calc(var(--u) * 1.2); background: #eef0f2; }
   .typed { display: inline-block; overflow: hidden; vertical-align: bottom; clip-path: inset(0 100% 0 0); }
-  .go .typed.b { clip-path: inset(0 0 0 0); transition: clip-path .5s var(--d, 0ms) steps(5); }
+  .go .typed.b { clip-path: inset(0 0 0 0); transition: clip-path .3s var(--d, 0ms) steps(5); }
   .tick { margin-left: auto; color: var(--ok); font-weight: 800; opacity: 0; }
   .go .tick.b { opacity: 1; }
   .pop-title { font-weight: 800; font-size: max(11.5px, calc(var(--u) * 4.8)); }
@@ -248,7 +250,7 @@
   .qr { flex: none; width: calc(var(--u) * 21); height: calc(var(--u) * 21); position: relative; }
   .qr svg { display: block; width: 100%; height: 100%; }
   .qr .scan { position: absolute; left: -4%; right: -4%; top: 0; height: calc(var(--u) * .8); background: var(--bad); box-shadow: 0 0 calc(var(--u) * 2) var(--bad); opacity: 0; }
-  .go .qr .scan.b { animation: scan .7s var(--d, 0ms) ease-in-out 1 both; }
+  .go .qr .scan.b { animation: scan .42s var(--d, 0ms) ease-in-out 1 both; }
   .ms.fast .qr .scan { animation: none; }
   @keyframes scan { 0% { top: 0; opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
   .codes { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: max(10px, calc(var(--u) * 3.3)); line-height: 1.4; padding: calc(var(--u) * 1.4) calc(var(--u) * 2); background: #f4efe4; border-radius: calc(var(--u) * 1.2); }
@@ -291,7 +293,18 @@
     opacity: 0;
     mix-blend-mode: multiply;
     pointer-events: none;
+    /* Not painted until it is stamped: an unstamped Korean stamp still painted its dojang letters
+       (165 sprite paints, 0.8 s, twice while the page loaded). */
+    visibility: hidden;
+    will-change: opacity, transform;
   }
+  /* Painted a beat before it is stamped (prepareStamp), on its own layer, so the stamping itself only
+     moves and fades a layer that is already drawn (a Korean stamp used to cost a 0.12 s paint on the
+     beat it landed). */
+  .stamp.ready, .stamp.on { visibility: visible; }
+  /* A stamp whose stop is out of sight is not painted either (cullStamps): a repaint of the whole page
+     (a resize, a style change everywhere) then draws the one or two stamps on screen, not all nine. */
+  .stamp.away { visibility: hidden; }
   .stamp.on { opacity: .93; }
   .stamp .ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   .stamp .ring .c1 { fill: none; stroke: currentColor; stroke-width: 3.6; }
@@ -334,8 +347,9 @@
   .socks svg { height: 100%; max-height: calc(var(--u) * 34); width: auto; max-width: 70%; }
   .info { display: grid; grid-template-columns: auto 1fr; gap: calc(var(--u) * .6) calc(var(--u) * 3); font-size: max(10.5px, calc(var(--u) * 3.9)); flex: none; }
   .info dt { font-weight: 800; color: var(--blue); }
+  .info dd, .band { text-wrap: pretty; }
   .info .stars { color: var(--pink); letter-spacing: .08em; }
-  .goal { margin-top: calc(var(--u) * 3); padding: calc(var(--u) * 2.4) calc(var(--u) * 3); border: calc(var(--u) * .5) dashed var(--blue); border-radius: calc(var(--u) * 2); font-weight: 800; font-size: max(10.5px, calc(var(--u) * 4.2)); line-height: 1.3; text-align: center; color: var(--blue); flex: none; }
+  .goal { margin-top: calc(var(--u) * 3); padding: calc(var(--u) * 2.4) calc(var(--u) * 3); border: calc(var(--u) * .5) dashed var(--blue); border-radius: calc(var(--u) * 2); font-weight: 800; font-size: max(10.5px, calc(var(--u) * 4.2)); line-height: 1.3; text-align: center; color: var(--blue); flex: none; text-wrap: balance; }
   .start { position: absolute; right: calc(var(--u) * 3); bottom: calc(var(--u) * 3); padding: calc(var(--u) * .8) calc(var(--u) * 2.4); background: var(--blue); color: #fff; font-weight: 800; font-size: max(10px, calc(var(--u) * 3.4)); border-radius: 99px; }
 
   /* Finish panel: a row of the seven stamps you collected. */
@@ -388,7 +402,7 @@
 <body>
 <main class="stage" id="stage">
   <header class="top" id="top" aria-hidden="true">
-    <span class="top-title" id="top-title"></span>
+    <span class="top-title" id="top-title" data-tty-line="setup"></span>
     <span class="count"><span class="dots" id="dots"></span><b id="count">0/7</b></span>
   </header>
   <div class="view" id="view" tabindex="0" role="button" aria-describedby="hint">
@@ -468,33 +482,51 @@
   };
   const SMS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>';
 
+  // ---------- Timing (ms) ----------
+  // The autoplay, start to punch: the fold opens (0.6 s) and the camera drifts (1.1 s), stop 1 at
+  // 2.25 s (2.1 s with its zoom), five montage stops of 1.43 s and the SMS stop of 4.3 s, the prize
+  // desk 2.2 s, and the Course 2 card is seated 0.65 s after it is handed over: 18.8 s on paper
+  // (punch_at in the doc is the measured value). The tag follows 1.15 s later.
+  const OPEN_AT = 2250;     // the camera leaves the overview for stop 1
+  const ZOOM_GO = 600;      // after the zoom from the overview (0.9 s), stop 1's mission starts
+  const SETTLE = 250;       // after a pan (0.5 s), a stop's mission starts
+  const MISSION = 400;      // a montage stop's mission, start to stamp
+  const STAMP_HOLD = 780;   // a fresh stamp stays put before the camera leaves: it has landed (0.36 s)
+                            // and reads about 0.8 s, the camera's move included
+  const FIRST_HOLD = 1050;  // the first stamp is read whole ("READ NONE / ACCEPTED"), then the montage speeds up
+  const SMS_HOLD = 1200;    // the SMS stop's stamp, which the punch answers ("IT'S ME" / "본인 맞음")
+  const DESK_STAMP = 460;   // prize desk: the COMPLETE stamp, after the camera heads there
+  const DESK_HOLD = 1740;   // …and the Course 2 card 1.74 s later, so the prize lines are read for 2 s
+  const SEAT = 650;         // the card's hand-over animation
+  const AUTO_PAUSE = 2500;  // a tap pauses the autoplay this long (slowed, never stopped)
+
   // ---------- The seven stations ----------
   // Each: name, guide (the leaflet's one-liner), ink, icon, stamp words [small, big],
   // ms (mission box HTML) and dur (ms the mission plays before the stamp comes down).
   const STATIONS = ko ? [
-    { name: '약관 광장', guide: '전문을 다 읽으면 해가 집니다.', ink: '#d23a2f', icon: 'scroll', words: ['안 읽고', '동의'], dur: 650,
+    { name: '약관 광장', guide: '전문을 다 읽으면 해가 집니다.', ink: '#d23a2f', icon: 'scroll', words: ['안 읽고', '동의'], dur: MISSION,
       ms: `<div class="ms terms">
-        <div class="row all"><i class="cb b" style="--d:100ms"></i>전체 동의</div>
-        <div class="row"><i class="cb b" style="--d:240ms"></i><span><span class="tag">[필수]</span> 이용약관 <span class="muted small">(제1조~제58조)</span></span></div>
-        <div class="row"><i class="cb b" style="--d:300ms"></i><span><span class="tag">[필수]</span> 개인정보 수집·이용</span></div>
-        <div class="row"><i class="cb b" style="--d:350ms"></i><span><span class="tag">[필수]</span> 만 14세 이상입니다</span></div>
-        <div class="row"><i class="cb b" style="--d:410ms"></i><span><span class="tag opt">[선택]</span> 마케팅 정보 수신</span></div>
+        <div class="row all"><i class="cb b" style="--d:40ms"></i>전체 동의</div>
+        <div class="row"><i class="cb b" style="--d:130ms"></i><span><span class="tag">[필수]</span> 이용약관 <span class="muted small">(제1조~제58조)</span></span></div>
+        <div class="row"><i class="cb b" style="--d:180ms"></i><span><span class="tag">[필수]</span> 개인정보 수집·이용</span></div>
+        <div class="row"><i class="cb b" style="--d:220ms"></i><span><span class="tag">[필수]</span> 만 14세 이상입니다</span></div>
+        <div class="row"><i class="cb b" style="--d:270ms"></i><span><span class="tag opt">[선택]</span> 마케팅 정보 수신</span></div>
       </div>` },
-    { name: '아이디 중복 고개', guide: '좋은 아이디는 이미 다 주인이 있습니다.', ink: '#2456b8', icon: 'nametag', words: ['네 번째에', '통과'], dur: 780,
+    { name: '아이디 중복 고개', guide: '좋은 아이디는 이미 다 주인이 있습니다.', ink: '#2456b8', icon: 'nametag', words: ['네 번째에', '통과'], dur: MISSION,
       ms: `<div class="ms ids">
         <div class="lbl">아이디 (영문·숫자 5~20자)</div>
-        <div class="row id"><span class="uid b gone" style="--d:120ms">socks</span><span class="st no b" style="--d:120ms">이미 사용 중</span></div>
-        <div class="row id"><span class="uid b gone" style="--d:280ms">socks1</span><span class="st no b" style="--d:280ms">이미 사용 중</span></div>
-        <div class="row id"><span class="uid b gone" style="--d:440ms">socks12</span><span class="st no b" style="--d:440ms">이미 사용 중</span></div>
-        <div class="row id"><span class="uid">ilovesocks1987</span><span class="st yes b" style="--d:640ms">사용 가능</span></div>
+        <div class="row id"><span class="uid b gone" style="--d:40ms">socks</span><span class="st no b" style="--d:40ms">이미 사용 중</span></div>
+        <div class="row id"><span class="uid b gone" style="--d:130ms">socks1</span><span class="st no b" style="--d:130ms">이미 사용 중</span></div>
+        <div class="row id"><span class="uid b gone" style="--d:220ms">socks12</span><span class="st no b" style="--d:220ms">이미 사용 중</span></div>
+        <div class="row id"><span class="uid">ilovesocks1987</span><span class="st yes b" style="--d:300ms">사용 가능</span></div>
       </div>` },
-    { name: '비밀번호 미로', guide: '잊지 못할 비밀번호를 만들어 보세요.', ink: '#7a3fa6', icon: 'key', words: ['규칙 통과', '벌써 잊음'], dur: 700,
+    { name: '비밀번호 미로', guide: '잊지 못할 비밀번호를 만들어 보세요.', ink: '#7a3fa6', icon: 'key', words: ['규칙 통과', '벌써 잊음'], dur: MISSION,
       ms: `<div class="ms pw">
-        <div class="row rule"><span class="mark b" style="--d:80ms"></span>8~16자</div>
-        <div class="row rule"><span class="mark b" style="--d:180ms"></span>영문 대·소문자, 숫자, 특수문자 포함</div>
-        <div class="row rule b x" style="--d:270ms"><span class="mark b x" style="--d:270ms"></span>단, &lt; &gt; ( ) ' " ; 는 사용 불가</div>
-        <div class="row rule"><span class="mark b" style="--d:370ms"></span>아이디와 3자 이상 같으면 안 됨</div>
-        <div class="row rule"><span class="mark b" style="--d:460ms"></span>같은 숫자 3번 연속 금지</div>
+        <div class="row rule"><span class="mark b" style="--d:40ms"></span>8~16자</div>
+        <div class="row rule"><span class="mark b" style="--d:100ms"></span>영문 대·소문자, 숫자, 특수문자 포함</div>
+        <div class="row rule b x" style="--d:160ms"><span class="mark b x" style="--d:160ms"></span>단, &lt; &gt; ( ) ' " ; 는 사용 불가</div>
+        <div class="row rule"><span class="mark b" style="--d:220ms"></span>아이디와 3자 이상 같으면 안 됨</div>
+        <div class="row rule"><span class="mark b" style="--d:280ms"></span>같은 숫자 3번 연속 금지</div>
         <div class="field">●●●●●●●●●●●●</div>
       </div>` },
     { name: '본인인증 터널', guide: '제한 시간 3분. 넉넉합니다.', ink: '#c8322b', icon: 'phone', words: ['재전송 끝에', '본인 맞음'], dur: 2300, sms: true,
@@ -507,49 +539,49 @@
       </div>
       <div class="bubble"><span class="ic">${SMS_ICON}</span><span class="when">문자 · 방금</span><span class="msg">[Web발신] [양말상회] 인증번호 [<b>482913</b>]</span></div>`,
       codes: ['482913', '570226'], expired: '만료', smsText: (c) => `[Web발신] [양말상회] 인증번호 [<b>${c}</b>]` },
-    { name: '메일함 계곡', guide: '인증 메일은 받은편지함에서 기다립니다.', ink: '#1f8a55', icon: 'mail', words: ['스팸함에서', '찾음'], dur: 750,
+    { name: '메일함 계곡', guide: '인증 메일은 받은편지함에서 기다립니다.', ink: '#1f8a55', icon: 'mail', words: ['스팸함에서', '찾음'], dur: MISSION,
       ms: `<div class="ms box">
         <div class="small">인증 메일을 보냈어요. 메일함을 확인해 주세요.</div>
-        <div class="folder inbox b" style="--d:120ms">받은편지함<span class="n">0</span></div>
-        <div class="folder spam b" style="--d:340ms">스팸함<span class="n">1</span></div>
-        <div class="mail b" style="--d:420ms"><span class="t">[양말상회] 이메일 인증을 완료해 주세요</span><span class="btn primary b press" style="--d:640ms">인증</span></div>
+        <div class="folder inbox b" style="--d:40ms">받은편지함<span class="n">0</span></div>
+        <div class="folder spam b" style="--d:150ms">스팸함<span class="n">1</span></div>
+        <div class="mail b" style="--d:190ms"><span class="t">[양말상회] 이메일 인증을 완료해 주세요</span><span class="btn primary b press" style="--d:320ms">인증</span></div>
       </div>` },
-    { name: '보안 프로그램 마을', guide: '안전한 쇼핑을 위한 작은 준비.', ink: '#147f86', icon: 'shield', words: ['양말 사러 와서', '설치 완료'], dur: 780,
+    { name: '보안 프로그램 마을', guide: '안전한 쇼핑을 위한 작은 준비.', ink: '#147f86', icon: 'shield', words: ['양말 사러 와서', '설치 완료'], dur: MISSION,
       ms: `<div class="ms progs">
         <div class="small">안전한 서비스 이용을 위해 보안 프로그램을 설치해 주세요.</div>
-        <div class="prog">키보드 보안<span class="ok b" style="--d:360ms">설치됨</span><span class="bar"><i class="b" style="--d:0ms"></i></span></div>
-        <div class="prog">개인 방화벽<span class="ok b" style="--d:520ms">설치됨</span><span class="bar"><i class="b" style="--d:160ms"></i></span></div>
-        <div class="prog">통합 설치 관리자<span class="ok b" style="--d:680ms">설치됨</span><span class="bar"><i class="b" style="--d:320ms"></i></span></div>
-        <div class="restart b" style="--d:680ms">설치 후 브라우저를 다시 시작해 주세요.</div>
+        <div class="prog">키보드 보안<span class="ok b" style="--d:240ms">설치됨</span><span class="bar"><i class="b" style="--d:0ms"></i></span></div>
+        <div class="prog">개인 방화벽<span class="ok b" style="--d:300ms">설치됨</span><span class="bar"><i class="b" style="--d:60ms"></i></span></div>
+        <div class="prog">통합 설치 관리자<span class="ok b" style="--d:360ms">설치됨</span><span class="bar"><i class="b" style="--d:120ms"></i></span></div>
+        <div class="restart b" style="--d:360ms">설치 후 브라우저를 다시 시작해 주세요.</div>
       </div>` },
-    { name: '자동입력 방지 다리', guide: '사람이라면 누구나 쉽게 건널 수 있습니다.', ink: '#a8432a', icon: 'bridge', words: ['아마도', '로봇 아님'], dur: 650,
+    { name: '자동입력 방지 다리', guide: '사람이라면 누구나 쉽게 건널 수 있습니다.', ink: '#a8432a', icon: 'bridge', words: ['아마도', '로봇 아님'], dur: MISSION,
       ms: `<div class="ms capt">
         <div class="small">자동입력 방지 문자를 입력해 주세요.</div>
         ${captchaText()}
         <div class="row"><span class="btn">↻ 새로고침</span><span class="btn">음성으로 듣기</span></div>
-        <div class="field"><span class="typed b" style="--d:120ms">8kP3x</span><span class="tick b" style="--d:560ms">✓</span></div>
+        <div class="field"><span class="typed b" style="--d:40ms">8kP3x</span><span class="tick b" style="--d:330ms">✓</span></div>
       </div>` },
   ] : [
-    { name: 'Privacy Pop-up Plaza', guide: 'Allow until sunset to read it all.', ink: '#d23a2f', icon: 'popup', words: ['READ NONE', 'ACCEPTED'], dur: 650,
+    { name: 'Privacy Pop-up Plaza', guide: 'Allow until sunset to read it all.', ink: '#d23a2f', icon: 'popup', words: ['READ NONE', 'ACCEPTED'], dur: MISSION,
       ms: `<div class="ms pop">
         <div class="pop-title">We value your privacy</div>
         <div class="pop-body">We and our 847 partners store and access information on your device, process personal data, measure ad performance, develop and improve products…</div>
-        <div class="pop-btns"><span class="btn">Manage options</span><span class="btn primary b press" style="--d:360ms">Accept all</span></div>
+        <div class="pop-btns"><span class="btn">Manage options</span><span class="btn primary b press" style="--d:240ms">Accept all</span></div>
       </div>` },
-    { name: 'Password Rules Maze', guide: 'Make it unforgettable.', ink: '#7a3fa6', icon: 'key', words: ['ALREADY', 'FORGOTTEN'], dur: 700,
+    { name: 'Password Rules Maze', guide: 'Make it unforgettable.', ink: '#7a3fa6', icon: 'key', words: ['ALREADY', 'FORGOTTEN'], dur: MISSION,
       ms: `<div class="ms pw">
-        <div class="row rule"><span class="mark b" style="--d:80ms"></span>8–16 characters</div>
-        <div class="row rule"><span class="mark b" style="--d:160ms"></span>An uppercase letter, a number, a symbol</div>
-        <div class="row rule b x" style="--d:240ms"><span class="mark b x" style="--d:240ms"></span>But not &lt; &gt; ' " ; or &amp;</div>
-        <div class="row rule"><span class="mark b" style="--d:340ms"></span>Not one of your last 5 passwords</div>
+        <div class="row rule"><span class="mark b" style="--d:40ms"></span>8–16 characters</div>
+        <div class="row rule"><span class="mark b" style="--d:110ms"></span>An uppercase letter, a number, a symbol</div>
+        <div class="row rule b x" style="--d:180ms"><span class="mark b x" style="--d:180ms"></span>But not &lt; &gt; ' " ; or &amp;</div>
+        <div class="row rule"><span class="mark b" style="--d:260ms"></span>Not one of your last 5 passwords</div>
         <div class="field">●●●●●●●●●●●●</div>
       </div>` },
-    { name: 'Inbox Valley', guide: 'Your link awaits in your inbox.', ink: '#1f8a55', icon: 'mail', words: ['FOUND IN', 'SPAM'], dur: 750,
+    { name: 'Inbox Valley', guide: 'Your link awaits in your inbox.', ink: '#1f8a55', icon: 'mail', words: ['FOUND IN', 'SPAM'], dur: MISSION,
       ms: `<div class="ms box">
         <div class="small">We sent a link to j•••@mail.com. Check your inbox.</div>
-        <div class="folder inbox b" style="--d:120ms">Inbox<span class="n">0</span></div>
-        <div class="folder spam b" style="--d:340ms">Spam<span class="n">1</span></div>
-        <div class="mail b" style="--d:420ms"><span class="t">Sock Nook: Verify your email</span><span class="btn primary b press" style="--d:640ms">Verify</span></div>
+        <div class="folder inbox b" style="--d:40ms">Inbox<span class="n">0</span></div>
+        <div class="folder spam b" style="--d:150ms">Spam<span class="n">1</span></div>
+        <div class="mail b" style="--d:190ms"><span class="t">Sock Nook: Verify your email</span><span class="btn primary b press" style="--d:320ms">Verify</span></div>
       </div>` },
     { name: 'SMS Code Tunnel', guide: '3-minute limit. Plenty of time.', ink: '#c8322b', icon: 'phone', words: ['AFTER RESEND', "IT'S ME"], dur: 2300, sms: true,
       ms: `<div class="ms sms">
@@ -560,23 +592,23 @@
       </div>
       <div class="bubble"><span class="ic">${SMS_ICON}</span><span class="when">Messages · now</span><span class="msg">Sock Nook: your code is <b>482913</b></span></div>`,
       codes: ['482913', '570226'], expired: 'EXPIRED', smsText: (c) => `Sock Nook: your code is <b>${c}</b>` },
-    { name: 'Traffic Light Crossing', guide: 'Any human can spot a traffic light.', ink: '#d9661a', icon: 'light', words: ['PROBABLY', 'HUMAN'], dur: 780,
+    { name: 'Traffic Light Crossing', guide: 'Any human can spot a traffic light.', ink: '#d9661a', icon: 'light', words: ['PROBABLY', 'HUMAN'], dur: MISSION,
       ms: `<div class="ms grid">
         <div class="cap-band">Select all squares with<b>traffic lights</b></div>
         <div class="grid-wrap">${trafficLight()}
-          <i class="cell b" style="left:33.33%;top:0;--d:120ms"></i>
-          <i class="cell b" style="left:33.33%;top:33.33%;--d:280ms"></i>
-          <i class="cell b" style="left:66.66%;top:0;--d:440ms"></i>
-          <span class="pole-note b" style="--d:600ms">the pole??</span>
+          <i class="cell b" style="left:33.33%;top:0;--d:50ms"></i>
+          <i class="cell b" style="left:33.33%;top:33.33%;--d:140ms"></i>
+          <i class="cell b" style="left:66.66%;top:0;--d:230ms"></i>
+          <span class="pole-note b" style="--d:300ms">the pole??</span>
         </div>
       </div>` },
-    { name: 'Two-Factor Fort', guide: 'Bring your phone. Never lose it.', ink: '#147f86', icon: 'lockphone', words: ['SAVED', 'SOMEWHERE'], dur: 780,
+    { name: 'Two-Factor Fort', guide: 'Bring your phone. Never lose it.', ink: '#147f86', icon: 'lockphone', words: ['SAVED', 'SOMEWHERE'], dur: MISSION,
       ms: `<div class="ms tfa">
-        <div class="qr-row"><div class="qr">${qr()}<i class="scan b" style="--d:80ms"></i></div><div class="small">Scan this code with your authenticator app.</div></div>
+        <div class="qr-row"><div class="qr">${qr()}<i class="scan b" style="--d:20ms"></i></div><div class="small">Scan this code with your authenticator app.</div></div>
         <div class="small">Then save your 10 backup codes:</div>
-        <div class="codes b" style="--d:600ms">4f2k-9xq1 · 7hd0-2mcz<br>p81r-0kvn · 3ya7-w5tq…</div>
+        <div class="codes b" style="--d:300ms">4f2k-9xq1 · 7hd0-2mcz<br>p81r-0kvn · 3ya7-w5tq…</div>
       </div>` },
-    { name: 'Are-You-Human Gate', guide: 'You proved it at stop 5. Once more.', ink: '#a8432a', icon: 'person', words: ['STILL', 'HUMAN'], dur: 850, human: true,
+    { name: 'Are-You-Human Gate', guide: 'You proved it at stop 5. Once more.', ink: '#a8432a', icon: 'person', words: ['STILL', 'HUMAN'], dur: MISSION, human: true,
       ms: `<div class="ms hum">
         <div class="small">One more quick check before you continue.</div>
         <div class="human"><i class="cb"></i><i class="spin"></i>Verify you are human</div>
@@ -638,11 +670,12 @@
   const top = $('#top');
   const hint = $('#hint');
   const live = $('#live');
-  const kkus = []; // [element, size in --u] so font-kku sizes follow the panel width
-
-  // font-kku sizes follow the layout: data-u is in % of the panel width, data-s in parts of the stamp slot.
-  const kku = (font, text, f, cls = '') => `<font-kku class="kk ${cls}" font="${font}" data-u="${f}" size="${f * 4}">${text}</font-kku>`;
-  const kkuS = (font, text, f) => `<font-kku class="kk" font="${font}" data-s="${f}" size="${f * 240}">${text}</font-kku>`;
+  // font-kku sizes follow the layout in CSS: f is in % of the panel width (--u) or in parts of the
+  // stamp slot (--slot, never under 10px). measure() only changes those two variables. (It used to
+  // write each host's size attribute, and every write re-rendered that host: 21 renders at once on
+  // the home stage's first resize.)
+  const kku = (font, text, f, cls = '') => `<font-kku class="kk ${cls}" font="${font}" size="calc(var(--u) * ${f})">${text}</font-kku>`;
+  const kkuS = (font, text, f) => `<font-kku class="kk" font="${font}" size="max(10px, calc(var(--slot) * ${f}))">${text}</font-kku>`;
 
   // The station name runs along the top of the ring (about 100 units of arc); long names get smaller.
   const arcSize = (name) => (ko ? Math.min(7.6, 92 / (name.length * 1.02)) : Math.min(7.4, 100 / (name.length * .74))).toFixed(2);
@@ -655,7 +688,7 @@
     return `<div class="stamp ${extra}" aria-hidden="true">
       <svg class="ring" viewBox="0 0 100 100">
         <circle class="c1" cx="50" cy="50" r="47"/><circle class="c2" cx="50" cy="50" r="42"/>
-        ${arc ? `<path id="${id}" d="M15.5 50 A34.5 34.5 0 0 1 84.5 50" fill="none"/><text class="arc" style="font-size:${arcSize(arc)}px"><textPath href="#${id}" startOffset="50%" text-anchor="middle">${arc}</textPath></text>` : ''}
+        ${arc ? `<path id="${id}" d="M15.5 50 A34.5 34.5 0 0 1 84.5 50" fill="none"/><text class="arc" data-tty-line="decor" style="font-size:${arcSize(arc)}px"><textPath href="#${id}" startOffset="50%" text-anchor="middle">${arc}</textPath></text>` : ''}
         ${icon ? `<g class="ico" transform="translate(39.5 22.5) scale(.875)">${ICON[icon]}</g>` : ''}
       </svg>
       <div class="words">${w}</div>
@@ -699,7 +732,9 @@
   const stations = [];
 
   // Cover.
-  const socksSVG = `<svg viewBox="0 -4 126 96" aria-hidden="true">
+  // The price on the tag is a picture's lettering ("decor"): on the smallest stages it is under 10 px,
+  // and the same price is printed in the goal line right under it.
+  const socksSVG = `<svg viewBox="0 -4 126 96" aria-hidden="true" data-tty-line="decor">
     <g transform="rotate(-8 40 46)">
       <path d="M22 6h26v44c0 4 2 6 6 8l14 8c6 3 7 10 3 15-3 4-8 5-13 3L22 72c-7-3-10-8-10-15V6z" fill="#ff4f9e" stroke="#2a2622" stroke-width="2.4" stroke-linejoin="round"/>
       <path d="M12 6h36v9H12z" fill="#fff" stroke="#2a2622" stroke-width="2.4"/>
@@ -710,9 +745,10 @@
       <path d="M52 8h36v9H52z" fill="#fff" stroke="#2a2622" stroke-width="2.4"/>
       <path d="M52 24h36M52 32h36" stroke="#ff4f9e" stroke-width="4"/>
     </g>
-    <!-- The price tag, big enough to read in the zoomed-out opening shot. -->
-    <g transform="rotate(12 100 18) translate(98 16) scale(1.5) translate(-98 -16)"><path d="M83 8h30v16H83l-6-8z" fill="#ffd84a" stroke="#2a2622" stroke-width="1.6"/><circle cx="82" cy="16" r="1.5" fill="#2a2622"/>
-      <text x="98.5" y="19.6" font-family="Nunito, sans-serif" font-weight="800" font-size="9" text-anchor="middle" fill="#2a2622">${L.price}</text></g>
+    <!-- The price tag, big enough to read in the zoomed-out opening shot (and 10 px or more at the
+         phone stage's zoom 1; the Korean price needs a longer tag). -->
+    <g transform="rotate(12 100 18) translate(98 16) scale(1.5) translate(-98 -16)"><path d="M${ko ? 79 : 83} 8h${ko ? 36 : 30}v16H${ko ? 79 : 83}l-6-8z" fill="#ffd84a" stroke="#2a2622" stroke-width="1.6"/><circle cx="${ko ? 78 : 82}" cy="16" r="1.5" fill="#2a2622"/>
+      <text x="${ko ? 97.5 : 98.5}" y="19.9" font-family="Nunito, sans-serif" font-weight="800" font-size="10" text-anchor="middle" fill="#2a2622">${L.price}</text></g>
   </svg>`;
   const titleHTML = ko
     ? `<div class="title">${kku('riso', L.title[0], 12.5)}${kku('riso', L.title[1], 12.5)}</div>`
@@ -726,10 +762,12 @@
     <div class="goal">${L.goal}</div>
     <span class="start">${L.start}</span>`));
 
-  // Stations.
+  // Stations. The seven stops pass as a montage of chores: their names, missions and
+  // stamps are marked "decor" for the page checker. The lines that carry the joke are marked when
+  // the camera heads for them (markLines): the SMS stop's promise, the prize desk.
   STATIONS.forEach((s, i) => {
     const el = panelEl('station', `
-      <div class="head"><span class="num">${i + 1}</span><span class="name">${s.name}</span><span class="guide">${s.guide}</span></div>
+      <div class="head"><span class="num">${i + 1}</span><span class="name" data-tty-line="decor">${s.name}</span><span class="guide" data-tty-line="decor">${s.guide}</span></div>
       ${s.ms}
       <div class="slot">
         <div class="ring-empty"><span class="big-n">${i + 1}</span><span class="lab">${L.stampHere}</span></div>
@@ -740,7 +778,8 @@
     inkStamp(stamp, s.ink, ROT[i]);
     const mini = $('.stamp.mini', el);
     if (mini) inkStamp(mini, '#4f6487');
-    stations.push({ ...s, el, stamp, mini, ms: $('.ms', el), slot: $('.slot', el) });
+    $$('.ms, .bubble, .stamp', el).forEach((x) => { x.dataset.ttyLine = 'decor'; });
+    stations.push({ ...s, el, stamp, mini, ms: $('.ms', el), slot: $('.slot', el), guideEl: $('.guide', el) });
     panels.push(el);
   });
 
@@ -754,7 +793,7 @@
       <div class="ring-empty"><span class="lab">${L.stampHere}</span></div>
       ${stampHTML(F.words, F.arc, 'flag')}
     </div>`);
-  const finish = { el: finishEl, stamp: $('.stamp', finishEl), ink: F.ink, slot: $('.slot', finishEl) };
+  const finish = { el: finishEl, stamp: $('.stamp', finishEl), ink: F.ink, slot: $('.slot', finishEl), prize: $('.prize', finishEl) };
   inkStamp(finish.stamp, F.ink, ROT[7]);
   panels.push(finishEl);
   panels.forEach((p) => track.append(p));
@@ -764,17 +803,19 @@
   const C = L.c2;
   const panels2 = [panelEl('first cover c2', `
     <div class="band">${C.band}</div>
-    ${ko ? `<div class="title">${kku('riso', C.title[0], 12.5)}${kku('riso', C.title[1], 12.5)}</div>`
-         : `<div class="title"><div class="title-en" style="font-size:calc(var(--u) * 8.4)">${C.title[0]}</div><div class="title-en" style="font-size:calc(var(--u) * 8.4)">${C.title[1]}</div></div>`}
-    <div class="punch"><span class="done">${C.done}</span><span class="now">${C.now}</span></div>
+    ${ko ? `<div class="title" data-tty-line="punch">${kku('riso', C.title[0], 12.5)}${kku('riso', C.title[1], 12.5)}</div>`
+         : `<div class="title" data-tty-line="punch"><div class="title-en" style="font-size:calc(var(--u) * 8.4)">${C.title[0]}</div><div class="title-en" style="font-size:calc(var(--u) * 8.4)">${C.title[1]}</div></div>`}
+    <div class="punch" data-tty-line="punch"><span class="done">${C.done}</span><span class="now">${C.now}</span></div>
     <div class="slot"><div class="ring-empty"><span class="big-n">1</span><span class="lab">${L.stampHere}</span></div></div>
     ${infoHTML(C.info)}
     <span class="start">${L.start}</span>`)];
   for (let i = 2; i <= 7; i++) {
-    panels2.push(panelEl('station blank', `
+    const blank = panelEl('station blank', `
       <div class="head"><span class="num">${i}</span><span class="name">${L.blank} ${i}</span></div>
       <div class="ms" style="opacity:.35"></div>
-      <div class="slot"><div class="ring-empty"><span class="big-n">${i}</span><span class="lab">${L.stampHere}</span></div></div>`));
+      <div class="slot"><div class="ring-empty"><span class="big-n">${i}</span><span class="lab">${L.stampHere}</span></div></div>`);
+    blank.dataset.ttyLine = 'decor'; // empty stops still to come: lettering on the card, not read
+    panels2.push(blank);
   }
   panels2.forEach((p) => track2.append(p));
   card2.setAttribute('aria-hidden', 'true');
@@ -819,8 +860,6 @@
     s.setProperty('--top', topH + 'px');
     s.setProperty('--bot', botH + 'px');
     s.setProperty('--vt', (topH + 4 + (avail - ph) / 2) + 'px');
-    $$('font-kku[data-u]').forEach((el) => el.setAttribute('size', (u * Number(el.dataset.u)).toFixed(1)));
-    $$('font-kku[data-s]').forEach((el) => el.setAttribute('size', Math.max(10, slot * Number(el.dataset.s)).toFixed(1)));
   }
 
   // ---------- The accordion ----------
@@ -895,6 +934,7 @@
     setCam(camFor(k), k === 'overview' ? overviewZoom() : 1, snap);
   }
   function setCam(c, z, snap) {
+    const was = { cam, zoom };
     cam = c;
     const from = zoom;
     zoom = z;
@@ -903,6 +943,18 @@
     if (snap) track.classList.add('snap');
     track.style.transform = `translate3d(${cam.toFixed(1)}px, 0, 0) scale(${zoom.toFixed(3)})`;
     if (snap) { void track.offsetWidth; track.classList.remove('snap'); }
+    cullStamps(was, snap ? 0 : from !== zoom ? 950 : 550);
+  }
+  // Stamps on the stops the camera will show (at either end of this move) are shown at once; the
+  // others are put away (.away) once the move is over. A stop's place on screen is cam + zoom × its x.
+  let cullTimer = 0;
+  function cullStamps(was, ms) {
+    const seen = (c, z, i) => { const l = c + z * i * pw, r = l + z * pw; return r > -60 && l < W + 60; };
+    const all = [...stations, finish];
+    const away = (s, v) => { s.stamp.classList.toggle('away', v); if (s.mini) s.mini.classList.toggle('away', v); };
+    all.forEach((s, j) => { if (seen(cam, zoom, j + 1) || seen(was.cam, was.zoom, j + 1)) away(s, false); });
+    clearTimeout(cullTimer);
+    cullTimer = setTimeout(() => all.forEach((s, j) => away(s, !seen(cam, zoom, j + 1))), ms);
   }
   function follow() {
     track.classList.add('drift');
@@ -969,8 +1021,23 @@
   }
 
   // ---------- Timers ----------
+  // A step is timed from when the step before it was due, not from when that step's timer happened
+  // to fire: a chain of plain timeouts lost a few ms a step and on a busy machine brought the tag
+  // 0.6 s late (time a schedule from one start). A tap or
+  // any other event starts a new chain from now (`due` is null there).
   const timers = new Set();
-  const later = (ms, fn) => { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); return id; };
+  let due = null; // when the step running now was due
+  const later = (ms, fn) => {
+    const at = (due ?? performance.now()) + ms;
+    const id = setTimeout(() => {
+      timers.delete(id);
+      const was = due;
+      due = at;
+      try { fn(); } finally { due = was; }
+    }, Math.max(0, at - performance.now()));
+    timers.add(id);
+    return id;
+  };
   const clearTimers = () => { timers.forEach(clearTimeout); timers.clear(); cancelAnimationFrame(countdownRaf); };
   let countdownRaf = 0;
 
@@ -978,10 +1045,10 @@
   const fmt = (sec) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
   function resetStation(s) {
     s.ms.classList.remove('go', 'fast');
-    s.stamp.classList.remove('on');
+    s.stamp.classList.remove('on', 'ready');
     s.slot.classList.remove('got');
     if (s.sms) {
-      s.mini.classList.remove('on');
+      s.mini.classList.remove('on', 'ready');
       $('.timer', s.el).textContent = '3:00';
       $('.code', s.el).textContent = '______';
       $('.status', s.el).classList.remove('on');
@@ -1014,7 +1081,7 @@
       return done();
     }
     // Three minutes, in a hurry: the clock runs 3:00 → 0:00 in 1 s.
-    const t0 = performance.now(), span = 1000;
+    const t0 = due ?? performance.now(), span = 1000;
     const tick = (now) => {
       const p = Math.min(1, (now - t0) / span);
       timer.textContent = fmt(180 * (1 - p));
@@ -1024,9 +1091,12 @@
         if (!TTY.reduce) field.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-3%)' }, { transform: 'translateX(3%)' }, { transform: 'translateX(-2%)' }, { transform: 'none' }], { duration: 320 });
         // …and once the field has stopped shaking, the text arrives. It stays up about 0.85 s
         // (with the small EXPIRED stamp on it) before the resend clears it.
+        const was = due;
+        due = t0 + span; // the clock ran out on time even if this frame came late
         later(450, () => bubble.classList.add('on'));
         later(900, () => { s.mini.classList.add('on'); thump(s.mini); });
         later(1300, done);
+        due = was;
       }
     };
     countdownRaf = requestAnimationFrame(tick);
@@ -1048,8 +1118,8 @@
     const h = $('.human', s.el), st = $('.human-st', s.el);
     const pass = () => { h.classList.remove('checking'); h.classList.add('passed'); st.textContent = s.passed; st.classList.add('ok'); };
     if (fast) { pass(); return done(); }
-    later(120, () => { h.classList.add('checking'); st.textContent = s.checking; });
-    later(620, pass);
+    later(50, () => { h.classList.add('checking'); st.textContent = s.checking; });
+    later(300, pass);
     later(s.dur, done);
   }
 
@@ -1060,28 +1130,61 @@
   let auto = true;
   let gotCount = 0;
   let leafletFolded = true; // card 1 is still folded up (before the unfold)
-  const STAMP_HOLD = 650; // ms a fresh stamp stays put before the camera leaves
+  let tapped = false;       // the visitor has tapped: the "tap the card" hint has done its job
+  let begun = false;        // the rally has started (autoplay, or a tap before it)
+  let endAt = 0;            // when the end scene came up
 
   function say(text) { live.textContent = text; }
+  function showHint() { hint.classList.toggle('on', phase === 'end' || !tapped); }
   function setHint(end) {
     hint.textContent = end ? L.hintEnd : L.hint;
+    if (end) hint.dataset.ttyLine = 'tag'; else delete hint.dataset.ttyLine;
     view.setAttribute('aria-label', end ? L.viewEnd : L.view);
+  }
+
+  // Marks for the page checker (data-tty-line; they change nothing on screen). While the camera is
+  // zoomed out on the folding leaflet, its lettering (5-10 px) is a picture of how long the card is,
+  // not copy to read: "decor" until the zoom to stop 1 is over. The stops themselves are a montage;
+  // the lines that carry the joke are marked as the camera heads for them.
+  let readTimer = 0;
+  function overviewMark(on) {
+    clearTimeout(readTimer);
+    if (on) track.dataset.ttyLine = 'decor'; else delete track.dataset.ttyLine;
+  }
+  function markLines(n) {
+    stations.forEach((s) => { s.guideEl.dataset.ttyLine = n === stations.indexOf(s) && s.sms ? 'setup' : 'decor'; });
+    if (n === 7) finish.prize.dataset.ttyLine = 'setup'; else delete finish.prize.dataset.ttyLine;
+  }
+
+  // Stop n's stamp is drawn at opacity 0 before it is needed (see .stamp.ready): during the previous
+  // stamp's hold, after its thump, or at the latest as the camera heads there. The SMS stop's small
+  // EXPIRED stamp is drawn as the camera heads there, in a task of its own.
+  function prepareStamp(n, mini) {
+    const s = n < 7 ? stations[n] : n === 7 ? finish : null;
+    if (!s) return;
+    (mini ? s.mini : s.stamp)?.classList.add('ready');
   }
 
   function goTo(n) {
     const fromOverview = zoom !== 1;
     k = n;
+    markLines(n);
+    prepareStamp(n);
+    later(TTY.reduce ? 0 : 150, () => prepareStamp(n, true));
     aim(n + 1, TTY.reduce);
+    if (fromOverview) readTimer = setTimeout(() => overviewMark(false), TTY.reduce ? 0 : 900);
     phase = 'entering';
     if (n === 7) { // the finish has no mission
-      later(TTY.reduce ? 0 : 440, () => { phase = 'ready'; if (auto) later(TTY.reduce ? 0 : 80, step); });
+      later(TTY.reduce ? 0 : DESK_STAMP - 60, () => { phase = 'ready'; if (auto) later(TTY.reduce ? 0 : 60, step); });
       return;
     }
     const s = stations[n];
     const go = () => enter(s, TTY.reduce, () => { phase = 'ready'; if (auto) later(40, step); });
     // The mission starts as the camera settles (the pan is .5 s, the zoom from the overview .9 s).
-    if (TTY.reduce) go(); else later(fromOverview ? 700 : 330, go);
+    if (TTY.reduce) go(); else later(fromOverview ? ZOOM_GO : SETTLE, go);
   }
+
+  const holdOf = (s) => (s.sms ? SMS_HOLD : s === stations[0] ? FIRST_HOLD : STAMP_HOLD);
 
   function stampStation() {
     phase = 'stamping';
@@ -1092,7 +1195,8 @@
       confetti();
       say(`${F.words[1]} ${F.words[0]}`);
       phase = 'stamped';
-      later(TTY.reduce ? 0 : 800, course2);
+      // "Prize: one (1) account. Socks sold separately." gets its 2 s before the next card covers it.
+      later(TTY.reduce ? 0 : DESK_HOLD, course2);
       return;
     }
     const s = stations[k];
@@ -1104,9 +1208,11 @@
       countStamp(gotCount, s.ink);
       say(L.live(gotCount, 7, s.name));
       phase = 'stamped';
+      const next = k + 1;
+      later(TTY.reduce ? 0 : 400, () => prepareStamp(next));
       // Each stamp is the joke of its stop: let it sit still long enough to read before the
       // camera moves on (a tap moves on at once).
-      later(TTY.reduce ? 0 : STAMP_HOLD, () => goTo(k + 1));
+      later(TTY.reduce ? 0 : holdOf(s), () => goTo(k + 1));
     };
     if (s.sms) {
       if (TTY.reduce) {
@@ -1126,21 +1232,23 @@
     aim('end', TTY.reduce);
     veil.classList.toggle('on', !sideBySide());
     card2.classList.add('on');
+    titleEl.dataset.ttyLine = 'punch'; // the header turns into the new rally with the card
     setHeader(12, 0, L.tour2);
     say(`${C.done} ${C.now}`);
     folded(panels2);
-    const finishUp = () => { phase = 'end'; setHint(true); };
+    const finishUp = () => { phase = 'end'; endAt = performance.now(); setHint(true); showHint(); };
     if (TTY.reduce) { flat(panels2); pullBack(true); finishUp(); return; }
     card2.animate([
       { transform: 'translateY(115%) rotate(7deg)' },
       { transform: 'translateY(-2%) rotate(-2.5deg)', offset: .75 },
       { transform: 'rotate(-1.5deg)' },
-    ], { duration: 650, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' });
-    later(1000, () => pullBack());
-    later(1300, () => unfold(panels2, { hinge: 1300, stagger: 150 }));
-    // The hint turns into the last tag ("Session expired.") once the camera has pulled back
-    // (the fold keeps rolling out beyond the right edge).
-    later(1900, finishUp);
+    ], { duration: SEAT, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' });
+    // The card sits still for 0.75 s (the punch is read), then the camera pulls back and its fold
+    // rolls out across the screen. The hint turns into the last tag ("Session expired.") 1.15 s
+    // after the card is seated, as the camera is still pulling back.
+    later(1400, () => pullBack());
+    later(1700, () => unfold(panels2, { hinge: 1300, stagger: 150 }));
+    later(1800, finishUp);
   }
 
   function step() {
@@ -1151,8 +1259,8 @@
         stopUnfold();
         if (leafletFolded) { flat(panels); leafletFolded = false; }
         top.classList.add('on');
-        hint.classList.add('on');
         goTo(0);
+        showHint();
         break;
       case 'entering': {
         clearTimers();
@@ -1190,7 +1298,8 @@
     clearTimers();
     stopUnfold();
     stations.forEach(resetStation);
-    finish.stamp.classList.remove('on');
+    markLines(-1);
+    finish.stamp.classList.remove('on', 'ready');
     finish.slot.classList.remove('got');
     $$('.mini-dot', finishEl).forEach((d) => d.classList.remove('got'));
     card2.classList.remove('on');
@@ -1204,6 +1313,7 @@
     veil.classList.remove('on');
     gotCount = 0;
     k = -1;
+    titleEl.dataset.ttyLine = 'setup';
     setHeader(7, 0, L.tour);
     setHint(false);
   }
@@ -1216,27 +1326,34 @@
 
   // ---------- Playing ----------
   function play() {
+    begun = true;
     resetAll();
     phase = 'cover';
     if (TTY.reduce) {
       // The last scene, without motion: every stamp collected and course 2 handed over.
+      overviewMark(false);
       flat(panels);
       leafletFolded = false;
       top.classList.add('on');
-      hint.classList.add('on');
+      showHint();
+      // The stamps go on one task apart: painting every Korean stamp at once (dojang sprite letters)
+      // was one 0.8 s task.
       stations.forEach((s, i) => {
         enter(s, true, () => {});
         if (s.sms) { $('.code', s.el).textContent = s.codes[1]; $('.msg', $('.bubble', s.el)).innerHTML = s.smsText(s.codes[1]); $('.timer', s.el).textContent = '2:58'; $('.status', s.el).classList.remove('on'); }
-        s.stamp.classList.add('on');
+        later(i * 220, () => s.stamp.classList.add('on'));
         s.slot.classList.add('got');
         countStamp(i + 1, s.ink);
       });
-      finish.stamp.classList.add('on');
+      later(7 * 220, () => finish.stamp.classList.add('on'));
       finish.slot.classList.add('got');
       k = 7;
       course2();
       return;
     }
+    overviewMark(true);
+    top.classList.remove('on');  // the header and the hint come on with stop 1, as on the first run
+    hint.classList.remove('on');
     aim('overview', true);
     folded(panels);
     leafletFolded = true;
@@ -1244,35 +1361,60 @@
     later(600, () => { leafletFolded = false; unfold(panels); });
     // The camera drifts after the unrolling fold, which keeps coming from beyond the edge.
     later(1100, () => { if (phase === 'cover') follow(); });
-    // By 2.6 s only the last hinges, far off the right edge, are still settling.
-    later(2600, () => { if (phase === 'cover') step(); });
+    // By 2.25 s only the last hinges, far off the right edge, are still settling.
+    later(OPEN_AT, () => { if (phase === 'cover') step(); });
   }
 
   // A reduced-motion restart: the cover with the strip laid flat; taps walk through it.
   function playStill() {
     resetAll();
+    overviewMark(false);
     phase = 'cover';
     auto = false;
     flat(panels);
     leafletFolded = false;
     aim(0, true);
     top.classList.add('on');
-    hint.classList.add('on');
+    showHint();
   }
 
   // ---------- Input ----------
-  let idle = 0;
+  // A tap does the next thing at once (one stamp a tap) and the autoplay waits AUTO_PAUSE after
+  // the last tap, then carries on from there: slowed down, never stopped. The
+  // stamps the visitor made stay until the next start. The home stage is asked to stay until the
+  // punch has been up 3.5 s.
+  const stopMs = (s) => (s.sms ? SETTLE + 1000 + 1300 + 40 + 500 + SMS_HOLD : SETTLE + MISSION + 40 + holdOf(s));
+  function toPunch() { // autoplay time from now to the seated Course 2 card
+    if (phase === 'course2' || phase === 'end') return SEAT;
+    if (k === 7) return (phase === 'stamped' ? DESK_HOLD : DESK_STAMP + DESK_HOLD) + SEAT;
+    let ms = DESK_STAMP + DESK_HOLD + SEAT + (phase === 'cover' ? OPEN_AT : 0);
+    for (let i = Math.max(0, phase === 'stamped' ? k + 1 : k); i < 7; i++) ms += stopMs(stations[i]);
+    return ms;
+  }
+  let idle = 0, lastPress = 0;
   function takeOver() {
     auto = false;
+    tapped = true;
     clearTimeout(idle);
-    // After a while without touching, the rally carries on by itself.
-    if (!TTY.reduce) idle = setTimeout(() => { auto = true; if (phase === 'ready' || phase === 'stamped' || phase === 'cover') step(); }, 9000);
+    if (!TTY.reduce) idle = setTimeout(() => { auto = true; if (phase === 'ready' || phase === 'stamped' || phase === 'cover') step(); }, AUTO_PAUSE);
   }
   function press() {
-    if (TTY.reduce && phase === 'end') { playStill(); return; }
-    if (phase === 'end') { clearTimeout(idle); restart(); return; }
-    takeOver();
-    step();
+    const now = performance.now(), quick = now - Math.max(endAt, lastPress) < 1200;
+    lastPress = now;
+    begun = true;
+    if (phase === 'end') {
+      // "Tap to start over", but not a tap that was still meant for the stamps: the end scene stays
+      // until a tap comes 1.2 s after it appeared and after the tap before.
+      if (quick) return;
+      clearTimeout(idle);
+      tapped = true;
+      if (TTY.reduce) playStill(); else restart();
+    } else {
+      takeOver();
+      step();
+      showHint(); // the "tap the card" hint has done its job
+    }
+    if (!TTY.reduce) TTY.hold(AUTO_PAUSE + toPunch() + 3500);
   }
   view.addEventListener('click', press);
   view.addEventListener('keydown', (e) => {
@@ -1296,12 +1438,13 @@
   setHeader(7, 0, L.tour);
   setHint(false);
   folded(panels);
+  overviewMark(!TTY.reduce);
   aim(TTY.reduce ? 0 : 'overview', true);
   TTY.drawn.then(TTY.ready);
-  // Opened on its own, the page is shown at once; the unfold waits for the fonts (TTY.drawn,
-  // 2.5 s at most) so the 3-second gag is not spent behind a blank title. On the home stage
-  // it is long loaded.
-  TTY.onShow(() => TTY.drawn.then(play));
+  // Opened on its own, the page is shown at once; the unfold waits for the fonts (TTY.onPlay: onShow,
+  // then TTY.drawn, 2.5 s at most) so the 3-second gag is not spent behind a blank title. On the home
+  // stage it is long loaded. A tap before that has already started the rally.
+  TTY.onPlay(() => { if (!begun) play(); });
 })();
 </script>
 </body>

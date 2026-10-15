@@ -40,7 +40,10 @@
 
   /* ---- above ground ---- */
   .sky { position: absolute; inset: 0 0 auto; height: 21%; padding: clamp(14px, 3.4cqmin, 34px) clamp(16px, 4cqw, 40px) 0; }
-  .sky h1 { font-size: clamp(24px, 5cqmin, 50px); font-weight: 700; line-height: 1; letter-spacing: -.01em; }
+  /* The title is no larger than the stamp that ends the dig (--seal, the punch): the
+     same size, set apart by weight and spacing. The Korean pair is font-kku, sized in cqmin below. */
+  .site { --seal: clamp(20px, 4.2cqmin, 40px); }
+  .sky h1 { font-size: var(--seal); font-weight: 700; line-height: 1; letter-spacing: .02em; }
   .sky h1 > font-kku { color: var(--ink); }
   .sky .sub { margin-top: .5em; font-size: clamp(13px, 2cqmin, 17px); font-style: italic; color: var(--soft); }
   .lang-ko .sky .sub { font-style: normal; }
@@ -162,12 +165,17 @@
   .blame.me b { color: var(--ink); font-weight: 700; font-size: 1.36em; }
   .lang-ko .tag .note { font-style: normal; }
 
-  /* The verdict lands in the empty topsoil band, so no fossil is covered. */
-  .stamp { position: absolute; z-index: 6; right: 5cqw; top: 1.5%; display: flex; align-items: center; gap: 2cqw; opacity: 0; pointer-events: none; }
+  /* The verdict lands in the empty topsoil band, so no fossil is covered. Waiting, it is drawn at
+     .004 rather than 0, so the Korean stamp and note (font-kku) are already painted when it lands. */
+  .stamp { position: absolute; z-index: 6; right: 5cqw; top: 1.5%; display: flex; align-items: center; gap: 2cqw; opacity: .004; pointer-events: none; }
   .stamp .seal { flex: none; rotate: -6deg; white-space: nowrap; }
-  .stamp .seal { display: inline-block; padding: .25em .55em; border: .35em double #c0392b; border-radius: 10px; color: #c0392b; font: 700 clamp(20px, 4.2cqmin, 40px)/1 'Spectral', serif; background: rgba(255, 250, 240, .75); }
+  .stamp .seal { display: inline-block; padding: .25em .55em; border: .35em double #c0392b; border-radius: 10px; color: #c0392b; font: 700 var(--seal)/1 'Spectral', serif; background: rgba(255, 250, 240, .75); }
   .stamp .seal > font-kku { color: #c0392b; }
-  .stamp .field { display: block; max-width: 15em; padding: .4em .6em; background: #fff6d6; color: #3b3329; font-size: clamp(13px, 2cqmin, 17px); line-height: 1.3; rotate: 3deg; box-shadow: 0 3px 0 rgba(0, 0, 0, .12); }
+  .stamp .field { display: block; max-width: 14em; padding: .4em .6em; background: #fff6d6; color: #3b3329; font-size: clamp(13px, 2.4cqmin, 20px); line-height: 1.3; rotate: 3deg; box-shadow: 0 3px 0 rgba(0, 0, 0, .12); }
+  /* The Korean note keeps its two lines ("결정: 전부 보존." / "리팩터링은 다음 분기에."): its width is the
+     font-kku's own. Where a line must wrap (a 328 px phone), it wraps evenly, never leaving one word. */
+  .stamp .field { text-wrap: balance; }
+  .lang-ko .stamp .field { max-width: none; }
   .stamp .field > font-kku { color: #3b3329; }
 
   /* On a mid-width stage (the home's 648×732 portrait stage) the English seal folds into two lines,
@@ -195,8 +203,9 @@
       background: var(--tag);
       font-size: 12px;
       line-height: 1.3;
-      transition: opacity .3s;
     }
+    /* It fades out (folding back, the stamp) but comes in at once: a label is read from the moment it opens. */
+    .card.out { transition: opacity .3s; }
     .card:empty { opacity: 0; }
     .card .spec { display: block; font: 600 11px 'IBM Plex Mono', monospace; color: var(--soft); }
     .card .name { display: block; font-weight: 700; }
@@ -205,10 +214,11 @@
     .stone { letter-spacing: -.03em; }
     /* On a phone the finale sits in the 2023 topsoil, which holds no fossils, seal beside
        note, so it never covers a find. */
+    .site { --seal: 17px; }
     .stamp { left: 62px; right: 8px; top: 8.5%; translate: 0 -50%; flex-direction: row; justify-content: flex-end; gap: 8px; }
-    .stamp .seal { font-size: 17px; line-height: 1.05; text-align: center; }
+    .stamp .seal { line-height: 1.05; text-align: center; }
     .lang-en .stamp .seal { white-space: normal; max-width: 6.6em; }
-    .stamp .field { min-width: 0; max-width: 13em; font-size: 12px; text-align: left; }
+    .stamp .field { min-width: 0; max-width: 12em; font-size: 13px; text-align: left; }
     .flags { width: 34cqw; }
     /* The hint line ("Please brush gently.") wraps short of the flags, which start at 61cqw;
        on a short phone stage (358×396) the flags reach up beside it. */
@@ -273,11 +283,13 @@
       <path d="M30 70 C 18 82, 12 96, 8 112 C 26 106, 40 98, 52 86 Z" fill="#e8c76a" stroke="#a27c2b" stroke-width="2.5" stroke-linejoin="round"/>
     </svg>
 
-    <div class="stamp" aria-hidden="true">
+    <!-- The punch is the stamp and its note together (data-tty-line on the pair). -->
+    <div class="stamp" aria-hidden="true" data-tty-line="punch">
       <span class="seal" data-lang="en">Excavation complete</span>
       <span class="seal" data-lang="ko"><font-kku font="dojang" size="5.6cqmin">발굴 완료</font-kku></span>
-      <span class="field" data-lang="en">Decision: preserve everything. Refactor next quarter.</span>
-      <span class="field" data-lang="ko"><font-kku font="pilgi" size="3cqmin" wrap-unit="word">결정: 전부 보존. 리팩터링은 다음 분기에.</font-kku></span>
+      <span class="field" data-lang="en">Decision: preserve everything. Refactor next&nbsp;quarter.</span>
+      <span class="field" data-lang="ko"><font-kku font="pilgi" size="max(13px, 3cqmin)" wrap-unit="word">결정: 전부 보존.
+리팩터링은 다음 분기에.</font-kku></span>
     </div>
   </section>
 </main>
@@ -298,17 +310,17 @@
   const FINDS = [
     [ // 2014, the trilobite
       { code: 'var self = this;',
-        en: { spec: 'Specimen 14-01', blame: 'dhyoon (left 2016)', name: 'var self = this', note: 'A trilobite of the callback era. Declared extinct in 2015, when arrow functions arrived.' },
-        ko: { spec: '표본 14-01', blame: 'dhyoon (2016 퇴사)', name: 'var self = this', note: '콜백 시대의 삼엽충. 2015년 화살표 함수가 나오면서 멸종 판정을 받음.' } },
+        en: { spec: 'Specimen 14-01', blame: 'dhyoon (left 2016)', name: 'var self = this', note: 'Declared extinct in 2015, when arrow functions arrived.' },
+        ko: { spec: '표본 14-01', blame: 'dhyoon (2016 퇴사)', name: 'var self = this', note: '2015년 화살표 함수가 나오면서 멸종 판정을 받음.' } },
       { code: '}); }); }); });',
-        en: { spec: 'Specimen 14-03', blame: 'mlee (left 2015)', name: 'Callback pyramid, tail end', note: 'Only the closing brackets survive. The opening has never been found.' },
+        en: { spec: 'Specimen 14-03', blame: 'mlee (left 2015)', name: 'Callback pyramid, tail end', note: 'Closing brackets only. The opening has never been found.' },
         ko: { spec: '표본 14-03', blame: 'mlee (2015 퇴사)', name: '콜백 피라미드 꼬리 부분', note: '닫는 괄호만 남았음. 여는 쪽은 아직 발견되지 않음.' } },
       { code: '<!--[if lt IE 9]>', codeKo: '<object classid="clsid:…">',
         en: { spec: 'Specimen 14-08', blame: 'webmaster (role abolished)', name: 'Ritual object', note: 'Offered to Internet Explorer 8 in exchange for safe passage.' },
-        ko: { spec: '표본 14-08', blame: 'webmaster (직책 폐지)', name: '액티브X 설치 유도 장치', note: '“보안 프로그램을 설치해야 합니다.” 이 지층의 모든 길이 여기로 통했음.' } },
+        ko: { spec: '표본 14-08', blame: 'webmaster (직책 폐지)', name: '액티브X 설치 유도 장치', note: '“보안 프로그램을 설치하세요.” 모든 길이 여기로 통했음.' } },
       { code: "$('.btn').live('click', save);",
-        en: { spec: 'Specimen 14-05', blame: 'mlee (left 2015)', name: 'An extinct method', note: 'Removed from jQuery in 2013. Still bound to every button here in 2014.' },
-        ko: { spec: '표본 14-05', blame: 'mlee (2015 퇴사)', name: '멸종한 메서드', note: 'jQuery에서는 2013년에 사라졌음. 이 지층에선 2014년에도 버튼마다 붙어 있음.' } },
+        en: { spec: 'Specimen 14-05', blame: 'mlee (left 2015)', name: 'An extinct method', note: 'Removed from jQuery in 2013. Still on every button here.' },
+        ko: { spec: '표본 14-05', blame: 'mlee (2015 퇴사)', name: '멸종한 메서드', note: '2013년에 사라졌음. 여기선 아직 버튼마다 붙어 있음.' } },
     ],
     [ // 2017, in amber
       { code: '// do not touch',
@@ -318,8 +330,8 @@
         en: { spec: 'Specimen 17-04', blame: 'hpark (left 2018)', name: 'Unexplained mechanism', note: 'Sealed in amber along with the author’s confusion.' },
         ko: { spec: '표본 17-04', blame: 'hpark (2018 퇴사)', name: '작동 원리 미상', note: '작성자의 당혹감까지 함께 굳었음.' } },
       { code: '// ask Dave before changing', codeKo: '// 수정 전 김 대리에게 문의',
-        en: { spec: 'Specimen 17-09', blame: 'dave (left 2017)', name: 'A standing order', note: 'Written by Dave himself, the year he left. Nobody has asked him yet.' },
-        ko: { spec: '표본 17-09', blame: '김 대리 (2017 퇴사)', name: '구전 지침', note: '김 대리가 직접 적고 그해 퇴사했음. 아직 아무도 못 물어봄.' } },
+        en: { spec: 'Specimen 17-09', blame: 'dave (left 2017)', name: 'A standing order', note: 'Written by Dave himself. Nobody has asked him yet.' },
+        ko: { spec: '표본 17-09', blame: '김 대리 (2017 퇴사)', name: '구전 지침', note: '김 대리가 직접 적었음. 아직 아무도 못 물어봄.' } },
     ],
     [ // 2017, plain stone
       { code: '// temporary fix, remove by Friday',
@@ -329,19 +341,19 @@
         en: { spec: 'Specimen 17-07', blame: 'yjlee (left 2019)', name: 'The zero-millisecond fix', note: 'Fixed a race condition by waiting zero milliseconds. It worked.' },
         ko: { spec: '표본 17-07', blame: 'yjlee (2019 퇴사)', name: '0밀리초 수정', note: '0밀리초 기다려서 레이스 컨디션을 고쳤음. 그런데 그게 됐음.' } },
       { code: 'if (user.id === 4217) return; // hotfix',
-        en: { spec: 'Specimen 17-11', blame: 'summer intern, 2017', name: 'Exception 4217', note: 'An exception made for one user. Widely believed to be the CEO.' },
-        ko: { spec: '표본 17-11', blame: '2017년 여름 인턴', name: '4217번 예외', note: '사용자 한 명만을 위한 예외. 대표님 계정이라는 설이 유력함.' } },
+        en: { spec: 'Specimen 17-11', blame: 'summer intern, 2017', name: 'Exception 4217', note: 'Made for one user. Widely believed to be the CEO.' },
+        ko: { spec: '표본 17-11', blame: '2017년 여름 인턴', name: '4217번 예외', note: '단 한 명을 위한 예외. 대표님 계정이라는 설이 유력함.' } },
     ],
     [ // 2019, bones in pieces
       { code: ['user-service', 'user-service-v2', 'user-service-final'],
         en: { spec: 'Specimen 19-11', blame: 'platform team (disbanded)', name: 'user-service, in pieces', note: 'One service, found scattered across fourteen repositories.' },
         ko: { spec: '표본 19-11', blame: '플랫폼팀 (해체)', name: '조각난 user-service', note: '서비스 하나가 저장소 열네 곳에 흩어져 발견됨.' } },
       { code: ['/api/v1', '/api/v2', '/api/v3'],
-        en: { spec: 'Specimen 19-14', blame: 'four teams', name: 'Three generations of one API', note: 'All three still in production. Something calls v1 every Tuesday.' },
+        en: { spec: 'Specimen 19-14', blame: 'four teams', name: 'Three generations of one API', note: 'All three still live. Something calls v1 every Tuesday.' },
         ko: { spec: '표본 19-14', blame: '네 팀', name: 'API 삼대', note: '셋 다 아직 운영 중. 화요일마다 누군가 v1을 부름.' } },
       { code: ['node_modules', 'node_modules', 'node_modules'],
-        en: { spec: 'Specimen 19-20', blame: 'npm install', name: 'node_modules, nested', note: 'Three nested copies. Heavier than the rest of the site combined.' },
-        ko: { spec: '표본 19-20', blame: 'npm install', name: '겹겹이 node_modules', note: '세 겹으로 중첩됨. 유적 나머지를 다 합친 것보다 무거움.' } },
+        en: { spec: 'Specimen 19-20', blame: 'npm install', name: 'node_modules, nested', note: 'Heavier than the rest of the site combined.' },
+        ko: { spec: '표본 19-20', blame: 'npm install', name: '겹겹이 node_modules', note: '유적 나머지를 다 합친 것보다 무거움.' } },
     ],
     [ // 2011, the long spine
       { code: 'function handleEverything() { /* 900 lines */ }',
@@ -351,7 +363,7 @@
         en: { spec: 'Specimen 11-03', blame: 'yhshin (left 2012)', name: 'The impossible case', note: 'The log says it happened 41,000 times in 2012 alone.' },
         ko: { spec: '표본 11-03', blame: 'yhshin (2012 퇴사)', name: '일어날 리 없는 일', note: '로그에는 2012년 한 해에만 41,000번 찍혀 있음.' } },
       { code: `"SELECT * FROM users WHERE id = '" + id + "'"`,
-        en: { spec: 'Specimen 11-05', blame: 'contractor, 2011', name: 'Hand-assembled SQL', note: 'Still opens for anyone who knocks. One quote mark is enough.' },
+        en: { spec: 'Specimen 11-05', blame: 'contractor, 2011', name: 'Hand-assembled SQL', note: 'Opens for anyone who knocks. One quote mark is enough.' },
         ko: { spec: '표본 11-05', blame: '외주, 2011', name: '손으로 이어 붙인 SQL', note: '지금도 누가 두드리든 열어 줌. 따옴표 하나면 충분함.' } },
     ],
     [ // 2011, plain stone
@@ -359,8 +371,8 @@
         en: { spec: 'Specimen 11-07', blame: 'jhkim (left 2016)', name: '// TODO: fix later', note: 'The oldest known TODO. Later never came.' },
         ko: { spec: '표본 11-07', blame: 'jhkim (2016 퇴사)', name: '// TODO: fix later', note: '가장 오래된 TODO. ‘나중’은 끝내 오지 않았음.' } },
       { code: '// FIXME',
-        en: { spec: 'Specimen 11-09', blame: 'anonymous', name: 'A bare FIXME', note: 'No further detail. Scholars still argue about what was broken.' },
-        ko: { spec: '표본 11-09', blame: '익명', name: '설명 없는 FIXME', note: '더 적힌 건 없음. 무엇이 고장이었는지 학계에서도 의견이 갈림.' } },
+        en: { spec: 'Specimen 11-09', blame: 'anonymous', name: 'A bare FIXME', note: 'Scholars still argue about what was broken.' },
+        ko: { spec: '표본 11-09', blame: '익명', name: '설명 없는 FIXME', note: '무엇이 고장이었는지는 학계에서도 의견이 갈림.' } },
       { code: '// sorry about this', codeKo: '// 죄송합니다',
         en: { spec: 'Specimen 11-12', blame: 'you', name: 'An apology', note: 'The only apology recovered from the site.' },
         ko: { spec: '표본 11-12', blame: '나', name: '사과문', note: '현장에서 나온 유일한 사과문.' } },
@@ -492,13 +504,26 @@
   }
 
   /* ---- revealing ---- */
-  // Timing, in ms. Nobody touching anything: the brush digs the live find in 1.4 strokes (it is
-  // out at 1.7 s and wakes at 1.9 s) and every other find in 1.2. After each find it rests, so a
-  // label is up about 3.6 s (the rest and the next dig), the last one 2.8 s. The live find's label
-  // waits until it has played dead, so the first three seconds are the bug's alone. Measured
-  // (2026-10-14): finds at 1.7, 6.6, 10.3, 13.9, 17.6 and 21.3 s, the stamp at 24.1 s (down by
-  // 24.5), the bug scuttles once more at 25.6 s. index.json gives the page 28 s.
-  const STROKE = 1200, REST = 2200, BUG_WAIT = 1550, FINISH = 2800, TAG_BEAT = 1000;
+  // Timing, in ms of autoplay time (TTY.timeline's clock, which stands still while a hand is on the
+  // brush). Nobody touching anything: the brush digs the live find in 1.4 strokes (it is out at
+  // 1.7 s and wakes at 1.9 s) and every other find in 1.2. The live find's label waits until it has
+  // played dead (BUG_WAIT), so the first three seconds are the bug's alone. From that label to the
+  // stamp is SPAN: each label stays up the reading time (TTY.readMs) of its longest line
+  // (the note, or a Korean "git blame: hpark (2018 퇴사)") plus PAD (it pops in, and the checker
+  // samples every 0.1 s), and what is left of SPAN is shared out evenly. The longest dig (every
+  // visit, both languages) needs 20.5 s of the 20.6, so the
+  // stamp starts at about 23.8 s on every visit and is down by 24.4 s; the bug scuttles once more a
+  // second after that. index.json gives the page 28 s.
+  const STROKE = 1200, BUG_WAIT = 1550, PAD = 400, SPAN = 20600, TAG_BEAT = 1000, LAND = 520;
+  const strokesFor = (f) => (f === bug ? 1.4 : 1.2);
+  const PUNCH_AT = 1.4 * STROKE + BUG_WAIT + SPAN + LAND; // the stamp is down (ms of autoplay)
+  {
+    const reads = LABELS.map((l) => Math.max(TTY.readMs(l.note), TTY.readMs('git blame: ' + l.blame), TTY.readMs(l.name)) + PAD);
+    const extra = Math.max(0, SPAN - reads.reduce((a, b) => a + b, 0)) / reads.length;
+    fossils.forEach((f, i) => { f._show = reads[i] + extra; });
+  }
+  let clock = () => 0; // autoplay time, once the timeline has started
+  let due = 1.4 * STROKE; // autoplay time the next find comes clean (after the last one: the stamp)
   let found = 0;
   let active = null;   // the find whose label is open (or about to open)
   let pending = 0;     // the live find's label, waiting
@@ -582,9 +607,11 @@
     tag.style.opacity = 1;
     if (!TTY.reduce) tag.animate([{ opacity: 0, transform: 'rotate(-4deg) scale(.9)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
     card.replaceChildren(...[...tag.children].map((c) => c.cloneNode(true)));
+    card.classList.remove('out');
     card.style.opacity = '';
     placeCard(f);
   }
+  const hideCard = () => { card.classList.add('out'); card.style.opacity = 0; };
   // On a phone the card lies at the top of the ground. Where that covers the find it describes
   // (the 2019 bones on a 358×396 or 328×408 stage: 51–81% of "/api/v1 /api/v2 /api/v3" lay under
   // it), it moves: just below that find, else to the bottom of the ground, else just above the
@@ -612,7 +639,10 @@
     const best = [s.b + 8, g.bottom - 4 - h, s.t - 8 - h].reduce((a, t) => (cost(t) < cost(a) ? t : a));
     if (cost(best) < Infinity) card.style.top = (best - g.top) + 'px';
   }
-  function reveal(f) {
+  // `at`: the autoplay time this find came clean (the brush's own reveals pass the time they were
+  // due, so a late frame does not push every later label back). Its label stays up f._show, then
+  // the brush has dug the next find, or, after the last one, the stamp comes down.
+  function reveal(f, at = clock()) {
     if (f._done) return;
     f._done = true;
     f._dugAt = performance.now();
@@ -625,20 +655,25 @@
       clearTimeout(fold);
       if (active) pinUp(active);
       active = bug;
-      card.style.opacity = 0;
+      hideCard();
       pending = setTimeout(() => openTag(bug), BUG_WAIT);
+      due = at + BUG_WAIT + f._show;
     } else {
       if (f === bug) wakeUp();
       openTag(f);
+      due = at + f._show;
     }
-    if (found === fossils.length) setTimeout(finish, TTY.reduce ? 0 : FINISH + (f === bug ? BUG_WAIT : 0));
   }
   // A find already dug, pressed again: its label opens again. The live one scuttles as well.
   function look(f) {
-    openTag(f);
+    // (the label already open is left as it is: a second tap does not pop it in again)
+    if (active === f && f._tag.style.opacity === '1') clearTimeout(fold);
+    else openTag(f);
     if (f === bug && !TTY.reduce) legs(700, .7);
+    // Before the stamp, the next find (or the stamp) waits until this label has been read too.
+    if (!finished) due = Math.max(due, clock() + f._show);
     // After the dig the stamp is the last scene; a label opened over it folds back after a while.
-    if (finished) fold = setTimeout(() => { if (active === f) { pinUp(f); active = null; card.style.opacity = 0; } }, 6000);
+    if (finished) fold = setTimeout(() => { if (active === f) { pinUp(f); active = null; hideCard(); } }, 6000);
   }
   // Legs out and scuttling for ms; k > 0 also shakes the find from side to side (k of the full step).
   let legsT = [];
@@ -687,18 +722,23 @@
     clearTimeout(pending);
     if (active) pinUp(active);
     active = null;
-    card.style.opacity = 0;
+    hideCard();
     // (once it has faded where it was: a card dropped below the bones would jump to the top)
     setTimeout(() => { if (!active) card.style.top = ''; }, 320);
     stamp.style.opacity = 1;
     // The brush is put down so it does not lie over the last find; a visitor's hand brings it back.
     brush.style.opacity = 0;
     if (TTY.reduce) return;
-    stamp.animate([{ opacity: 0, transform: 'scale(2.2)' }, { opacity: 1, transform: 'scale(.95)', offset: .7 }, { opacity: 1, transform: 'none' }], { duration: 520, easing: 'cubic-bezier(.5, 0, .9, .4)' });
+    // It slams down from 2.2× and settles: opaque at the slam (.7 of LAND), down at LAND.
+    stamp.animate([
+      { opacity: 0, transform: 'scale(2.2)', easing: 'cubic-bezier(.5, 0, .9, .4)' },
+      { opacity: 1, transform: 'scale(.95)', offset: .7, easing: 'ease-out' },
+      { opacity: 1, transform: 'none' },
+    ], { duration: LAND });
     // A second after the stamp is down, the catalogued find scuttles once more: "preserve
     // everything" includes the live bug. (No random twitch may come first or steal the beat.)
     clearTimeout(twitching);
-    twitching = setTimeout(() => { legs(700, .7); twitchLater(); }, 520 + TAG_BEAT);
+    twitching = setTimeout(() => { legs(700, .7); twitchLater(); }, LAND + TAG_BEAT);
   }
 
   /* ---- the brush ---- */
@@ -719,6 +759,9 @@
   ground.addEventListener('pointermove', (e) => {
     if (e.pointerType === 'mouse' || e.buttons) {
       const g = ground.getBoundingClientRect();
+      // A hand on the brush stops the autoplay clock as a tap does (the kit's TTY.busy, 2.5 s; a tap
+      // calls it already), so the label being read and the stamp still to come wait for it.
+      if (performance.now() - lastHand > 200) TTY.busy();
       lastHand = performance.now();
       handSweep(e.clientX - g.left, e.clientY - g.top);
     }
@@ -736,27 +779,31 @@
   });
 
   // When nobody holds the brush, it works through the fossils by itself: 1.4 strokes over the
-  // live find, 1.2 over the others, then a pause to read the label (see the timing above).
+  // live find, 1.2 over the others, timed to end when the find is due; between, it rests where it
+  // stopped while the label is read (see the timing above). Then the stamp, when it is due.
   function autoDig() {
-    let t0 = 0, restUntil = 0;
-    const loop = (now) => {
+    const loop = () => {
       auto = requestAnimationFrame(loop);
-      if (now - lastHand < 2500 || now < restUntil) return;
+      if (performance.now() - lastHand < 2500) return; // a hand holds the brush
+      const now = clock();
       const target = fossils.find((f) => !f._done);
-      if (!target) { cancelAnimationFrame(auto); return; } // all dug up: stop the loop
-      if (!t0) t0 = now;
+      if (!target) { // all dug up: the stamp, then the loop stops
+        if (now >= due) { cancelAnimationFrame(auto); finish(); }
+        return;
+      }
+      const need = strokesFor(target), from = due - need * STROKE;
+      if (now < from) return;
       const r = rectOf(target);
-      const need = target === bug ? 1.4 : 1.2;
-      const p = ((now - t0) % STROKE) / STROKE;
-      const strokes = (now - t0) / STROKE;
+      const p = ((now - from) % STROKE) / STROKE;
       // The stroke is phased so that at the reveal the brush sits at the end of the fossil away
       // from its label, and rests there, clear of the text.
       const phase = (target._tagRight ? .75 : .25) - (need % 1);
       const x = r.x + r.w * (.5 + .5 * Math.sin((p + phase) * Math.PI * 2));
       const y = r.cy + r.h * .55 * Math.cos(p * Math.PI * 4);
       handSweep(x, y, false);
-      // (the live find's label opens late, so its rest is longer by about as much)
-      if (strokes > need) { reveal(target); t0 = 0; restUntil = now + REST + (target === bug ? BUG_WAIT - 300 : 0); }
+      // (a frame or two late, the find counts from when it was due; much later, a page that was
+      // hidden or stalled, from now, so the finds after it do not all come out at once)
+      if (now >= due) reveal(target, now - due > 250 ? now : due);
     };
     auto = requestAnimationFrame(loop);
   }
@@ -764,13 +811,20 @@
   addEventListener('resize', () => { placeAll(); drawDust(); placeCard(active); });
   if (TTY.reduce) {
     drawDust();
-    fossils.forEach(reveal);
+    fossils.forEach((f) => reveal(f));
     brush.style.opacity = 0;
+    finish();
   } else {
     drawDust();
     moveBrush(W * .62, H * .1);
   }
-  TTY.onShow(() => { if (!TTY.reduce) autoDig(); });
+  // The autoplay runs on a kit timeline for its clock: it stands still while the visitor taps,
+  // types or brushes, and while the stamp is still to come a pause asks the home page for time.
+  const play = TTY.timeline(async (t) => {
+    clock = t.now;
+    if (!TTY.reduce) autoDig();
+  }, { punch: PUNCH_AT / 1000 });
+  TTY.onShow(play.start);
   const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
   Promise.all([loaded, document.fonts.ready]).then(() => { if (!TTY.reduce) drawDust(); TTY.ready(); });
 })();

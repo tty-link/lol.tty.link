@@ -32,7 +32,9 @@
   body {
     container-type: size;
     position: relative;
-    overflow: hidden;
+    /* (clip, not hidden: a size container that hides its overflow scrolls itself, and a tap or
+       focus could shift the whole stage) */
+    overflow: clip;
     background:
       radial-gradient(circle, var(--dot) 1.2px, transparent 1.6px) 0 0 / 22px 22px,
       var(--bg);
@@ -54,8 +56,8 @@
     padding: 4cqh 4cqw;
   }
   .intro { justify-self: start; max-width: 100%; }
-  .title { font-size: clamp(22px, 6.4cqmin, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
-  .sub { margin-top: 1cqh; font-size: clamp(13px, 2.4cqmin, 18px); color: var(--soft); }
+  .title { font-size: clamp(22px, 6.4cqmin, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; text-wrap: balance; }
+  .sub { margin-top: 1cqh; font-size: clamp(13px, 2.4cqmin, 18px); color: var(--soft); text-wrap: balance; }
   .lang-ko .sub { margin-top: 1.6cqh; }
   /* Under the title, the widget stands in the rest of the stage and sizes itself to it, so a
      taller title (the Korean one, or a wrapped one) and the line under the widget always fit. */
@@ -85,6 +87,14 @@
   @container (min-width: 760px) and (min-aspect-ratio: 1/1) {
     .widget { width: min(46cqw, 440px, calc((100cqh - 100px) / 1.4)); }
   }
+  /* On the smallest stages (328×288) the widget is squeezed into the stand and loses its bottom.
+     The eye chart, letters nobody is meant to read, gives up its room first, so the verdict under
+     it stays in view when it runs to three lines ("…like a human. Also, the box is upside down."). */
+  .widget { display: flex; flex-direction: column; }
+  .widget > * { flex: none; }
+  .widget > .body:has(> .panel[data-panel="chart"].on) { flex-shrink: 1; min-height: 24cqi; }
+  .widget > .body.covered { min-height: 34cqi; } /* (the welcome over it needs about that much) */
+  .panel[data-panel="chart"] { overflow: hidden; }
   .check {
     display: flex;
     align-items: center;
@@ -108,12 +118,12 @@
   .box.on .tick { stroke-dashoffset: 0; transition: stroke-dashoffset .35s ease-out; }
   .box.spin { border-color: #a5b0bf; border-top-color: var(--head); border-radius: 50%; animation: spin .7s linear infinite; }
   @keyframes spin { to { rotate: 360deg; } }
-  .check-label { flex: 1; font-size: 5cqi; font-weight: 600; }
+  .check-label { flex: 1; font-size: max(10px, 5cqi); font-weight: 600; }
   .gear { width: 8cqi; height: 8cqi; color: var(--steel); }
 
   .head { padding: 4cqi 4.4cqi; background: var(--head); color: #fff; min-height: 21cqi; transition: background .4s; }
-  .head-small { font-size: 3.4cqi; opacity: .85; }
-  .head-q { margin-top: .8cqi; font-size: 5cqi; font-weight: 800; line-height: 1.2; }
+  .head-small { font-size: max(10px, 3.4cqi); opacity: .85; }
+  .head-q { margin-top: .8cqi; font-size: max(10px, 5cqi); font-weight: 800; line-height: 1.2; }
   .lang-ko .head-q { font-weight: 600; }
   .head.done { background: var(--ok); }
 
@@ -129,7 +139,7 @@
     border: 0;
     border-radius: 1.6cqi;
     background: #eef2f7;
-    font-size: 7.4cqi;
+    font-size: max(10px, 7.4cqi);
     font-weight: 800;
     letter-spacing: -.02em;
     cursor: pointer;
@@ -140,14 +150,16 @@
   .cell.wrong { background: #ffd8c2; }
 
   .hash { display: grid; height: 100%; grid-template-rows: auto 1fr auto; gap: 2.4cqi; }
-  .hash-label { font-size: 3.8cqi; color: var(--soft); }
+  .hash-label { font-size: max(10px, 3.8cqi); color: var(--soft); }
   .hash-field {
     padding: 3cqi 3.4cqi;
     border: .5cqi solid var(--line);
     border-radius: 1.6cqi;
     background: #f6f8fb;
     font-family: 'Fragment Mono', ui-monospace, monospace;
-    font-size: 5.2cqi;
+    font-size: max(10px, 5.2cqi);
+    min-height: 0;
+    overflow: hidden; /* (the robot's 64 characters at the 10 px floor fill a small field; they flash past) */
     line-height: 1.5;
     letter-spacing: .02em;
     word-break: break-all;
@@ -162,7 +174,7 @@
   /* Marks one pixel for the colour question (pixel 37, 29 of 64). */
   .ring { position: absolute; left: calc(37.5 / 64 * 100%); top: calc(29.5 / 64 * 100%); width: 4.4cqi; height: 4.4cqi; translate: -50% -50%; border: .7cqi solid var(--ink); border-radius: 50%; box-shadow: 0 0 0 .4cqi #fff; display: none; }
   .ring.on { display: block; }
-  .answer { min-width: 40cqi; padding: 2.2cqi 3.4cqi; border: .5cqi solid var(--line); border-radius: 1.6cqi; font-size: 5cqi; font-weight: 600; text-align: center; background: #f6f8fb; }
+  .answer { min-width: 40cqi; padding: 2.2cqi 3.4cqi; border: .5cqi solid var(--line); border-radius: 1.6cqi; font-size: max(10px, 5cqi); font-weight: 600; text-align: center; background: #f6f8fb; }
 
   .chart { display: grid; place-items: center; align-content: center; height: 100%; gap: 1.6cqi; font-family: 'Geologica', sans-serif; font-weight: 800; color: var(--ink); }
   .chart p:nth-child(1) { font-size: 14cqi; line-height: 1; }
@@ -186,11 +198,12 @@
     opacity: 0;
   }
 
-  .status { display: flex; align-items: center; min-height: 13cqi; padding: .8cqi 4.4cqi; font-size: 4.2cqi; line-height: 1.35; color: var(--soft); border-top: 1px solid var(--line); }
+  .status { display: flex; align-items: center; min-height: 13cqi; padding: .8cqi 4.4cqi; font-size: max(10px, 4.2cqi); line-height: 1.35; color: var(--soft); border-top: 1px solid var(--line); }
   .status.bad { color: var(--bad); }
   .status.ok { color: var(--ok); }
   /* One line of verdict (.said); a second sentence can follow it in the same flow (.more). */
   .said { display: block; }
+  .more { display: inline-block; }
   .said font-kku { color: inherit; }
   .status.bad .said font-kku { color: var(--bad); }
   .status.ok .said font-kku { color: var(--ok); }
@@ -200,7 +213,7 @@
   .foot .icon { display: grid; padding: 0; border: 0; background: none; cursor: pointer; }
   .foot .icon:hover svg { color: var(--head); }
   .foot .grow { flex: 1; }
-  .btn { padding: 2.2cqi 4.4cqi; border: 0; border-radius: 1.4cqi; background: #eef2f7; font-size: 4cqi; font-weight: 600; cursor: pointer; }
+  .btn { padding: 2.2cqi 4.4cqi; border: 0; border-radius: 1.4cqi; background: #eef2f7; font-size: max(10px, 4cqi); font-weight: 600; cursor: pointer; }
   .btn.main { background: var(--head); color: #fff; }
 
   .welcome { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 3cqi; padding: 4cqi; background: #fff; text-align: center; opacity: 0; pointer-events: none; }
@@ -208,11 +221,12 @@
   /* Once the welcome is fully in, the check under it is gone for readers and screen readers too. */
   .body.covered .panel { visibility: hidden; }
   .welcome .big { font-size: 9cqi; font-weight: 800; line-height: 1.1; color: var(--ok); }
-  .welcome .small { font-size: 4.6cqi; color: var(--soft); }
+  .welcome .small { font-size: max(10px, 4.6cqi); color: var(--soft); text-wrap: balance; }
   .welcome .badge { width: 26cqi; height: 26cqi; }
 
-  /* One quiet line under the widget: the hint while the checks run, the welcome for humans at the end. */
-  .aside { max-width: 100%; margin-top: 8px; font-size: clamp(12px, 2.4cqw, 15px); line-height: 1.3; color: var(--soft); text-align: center; opacity: 0; transition: opacity .6s; }
+  /* One quiet line under the widget: the hint while the checks run, "Next in line" when the robot
+     comes, the welcome for humans at the end (balanced, so a second line never holds one word). */
+  .aside { max-width: 100%; margin-top: 8px; font-size: clamp(12px, 2.4cqw, 15px); line-height: 1.3; color: var(--soft); text-align: center; text-wrap: balance; opacity: 0; transition: opacity .4s; }
   .aside.on { opacity: 1; }
   @container (min-width: 760px) and (min-aspect-ratio: 1/1) { .aside { margin-top: 12px; font-size: clamp(12px, 1.6cqw, 15px); } }
 
@@ -234,10 +248,10 @@
     .body { height: clamp(40cqi, calc(100cqh - 52cqi - 48px), 64cqi); padding: 2.4cqi 4cqi; }
     .panel { inset: 2.4cqi 4cqi; }
     .grid { gap: 1.2cqi; }
-    .cell { font-size: 5.8cqi; }
+    .cell { font-size: max(10px, 5.8cqi); }
     .hash { gap: 1.6cqi; }
     .hash-label { font-size: max(10px, 3.4cqi); }
-    .hash-field { padding: 2cqi 3cqi; font-size: 4.2cqi; line-height: 1.35; }
+    .hash-field { padding: 2cqi 3cqi; font-size: max(10px, 4.2cqi); line-height: 1.35; }
     .pixels { grid-template-columns: auto auto; justify-content: center; gap: 5cqi; }
     .pixels canvas { width: 33cqi; height: 33cqi; }
     .answer { min-width: 30cqi; font-size: max(12px, 4.6cqi); }
@@ -303,11 +317,12 @@
 <body>
 <div class="scene">
   <header class="intro">
-    <h1 class="title">
+    <!-- The title is the setup itself (the usual check, turned round), so it is marked as one. -->
+    <h1 class="title" data-tty-line="setup">
       <span data-lang="en">Prove you are a robot.</span>
       <span data-lang="ko"><font-kku font="pixel" size="clamp(22px, 6.2cqmin, 54px)">로봇임을 증명하세요</font-kku></span>
     </h1>
-    <p class="sub">
+    <p class="sub" data-tty-line="setup">
       <span data-lang="en">A security check for the other side.</span>
       <span data-lang="ko">자동입력 방지 말고, 수동입력 방지입니다.</span>
     </p>
@@ -321,7 +336,7 @@
         </span>
         <span class="check-label">
           <span data-lang="en">I’m a robot</span>
-          <span data-lang="ko"><font-kku font="dunggeun" size="5.2cqi">로봇입니다</font-kku></span>
+          <span data-lang="ko"><font-kku font="dunggeun" size="max(10.5px, 5.2cqi)">로봇입니다</font-kku></span>
         </span>
         <svg class="gear" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10.3 2h3.4l.5 2.6a7.6 7.6 0 0 1 1.9 1.1l2.5-.9 1.7 2.9-2 1.7a7.6 7.6 0 0 1 0 2.2l2 1.7-1.7 2.9-2.5-.9a7.6 7.6 0 0 1-1.9 1.1l-.5 2.6h-3.4l-.5-2.6a7.6 7.6 0 0 1-1.9-1.1l-2.5.9-1.7-2.9 2-1.7a7.6 7.6 0 0 1 0-2.2l-2-1.7 1.7-2.9 2.5.9a7.6 7.6 0 0 1 1.9-1.1zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
       </div>
@@ -344,7 +359,7 @@
           <div class="pixels"><span class="pic"><canvas width="64" height="64"></canvas><i class="ring"></i></span><p class="answer">&nbsp;</p></div>
         </div>
         <div class="panel" data-panel="chart">
-          <div class="chart"><p>E</p><p>FP</p><p>TOZ</p><p>LPED</p><p class="tiny"></p></div>
+          <div class="chart" data-tty-line="decor"><p>E</p><p>FP</p><p>TOZ</p><p>LPED</p><p class="tiny"></p></div>
           <p class="lens"></p>
         </div>
         <div class="welcome">
@@ -355,7 +370,7 @@
             <path d="M42 60 q8 5 16 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
             <path d="M50 34 V24" stroke="#0c9f7a" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="22" r="4" fill="#ff7a1a"/>
           </svg>
-          <p class="big"></p>
+          <p class="big" data-tty-line="punch"></p>
           <p class="small"></p>
         </div>
       </div>
@@ -438,6 +453,8 @@
   const isPrime = (n) => { if (n < 2) return false; for (let d = 2; d * d <= n; d++) if (n % d === 0) return false; return true; };
   const factor = (n) => { for (let d = 2; d * d <= n; d++) if (n % d === 0) return `${d} × ${n / d}`; return null; };
   const thousands = (n) => n.toLocaleString('en-US');
+  // The human's count of the pixels, as it goes into the answer box: lost after three.
+  const TALLY = ['1', '1, 2', '1, 2, 3…', '1', '1, 2…'];
 
   // Korean particles after a number follow how it is read aloud: 일, 삼, 육, 칠, 팔, 십, 백
   // end in a consonant (91은, 13이에요); 이, 사, 오, 구 do not (2는, 119는).
@@ -459,8 +476,6 @@
       hashTyped: 'hell',
       hashFail: 'Time’s up. You got as far as “hell”. Relatable.',
       unixFail: 'Time’s up. It changed 2,000 times while you typed.',
-      counting: '1, 2, 3…',
-      lostCount: '1, 2… wait, where was I?',
       humanGuess: 'a lot?',
       pixelFail: '“A lot” is technically correct. It is 4,096.',
       colourGuess: 'blue?',
@@ -502,9 +517,9 @@
     ko: {
       step: (i) => `확인 ${i} / 4`,
       primes: '소수가 적힌 칸을 모두 고르세요.',
-      hash: '“hello”의 SHA-256 값을 입력하세요. 2초 드립니다.',
+      hash: '“hello”의 SHA-256을 2초 안에 입력하세요.',
       hashLabel: 'SHA-256 (64자)',
-      unix: '지금 유닉스 시간을 밀리초로 입력하세요. 2초 드립니다.',
+      unix: '지금 유닉스 시간(밀리초)을 2초 안에 입력하세요.',
       unixLabel: '유닉스 시간(밀리초)',
       pixels: '이 정사각형에 픽셀이 몇 개 있을까요?',
       colour: '동그라미 한가운데 픽셀은 무슨 색일까요? 16진수로요.',
@@ -515,8 +530,6 @@
       hashTyped: 'hell',
       hashFail: '시간 종료. “hell”까지 쳤네요. 그 심정 알아요.',
       unixFail: '시간 종료. 입력하는 동안 2,000번 바뀌었어요.',
-      counting: '1, 2, 3…',
-      lostCount: '1, 2… 어디까지 셌더라?',
       humanGuess: '많이요?',
       pixelFail: '“많이요”도 틀린 말은 아니에요. 4,096개예요.',
       colourGuess: '파란색?',
@@ -590,32 +603,45 @@
     if (!ko) return document.createTextNode(text);
     const el = document.createElement('font-kku');
     el.setAttribute('font', 'dunggeun');
-    el.setAttribute('size', '4.4cqi');
+    el.setAttribute('size', 'max(11px, 4.4cqi)'); // (a floor for the smallest stages: 508×339 drew it at 9.8 px)
     el.setAttribute('wrap-unit', 'word');
     el.textContent = text;
     return el;
   };
-  function say(text, mood) {
+  // A verdict stays up until the next one, and the next one waits until this one could be read
+  // (TTY.readMs: Korean letters / 8, English words / 3 a second, at least 2 s; FADE
+  // for its fade-in). `kind` marks the line for the page checker (data-tty-line in _kit.js): a
+  // verdict is a setup line, the robot's quick "Done." lines are a montage ('decor').
+  const FADE = 350;
+  let saidAt = 0, saidNeed = 0;
+  function say(text, mood, kind = 'setup') {
     status.className = 'status' + (mood ? ' ' + mood : '');
     if (text === shownStatus) return;
     shownStatus = text;
+    saidAt = performance.now();
+    saidNeed = text && kind !== 'decor' ? TTY.readMs(text) + FADE : 0;
     const line = document.createElement('span');
     line.className = 'said';
-    if (text) line.append(words(text));
+    if (text) { line.dataset.ttyLine = kind; line.append(words(text)); }
     status.replaceChildren(line);
     if (text && !TTY.reduce) line.animate([{ opacity: 0, transform: 'translateY(30%)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' });
   }
-  // A second sentence after the verdict, in the same line of text.
+  // A second sentence after the verdict, in the same flow. The two are read together: the pair
+  // stays for both counted as one, and the second for its own count at least.
   function sayMore(text) {
     const line = status.querySelector('.said');
     if (!line || !shownStatus) return;
     shownStatus += ' ' + text;
+    saidNeed = Math.max(TTY.readMs(shownStatus), performance.now() - saidAt + TTY.readMs(text)) + FADE;
     const more = document.createElement('span');
     more.className = 'more';
-    if (ko) more.append(' ', words(text)); else more.textContent = ' ' + text;
-    line.append(more);
+    more.append(ko ? words(text) : text);
+    line.append(' ', more);
     if (!TTY.reduce) more.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
   }
+  // Until the verdict on the status line has been up long enough to read, less `ahead` ms (the
+  // steps that still come before the next verdict).
+  const readable = (ahead = 0) => wait(Math.max(0, saidAt + saidNeed - ahead - performance.now()));
   function shake(el) { if (!TTY.reduce) el.animate([{ transform: 'none' }, { transform: 'translateX(-2%)' }, { transform: 'translateX(2%)' }, { transform: 'translateX(-1%)' }, { transform: 'none' }], { duration: 380 }); }
 
   const PANELS = ['primes', 'hash', 'pixels', 'chart'];
@@ -630,11 +656,16 @@
     ask.pixels = Math.random() < .5 ? 'pixels' : 'colour';
   }
   const panelOn = () => PANELS.find((p) => document.querySelector(`.panel[data-panel="${p}"]`).classList.contains('on'));
+  // The question in the band is read before the human moves on to the next one.
+  let askedAt = 0, askedNeed = 0;
+  const questionRead = () => wait(Math.max(0, askedAt + askedNeed - performance.now()));
   function showPanel(name) {
     document.querySelectorAll('.panel').forEach((p) => p.classList.toggle('on', p.dataset.panel === name));
     const i = PANELS.indexOf(name);
     headSmall.textContent = T.step(i + 1);
     headQ.textContent = T[ask[name] || name];
+    askedAt = performance.now();
+    askedNeed = TTY.readMs(headQ.textContent) + 200;
     hashLabel.textContent = ask.hash === 'unix' ? T.unixLabel : T.hashLabel;
     ring.classList.toggle('on', ask.pixels === 'colour');
     head.classList.remove('done');
@@ -650,8 +681,11 @@
     lens.style.opacity = 0;
     welcome.classList.remove('on');
     $('.body').classList.remove('covered');
+    delete widget.dataset.ttyLine;
+    delete answer.dataset.ttyLine;
     // Under the widget, while the checks run: you may try it, or tick the box.
     asideTurn++;
+    delete aside.dataset.ttyLine;
     aside.textContent = T.hint;
     aside.classList.add('on');
     box.classList.remove('on', 'spin');
@@ -793,9 +827,10 @@
     c91.classList.add('wrong');
     say(T.fail91, 'bad'); shake(widget);
     setTimeout(() => { if (live()) dropCostume(); }, 140);
-    await wait(1200); if (!live()) return false;
+    // Each verdict stays up through the next try until the next verdict. "Time's up" comes 2.5 s
+    // after this wait (the walk to the field, then the 2 s), so the wait is what reading it lacks.
+    await Promise.all([wait(700), readable(2500)]); if (!live()) return false;
 
-    // The verdict stays up until the human starts on the next question.
     showPanel('hash');
     await glide(hashField, 500); if (!live()) return false;
     tap(hashField); hashField.classList.add('typing');
@@ -805,43 +840,51 @@
     // The clock question gets the first digits of the real clock, which will not wait.
     const typed = ask.hash === 'unix' ? String(Date.now()).slice(0, 4) : T.hashTyped;
     await wait(560); if (!live()) return false;
-    say('');
     for (const ch of typed) { await wait(240 + Math.random() * 80); if (!live()) return false; hashField.textContent += ch; }
     // "Time's up" when the bar is empty, two seconds after the field was taken.
     await wait(Math.max(0, 2000 - (performance.now() - t0))); if (!live()) return false;
     hashField.classList.remove('typing');
     say(ask.hash === 'unix' ? T.unixFail : T.hashFail, 'bad');
-    await wait(1250); if (!live()) return false;
+    await Promise.all([wait(600), questionRead()]); if (!live()) return false;
 
     showPanel('pixels');
     if (ask.pixels === 'colour') {
       await glide(ring, 550, 1.2); if (!live()) return false;
       await glide(ring, 220, .25); if (!live()) return false;
-      say('');
       await glide(ring, 200, .25); if (!live()) return false;
     } else {
+      // Counting, pixel by pixel, into the answer box: 1, 2, 3… lost, and from the top again.
+      // (a tally that flicks past, 'decor' for the checker)
       await glide(canvas, 450, 1.4); if (!live()) return false;
-      await glide(canvas, 330, .3); if (!live()) return false;
-      say(T.counting);
-      for (let i = 0; i < 2; i++) { await glide(canvas, 270, .3); if (!live()) return false; }
-      say(T.lostCount);
-      for (let i = 0; i < 2; i++) { await glide(canvas, 280, .3); if (!live()) return false; }
+      answer.dataset.ttyLine = 'decor';
+      for (const [i, n] of TALLY.entries()) {
+        await glide(canvas, i === 3 ? 420 : 270, i === 3 ? 1 : .3); if (!live()) return false;
+        tap(); answer.textContent = n;
+      }
     }
+    // (the walk to the answer and the guess take 680 ms; the verdict before it has been read by then)
+    await readable(680); if (!live()) return false;
     await glide(answer, 380); if (!live()) return false;
-    tap(answer); answer.textContent = ask.pixels === 'colour' ? T.colourGuess : T.humanGuess;
+    tap(answer); delete answer.dataset.ttyLine; answer.textContent = ask.pixels === 'colour' ? T.colourGuess : T.humanGuess;
     await wait(300); if (!live()) return false;
     say(ask.pixels === 'colour' ? T.colourFail : T.pixelFail, 'bad');
-    await wait(1200); if (!live()) return false;
+    // (the lean below takes 1150 ms before its verdict)
+    await Promise.all([wait(1200), readable(1150), questionRead()]); if (!live()) return false;
 
-    // The bottom line: up close, closer, nose to the screen, then back with a jolt.
+    // The bottom line: head on one side on the way in, up close, closer, nose to the screen, then
+    // back and up with a jolt. (Tilted, the arrow lies along the chart instead of down over the
+    // verdict under it, and it backs off upwards: on a 358×396 stage that line is 30 px below.)
     showPanel('chart');
+    cursor.animate([{ scale: 1, rotate: '0deg' }, { scale: 1.15, rotate: '-76deg' }], { duration: 500, easing: 'ease-in-out', fill: 'forwards' });
     await glide(tiny, 500); if (!live()) return false;
-    if (!TTY.reduce) cursor.animate([{ scale: 1 }, { scale: 1.9 }], { duration: 450, easing: 'ease-in', fill: 'forwards' });
+    cursor.animate([{ scale: 1.15, rotate: '-76deg' }, { scale: 1.9, rotate: '-76deg' }], { duration: 450, easing: 'ease-in', fill: 'forwards' });
     for (let i = 0; i < 3; i++) { await glide(tiny, 150, .2); if (!live()) return false; }
     await wait(200); if (!live()) return false;
-    cursor.animate([{ scale: 1.9 }, { scale: .9, offset: .6 }, { scale: 1 }], { duration: 260, easing: 'ease-out', fill: 'forwards' });
+    cursor.animate([{ scale: 1.9, rotate: '-76deg' }, { scale: .9, rotate: '6deg', offset: .6 }, { scale: 1, rotate: '0deg' }], { duration: 260, easing: 'ease-out', fill: 'forwards' });
     say(T.squint, 'bad');
-    await wait(900); if (!live()) return false;
+    await glide([cur[0] + 6, cur[1] - 48], 260, .1); if (!live()) return false;
+    // (picking the costume up takes 650 ms, the box and its spin 1100)
+    await Promise.all([wait(60), readable((looseAt ? 650 : 0) + 1100)]); if (!live()) return false;
 
     // Back into the costume, in a hurry, and on to the box.
     if (looseAt) {
@@ -850,23 +893,31 @@
       await wait(200); if (!live()) return false;
     }
     await glide(box, 500); if (!live()) return false;
-    tap(box); box.classList.add('spin'); say('');
+    tap(box); box.classList.add('spin');
     await wait(600); if (!live()) return false;
     box.classList.remove('spin');
     say(T.boxFail, 'bad'); shake(box);
     await wait(800); if (!live()) return false;
     sayMore(T.upsideDown);
-    await wait(2200);
+    // The robot's first verdict comes 1820 ms after this (robotSolves); both sentences are read by then.
+    await Promise.all([wait(1000), readable(1820)]);
     return live();
   }
 
   /* ---- The robot does it all ---- */
-  async function robotSolves(mine, opening) {
+  // `below`: the opening line goes under the widget (the autoplay's "Next in line", while the
+  // human's last verdict is still being read on the status line) instead of on the status line.
+  async function robotSolves(mine, opening, below = false) {
     const live = () => run === mine;
     stopClock();
+    // Called for a visitor (they ticked the box, or stopped for 8 s), it asks the home page for the
+    // time it takes: about 6 s to the welcome, the line under it 1.2 s later, 3.4 s to read that.
+    if (!below) TTY.hold(11000);
     if (TTY.reduce) {
-      // No arm with reduced motion: the checks are simply done.
+      // No arm with reduced motion: the checks are simply done, once the line before can be read
+      // (only the motion is reduced, not the reading time).
       if (opening) say(opening, 'ok');
+      await readable(); if (!live()) return;
       cells.forEach((c) => { c.classList.remove('sel', 'wrong'); c.classList.toggle('good', isPrime(+c.dataset.n)); });
       finish();
       return;
@@ -875,7 +926,14 @@
     // would pass over the robot's first line). A visitor's own takeover has already hidden it:
     // animating it from opacity 1 would bring it back at its old spot.
     if (cursor.style.opacity !== '0') cursor.animate([{ translate: `${cur[0]}px ${cur[1]}px`, opacity: 1 }, { translate: `-90px ${cur[1] + 140}px`, opacity: 0 }], { duration: 600, fill: 'forwards', easing: 'ease-in' });
-    if (opening) say(opening, 'ok');
+    if (opening && below) {
+      aside.dataset.ttyLine = 'setup';
+      aside.textContent = opening;
+      aside.classList.add('on');
+      aside.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+    } else if (opening) say(opening, 'ok');
+    // (questions, fields and answers flash past while it works: a montage, 'decor' for the checker)
+    widget.dataset.ttyLine = 'decor';
     await wait(600); if (!live()) return;
     await reach(box, 280, live); if (!live()) return;
     await pinch(); if (!live()) return;
@@ -892,8 +950,10 @@
       await pinch(); if (!live()) return;
       c.classList.remove('sel', 'wrong'); c.classList.toggle('good', prime);
     }
-    say(T.primesDone, 'ok');
-    await wait(220); if (!live()) return;
+    // Its quick "Done." lines start once the line before them has been read.
+    await readable(); if (!live()) return;
+    say(T.primesDone, 'ok', 'decor');
+    await wait(150); if (!live()) return;
 
     showPanel('hash');
     await reach(hashField, 150, live); if (!live()) return;
@@ -902,15 +962,15 @@
     timer.style.transform = 'scaleX(1)';
     const exact = ask.hash === 'unix' ? String(Date.now()) : HASH;
     for (let i = 0; i < exact.length; i += 4) { hashField.textContent = exact.slice(0, i + 4); await wait(16); if (!live()) return; }
-    say(ask.hash === 'unix' ? T.unixDone : T.hashDone, 'ok');
-    await wait(220); if (!live()) return;
+    say(ask.hash === 'unix' ? T.unixDone : T.hashDone, 'ok', 'decor');
+    await wait(150); if (!live()) return;
 
     showPanel('pixels');
     await reach(answer, 150, live); if (!live()) return;
     await pinch(); if (!live()) return;
     answer.textContent = ask.pixels === 'colour' ? '#4dabf7' : '4,096';
-    say(ask.pixels === 'colour' ? T.colourDone : T.pixelDone, 'ok');
-    await wait(220); if (!live()) return;
+    say(ask.pixels === 'colour' ? T.colourDone : T.pixelDone, 'ok', 'decor');
+    await wait(150); if (!live()) return;
 
     // The robot reads the line the human could not, holding the magnifier by its right edge
     // (on the line itself the rod would lie across the words it reads).
@@ -919,8 +979,8 @@
     const clawW = parseFloat(getComputedStyle(arm.querySelector('.claw')).width);
     await reach([held.right + .7 * clawW - 3, held.top + held.height / 2], 150, live); if (!live()) return;
     lens.animate([{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'none' }], { duration: 260, fill: 'forwards', easing: 'cubic-bezier(.2,.9,.3,1.2)' });
-    say(T.chartDone, 'ok');
-    await wait(1500); if (!live()) return;
+    say(T.chartDone, 'ok', 'decor');
+    await wait(1350); if (!live()) return;
 
     // The arm is out of the way before the welcome lands.
     retract(350);
@@ -930,6 +990,7 @@
 
   // The welcome, and a beat later the line under the widget turns to the humans.
   function finish(granted = T.granted, passed = T.passed) {
+    delete widget.dataset.ttyLine;
     head.classList.add('done');
     headSmall.textContent = passed;
     headQ.textContent = T.small;
@@ -951,12 +1012,14 @@
     setTimeout(() => { if (turn === asideTurn) $('.body').classList.add('covered'); }, TTY.reduce ? 0 : 450);
     const turnToHumans = () => {
       if (turn !== asideTurn) return;
+      aside.dataset.ttyLine = 'tag';
       aside.textContent = T.aside;
       aside.classList.add('on');
     };
     if (TTY.reduce) { turnToHumans(); return; }
     aside.classList.remove('on');
-    setTimeout(turnToHumans, 800);
+    // (a beat after the welcome: fully shown about 1.2 s after it)
+    setTimeout(turnToHumans, 1150);
   }
 
   async function play() {
@@ -976,8 +1039,12 @@
       placeCursor(innerWidth * .15, innerHeight + 30);
       await wait(200); if (run !== mine) return;
       if (!(await humanTries(mine))) return;
-      await robotSolves(mine, T.nextInLine);
-      await wait(4800);
+      await robotSolves(mine, T.nextInLine, true);
+      // The next round starts after the 28 s the home page gives the page, so the welcome is its
+      // last scene there; and not while the home page still holds it for a tap (12 s after the
+      // last one), which would cut the new round off halfway.
+      await wait(7000);
+      for (let left; run === mine && (left = lastPress + 12500 - performance.now()) > 0;) await wait(left);
     }
   }
 
@@ -1009,7 +1076,6 @@
       if (!mineMode || run !== mine || welcome.classList.contains('on')) return;
       mineMode = false;
       byVisitor = true;
-      TTY.hold(9000);
       robotSolves(++run, T.assist);
     }, 8000);
   }
@@ -1074,13 +1140,15 @@
     say(T.mineGood, 'ok');
     letIn = run;
     clearTimeout(idle);
-    // A human who gets every prime is let in as a robot (one check of four will do).
+    // A human who gets every prime is let in as a robot (one check of four will do), once the
+    // question has been read: the box ticks itself, and half a second later the welcome answers
+    // it. With reduced motion too (only the motion is reduced, not the reading time).
     const mine = run;
     setTimeout(() => {
       if (run !== mine || !mineMode) return;
       box.classList.add('on'); box.setAttribute('aria-checked', 'true');
-      setTimeout(() => { if (run === mine && mineMode) finish(T.mineGranted, T.minePassed); }, TTY.reduce ? 0 : 500);
-    }, TTY.reduce ? 0 : 1300);
+      setTimeout(() => { if (run === mine && mineMode) finish(T.mineGranted, T.minePassed); }, 500);
+    }, Math.max(1500, saidNeed - 500));
   });
   // A new challenge, as on the real widgets: fresh questions and the whole scene again.
   reloadBtn.setAttribute('aria-label', T.reload);
@@ -1107,6 +1175,8 @@
   });
   // Ticking "I'm a robot" yourself: the box thinks, judges how you did it, and the robot comes.
   let pointerKind = '';
+  let lastPress = -Infinity;
+  ['pointerdown', 'keydown'].forEach((type) => addEventListener(type, (e) => { if (e.isTrusted) lastPress = performance.now(); }, { capture: true, passive: true }));
   box.addEventListener('pointerdown', (e) => { pointerKind = e.pointerType; });
   const robotTakesIt = async (e) => {
     if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
@@ -1124,7 +1194,7 @@
     const mine = ++run;
     if (!TTY.reduce) { box.classList.add('spin'); await wait(800); if (run !== mine) return; box.classList.remove('spin'); }
     say(T.yours[how], how === 'keys' ? 'ok' : 'bad'); shake(box);
-    await wait(3000); if (run !== mine) return;
+    await Promise.all([wait(3000), readable()]); if (run !== mine) return;
     byVisitor = true;
     robotSolves(mine, how === 'keys' ? null : T.assist);
   };

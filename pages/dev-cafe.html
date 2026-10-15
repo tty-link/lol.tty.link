@@ -69,8 +69,13 @@
   .chalky { filter: url(#chalk); }
 
   .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 3cqi; }
-  .title { font-family: 'Cabin Sketch', cursive; font-size: 7.4cqi; line-height: .95; color: var(--chalk); }
-  .lang-ko .title { line-height: 1; }
+  /* The café's name is set at the barista's size (--say), never above it: the barista's lines
+     carry the jokes. It reads as the board's heading by its letters, not its size:
+     Cabin Sketch in caps, spaced out, with the cup drawn large beside it. */
+  .board { --say: max(10px, 2.9cqi); }
+  .lang-ko .board { --say: max(10px, 3.2cqi); }
+  .title { font-family: 'Cabin Sketch', cursive; font-size: var(--say); --title-kku: var(--say); line-height: 1.1; letter-spacing: .08em; text-transform: uppercase; color: var(--chalk); }
+  .lang-ko .title { line-height: 1; letter-spacing: 0; }
   .sub { margin-top: 1cqi; font-size: 2.7cqi; color: var(--chalk-dim); }
   .cup { width: 10cqi; flex: none; overflow: visible; }
   .cup .mug { transform-box: fill-box; transform-origin: 20% 95%; } /* sip() tips the cup from its base; the saucer stays */
@@ -89,6 +94,8 @@
 
   .menu { display: grid; grid-template-columns: 1fr 1fr; gap: 2cqi 6cqi; list-style: none; padding: 0; }
   .item { position: relative; cursor: pointer; border-radius: .8cqi; outline-offset: .6cqi; }
+  /* A drink can be ordered once its line is on the board (.ready): no ordering what isn't there. */
+  .item:not(.ready) { pointer-events: none; cursor: default; }
   .item:focus-visible { outline: 2px dashed var(--yellow); }
   .line1 { display: flex; align-items: baseline; gap: 1.2cqi; }
   .name { font-size: 3.3cqi; line-height: 1.05; white-space: nowrap; }
@@ -103,8 +110,10 @@
   /* The barista's answer, written on the bottom of the board. */
   .say { display: flex; align-items: baseline; gap: 1.4cqi; min-height: 6.2cqi; margin-top: 3cqi; padding-top: 1.8cqi; border-top: .3cqi solid rgba(241, 239, 228, .18); }
   .say b { flex: none; font-weight: 400; font-size: 2.6cqi; color: var(--pink); }
-  .answer { font-size: 2.9cqi; line-height: 1.25; color: var(--chalk); }
-  .lang-ko .answer { font-size: 3.2cqi; }
+  .answer { font-size: var(--say); line-height: 1.25; color: var(--chalk); }
+  /* The tag after the punchline ("(Sips it.)") is a line box of its own, so the punchline beside
+     it stays the same line while the tag is written. */
+  .answer .sip { display: inline-block; }
   /* The hint stays on the board, small along its bottom edge, once the barista's first line
      ("Tap a drink to order.") has given way to an answer: the menu always says it can be
      tapped. It sits in the board's bottom padding, so long answers never push it around. */
@@ -133,8 +142,9 @@
     font-size: 2.9cqi;
     line-height: 1.05;
   }
-  .screen > p { display: flex; justify-content: space-between; gap: 1cqi; white-space: nowrap; overflow: hidden; }
-  .screen .rung { opacity: .72; }
+  .screen > p { display: flex; justify-content: space-between; gap: 1cqi; white-space: nowrap; }
+  /* Only the top row is cut short; the total's bigger digits stand a little out of their row. */
+  .screen .rung { opacity: .72; overflow: hidden; }
   .screen .sum { font-size: 1.3em; line-height: .8; }
   .screen font-kku { color: var(--lcd); }
   /* The till can be tapped to pay; it pays the way it adds. */
@@ -201,7 +211,7 @@
   @media (max-aspect-ratio: 1/1) {
   @container (max-width: 600px) {
     .board { padding: 5cqi 4.6cqi 6.6cqi; }
-    .title { font-size: 10cqi; }
+    .board, .lang-ko .board { --say: max(10px, 4.3cqi); }
     .sub { font-size: 4cqi; }
     /* The cup stays on a phone (the spinner is the first joke), beside the title, left of the stamp. */
     .head { justify-content: flex-start; }
@@ -210,13 +220,12 @@
     .name { font-size: 4.9cqi; }
     .price { font-size: 4.3cqi; }
     .lang-ko .price { font-size: 4.5cqi; }
-    .desc, .lang-ko .desc { font-size: 3.9cqi; }
+    .desc, .lang-ko .desc { font-size: max(10px, 3.9cqi); }
     /* Room for three lines from the start (the longest answers wrap to three here), so the
        board does not grow, and jump, when a longer answer or the latte's sip comes in. */
     .say { min-height: 18cqi; margin-top: 2.4cqi; }
-    .say b { font-size: 3.8cqi; }
-    .answer, .lang-ko .answer { font-size: 4.3cqi; }
-    .nudge { left: 4.6cqi; bottom: 1.4cqi; font-size: 3.9cqi; }
+    .say b { font-size: max(10px, 3.8cqi); }
+    .nudge { left: 4.6cqi; bottom: 1.4cqi; font-size: max(10px, 3.9cqi); }
     .screen { width: 32cqi; padding: .8cqi 1.6cqi .6cqi; font-size: 4.4cqi; }
     .head > div { max-width: 62cqi; }
     .special { position: absolute; right: 2.4cqi; top: 1.2cqi; z-index: 2; }
@@ -268,7 +277,7 @@
     <header class="head">
       <div>
         <h1 class="title write" data-lang="en"><span class="chalky">Dev Café</span></h1>
-        <h1 class="title write" data-lang="ko"><font-kku font="chalk" size="7cqi">개발자 카페</font-kku></h1>
+        <h1 class="title write" data-lang="ko"><font-kku font="chalk" size="var(--title-kku, 3.2cqi)">개발자 카페</font-kku></h1>
         <p class="sub write chalky" data-lang="en">Today's brews, freshly compiled</p>
         <p class="sub write chalky" data-lang="ko">오늘의 커피, 방금 컴파일했어요</p>
       </div>
@@ -380,14 +389,17 @@
   const board = document.querySelector('.board');
   const overlay = document.querySelector('.overlay');
   const seal = document.querySelector('.seal');
+  // The barista's last word stays with the one before it, so a wrapped line never ends on a lone word.
+  const glue = (s) => s.replace(/ (\S+)$/, '\u00a0$1');
   document.querySelector('.card-name').textContent = MENU[SPECIAL][TTY.lang][0];
 
-  // Menu rows: Korean drink names in font-kku chalk, everything else hand-lettered.
+  // Menu rows: Korean drink names in font-kku chalk, everything else hand-lettered. A row can be
+  // ordered once its line is written (.ready).
   const rows = MENU.map((m, i) => {
     const [name, price, desc] = m[TTY.lang];
     const li = document.createElement('li');
     li.className = 'item';
-    li.tabIndex = 0;
+    li.tabIndex = -1;
     li.setAttribute('role', 'button');
     li.innerHTML = `<div class="line1"><span class="name"></span><span class="dots"></span><span class="price chalky"></span></div><p class="desc chalky"></p>`;
     const nameBox = li.querySelector('.name');
@@ -409,6 +421,7 @@
     return li;
   });
   menu.append(document.querySelector('.special'));
+  const ready = (li) => { li.classList.add('ready'); li.tabIndex = 0; };
 
   /* ---- Chalk dust: a few specks fall from wherever the chalk is ---- */
   const canvas = document.querySelector('canvas.dust');
@@ -439,13 +452,14 @@
 
   /* ---- Writing: each line is revealed left to right while dust falls from the tip ---- */
   function write(el, ms) {
+    if (TTY.reduce) { el.classList.remove('write'); el.classList.add('written'); return Promise.resolve(); }
     return new Promise((done) => {
       const box = el.getBoundingClientRect();
       const base = board.getBoundingClientRect();
       const t0 = performance.now();
       el.classList.add('write');
       const step = (now) => {
-        const p = Math.min(1, (now - t0) / ms);
+        const p = Math.min(1, Math.max(0, now - t0) / ms);
         el.style.clipPath = `inset(-20% ${(1 - p) * 100}% -20% 0)`;
         if (Math.random() < .5) puff(box.left - base.left + box.width * p, box.top - base.top + box.height * (.3 + Math.random() * .5), 2);
         if (p < 1) requestAnimationFrame(step);
@@ -456,42 +470,90 @@
   }
   const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  /* ---- Ordering ---- */
-  // The barista's line is typed out; every new answer replaces the one before and stops its
-  // typing. `said` counts the answers, so a late follow-up can tell whether its line is still
-  // up. `readUntil` is when a visitor's latest answer will have been typed and read.
-  let typing = 0;
+  /* ---- The barista's line ---- */
+  // Each answer is typed out and replaces the one before (and stops its typing). `said` counts the
+  // answers, so a late follow-up can tell whether its line is still up; `freeAt` is when the line now
+  // up will have been typed and read, and autoplay waits for it (lineRead below).
+  // A visitor's answer replaces their own last one at once, but lets the barista finish a line of
+  // the regulars' or the latte's call first: their order rings up and wiggles at once, the words
+  // follow once that line has been read. `kind` marks the line for the page checker: the regulars'
+  // orders are the setup, the latte's arrival the punch; the visitor's own answers carry no mark.
+  const TYPE_MS = ko ? 40 : 25;
+  const typeMs = (text) => [...text].length * TYPE_MS;
+  const PAD = 250; // a little past the reading count: timers and frames run late on a busy phone
   let said = 0;
-  let readUntil = 0;
-  function answer(text, { append = false, visitor = false } = {}) {
-    clearInterval(typing);
-    board.classList.add('ordered'); // the first line (the prompt) is gone: the hint takes over
-    if (!append) { said++; say.textContent = ''; }
-    const chars = [...(append ? ' ' + text : text)];
-    const ms = ko ? 55 : 32;
-    if (visitor) readUntil = performance.now() + chars.length * ms + 2500;
-    if (TTY.reduce) { say.textContent += chars.join(''); return Promise.resolve(); }
+  let freeAt = 0;
+  let lineOwner = ''; // whose line is up: 'auto' (the regulars, a latte's call), 'visitor' or '' (the prompt)
+  let deferred = 0;   // a visitor's answer waiting for the barista to finish an autoplay line
+  let stopTyping = () => {};
+  // Letters come by the clock, not by the count of ticks, so a busy machine does not slow a line
+  // down. Resolves true once the whole line is up, false if a newer line took its place first.
+  function type(node, text) {
+    stopTyping();
+    if (TTY.reduce) { node.textContent += text; return Promise.resolve(true); }
+    const chars = [...text];
+    const base = node.textContent;
+    const t0 = performance.now();
     return new Promise((done) => {
-      let i = 0;
-      typing = setInterval(() => {
-        say.textContent += chars[i++];
-        if (i >= chars.length) { clearInterval(typing); done(); }
-      }, ms);
+      let shown = 0;
+      let id = 0;
+      const finish = (ok) => { clearInterval(id); stopTyping = () => {}; done(ok); };
+      const step = () => {
+        const n = Math.min(chars.length, Math.floor((performance.now() - t0) / TYPE_MS) + 1);
+        if (n !== shown) { shown = n; node.textContent = base + chars.slice(0, n).join(''); }
+        if (n >= chars.length) finish(true);
+      };
+      stopTyping = () => finish(false);
+      id = setInterval(step, 16);
+      step();
     });
+  }
+  function answer(text, { kind = '', visitor = false, shown = null } = {}) {
+    const line = glue(text);
+    const read = typeMs(line) + TTY.readMs(line) + PAD;
+    if (visitor) { clearTimeout(deferred); deferred = 0; } // a newer answer of theirs takes the place of a waiting one
+    if (visitor && !TTY.reduce) {
+      const wait = lineOwner === 'auto' ? freeAt - performance.now() : 0;
+      // A visitor's answer is read before autoplay goes on: every timeline stands still until then.
+      TTY.busy(Math.max(0, wait) + read + 200);
+      if (wait > 0) { deferred = setTimeout(() => answer(text, { kind, visitor, shown }), wait); return null; }
+    }
+    if (shown) shown();
+    said++;
+    board.classList.add('ordered'); // the first line (the prompt) is gone: the hint takes over
+    say.textContent = '';
+    if (kind) say.dataset.ttyLine = kind; else say.removeAttribute('data-tty-line');
+    lineOwner = visitor ? 'visitor' : 'auto';
+    freeAt = TTY.reduce ? 0 : performance.now() + read;
+    return { id: said, typed: type(say, line) };
+  }
+  // The tag: a short aside after the punchline, in a line box of its own.
+  function aside(text) {
+    if (!TTY.reduce) freeAt = Math.max(freeAt, performance.now() + typeMs(text) + TTY.readMs(text) + PAD);
+    say.append(' ');
+    const span = document.createElement('span');
+    span.className = 'sip';
+    span.dataset.ttyLine = 'tag';
+    say.append(span);
+    return type(span, text);
   }
   function wiggle(li) {
     li.classList.remove('wiggle');
     void li.offsetWidth;
     li.classList.add('wiggle');
   }
+
   /* ---- The till ---- */
   // It adds up Number(price), as a till written in JavaScript would: Number(3) is 3,
   // Number(null) is 0, and a Promise or the text "n + 1" is NaN. Once NaN, always NaN.
+  // Once a visitor has rung something up or tried to pay, the display is theirs (tillMine): the
+  // regulars' later orders go on their own tab and never change what the visitor's till shows.
   const pos = document.querySelector('.pos');
   const rung = pos.querySelector('.rung');
   const sum = pos.querySelector('.sum');
   let total = 0;
-  let billed = false; // something has been rung up since the last payment
+  let billed = false;   // something has been rung up since the last payment
+  let tillMine = false; // the display shows the visitor's own bill or payment
   const money = (n) => (ko ? n.toLocaleString('ko-KR') : n.toFixed(2));
   sum.textContent = money(total);
   function blink() {
@@ -516,12 +578,11 @@
     rung.replaceChildren(k);
   }
   // Paying goes by the same arithmetic: a NaN bill is declined, a number is paid and the
-  // till starts a new bill. Tapping an empty till only gets a word from the barista: the
-  // regulars still order, once that answer has been read (yieldToVisitor in play()).
+  // till starts a new bill. Tapping an empty till only gets a word from the barista.
   let declines = 0;
   function pay() {
     if (!billed) { answer(TTY.t(PAY.none), { visitor: true }); return; }
-    touched = true;
+    tillMine = true;
     if (Number.isNaN(total)) {
       showRung(TTY.t(PAY.declinedTag));
       answer(TTY.t(PAY.declined[declines++ % PAY.declined.length]), { visitor: true });
@@ -559,41 +620,61 @@
     ], { duration: 1200, easing: 'ease-in-out' });
   }
 
+  /* ---- Orders ---- */
+  // One latte is made at a time: `brewing` says whose ('visitor', 'regulars' or '').
   const asked = MENU.map(() => 0);
-  let latte = 0;            // the pending Async Latte's timer, 0 when none
-  let regularsLatte = false; // that latte was ordered by the regulars (autoplay)
-  function order(i, visitor = false) {
-    wiggle(rows[i]);
-    if (i === ASYNC) {
-      if (latte) { answer(TTY.t(LATTE.pending), { visitor }); return; }
-      serve(false);
-      regularsLatte = !visitor;
-      latte = setTimeout(arrive, LATTE.wait);
-    }
-    charge(i);
-    const says = MENU[i].say;
-    answer(TTY.t(says[asked[i]++ % says.length]), { visitor });
-  }
-  // The latte turns up when it is ready and takes over the barista's line, even mid-sentence
-  // if the visitor ordered it. The regulars' latte waits until a visitor's own answer has been
-  // read, so autoplay never talks over someone who is playing.
-  function arrive() {
-    const wait = regularsLatte ? readUntil - performance.now() : 0;
-    if (wait > 0) { latte = setTimeout(arrive, wait); return; }
-    latte = 0;
+  let brewing = '';
+  const TAG_AFTER = 1100; // the sip comes this long after the "…Hello?" is written
+  // The latte arrives: the cup stops loading, and the barista calls for whoever ordered it.
+  function deliver() {
+    brewing = '';
     wiggle(rows[ASYNC]);
     serve(true);
-    const typed = answer(TTY.t(LATTE.resolved));
-    const mine = said;
-    typed.then(() => pause(1100)).then(() => {
-      if (said !== mine) return; // someone ordered in the meantime: their answer stays
-      answer(TTY.t(LATTE.sip), { append: true });
+  }
+  // A visitor's latte is the visitor's own: it turns up 5.5 s later and takes over the barista's
+  // line, even mid-sentence (that is what asynchronous means), then the sip if nobody ordered since.
+  function visitorLatteArrives() {
+    deliver();
+    const a = answer(TTY.t(LATTE.resolved), { kind: 'punch' });
+    a.typed.then((ok) => ok && pause(TAG_AFTER).then(() => true)).then((ok) => {
+      if (!ok || said !== a.id) return;
+      aside(TTY.t(LATTE.sip));
       sip();
     });
   }
+  function order(i) {
+    wiggle(rows[i]);
+    if (i === ASYNC) {
+      if (brewing) { answer(TTY.t(LATTE.pending), { visitor: true }); return; }
+      brewing = 'visitor';
+      serve(false);
+      // 5.5 s from when "Order received" goes up: if it waits for the barista to finish a line, so does the latte.
+      const lag = lineOwner === 'auto' && !TTY.reduce ? Math.max(0, freeAt - performance.now()) : 0;
+      setTimeout(visitorLatteArrives, LATTE.wait + lag);
+    }
+    tillMine = true;
+    charge(i);
+    // Taps that come while the barista is still busy count as one ask: the answer moves on once said.
+    const says = MENU[i].say;
+    answer(TTY.t(says[asked[i] % says.length]), { visitor: true, shown: () => asked[i]++ });
+  }
+  // The regulars order when nobody else is talking to the barista. Returns false when there is a
+  // latte on the way already (it would be the same promise).
+  function regularsOrder(i) {
+    if (i === ASYNC) {
+      if (brewing) return false;
+      brewing = 'regulars';
+      serve(false);
+    }
+    wiggle(rows[i]);
+    if (!tillMine) charge(i);
+    const says = MENU[i].say;
+    answer(TTY.t(says[asked[i]++ % says.length]), { kind: 'setup' });
+    return true;
+  }
   rows.forEach((li, i) => {
-    li.addEventListener('click', () => { touched = true; order(i, true); });
-    li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); touched = true; order(i, true); } });
+    li.addEventListener('click', () => order(i));
+    li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); order(i); } });
   });
 
   // A pink chalk ring around today's special.
@@ -617,74 +698,97 @@
     return e;
   }
 
-  let touched = false;
   if (!TTY.reduce) document.documentElement.classList.add('js-play');
   const card = document.querySelector('.card');
 
-  async function play() {
+  /* ---- Autoplay (TTY.timeline: a visitor's tap or answer holds it back, never stops it) ---- */
+  // ms of autoplay time. The board is written top to bottom, the special is stamped and ringed,
+  // then the regulars order an Async Latte and the ringed special, and the latte turns up after it.
+  // Every line the regulars say is up for as long as it takes to read (lineRead) before the next.
+  const T = { sub: 450, rows: 750, row: 190, barista: 2150, prompt: 2450, card: 2600, stamp: 3200, ring: 3700, latte: 4550 };
+  // Wait until the barista's line has been typed and read (a visitor's answer holds every
+  // timeline still on its own, through TTY.busy). Short steps: a visitor's answer that replaced
+  // the line sets a new freeAt, and the wait for the old one must not run on after it.
+  const lineRead = async (t) => {
+    while (!TTY.reduce && performance.now() < freeAt && t.live()) await t.wait(Math.min(100, Math.max(20, freeAt - performance.now())));
+  };
+  const play = TTY.timeline(async (t) => {
     fit();
-    const lines = [...document.querySelectorAll('.title, .sub, .cup, .say b, .line1, .desc')];
-    if (TTY.reduce) {
-      lines.forEach((l) => { l.classList.remove('write'); l.classList.add('written'); });
-      ring();
-      // Without motion the story is told by its last frame: the regulars' Async Latte is on
-      // the till (Total: NaN), has just arrived (steam instead of the spinner) and nobody
-      // came for it.
-      charge(ASYNC);
-      serve(true);
-      answer(TTY.t(LATTE.resolved) + ' ' + TTY.t(LATTE.sip));
-      return;
-    }
     // The cup goes up with the title: its steam is a loading spinner, the first joke.
-    write(document.querySelector('.cup'), 600);
-    await write(document.querySelector('.title'), 650);
-    await write(document.querySelector('.sub'), 450);
-    for (const li of rows) {
-      await write(li.querySelector('.line1'), 220);
+    write(cup, 600);
+    write(document.querySelector('.title'), 500);
+    await t.at(T.sub);
+    write(document.querySelector('.sub'), 350);
+    for (let i = 0; i < rows.length; i++) {
+      await t.at(T.rows + i * T.row);
+      const li = rows[i];
       const desc = li.querySelector('.desc');
-      if (desc.getClientRects().length) await write(desc, 150);
-      else { desc.classList.remove('write'); desc.classList.add('written'); } // not shown on a short stage
+      write(li.querySelector('.line1'), 190).then(() => {
+        ready(li);
+        if (desc.getClientRects().length) return write(desc, 120);
+        desc.classList.remove('write'); desc.classList.add('written'); // not shown on a short stage
+      });
     }
-    await write(document.querySelector('.say b'), 300);
+    await t.at(T.barista);
+    write(document.querySelector('.say b'), 280);
+    await t.at(T.prompt);
     // A visitor who got an answer already (an order, or a word at the till) keeps it.
     if (!board.classList.contains('ordered')) say.textContent = TTY.t(PROMPT);
 
     // The card is taped up, the stamp comes down on it, then the ring goes round the drink.
-    await pause(150);
-    card.animate([{ opacity: 0, translate: '0 -3cqi', rotate: '-6deg' }, { opacity: 1, translate: '0 0', rotate: '3deg' }],
-      { duration: 520, easing: 'cubic-bezier(.2, .9, .3, 1.2)', fill: 'forwards' });
-    await pause(600);
-    seal.animate([
-      { opacity: 0, transform: 'scale(2.4)', filter: 'blur(2px)' },
-      { opacity: .95, transform: 'scale(.94)', filter: 'blur(0)', offset: .7 },
-      { opacity: .9, transform: 'scale(1)' },
-    ], { duration: 420, easing: 'cubic-bezier(.5, 0, .9, .4)', fill: 'forwards' });
-    card.animate([{ scale: '1' }, { scale: '.97' }, { scale: '1' }], { duration: 260, delay: 300 });
-    await pause(600);
-    ring().animate([{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }], { duration: 800, easing: 'ease-in-out', fill: 'both' });
+    await t.at(T.card);
+    if (!TTY.reduce) {
+      card.animate([{ opacity: 0, translate: '0 -3cqi', rotate: '-6deg' }, { opacity: 1, translate: '0 0', rotate: '3deg' }],
+        { duration: 520, easing: 'cubic-bezier(.2, .9, .3, 1.2)', fill: 'forwards' });
+    }
+    await t.at(T.stamp);
+    if (!TTY.reduce) {
+      seal.animate([
+        { opacity: 0, transform: 'scale(2.4)', filter: 'blur(2px)' },
+        { opacity: .95, transform: 'scale(.94)', filter: 'blur(0)', offset: .7 },
+        { opacity: .9, transform: 'scale(1)' },
+      ], { duration: 420, easing: 'cubic-bezier(.5, 0, .9, .4)', fill: 'forwards' });
+      card.animate([{ scale: '1' }, { scale: '.97' }, { scale: '1' }], { duration: 260, delay: 300 });
+    }
+    await t.at(T.ring);
+    const e = ring();
+    if (!TTY.reduce) e.animate([{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }], { duration: 800, easing: 'ease-in-out', fill: 'both' });
 
-    // If nobody orders, the regulars do: an Async Latte, then the ringed special, and then
-    // the latte turns up after it. Always this order, so every visitor sees the same story.
-    // A visitor's answer (a word at an empty till) is read first: autoplay waits, it does not stop.
-    // If that pushed the latte back, the home stage is asked to stay up for the rest of the story
-    // (latte 5.5 s, punchline, sip, time to read it): the kit's own hold on the tap ends too soon.
-    const yieldToVisitor = async () => {
-      let waited = false;
-      while (performance.now() < readUntil) { waited = true; await pause(readUntil - performance.now()); }
-      return waited;
-    };
-    await pause(900);
-    const late = await yieldToVisitor();
-    if (!touched) { if (late) TTY.hold(13000); order(ASYNC); }
-    await pause(2200);
-    await yieldToVisitor();
-    if (!touched) order(SPECIAL);
-  }
+    // The regulars: an Async Latte, then the ringed special; always this order. A visitor's answer
+    // is read first: autoplay waits for it, it does not stop.
+    await t.at(T.latte);
+    await lineRead(t);
+    const latteAt = t.now();
+    const theirs = regularsOrder(ASYNC);
+    await lineRead(t);
+    regularsOrder(SPECIAL);
+    await lineRead(t);
+    if (!theirs || brewing !== 'regulars') return; // a visitor's latte was on the way: it calls for itself
+    // The regulars' latte is ready 5.5 s after they ordered it and is called once the barista's line
+    // is free. Nobody comes, so the barista has a sip. If another latte's call cuts in first, the
+    // barista calls theirs again once that one has been read.
+    await t.at(latteAt + LATTE.wait);
+    await lineRead(t);
+    deliver();
+    for (let tries = 0; tries < 4 && t.live(); tries++) {
+      const a = answer(TTY.t(LATTE.resolved), { kind: 'punch' });
+      const ok = await a.typed;
+      if (!t.live()) return;
+      if (ok) {
+        // The sip keeps its own clock (a tap holds autoplay still, not this beat). A visitor's
+        // answer waits until the call has been read, so only another latte's call can cut in.
+        await (TTY.reduce ? null : pause(TAG_AFTER));
+        if (!t.live()) return;
+        if (said === a.id) { aside(TTY.t(LATTE.sip)); sip(); return; }
+      }
+      if (brewing) return; // a new latte has been ordered since: it will be called in its turn
+      await lineRead(t);
+    }
+  }, { punch: 14 }); // lands at 13.6 s when nobody taps (punch_at); a run held back by taps lands it a few tenths later
 
   addEventListener('resize', () => { fit(); if (overlay.firstChild) ring(); });
-  TTY.onShow(() => setTimeout(play, 150));
-  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
-  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+  TTY.onPlay(play.start);
+  TTY.drawn.then(TTY.ready);
 })();
 </script>
 </body>

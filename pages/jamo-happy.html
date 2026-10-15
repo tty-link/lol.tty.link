@@ -31,6 +31,8 @@
     font-family: 'Jost', system-ui, sans-serif;
   }
   .lang-ko body { font-family: 'Gowun Dodum', 'Jost', sans-serif; word-break: keep-all; }
+  /* Wrapped lines (the spec line, captions, steps, hint on narrow stages) end on more than one word. */
+  .promise, .cap, .step span, .hint { text-wrap: pretty; }
 
   .sheet {
     container-type: size;
@@ -49,7 +51,10 @@
   /* Header: product name and the promise. */
   .head { grid-area: head; display: flex; flex-wrap: wrap; align-items: baseline; gap: .4em 1.2em; border-bottom: 2px solid var(--ink); padding-bottom: 2cqmin; }
   .product { font-size: clamp(26px, 7cqmin, 64px); font-weight: 700; letter-spacing: .02em; line-height: 1; }
-  .lang-ko .product { line-height: 1; display: flex; align-items: baseline; gap: .3em; }
+  .lang-ko .product { line-height: 1; display: flex; flex-wrap: wrap; align-items: baseline; gap: .12em .3em; }
+  /* the title stays whole: on the narrowest stage (288 px) the model name takes a line of its own
+     instead of "행복 조립 / 설명서" */
+  .lang-ko .product font-kku { white-space: nowrap; }
   /* The Korean model name: 행복 spelled the flat-pack way, ä for ㅐ. */
   .model { font-family: 'Jost', sans-serif; font-weight: 700; font-size: .62em; letter-spacing: .03em; }
   .promise { font-size: clamp(14px, 2.6cqmin, 22px); color: #4a4945; }
@@ -70,7 +75,7 @@
     color: var(--blue);
     font-family: 'Jost', sans-serif;
     font-weight: 700;
-    font-size: .85em;
+    font-size: max(10px, .85em); /* the captions' and the 328 px parts list's letters fell to 9.3 px */
   }
   .icon { display: grid; place-items: center; height: 2.4em; }
   .icon svg { width: 2.6em; height: 2.2em; overflow: visible; }
@@ -87,8 +92,9 @@
   .hint.on { opacity: 1; }
 
   /* The diagram. */
-  .diagram { grid-area: diagram; position: relative; display: grid; grid-template-rows: 1fr auto; min-height: 0; cursor: pointer; border-radius: 10px; }
-  /* Tap (or Enter / Space) to assemble it again from step 1. */
+  .diagram { grid-area: diagram; position: relative; display: grid; grid-template-rows: 1fr auto; min-height: 0; border-radius: 10px; }
+  /* Once the hint is up, tap (or Enter / Space) to assemble it again from step 1 (see `ready`). */
+  .diagram.ready { cursor: pointer; }
   .diagram:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
   /* One definite cell, so the drawing can be held to the height of a short stage (the SVG then
      letterboxes; collect() measures the drawn scale, not the box). */
@@ -204,7 +210,8 @@
     .part { grid-template-columns: auto auto 1fr; justify-items: start; gap: .35em; }
     .icon { height: 1.8em; }
     .icon svg { width: 1.9em; height: 1.7em; }
-    .steps { font-size: clamp(11.5px, 2.2cqmin, 15px); gap: 1.6cqi; }
+    /* (and without the list's own 40px indent, room the labels need on a phone) */
+    .steps { font-size: clamp(11.5px, 2.2cqmin, 15px); gap: 1.6cqi; padding-left: 0; }
     /* the last English step has the longest label: a wider column keeps it to two lines */
     .lang-en .steps { grid-template-columns: 1fr 1fr 1.35fr; }
     .step span { line-height: 1.15; }
@@ -213,16 +220,21 @@
     .spare { top: auto; bottom: 0; flex-direction: row-reverse; align-items: flex-end; font-size: clamp(13px, 2.5cqmin, 17px); }
     .bag { width: clamp(58px, 13cqmin, 96px); }
   }
+  /* A narrow phone that is not short (the home page on a 360×800 phone, 320×568): HÄPPY fills the
+     width, and the bag at the bottom right sat on the foot of the Y. The drawing keeps clear of it. */
+  @container (max-width: 420px) and (min-height: 481px) {
+    .lang-en .word svg.letters { margin-bottom: 64px; }
+  }
   /* A short phone stage (358×396 in the home page): the word comes first, and the bag lands in a
      strip of its own under the word instead of on it. There is no room for the notes and the
-     captions as blocks, so they come one line at a time at the top of the drawing, where the
-     parts flew in step 1 (empty once it is built): the notes as step 3 lights up, the captions
-     after the bag (Korean two at a time, English three of them one at a time; see TICKER). */
+     captions as blocks, so they come at the top of the drawing, where the parts flew in step 1
+     (empty once it is built): the notes as step 3 lights up, then, after the bag's second line, two
+     of the captions, which stay (English one under the other, Korean side by side; see `ticker`). */
   @container (max-width: 620px) and (max-height: 480px) {
     .aside { display: none; }
     /* the ticker's own strip on top (room for two lines in English, where the notes can wrap on
-       a 328 px stage; one in Korean), the bag's below; the parts of step 1 still fly into both
-       (the overlay covers the whole box) */
+       a 328 px stage and the two captions are a line each; one in Korean), the bag's below; the
+       parts of step 1 still fly into both (the overlay covers the whole box) */
     .word { padding: 34px 0 56px; }
     .lang-ko .word { padding-top: 17px; }
     /* and the English word low in its box: most of its parts fly up, and need room */
@@ -258,15 +270,15 @@
 <main class="sheet">
   <div class="layout">
     <header class="head">
-      <h1 class="product" data-lang="en">HÄPPY</h1>
-      <h1 class="product" data-lang="ko"><span class="model">HÄNGBOK</span><font-kku font="sebul" size="1em">행복 조립 설명서</font-kku></h1>
+      <h1 class="product" data-lang="en" data-tty-line="setup">HÄPPY</h1>
+      <h1 class="product" data-lang="ko" data-tty-line="setup"><span class="model">HÄNGBOK</span><font-kku font="sebul" size="1em">행복 조립 설명서</font-kku></h1>
       <p class="promise" data-lang="en">Assembly time: about 20 min. Allow a lifetime.</p>
       <p class="promise" data-lang="ko">조립 시간: 약 20분. 넉넉히 잡으면 평생.</p>
     </header>
 
     <section class="parts" aria-label="Parts">
-      <p class="parts-title" data-lang="en">Parts</p>
-      <p class="parts-title" data-lang="ko">부품</p>
+      <p class="parts-title" data-lang="en" data-tty-line="title">Parts</p>
+      <p class="parts-title" data-lang="ko" data-tty-line="title">부품</p>
       <!-- English parts: four shapes make every letter of the word. -->
       <div class="part" data-lang="en" data-type="a"><span class="tag">a</span><span class="icon"><svg viewBox="0 0 40 40"><line x1="20" y1="4" x2="20" y2="36"/></svg></span><span class="count">Upright <b>×5</b></span></div>
       <div class="part" data-lang="en" data-type="b"><span class="tag">b</span><span class="icon"><svg viewBox="0 0 40 40"><line x1="6" y1="20" x2="34" y2="20"/></svg></span><span class="count">Crossbar <b>×2</b></span></div>
@@ -325,31 +337,31 @@
             <svg class="in" data-lang="en" viewBox="580 36 112 128" aria-hidden="true"><g transform="rotate(-10 636 100)"><circle class="dot" cx="610" cy="54" r="11"/><circle class="dot" cx="662" cy="54" r="11"/><path class="bowl" d="M596 100 V108 A40 40 0 0 0 676 108 V100"/></g></svg>
             <font-kku class="in" data-lang="ko" font="malang" size="46cqi" aria-hidden="true">ㅋㅋ</font-kku>
           </button>
-          <p class="spare-note" data-lang="en"><span class="tag">f</span><span><span class="l1">Left over: 1 smile.</span><span class="l2">Some assembly required.</span></span></p>
-          <p class="spare-note" data-lang="ko"><span class="tag">g</span><span><span class="l1">남은 부품: ㅋ ×2</span><span class="l2">남는 건 ㅋㅋ뿐</span></span></p>
+          <p class="spare-note" data-lang="en"><span class="tag">f</span><span><span class="l1" data-tty-line="punch">Left over: 1 smile.</span><span class="l2" data-tty-line="tag">Some assembly required.</span></span></p>
+          <p class="spare-note" data-lang="ko"><span class="tag">g</span><span><span class="l1" data-tty-line="punch">남은 부품: ㅋ ×2</span><span class="l2" data-tty-line="tag">남는 건 ㅋㅋ뿐</span></span></p>
         </div>
       </div>
       <div class="captions">
         <p class="cap cap-aside" data-lang="en">Screws: 0. We checked twice. Tools: none. A friend helps.</p>
         <p class="cap cap-aside" data-lang="ko">나사: 0개. 두 번 확인했어요. 공구: 필요 없음. 친구 1명 권장.</p>
-        <p class="cap" data-lang="en"><span class="tag">a</span><span>Upright: stand by someone.</span></p>
-        <p class="cap" data-lang="en"><span class="tag">b</span><span>Crossbar: without it, H is just two I's.</span></p>
+        <p class="cap" data-lang="en"><span class="tag">a</span><span>Upright: stand by&nbsp;someone.</span></p>
+        <p class="cap" data-lang="en"><span class="tag">b</span><span>Crossbar: without it, H is just two&nbsp;I's.</span></p>
         <p class="cap" data-lang="en"><span class="tag">c</span><span>Slant: lean on each other. See&nbsp;A.</span></p>
-        <p class="cap" data-lang="en"><span class="tag">d</span><span>Bowl: room for a big smile.</span></p>
-        <p class="cap" data-lang="en"><span class="tag">e</span><span>Dots: make it sound Swedish.</span></p>
-        <p class="cap" data-lang="ko"><span class="tag">a</span><span>ㅎ: “하하”의 ㅎ</span></p>
-        <p class="cap" data-lang="ko"><span class="tag">b</span><span>ㅐ: “애썼어”의 ㅐ</span></p>
-        <p class="cap" data-lang="ko"><span class="tag">c</span><span>ㅇ: “응, 여기 있어”의 ㅇ</span></p>
-        <p class="cap" data-lang="ko"><span class="tag">d</span><span>ㅂ: “밥은 먹었어?”의 ㅂ</span></p>
-        <p class="cap" data-lang="ko"><span class="tag">e</span><span>ㅗ: “오, 왔어?”의 ㅗ</span></p>
-        <p class="cap" data-lang="ko"><span class="tag">f</span><span>ㄱ: “괜찮아”의 ㄱ</span></p>
+        <p class="cap" data-lang="en"><span class="tag">d</span><span>Bowl: room for a big&nbsp;smile.</span></p>
+        <p class="cap" data-lang="en"><span class="tag">e</span><span>Dots: make it sound&nbsp;Swedish.</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">a</span><span>ㅎ: “하하”의&nbsp;ㅎ</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">b</span><span>ㅐ: “애썼어”의&nbsp;ㅐ</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">c</span><span>ㅇ: “응, 여기 있어”의&nbsp;ㅇ</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">d</span><span>ㅂ: “밥은 먹었어?”의&nbsp;ㅂ</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">e</span><span>ㅗ: “오, 왔어?”의&nbsp;ㅗ</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">f</span><span>ㄱ: “괜찮아”의&nbsp;ㄱ</span></p>
       </div>
     </section>
 
     <ol class="steps" aria-label="Steps">
-      <li class="step"><b>1</b><span data-lang="en">Check the parts</span><span data-lang="ko">부품 확인</span></li>
-      <li class="step"><b>2</b><span data-lang="en">Put them together</span><span data-lang="ko">조립하기</span></li>
-      <li class="step"><b>3</b><span data-lang="en">Enjoy. <mark>Nothing left over.</mark></span><span data-lang="ko">즐기기. <mark>남는 부품 없음.</mark></span></li>
+      <li class="step"><b>1</b><span data-lang="en">Unpack</span><span data-lang="ko">부품 확인</span></li>
+      <li class="step"><b>2</b><span data-lang="en">Assemble</span><span data-lang="ko">조립하기</span></li>
+      <li class="step"><b>3</b><span data-lang="en">Enjoy. <mark data-tty-line="setup">Nothing left&nbsp;over.</mark></span><span data-lang="ko">즐기기. <mark data-tty-line="setup">남는 부품&nbsp;없음.</mark></span></li>
     </ol>
   </div>
 </main>
@@ -666,13 +678,21 @@
   /* ---- The spare part ----
      After the bag drops, tapping it fits what is inside onto the end of the word: the smile after
      HÄPPY (the drawing widens to make room), ㅋㅋ after 행복 (the word slides left). The note then
-     says nothing is left over, really. A rebuild (tap anywhere else on the drawing) undoes it. */
+     says nothing is left over, really. A rebuild (tap anywhere else on the drawing, once the hint is
+     up) undoes it. */
   const bag = spare.querySelector('.bag');
   const bagIn = bag.querySelector('.in');
   const noteEl = spare.querySelector('.spare-note');
   const lines = [spare.querySelector('.l1'), spare.querySelector('.l2')];
   const noteText = lines[0].parentElement;
-  const showLine = (i) => (i ? lines[1] : noteEl).classList.add('on');
+  // When each line of the first note was fully up (0: not yet), so that a part fitted right after it
+  // keeps it up for its reading time before the note corrects itself (see land).
+  const upAt = [0, 0];
+  const showLine = (i) => {
+    const el = i ? lines[1] : noteEl;
+    if (!el.classList.contains('on')) upAt[i] = performance.now() + (TTY.reduce ? 0 : 400);
+    el.classList.add('on');
+  };
   const NOTE = {
     before: lines.map((l) => l.textContent),
     after: TTY.t({ en: ['Left over: none.', 'Really, this time.'], ko: ['남은 부품: 0개', '이번엔 진짜.'] }),
@@ -689,7 +709,9 @@
   const kk = document.querySelector('.kk');
   let landed = false; // the bag is down and can be tapped
   let fitted = false;
+  let noteAfter = false; // the note says "Left over: none." now
   let widen = 0;
+  let noteTimer = 0;
   const syncHint = () => { hint.textContent = landed && !fitted ? HINT.bag : HINT.again; };
 
   // ㅋㅋ after 행복: as big as it can be, up to half the word's size, inside the drawing's box.
@@ -705,6 +727,9 @@
   function unfit() {
     fitted = false;
     landed = false;
+    noteAfter = false;
+    upAt[0] = upAt[1] = 0;
+    clearTimeout(noteTimer);
     cancelAnimationFrame(widen);
     bag.classList.remove('open', 'empty');
     bag.getAnimations({ subtree: true }).forEach((a) => a.cancel());
@@ -759,9 +784,19 @@
     const land = () => {
       bag.classList.add('empty');
       (ko ? kk : smile).style.visibility = '';
-      keepNoteWidth();
-      showLine(0); showLine(1);
       syncHint();
+      // Then the note corrects itself, once the lines already up have been up long enough to read:
+      // a part fitted just as "Left over: 1 smile." came up leaves that line up for 2 s
+      // first. A line not up yet is skipped (once the smile is on, "Some assembly required." is moot).
+      const now = performance.now();
+      const wait = Math.max(0, ...upAt.map((at, i) => (at ? at + TTY.readMs(NOTE.before[i]) - now : 0)));
+      const after = () => {
+        keepNoteWidth();
+        noteAfter = true;
+        noteEl.classList.add('on');
+        lines[1].classList.add('on');
+      };
+      if (wait > 0) noteTimer = setTimeout(after, wait); else after();
     };
     bag.classList.add('open');
     if (TTY.reduce) return land();
@@ -785,57 +820,52 @@
     if (!TTY.reduce) n.animate([{ translate: '0 0' }, { translate: '0 -6%' }, { translate: '0 0' }], { duration: 300, easing: 'ease-out' });
   }));
 
-  /* ---- The sequence ---- */
+  /* ---- The sequence ----
+     One autoplay run on TTY.timeline (_kit.js): a visitor's tap or key holds its clock for a moment and
+     never breaks it, and a run that was started again never writes over the new one. The drawing builds
+     it all again only once the hint is up (`ready`); before that a tap on it just holds the autoplay, so
+     a tap during the assembly or between the bag's two lines no longer wipes them. With TTY.reduce the
+     same run ends at once on its own last scene. */
   let timers = [];
-  let running = null;
-  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  let running = [];
+  let groups = []; // the guides and callouts of step 1
+  let ready = false; // the hint is up: a tap on the drawing (or Enter / Space on it) builds it again
+  let retry = 0;
   const setStep = (n) => steps.forEach((s, i) => { s.classList.toggle('on', i === n); s.classList.toggle('done', i < n); });
   const marks = [...document.querySelectorAll('.step mark')];
-  // Captions by part letter. Elsewhere each shows as its part clicks home (.out); on a short
-  // stage the ticker shows them after the notes (the .now ones, see the CSS), a few at a time,
-  // each for as long as it takes to read (8 Korean characters or 3 English words a second).
-  // Korean: three pairs. English: five lines will not fit before 16 s, so only the three with
-  // a joke in them, one at a time. The last stays up.
+  // Captions by part letter. Elsewhere each shows as its part clicks home (.out); on a short stage the
+  // ticker shows the notes there as step 3 lights up, then, once the bag's second line is up, two of the
+  // captions (the .now ones, see the CSS), and they stay: English Slant and Dots, Korean ㅂ and ㄱ ("밥은
+  // 먹었어?", "괜찮아"), the ones the explanation quotes. One group that stays, not several that take
+  // turns: a few taps hold the autoplay (_kit.js) for up to 7 s, and a later group would come too late
+  // to be read before the stage ends; and a strip of more than two lines would crowd the word.
   const capOf = {};
   const tagged = caps.filter((c) => !c.classList.contains('cap-aside'));
   tagged.forEach((c) => { capOf[c.querySelector('.tag').textContent] = c; });
   const asideCap = caps.find((c) => c.classList.contains('cap-aside'));
-  const TICKER = TTY.t({
-    en: { show: [['b'], ['c'], ['e']], ms: [2600, 2400] },
-    ko: { show: [['a', 'b'], ['c', 'd'], ['e', 'f']], ms: [2500, 3000] },
-  });
-  const ticker = TICKER.show.map((tags) => tags.map((t) => capOf[t]));
+  const ticker = TTY.t({ en: ['c', 'e'], ko: ['d', 'f'] }).map((t) => capOf[t]);
   const showNow = (list) => caps.forEach((c) => c.classList.toggle('now', list.includes(c)));
 
-  // When things happen, in ms after play() starts.
+  // When things happen, in ms of autoplay after the run starts.
   const STEP2 = ko ? 1900 : 2500; // English waits for its two dots, out at about 2 s
   const GAP = ko ? 110 : 80; // between parts sliding home (English has 15 of them)
-  const AFTER_DROP = { note: 650, comeback: 2000, ticker: 2500, hint: 3000 };
+  const PARTS = ko ? KO_PARTS.length : document.querySelectorAll('.letters .p').length;
+  const DONE = STEP2 + 220 + PARTS * GAP + 700; // 3. Enjoy. Nothing left over.
+  const DROP = DONE + 2000; // the bag
+  // (the ticker changes 0.3 s after the second line is up, so the notes before it get 4.2 s: the Korean
+  // ones need 3.6 s)
+  const AFTER_DROP = { note: 650, comeback: 2000, ticker: 2700, hint: 3200 };
+  const PUNCH = (DROP + AFTER_DROP.note + 400) / 1000; // "Left over: 1 smile." fully up, in s
 
-  function play() {
-    timers.forEach(clearTimeout);
-    timers = [];
-    if (running) running.forEach((a) => a.cancel());
-    running = [];
-    unfit();
-    sizeWord();
-    if (!collect()) return setTimeout(play, 120);
+  const autoplay = TTY.timeline(async (t) => {
+    // a timer of this run (it does nothing once the run is stopped), or at once with TTY.reduce
+    const soon = (fn, ms) => { if (TTY.reduce) fn(); else timers.push(setTimeout(() => { if (t.live()) fn(); }, ms)); };
+    const anim = (el, keys, opts) => (TTY.reduce ? null : running[running.push(el.animate(keys, opts)) - 1]);
 
     spare.getAnimations({ subtree: true }).forEach((a) => a.cancel());
-    spare.classList.toggle('on', TTY.reduce);
-    caps.forEach((c) => c.classList.toggle('out', TTY.reduce));
-    marks.forEach((m) => m.classList.toggle('on', TTY.reduce));
-    if (TTY.reduce) {
-      parts.forEach((p) => place(p, 0));
-      Object.keys(stock).forEach((t) => setLeft(t, 0));
-      overlay.replaceChildren();
-      setStep(2);
-      showNow(ticker[ticker.length - 1]);
-      showLine(0); showLine(1);
-      landed = true;
-      syncHint();
-      return;
-    }
+    spare.classList.remove('on');
+    caps.forEach((c) => c.classList.remove('out'));
+    marks.forEach((m) => m.classList.remove('on'));
     showNow([]);
     syncHint();
     restock();
@@ -843,79 +873,103 @@
     // 1. Lay out: the parts appear apart, the guides draw in, callouts pop.
     setStep(0);
     parts.forEach((p) => place(p, 1));
-    const groups = drawGuides();
+    groups = drawGuides();
     parts.forEach((p, i) => {
       if (!ko && !p.el.classList.contains('dot')) {
         p.el.setAttribute('pathLength', '1');
-        running.push(p.el.animate([{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }],
-          { duration: 700, delay: i * 70, easing: 'cubic-bezier(.6, 0, .3, 1)', fill: 'backwards' }));
+        anim(p.el, [{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }],
+          { duration: 700, delay: i * 70, easing: 'cubic-bezier(.6, 0, .3, 1)', fill: 'backwards' });
       } else {
-        running.push(p.el.animate([{ opacity: 0, scale: '.6' }, { opacity: 1, scale: '1' }],
-          { duration: 420, delay: i * 110, easing: 'cubic-bezier(.3, 1.5, .5, 1)', fill: 'backwards' }));
+        anim(p.el, [{ opacity: 0, scale: '.6' }, { opacity: 1, scale: '1' }],
+          { duration: 420, delay: i * 110, easing: 'cubic-bezier(.3, 1.5, .5, 1)', fill: 'backwards' });
       }
     });
-    groups.forEach((g, i) => running.push(g.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: 500 + i * 60, fill: 'backwards' })));
+    groups.forEach((g, i) => anim(g, [{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: 500 + i * 60, fill: 'backwards' }));
 
-    // 2. Put together: guides go, each part slides home with a little click, the parts list
-    //    counts it off, and the first part of each kind brings its caption.
-    later(() => {
-      setStep(1);
-      groups.forEach((g) => g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' }));
-      parts.forEach((p, i) => {
-        const a = p.el.animate(frames(p), { duration: 620, delay: 220 + i * GAP, easing: 'cubic-bezier(.5, 0, .25, 1.25)', fill: 'backwards' });
-        running.push(a);
-        later(() => place(p, 0), 220 + i * GAP);
-        later(() => {
-          ticks(p);
-          setLeft(p.tag, stock[p.tag].left - 1);
-          if (capOf[p.tag]) capOf[p.tag].classList.add('out');
-        }, 220 + i * GAP + 560);
-      });
-    }, STEP2);
+    // 2. Put together: guides go, each part slides home with a little click, the parts list counts it
+    //    off, and the first part of each kind brings its caption. Each part is home in its style at
+    //    once (the slide shows the way there), and its click runs on the slide's own clock, so a tap
+    //    that holds the autoplay here never leaves a part out of place.
+    await t.at(STEP2);
+    setStep(1);
+    groups.forEach((g) => anim(g, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' }));
+    parts.forEach((p, i) => {
+      anim(p.el, frames(p), { duration: 620, delay: 220 + i * GAP, easing: 'cubic-bezier(.5, 0, .25, 1.25)', fill: 'backwards' });
+      place(p, 0);
+      soon(() => {
+        ticks(p);
+        setLeft(p.tag, stock[p.tag].left - 1);
+        if (capOf[p.tag]) capOf[p.tag].classList.add('out');
+      }, 220 + i * GAP + 560);
+    });
 
     // 3. Enjoy. "Nothing left over." gets its highlighter stroke, and nothing else moves.
-    const doneAt = STEP2 + 220 + parts.length * GAP + 700;
-    later(() => {
-      overlay.replaceChildren();
-      setStep(2);
-      marks.forEach((m) => m.classList.add('on'));
-    }, doneAt);
+    await t.at(DONE);
+    overlay.replaceChildren();
+    setStep(2);
+    marks.forEach((m) => m.classList.add('on'));
     // (short stage: the parts-list notes, "Screws: 0. We checked twice.", at the top)
-    later(() => showNow([asideCap]), doneAt + 450);
+    await t.at(DONE + 450);
+    showNow([asideCap]);
 
-    // 4. Then a little bag drops in anyway. Its note comes a line at a time.
-    const drop = doneAt + 2000;
-    later(() => {
-      spare.classList.add('on');
-      bag.animate([
-        { transform: 'translateY(-120%) rotate(-14deg)', opacity: 0 },
-        { transform: 'translateY(6%) rotate(5deg)', opacity: 1, offset: .62 },
-        { transform: 'translateY(-3%) rotate(-2deg)', offset: .82 },
-        { transform: 'none' },
-      ], { duration: 700, easing: 'cubic-bezier(.5, 0, .5, 1)', fill: 'backwards' });
-    }, drop);
-    later(() => { landed = true; }, drop + 700);
-    later(() => showLine(0), drop + AFTER_DROP.note);
-    later(() => showLine(1), drop + AFTER_DROP.comeback);
-    let at = drop + AFTER_DROP.ticker;
-    ticker.forEach((list, k) => { later(() => showNow(list), at); at += TICKER.ms[k] || 0; });
-    // The hint says what to tap now (and stays).
-    later(() => { syncHint(); hint.classList.add('on'); }, drop + AFTER_DROP.hint);
+    // 4. Then a little bag drops in anyway; it can be tapped once it is down. Its note comes a line at
+    //    a time (not once the visitor has fitted the part: that note is theirs), then the ticker and
+    //    the hint, which stays.
+    await t.at(DROP);
+    spare.classList.add('on');
+    const fall = anim(bag, [
+      { transform: 'translateY(-120%) rotate(-14deg)', opacity: 0 },
+      { transform: 'translateY(6%) rotate(5deg)', opacity: 1, offset: .62 },
+      { transform: 'translateY(-3%) rotate(-2deg)', offset: .82 },
+      { transform: 'none' },
+    ], { duration: 700, easing: 'cubic-bezier(.5, 0, .5, 1)', fill: 'backwards' });
+    if (fall) fall.finished.then(() => { if (t.live()) landed = true; }, () => {}); else landed = true;
+    const beats = [
+      [DROP + AFTER_DROP.note, () => { if (!fitted) showLine(0); }],
+      [DROP + AFTER_DROP.comeback, () => { if (!fitted) showLine(1); }],
+      [DROP + AFTER_DROP.ticker, () => showNow(ticker)],
+      [DROP + AFTER_DROP.hint, () => { syncHint(); hint.classList.add('on'); ready = true; diagram.classList.add('ready'); }],
+    ];
+    for (const [ms, fn] of beats) {
+      await t.at(ms);
+      fn();
+    }
+  }, { punch: PUNCH });
+
+  // A new run: clear the old one, take the fitted part off, measure the parts again, start.
+  function play() {
+    clearTimeout(retry);
+    autoplay.stop();
+    timers.forEach(clearTimeout);
+    timers = [];
+    running.forEach((a) => a.cancel());
+    running = [];
+    // the hint goes too (it would say "Tap the drawing" while a tap only holds the new run) and comes
+    // back with the run's own hint beat
+    ready = false;
+    diagram.classList.remove('ready');
+    hint.classList.toggle('on', TTY.reduce);
+    unfit();
+    sizeWord();
+    if (!collect()) { retry = setTimeout(play, 120); return; }
+    autoplay.start();
   }
 
-  // The drawing restarts the assembly: tap it, or focus it and press Enter or Space.
+  // The drawing restarts the assembly once the hint is up: tap it, or focus it and press Enter or Space.
+  // Not while the fitted part is still flying in (that would undo the visitor's tap half way).
   const hint = document.querySelector('.hint');
   const diagram = document.querySelector('.diagram');
+  const flying = () => fitted && !bag.classList.contains('empty');
   diagram.tabIndex = 0;
   diagram.setAttribute('aria-label', TTY.t({ en: 'Exploded view', ko: '분해도' }));
   diagram.setAttribute('aria-describedby', 'assemble-hint');
   bag.setAttribute('aria-label', TTY.t({ en: 'Bag of spare parts', ko: '남은 부품 봉투' }));
   if (TTY.reduce) hint.classList.add('on');
-  diagram.addEventListener('click', play);
+  diagram.addEventListener('click', () => { if (ready && !flying()) play(); });
   diagram.addEventListener('keydown', (e) => {
     if (e.target !== diagram || (e.key !== 'Enter' && e.key !== ' ')) return;
     e.preventDefault();
-    if (!e.repeat) play();
+    if (!e.repeat && ready && !flying()) play();
   });
   let resized;
   new ResizeObserver(() => {
@@ -923,8 +977,8 @@
     resized = setTimeout(() => {
       sizeWord();
       if (fitted) sizeKK();
-      if (fitted && bag.classList.contains('empty')) keepNoteWidth();
-      if (steps[0].classList.contains('on')) { collect(); parts.forEach((p) => place(p, 1)); drawGuides(); }
+      if (noteAfter) keepNoteWidth();
+      if (steps[0].classList.contains('on')) { collect(); parts.forEach((p) => place(p, 1)); groups = drawGuides(); }
     }, 150);
   }).observe(word);
 

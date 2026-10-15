@@ -185,7 +185,7 @@
     <span class="num">0</span>
     <p class="verdict"></p>
     <!-- The notification in words. On phones the figure is cropped and the drawn one hidden, so this is what shows. -->
-    <p class="os"><svg class="os-badge" viewBox="-10 -10 20 20" aria-hidden="true"><circle r="10"/><path d="M-5 0 l4 4 l7 -8"/></svg><span class="os-msg"><span class="os-now"><b class="os-title"></b><span class="os-sub"></span></span><span class="os-room" aria-hidden="true"></span></span></p>
+    <p class="os"><svg class="os-badge" viewBox="-10 -10 20 20" aria-hidden="true"><circle r="10"/><path d="M-5 0 l4 4 l7 -8"/></svg><span class="os-msg"><span class="os-now"><b class="os-title"></b><span class="os-sub" data-tty-line="punch"></span></span><span class="os-room" aria-hidden="true"></span></span></p>
   </aside>
 
   <section class="scene">
@@ -239,7 +239,7 @@
             <path id="toast-icon" d="M-5 0 l4 4 l7 -8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
           </g>
           <text id="toast-text" x="722" y="322" font-family="Gabarito, IBM Plex Sans KR, sans-serif" font-size="19" font-weight="700" fill="#151824"></text>
-          <text id="toast-sub" x="722" y="345" font-family="Gabarito, IBM Plex Sans KR, sans-serif" font-size="15" font-weight="500" fill="#3b4256"></text>
+          <text id="toast-sub" data-tty-line="punch" x="722" y="345" font-family="Gabarito, IBM Plex Sans KR, sans-serif" font-size="15" font-weight="500" fill="#3b4256"></text>
         </g>
       </g>
 
@@ -269,8 +269,8 @@
     </svg>
 
     <p class="note">
-      <span data-lang="en">Until observed, a USB plug is in a superposition of both orientations.</span>
-      <span data-lang="ko"><font-kku font="dunggeun" size="clamp(14px, 2.2cqmin, 18px)" wrap-unit="word">관측하기 전까지 USB는 앞뒤가 겹쳐 있다.</font-kku></span>
+      <span data-lang="en" data-tty-line="setup">Until observed, a USB plug is in a superposition of both orientations.</span>
+      <span data-lang="ko" data-tty-line="setup"><font-kku font="dunggeun" size="clamp(14px, 2.2cqmin, 18px)" wrap-unit="word">관측하기 전까지 USB는 앞뒤가 겹쳐 있다.</font-kku></span>
       <span class="eq">|ψ⟩ = ( |up⟩ + |down⟩ ) / √2</span>
     </p>
 
@@ -287,8 +287,8 @@
         <path d="M80 27 L84 31 L88 27" fill="none" stroke="var(--psi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <figcaption>
-        <span data-lang="en"><b>Fig. 2.</b> USB-C: reversible.<br>Flipped twice anyway, out of habit.</span>
-        <span data-lang="ko"><b>그림 2.</b> USB-C: 앞뒤가 없다.<br>그래도 습관처럼 두 번 뒤집는다.</span>
+        <span data-lang="en" data-tty-line="tag"><b>Fig. 2.</b> USB-C: reversible.<br>Flipped twice anyway, out of habit.</span>
+        <span data-lang="ko" data-tty-line="tag"><b>그림 2.</b> USB-C: 앞뒤가 없다.<br>그래도 습관처럼 두 번 뒤집는다.</span>
       </figcaption>
     </figure>
   </section>
@@ -407,6 +407,7 @@
     osTitle.textContent = state ? TTY.t(upgrade ? T.faster : T.toast) + '.' : '';
     osSub.textContent = upgrade ? TTY.t(T.fasterSub) : '';
     osIcon.setAttribute('d', upgrade ? INFO : CHECK);
+    toastText.dataset.ttyLine = osTitle.dataset.ttyLine = upgrade ? 'punch' : 'setup';
     fitToast();
   }
   setToast(0);

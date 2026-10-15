@@ -552,6 +552,8 @@
       sq.textContent = p.tok === ' ' ? '' : p.tok;
     }
     if (!p.joined) sq.classList.toggle('big', !!p.big);
+    if (!p.joined && !p.big) delete sq.dataset.ttyLine;
+    if (p.big) sq.dataset.ttyLine = 'punch';
     if (!TTY.reduce && p.tok !== ' ') { sq.classList.remove('ink'); void sq.offsetWidth; sq.classList.add('ink'); }
   }
 
@@ -561,6 +563,7 @@
     if (!enPara || newPara) { enPara = document.createElement('p'); lines.append(enPara); }
     else enPara.append(document.createTextNode(' '));
     if (big) enPara.classList.add('big');
+    if (big) enPara.dataset.ttyLine = 'punch';
     const spans = [];
     // Keep each word in one piece so the hidden letters already take their place on the line.
     text.split(' ').forEach((word, i) => {
@@ -611,6 +614,7 @@
     said.textContent = '';
     paper.placed = [];
     squares.forEach((sq) => { sq.textContent = ''; sq.classList.remove('ink', 'big'); });
+    squares.forEach((sq) => { delete sq.dataset.ttyLine; });
     if (lines) lines.innerHTML = '';
     enPara = null;
   }

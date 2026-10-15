@@ -229,7 +229,7 @@
         <!-- The verse, its signature and footnote are written by the script (VERSES). -->
         <h1 class="lines"></h1>
         <p class="sign"></p>
-        <p class="foot"></p>
+        <p class="foot" data-tty-line="tag"></p>
         <!-- The leading seal: an oval stamped where the writing begins. Port 53. -->
         <span class="lead-seal" aria-hidden="true">5<br>3</span>
         <button class="seal" type="button">
@@ -354,6 +354,8 @@
       if (p.kind === 'lat') p.chars.forEach((c) => c.classList.remove('js-hide'));
       else setHost(p.host, p.text);
     }));
+    lines.forEach((l, i) => { l.dataset.ttyLine = i < 2 ? 'setup' : 'punch'; });
+    seal.dataset.ttyLine = 'punch';
   }
 
   async function brushLatin(p) {
@@ -533,6 +535,7 @@
     hideFoot();
     [sheet, bottomRod, seal, leadSeal, sign].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
     sealOn(false);
+    delete seal.dataset.ttyLine;
     leadSeal.style.opacity = 0;
     sign.style.opacity = 0;
     build(verse);
@@ -548,6 +551,7 @@
     petalsOn();
     for (const [i, line] of lines.entries()) {
       for (const p of line._parts) await (p.kind === 'lat' ? brushLatin(p) : brushHangul(p));
+      line.dataset.ttyLine = i < 2 ? 'setup' : 'punch';
       // The seal reacts once the denial is on the paper, whichever end of the line it sits at
       // ("It's not DNS" / "DNS일 리 없다"), even when the fonts were late.
       if (i === 0 && hasty) setTimeout(() => flick(mine), 150);
@@ -562,6 +566,7 @@
     await wait(520);
     seal.getAnimations().forEach((a) => a.cancel());
     sealOn(true);
+    seal.dataset.ttyLine = 'punch';
     if (hasty) {
       seal.animate(SLAM, { duration: 460, easing: DROP });
       roll.animate(THUD_BIG, { duration: 300, delay: 350 });

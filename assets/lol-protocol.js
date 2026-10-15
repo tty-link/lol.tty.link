@@ -3,9 +3,15 @@ export function parentOrigin() {
   const value = new URLSearchParams(location.search).get('parentOrigin');
   if (value === 'https://tty.link') return value;
   const local = (host) => ['localhost', '127.0.0.1', '[::1]'].includes(host);
+  const tailnet = (host) => {
+    const parts = host.split('.').map(Number);
+    return parts.length === 4 && parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127
+      && parts.every((n) => Number.isInteger(n) && n >= 0 && n <= 255);
+  };
   try {
     const url = new URL(value);
-    if (value === url.origin && url.protocol === 'http:' && local(url.hostname) && local(location.hostname)) return value;
+    const preview = (local(location.hostname) && local(url.hostname)) || (tailnet(location.hostname) && url.hostname === location.hostname);
+    if (value === url.origin && url.protocol === 'http:' && preview) return value;
   } catch (error) { /* not an allowed parent */ }
   return null;
 }

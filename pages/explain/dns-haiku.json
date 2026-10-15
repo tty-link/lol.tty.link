@@ -1,0 +1,162 @@
+{
+  "id": "dns-haiku",
+  "title": {
+    "en": "DNS Haiku",
+    "ko": "DNS 하이쿠"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "서버 장애가 나면 \"DNS 문제일 리 없다\"고 버티다가 결국 DNS가 원인이었다는 운영자들의 단골 결말을, 붓글씨 족자에 쓴 하이쿠로 엄숙하게 모신다.",
+    "points": [
+      "첫 두 줄 \"DNS일 리 없다 / 절대 DNS일 리 없다\" 뒤의 셋째 줄 \"DNS였다\" → 부정을 두 번 쌓은 만큼 셋째 줄에서 와르르 무너진다. 서버를 운영해 본 사람이면 다 겪어 본 순서다.",
+      "붓글씨, 비단 표구, 날리는 벚꽃잎 → 새벽 장애 대응의 넋두리를 국보급 서예 작품처럼 대접하는 과장이 웃기다.",
+      "붉은 낙관 → 작가 도장 자리에 영어판은 범인 'DNS'가 제 이름을 새겼고, 한국어판은 당한 사람의 한마디 '또 너냐'를 팠다. 게다가 이 낙관은 족자가 펼쳐지자마자 글씨보다 먼저 찍혔다가, 첫 줄 \"DNS일 리 없다\"를 다 쓰자 고개를 젓고 치워진다. 결론은 처음부터 나와 있었는데 우기다가, 셋째 줄에서 실토하자 처음보다 더 세게 쾅 돌아와 찍힌다.",
+      "다시 찍힌 낙관 위에 붙는 각주 \"(언제나 DNS다.)\" → 이번 장애 하나가 아니라 늘 그랬다는 판결을 책의 각주처럼 작고 점잖게 덧붙였다. 운영자들이 이 농담을 줄여 부르는 말 \"It's always DNS\" 그대로다.",
+      "다 쓴 족자를 누르면 나오는 다른 수(누를 때만 나온다) → \"TTL은 하루 / 내일 뵙겠습니다\"(서명을 보면 금요일 저녁 6시에 바꿨다), \"한 시간째 없단다\"(만들기 전에 한 번 물어본 대가), \"캐시가 늙어 죽을 뿐\"처럼 DNS를 다루는 사람이 실제로 겪는 일들이다. 다 쓴 낙관을 누르면 '또 너냐'가 한 번 더 찍힌다."
+    ],
+    "terms": [
+      {
+        "term": "DNS",
+        "plain": "example.com 같은 이름을 컴퓨터가 쓰는 숫자 주소(IP 주소)로 바꿔 주는 인터넷의 전화번호부. 고장 나면 멀쩡한 서버도 다 죽은 것처럼 보인다."
+      },
+      {
+        "term": "TTL",
+        "plain": "받은 답을 몇 초 동안 기억해 둘지 정한 값. 86400초는 하루라서, 레코드를 바꿔도 하루 동안은 옛 답이 돌아다닐 수 있다."
+      },
+      {
+        "term": "NXDOMAIN",
+        "plain": "\"그런 이름 없음\"이라는 답. 이 답도 정해진 시간 동안 기억되기 때문에, 레코드를 만들기 전에 한 번 조회하면 만든 뒤에도 한동안 '없음'이 나온다."
+      },
+      {
+        "term": "DNS 전파",
+        "plain": "바꾼 내용이 '퍼진다'고들 하지만, 실제로는 곳곳의 캐시가 TTL만큼 살다가 만료되는 것이다."
+      },
+      {
+        "term": "하이쿠",
+        "plain": "5·7·5음, 모두 17음으로 된 일본의 짧은 시. 일본어로는 보통 한 줄로 쓰고, 영어로 옮기면 흔히 세 줄로 나눠 쓴다. 이 족자의 영어판은 세 줄을 5·7·5음절로 맞췄고, 한국어판은 음절 수 대신 세 박자로 읽히게 썼다."
+      },
+      {
+        "term": "낙관",
+        "plain": "글씨나 그림을 다 쓰고 작가가 찍는 붉은 도장."
+      },
+      {
+        "term": "포트",
+        "plain": "한 컴퓨터에 온 연락이 어느 프로그램 몫인지 가르는 번호. DNS는 53번을 쓴다."
+      }
+    ],
+    "links": [
+      {
+        "title": "도메인 네임 시스템 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/도메인_네임_시스템",
+        "note": "DNS가 무엇이고 이름을 어떻게 주소로 바꾸는지",
+        "lang": "ko"
+      },
+      {
+        "title": "타임 투 리브 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/타임_투_리브",
+        "note": "TTL이 데이터의 유효 기간을 정하는 방식과, DNS 캐시가 TTL만큼 레코드를 기억하는 것",
+        "lang": "ko"
+      },
+      {
+        "title": "하이쿠 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/하이쿠",
+        "note": "5·7·5음 형식과 계절을 나타내는 말(기고)",
+        "lang": "ko"
+      },
+      {
+        "title": "DNS \"propagation\" is actually caches expiring",
+        "url": "https://jvns.ca/blog/2021/12/06/dns-doesn-t-propagate/",
+        "note": "Julia Evans가 'DNS 전파'가 사실은 캐시 만료라는 것을 예를 들어 설명한 글. 만들기 전에 조회해서 '없음'이 캐시되는 경우도 나온다",
+        "lang": "en"
+      },
+      {
+        "title": "RFC 2308: Negative Caching of DNS Queries",
+        "url": "https://www.rfc-editor.org/rfc/rfc2308.html",
+        "note": "'없음' 답도 캐시하고, 그 시간은 SOA 레코드에서 가져오라고 정한 표준",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "왼쪽 위 작은 타원 도장의 `5`/`3` → DNS가 쓰는 포트 번호 53이다(RFC 1035, UDP와 TCP 모두 53번).",
+      "TTL 수의 서명 '금요일 저녁 여섯 시'와 각주 `TTL 86400` → 86400초는 정확히 24시간이라, \"내일 뵙겠습니다\"의 내일은 토요일 저녁 여섯 시다.",
+      "부정 캐시 수의 각주 `SOA 최솟값 3600` → '없음' 답을 얼마나 기억할지는 그 영역 SOA 레코드의 최솟값과 SOA 자신의 TTL 중 작은 쪽으로 정해진다(RFC 2308). 3600초라서 셋째 줄이 \"한 시간째\"다.",
+      "전파 수의 서명 '마흔일곱 시간째'와 각주 `TTL 3412, 3411, 3410…` → .com 최상위 도메인 서버가 내주는 위임(NS) 레코드의 TTL은 172800초, 이틀이다(최상위 도메인마다 다르다). 172800초짜리 기록이 3412초 남았다면 47시간 3분 8초가 지난 것이라, 서명과 각주가 정확히 맞는다."
+    ]
+  },
+  "en": {
+    "line": "Sysadmins' outage stories tend to end the same way, \"it can't be DNS\"… and then it was DNS, so this page hangs that conclusion on a calligraphy scroll as a solemn haiku.",
+    "points": [
+      "\"It's not DNS / There's no way it's DNS / It was DNS\" → two lines of denial, then the collapse. Anyone who has run servers has lived this exact order; the short version of the joke is \"It's always DNS.\"",
+      "Brush calligraphy, a silk mount, drifting cherry petals → a 3 a.m. outage complaint treated like a national-treasure artwork.",
+      "The red seal → where the artist's seal goes, the English scroll is signed by the culprit itself: DNS. The Korean one carries the victim's verdict instead, 또 너냐 (roughly, you again?). It even stamps itself onto the blank paper before a single word is written, shakes its head and gets flicked away once \"It's not DNS\" is down, and slams back harder than before when the third line confesses. The answer was there from the start.",
+      "The footnote that lands on the returned seal, \"(It's always DNS.)\" → not just this outage, every outage. The short name of the whole joke, added as a quiet scholarly footnote.",
+      "Tap the finished scroll for more poems (they only come when tapped) → \"The TTL was one day / See you tomorrow\" (signed Friday, 6 p.m.), \"And will, for an hour\" (someone looked the name up before creating it), \"Caches age and die\". All things that really happen to people who run DNS. Tap the finished seal and it stamps itself once more."
+    ],
+    "terms": [
+      {
+        "term": "DNS",
+        "plain": "the internet's phone book; it turns names like example.com into the number addresses computers use. When it breaks, perfectly healthy servers look dead."
+      },
+      {
+        "term": "TTL (time to live)",
+        "plain": "how many seconds an answer may be remembered. 86400 seconds is one day, so after a change the old answer can linger for a day."
+      },
+      {
+        "term": "NXDOMAIN",
+        "plain": "the answer \"no such name\". It is remembered for a while too, so asking once before the record exists keeps \"no such name\" around after you create it."
+      },
+      {
+        "term": "\"DNS propagation\"",
+        "plain": "people say changes \"spread\", but really the copies cached around the world just expire when their TTL runs out."
+      },
+      {
+        "term": "Haiku",
+        "plain": "a short Japanese poem of 17 sounds in three parts of 5, 7 and 5. Japanese prints it as a single line; in English it is usually written as three lines, and the English poems here count 5-7-5 syllables."
+      },
+      {
+        "term": "Seal",
+        "plain": "in East Asian calligraphy the artist stamps a red seal when the work is done."
+      },
+      {
+        "term": "Port",
+        "plain": "the number that tells a computer which program an incoming message is for. DNS uses port 53."
+      }
+    ],
+    "links": [
+      {
+        "title": "Domain Name System - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Domain_Name_System",
+        "note": "what DNS is and how names become addresses",
+        "lang": "en"
+      },
+      {
+        "title": "Time to live - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Time_to_live",
+        "note": "how a TTL limits how long data lives, including how long DNS caches keep a record",
+        "lang": "en"
+      },
+      {
+        "title": "Haiku - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Haiku",
+        "note": "the 5-7-5 form and its seasonal words",
+        "lang": "en"
+      },
+      {
+        "title": "DNS \"propagation\" is actually caches expiring",
+        "url": "https://jvns.ca/blog/2021/12/06/dns-doesn-t-propagate/",
+        "note": "Julia Evans shows with examples why DNS changes don't really \"propagate\", including the \"looked it up too early\" negative cache"
+      },
+      {
+        "title": "RFC 2308: Negative Caching of DNS Queries",
+        "url": "https://www.rfc-editor.org/rfc/rfc2308.html",
+        "note": "the standard that says \"no such name\" answers are cached too, for a time taken from the zone's SOA record"
+      }
+    ],
+    "deep": [
+      "The small oval seal at the top left, `5`/`3` → port 53, the port DNS uses (RFC 1035; both UDP and TCP).",
+      "The TTL poem is signed \"Friday 6 p.m.\" and footnoted `TTL 86400` → 86400 seconds is exactly 24 hours, so \"See you tomorrow\" means Saturday, 6 p.m.",
+      "The negative-caching footnote, `SOA minimum 3600` → how long an NXDOMAIN answer is remembered is the smaller of the SOA record's minimum field and the SOA's own TTL (RFC 2308). 3600 seconds, hence \"And will, for an hour\".",
+      "The propagation poem is signed \"hour 47\" and footnoted `TTL 3412, 3411, 3410…` → the delegation (NS) records the .com servers hand out carry a TTL of 172800 seconds, two days (other top-level domains use other values). A 172800-second record with 3412 seconds left has been cached for 47 hours, 3 minutes and 8 seconds, so the signature and the footnote agree."
+    ]
+  }
+}

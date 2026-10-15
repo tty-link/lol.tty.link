@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Switch Sommelier | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<!-- Phones (the kit's folded nav, up to 600px): the "?" and ":)" go to the top right, beside the
+     short title. At the bottom right they would sit on the last bottle of the list, the punchline.
+     Wider screens keep the kit's own choice of corner. Set before DOMContentLoaded, when the kit looks. -->
+<script>
+  (() => {
+    const phone = matchMedia('(max-width: 600px)');
+    const pin = () => phone.matches ? document.documentElement.setAttribute('data-tty-nav', 'top') : document.documentElement.removeAttribute('data-tty-nav');
+    pin();
+    phone.addEventListener('change', pin);
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Italiana&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Gowun+Batang:wght@400;700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="geumbak sebul"></script>
+<style>
+  /* A wine list for keyboard switches. Each one is swirled, tasted (pressed, three times)
+     and described with the seriousness it deserves. */
+  :root {
+    --plum-1: #3a2440;
+    --plum-2: #1b1120;
+    --card: #f6f2f5;
+    --ink: #2a1d2c;
+    --soft: #77677a;
+    --rule: #b9a3b8;
+    --gold: #d8b46a;
+    --sw: #c0392b;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container: page / size;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(40cqmax 30cqmax at 22% 72%, rgba(255, 190, 120, .16), transparent 70%),
+      radial-gradient(110cqmax 90cqmax at 30% 20%, var(--plum-1), var(--plum-2) 75%);
+    color: var(--card);
+    font-family: 'Newsreader', 'Gowun Batang', Georgia, serif;
+  }
+  .lang-ko body { font-family: 'Gowun Batang', 'Newsreader', serif; word-break: keep-all; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+  .page {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, .9fr) auto;
+    gap: 1.8cqh;
+    padding: 3.6cqh 5cqw 3.4cqh;
+  }
+  .head { --title-kku: clamp(28px, 6.6cqmin, 60px); }
+  .head h1 { font-family: 'Italiana', serif; font-weight: 400; font-size: clamp(28px, 7cqmin, 64px); line-height: 1; color: #f3e6c9; letter-spacing: .01em; }
+  .head h1 > font-kku { color: #f3e6c9; }
+  .head p { margin-top: .8cqh; font-size: clamp(13px, 2.2cqmin, 18px); font-style: italic; color: #cdb9cc; }
+  .lang-ko .head p { font-style: normal; margin-top: 1.4cqh; }
+  /* The one-line hint under the subtitle. */
+  .head .hint { margin-top: .5cqh; font-size: clamp(11px, 1.7cqmin, 14px); font-style: normal; color: #b49fb3; }
+  .lang-ko .head .hint { margin-top: .7cqh; }
+
+  /* ---- Tasting stage: glass, key, sound ---- */
+  .stage { display: grid; grid-template-columns: 1fr 1.25fr; grid-template-rows: 1fr auto; align-items: end; justify-items: center; min-height: 0; gap: 0 3cqw; }
+  .glass { width: 100%; max-width: 250px; height: 100%; max-height: 360px; }
+  .key { width: 100%; max-width: 360px; height: 100%; max-height: 360px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .key:focus { outline: none; }
+  .key:focus-visible .cap { stroke: var(--gold); stroke-width: 3; }
+  .wave { grid-column: 1 / -1; width: 100%; max-width: 560px; height: clamp(34px, 8cqmin, 76px); }
+  .wave path { fill: none; stroke: var(--wave, var(--sw)); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke .4s; }
+  .wave .base { stroke: rgba(255,255,255,.15); stroke-width: 1; }
+  .liquid { fill: var(--sw); transition: fill .5s; }
+  .stem { fill: var(--sw); transition: fill .5s; }
+  .press { transform-box: fill-box; transform-origin: 50% 100%; }
+
+  /* ---- The list ---- */
+  .card {
+    position: relative;
+    container-type: inline-size;
+    align-self: end;
+    width: 100%;
+    max-width: 560px;
+    justify-self: center;
+    padding: 4.6cqi 5.4cqi 4cqi;
+    background: var(--card);
+    color: var(--ink);
+    box-shadow: 0 2.4cqi 6cqi rgba(0,0,0,.45);
+    outline: 1px solid var(--rule);
+    outline-offset: -2.2cqi;
+  }
+  .now { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 0 4cqi; }
+  .now-name { font-family: 'Italiana', serif; font-size: 10cqi; line-height: 1; }
+  .now-name > font-kku { color: var(--ink); }
+  .now-type { margin-top: 1cqi; font-size: max(11px, 3.6cqi); color: var(--soft); font-style: italic; }
+  .lang-ko .now-type { font-style: normal; }
+  .now-score { position: relative; font-family: 'Italiana', serif; font-size: 8cqi; color: var(--sw); text-align: right; line-height: 1; transition: color .4s; }
+  .now-score small { display: block; font-family: 'Newsreader', 'Gowun Batang', serif; font-size: max(11px, 2.8cqi); color: var(--soft); }
+  /* Blue's two scores, one a line: "to you." / "41 to the next desk". */
+  .now-score small.aside { margin-top: .4cqi; font-size: max(12px, 3.3cqi); line-height: 1.25; white-space: pre-line; color: var(--ink); }
+  /* The butterfly's verdict, a rubber stamp in the score's place once its key has stuck. It
+     keeps its room while hidden, so nothing on the card moves when it lands; until then a dash
+     sits in that room. Two lines (SENT / BACK, 돌려 / 보냄), so it stays narrow and the spec
+     line beside it does not wrap. */
+  .now-score .dash { position: absolute; inset: 0; display: grid; place-items: center; }
+  .now-score.stamped .dash { visibility: hidden; }
+  .now-score .stamp {
+    display: block;
+    margin: .6cqi 1.2cqi .6cqi 0;
+    padding: 1cqi 1.4cqi .7cqi;
+    border: max(2px, .6cqi) solid #a3242c;
+    border-radius: 1cqi;
+    box-shadow: inset 0 0 0 max(1.5px, .45cqi) var(--card), inset 0 0 0 max(2.5px, .75cqi) #a3242c;
+    font-family: 'Newsreader', 'Gowun Batang', serif;
+    font-size: max(14px, 5.4cqi);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    text-align: center;
+    white-space: pre-line;
+    color: #a3242c;
+    rotate: -8deg;
+    visibility: hidden;
+  }
+  .now-score.stamped .stamp { visibility: visible; }
+  .lang-ko .now-score .stamp { font-size: max(15px, 6cqi); font-weight: 700; letter-spacing: .02em; line-height: 1.12; padding: 1cqi 1.2cqi .8cqi; }
+  .lang-ko .now-score { font-family: 'Newsreader', serif; font-weight: 600; font-size: 6.6cqi; }
+  .label { margin-top: 3.2cqi; font-size: max(11px, 2.9cqi); letter-spacing: .08em; color: var(--soft); }
+  .notes { margin-top: .8cqi; font-size: max(12px, 4.4cqi); line-height: 1.4; font-style: italic; min-height: 2.8em; }
+  .lang-ko .notes { font-style: normal; font-size: max(12px, 4.1cqi); line-height: 1.55; }
+  .pairs { margin-top: .6cqi; font-size: max(11.5px, 3.9cqi); }
+  .pairs .pl { display: none; color: var(--soft); font-style: italic; }
+  .lang-ko .pairs .pl { font-style: normal; }
+
+  .list { margin-top: 3.4cqi; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
+  .list li { border-bottom: 1px solid #e3d8e2; }
+  .list button {
+    display: grid;
+    grid-template-columns: 4cqi 1fr auto;
+    align-items: center;
+    gap: 2cqi;
+    width: 100%;
+    padding: 1.5cqi 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    font-size: max(11px, 3.7cqi);
+    cursor: pointer;
+  }
+  .list .dot { width: 2.6cqi; height: 2.6cqi; border-radius: 50%; background: var(--c); }
+  .list .nm { font-weight: 600; }
+  .list .nm em { font-weight: 400; color: var(--soft); }
+  .list .sc { color: var(--soft); font-variant-numeric: tabular-nums; }
+  .list li.on button { background: linear-gradient(90deg, rgba(216, 180, 106, .22), transparent); }
+  .list li.on .nm { color: var(--ink); }
+
+  /* Two columns from 600px wide unless the stage is tall and narrow. The home page's desktop
+     stage (about 650 x 730) is one of these: in one column its card, sized to its own width,
+     left the glass and the key no height at all. */
+  @container (min-width: 600px) and (min-aspect-ratio: 7/10) {
+    .page { grid-template-columns: 1fr 1.05fr; grid-template-rows: auto 1fr; column-gap: 5cqw; }
+    .head { grid-column: 1 / -1; }
+    /* The glass and the key take the height their width gives them, and the wave sits right
+       under the key: on the tall home stage it used to float 200 px below, away from the presses
+       it draws. */
+    .stage { align-self: center; align-content: center; align-items: end; height: 100%; max-height: 72cqh; grid-template-rows: auto auto; row-gap: 3cqh; }
+    .glass, .key { height: auto; max-height: 46cqh; }
+    .card { align-self: center; }
+  }
+  /* A little taller than wide: the card takes the larger share so its type stays readable. */
+  @container (min-width: 600px) and (min-aspect-ratio: 7/10) and (max-aspect-ratio: 1/1) {
+    .page { grid-template-columns: .85fr 1.15fr; column-gap: 4cqw; }
+  }
+  /* One column: the list goes into two columns so the glass and key keep their room. */
+  @container page not ((min-width: 600px) and (min-aspect-ratio: 7/10)) {
+    .list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 5cqi; }
+  }
+  /* Short phones: the list collapses to one line so the card fits. */
+  @container (max-height: 640px) and (max-width: 520px) {
+    .list button { padding: 1cqi 0; font-size: max(11px, 3.4cqi); }
+    .notes { min-height: 0; }
+    .label { margin-top: 2.2cqi; }
+  }
+  /* Small phone stages (the home page's 358 × 396 and 328 × 408, a 360 × 520 phone): the card was
+     so tall in Korean that the glass and the key got 0 px. Here the two labels leave their own
+     lines ("Pairs with" moves in front of its line), the name and the paddings shrink, and the
+     tasting stage keeps a floor. */
+  @container page (max-height: 540px) and (max-width: 599.98px) {
+    .page { gap: 1.2cqh; padding-top: 2.6cqh; padding-bottom: 2.4cqh; grid-template-rows: auto minmax(88px, .9fr) auto; }
+    .head { --title-kku: clamp(24px, 6.6cqmin, 60px); }
+    .head h1 { font-size: clamp(26px, 7cqmin, 64px); }
+    .head p { margin-top: .5cqh; line-height: 1.3; }
+    .lang-ko .head p { margin-top: .9cqh; }
+    .head .hint { margin-top: .3cqh; }
+    .card { padding: 3.6cqi 5cqi 3cqi; outline-offset: -1.6cqi; }
+    .now-name { font-size: 8.4cqi; }
+    .card { --name-kku: 7.8cqi; }
+    .now-type { margin-top: .6cqi; }
+    /* The stamp no taller than the name and spec line beside it, so the key it is about keeps
+       its height (the stamp at full size cost the stuck key 13 px here). */
+    .now-score .stamp { margin: 0 1cqi 0 0; padding: .6cqi 1.2cqi .4cqi; font-size: max(13px, 4.5cqi); }
+    .lang-ko .now-score .stamp { padding: .6cqi 1cqi .4cqi; font-size: max(14px, 4.9cqi); line-height: 1.06; }
+    .notes-label, .pairs-label { display: none; }
+    .notes { margin-top: 2cqi; line-height: 1.32; }
+    .lang-ko .notes { line-height: 1.42; }
+    .pairs { margin-top: .8cqi; }
+    .pairs .pl { display: inline; }
+    .list { margin-top: 2.4cqi; }
+    .list button { padding: .5cqi 0; line-height: 1.22; }
+    .wave { height: clamp(26px, 7cqmin, 76px); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="head">
+    <h1>
+      <span data-lang="en">Switch Sommelier</span>
+      <span data-lang="ko"><font-kku font="geumbak" size="var(--title-kku)">키보드 축 소믈리에</font-kku></span>
+    </h1>
+    <p>
+      <span data-lang="en">Tasting notes for the keys under your fingers.</span>
+      <span data-lang="ko">손끝 아래 축들의 시음 노트.</span>
+    </p>
+    <p class="hint" id="ss-hint">
+      <span data-lang="en">Tap a bottle on the list to taste it. Tap the key, too.</span>
+      <span data-lang="ko">목록의 병을 누르면 시음해요. 키캡도 눌러 보세요.</span>
+    </p>
+  </header>
+
+  <div class="stage">
+    <svg class="glass" viewBox="0 0 120 200" aria-hidden="true">
+      <defs>
+        <clipPath id="bowl"><path d="M22 18 C 20 70, 34 96, 60 98 C 86 96, 100 70, 98 18 Z"/></clipPath>
+        <linearGradient id="shine" x1="0" x2="1"><stop offset="0" stop-color="rgba(255,255,255,.28)"/><stop offset=".4" stop-color="rgba(255,255,255,0)"/></linearGradient>
+      </defs>
+      <g class="tilt" style="transform-box: fill-box; transform-origin: 50% 100%;">
+        <g clip-path="url(#bowl)">
+          <path class="liquid" d="M-40 62 Q -20 54 0 62 T 40 62 T 80 62 T 120 62 T 160 62 V 120 H -40 Z"/>
+        </g>
+        <path d="M22 18 C 20 70, 34 96, 60 98 C 86 96, 100 70, 98 18" fill="url(#shine)" stroke="rgba(255,255,255,.55)" stroke-width="2"/>
+        <path d="M60 98 V 170 M36 176 Q 60 168 84 176" stroke="rgba(255,255,255,.55)" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <svg class="key" viewBox="0 0 200 200" role="button" tabindex="0" aria-describedby="ss-hint">
+      <rect x="54" y="132" width="92" height="44" rx="6" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>
+      <rect x="64" y="172" width="8" height="14" rx="2" fill="#c9a24e"/><rect x="128" y="172" width="8" height="14" rx="2" fill="#c9a24e"/>
+      <g class="press">
+        <path class="stem" d="M92 112 H108 V124 H118 V132 H108 V146 H92 V132 H82 V124 H92 Z"/>
+        <path d="M30 70 L170 70 L162 116 Q160 122 154 122 L46 122 Q40 122 38 116 Z" fill="#cfc6b8"/>
+        <rect class="cap" x="44" y="34" width="112" height="56" rx="12" fill="#ece5d8"/>
+        <path d="M52 40 H148" stroke="rgba(255,255,255,.7)" stroke-width="3" stroke-linecap="round"/>
+        <g transform="translate(100 62)" stroke="#8a7b6a" stroke-width="2.4" fill="none" stroke-linecap="round">
+          <path d="M-9 -12 C -10 -2, -6 4, 0 4 C 6 4, 10 -2, 9 -12 Z"/><path d="M0 4 V 13 M-6 14 H6"/>
+        </g>
+      </g>
+    </svg>
+    <svg class="wave" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true">
+      <path class="base" d="M0 20 H300"/>
+      <path class="line" d="M0 20"/>
+    </svg>
+  </div>
+
+  <article class="card" aria-live="polite">
+    <div class="now">
+      <div>
+        <h2 class="now-name"></h2>
+        <p class="now-type"></p>
+      </div>
+      <p class="now-score"></p>
+    </div>
+    <p class="label notes-label"></p>
+    <p class="notes"></p>
+    <p class="label pairs-label"></p>
+    <p class="pairs"></p>
+    <ul class="list"></ul>
+  </article>
+</div>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const $ = (s) => document.querySelector(s);
+  const root = document.documentElement;
+  const nowName = $('.now-name');
+  const nowType = $('.now-type');
+  const nowScore = $('.now-score');
+  const notes = $('.notes');
+  const pairs = $('.pairs');
+  const list = $('.list');
+  const press = $('.press');
+  const liquid = $('.liquid');
+  const tilt = $('.tilt');
+  const line = $('.wave .line');
+
+  // Type lines follow a switch spec sheet: force at actuation, then actuation point / total
+  // travel. The last bottle is not a switch at all: the shallow laptop keyboard of a
+  // certain vintage, known for keys that typed twice, or not at all, or stuck. Its maker
+  // fixed them for free under a service program (not a recall), so the bottle was "sent back".
+  const SWITCHES = TTY.t({
+    en: [
+      { id: 'red', c: '#c0392b', name: 'Red', type: 'linear · 45 g · 2.0 / 4.0 mm', score: '92', notes: 'Light-bodied. Goes down at a touch, with hints of typos you never meant.', pairs: 'Gaming, and refactors after midnight.' },
+      { id: 'brown', c: '#8a5a35', name: 'Brown', type: 'tactile · 55 g · 2.0 / 4.0 mm', score: '90', notes: 'A small bump halfway down, like rereading an email before you send it.', pairs: 'Meetings and open-plan offices.' },
+      { id: 'blue', c: '#2e6fd8', name: 'Blue', type: 'clicky · 60 g · 2.2 / 4.0 mm', score: '97', aside: 'to you.\n41 to the next desk', notes: 'Bold and clicky. Your coworkers will remember this vintage.', pairs: 'Working alone. Far away.' },
+      { id: 'silent', c: '#8c8f99', name: 'Silent', type: 'dampened linear · 45 g · 1.9 / 3.7 mm', score: '89', notes: "So quiet your manager thinks you've gone idle. Hints of library.", pairs: 'Shared flats, sleeping babies, secret side projects.' },
+      { id: 'black', c: '#2b2b30', name: 'Black', type: 'linear · 60 g · 2.0 / 4.0 mm', score: '93', notes: 'Full-bodied and heavy. Builds character, and forearms.', pairs: 'Typing with conviction.' },
+      { id: 'butterfly', c: '#9aa3ad', name: 'Butterfly', type: 'vintage 2016 · all 0.5 mm of it', score: '—', stamp: 'Sent\nback', listScore: 'sent back', notes: 'Crisp and shallow, notes of toast crumb. The finish arrives twwice, or not at al.', pairs: 'A free repair program.' },
+    ],
+    ko: [
+      { id: 'red', c: '#c0392b', name: '적축', type: '리니어 · 45g · 입력 2.0 / 바닥 4.0mm', score: '92점', notes: '가벼운 바디. 손가락만 얹어도 술술 넘어가고, 뒷맛에 오타가 살짝 남아요.', pairs: '게임, 그리고 자정 넘은 리팩터링' },
+      { id: 'brown', c: '#8a5a35', name: '갈축', type: '택타일 · 55g · 입력 2.0 / 바닥 4.0mm', score: '90점', notes: '중간에 한 번 멈칫합니다. 보내기 전에 다시 읽는 메일처럼요.', pairs: '회의, 그리고 개방형 사무실' },
+      { id: 'blue', c: '#2e6fd8', name: '청축', type: '클리키 · 60g · 입력 2.2 / 바닥 4.0mm', score: '97점', aside: '내 귀엔.\n옆자리 귀엔 41점', notes: '묵직하고 경쾌한 클릭감. 동료들이 이 빈티지를 오래 기억할 거예요.', pairs: '혼자 일하는 날. 아주 멀리서.' },
+      { id: 'silent', c: '#8c8f99', name: '저소음', type: '리니어 · 45g · 입력 1.9 / 바닥 3.7mm', score: '89점', notes: '너무 조용해서 팀장님이 노는 줄 압니다. 도서관 향이 은은해요.', pairs: '룸메이트, 잠든 아기, 몰래 하는 사이드 프로젝트' },
+      { id: 'black', c: '#2b2b30', name: '흑축', type: '리니어 · 60g · 입력 2.0 / 바닥 4.0mm', score: '93점', notes: '풀바디에 묵직한 키압. 인내심과 팔뚝을 함께 길러 줍니다.', pairs: '확신에 찬 타이핑' },
+      { id: 'butterfly', c: '#9aa3ad', name: '버터플라이', type: '2016년산 · 이동 거리 0.5mm가 전부', score: '—', stamp: '돌려\n보냄', listScore: '돌려보냄', notes: '얕고 바삭한 맛, 빵 부스러기 향. 여운이 두 번 찍찍히거나, 아예 안 찍힙니.', pairs: '무상 수리 프로그램' },
+    ],
+  });
+  const L = TTY.t({
+    en: { notes: 'Tasting notes', pairs: 'Pairs with', score: 'points', key: 'Press the key' },
+    ko: { notes: '시음 노트', pairs: '추천 페어링', score: '', key: '키캡 누르기' },
+  });
+  $('.notes-label').textContent = L.notes;
+  $('.pairs-label').textContent = L.pairs;
+
+  // Black ink on a black switch would vanish in the glass: the liquid gets a little light.
+  const LIQUID = { red: '#a3242c', brown: '#7a4a2a', blue: '#2e6fd8', silent: '#9aa0ad', black: '#3c3542', butterfly: '#c9ced6' };
+  const WAVE = { red: '#e0544a', brown: '#c98a5a', blue: '#5a95f0', silent: '#b9bdc8', black: '#bdb3cc', butterfly: '#dfe3ea' };
+
+  const items = SWITCHES.map((sw, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = '<button type="button"><span class="dot"></span><span class="nm"></span><span class="sc"></span></button>';
+    li.style.setProperty('--c', sw.c);
+    li.querySelector('.nm').textContent = sw.name;
+    li.querySelector('.sc').textContent = sw.listScore || sw.score;
+    li.querySelector('button').addEventListener('click', (e) => { if (!e.isTrusted) return; const mine = takeOver(); taste(i, () => run === mine); });
+    list.append(li);
+    return li;
+  });
+
+  /* ---- The sound of a switch, drawn ---- */
+  const PROFILE = {
+    red: (t) => Math.sin(Math.PI * t) * .32,
+    brown: (t) => Math.sin(Math.PI * t) * .38 + (t > .22 && t < .34 ? .22 : 0),
+    blue: (t) => (t < .14 ? t / .14 * .2 : t < .24 ? .95 : .95 * Math.exp(-(t - .24) * 9)) + .05,
+    silent: (t) => Math.sin(Math.PI * t) * .07,
+    black: (t) => Math.pow(Math.sin(Math.PI * t), .6) * .5,
+    // The butterfly has a fault a press. "twice": a short tick, then the same tick again (one
+    // press, two letters). "none": nothing at all. "stuck": the tick going down, and no way back up.
+    twice: (t) => (t < .2 ? Math.sin(Math.PI * t / .2) * .42 : t > .46 && t < .64 ? Math.sin(Math.PI * (t - .46) / .18) * .34 : 0),
+    none: () => 0,
+    stuck: (t) => (t < .2 ? Math.sin(Math.PI * t / .2) * .42 : 0),
+  };
+  function pulse(shape, id, from, width) {
+    const pts = [];
+    const n = 60;
+    for (let k = 0; k <= n; k++) {
+      const t = k / n;
+      const env = PROFILE[shape](t);
+      const osc = Math.sin(k * (id === 'blue' || id === 'butterfly' ? 2.6 : id === 'black' ? .9 : 1.6));
+      pts.push(`${(from + t * width).toFixed(1)} ${(20 - env * osc * 18).toFixed(1)}`);
+    }
+    return pts.join(' L');
+  }
+  let waveD = 'M0 20';
+  function clearWave() {
+    waveD = 'M0 20';
+    line.setAttribute('d', waveD);
+  }
+  // Cell k of three. Each press draws its own cell.
+  function drawPulse(shape, id, k) {
+    const w = 300 / 3;
+    waveD += ` L${(k * w).toFixed(1)} 20 L${pulse(shape, id, k * w + 8, w - 16)} L${((k + 1) * w).toFixed(1)} 20`;
+    line.setAttribute('d', waveD);
+    if (!TTY.reduce) {
+      const len = line.getTotalLength();
+      line.style.strokeDasharray = `${len}`;
+      line.animate([{ strokeDashoffset: (300 / 3) * 1.6 }, { strokeDashoffset: 0 }], { duration: 420, easing: 'ease-out' });
+    }
+  }
+
+  /* ---- Tasting ---- */
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  let current = -1;
+  let shownName = '';
+  let stampEl = null;
+  function show(i) {
+    const sw = SWITCHES[i];
+    // Only a new bottle fades in. The first tasting re-shows the card already drawn before the
+    // page went on stage, and a fade there would flash it out and in at 0 s.
+    const fresh = current !== i;
+    current = i;
+    root.style.setProperty('--sw', sw.c);
+    root.style.setProperty('--wave', WAVE[sw.id]);
+    liquid.style.fill = LIQUID[sw.id];
+    items.forEach((li, k) => li.classList.toggle('on', k === i));
+    if (ko) {
+      if (shownName !== sw.name) {
+        const el = document.createElement('font-kku');
+        el.setAttribute('font', 'sebul');
+        el.setAttribute('size', 'var(--name-kku, 9.4cqi)');
+        el.textContent = sw.name;
+        nowName.replaceChildren(el);
+      }
+    } else {
+      nowName.textContent = sw.name;
+    }
+    shownName = sw.name;
+    // Korean spec lines keep "입력 2.2" and "바닥 4.0mm" whole when they wrap (648 x 732 blue
+    // broke as "… 입력 2.2 / 바닥" + "4.0mm"): a no-break space after the two words.
+    nowType.textContent = ko ? sw.type.replace(/(입력|바닥) /g, '$1\u00a0') : sw.type;
+    nowScore.classList.remove('stamped');
+    stampEl = null;
+    if (sw.stamp) {
+      // The verdict waits for the evidence: a dash until the key sticks.
+      const dash = document.createElement('span');
+      dash.className = 'dash';
+      dash.textContent = sw.score;
+      stampEl = document.createElement('small');
+      stampEl.className = 'stamp';
+      stampEl.textContent = sw.stamp;
+      nowScore.replaceChildren(dash, stampEl);
+    } else {
+      nowScore.replaceChildren(sw.score);
+      if (sw.aside || L.score) {
+        const small = document.createElement('small');
+        small.textContent = sw.aside || L.score;
+        if (sw.aside) small.className = 'aside';
+        nowScore.append(small);
+      }
+    }
+    notes.textContent = sw.notes;
+    // "Pairs with:" in front of the line shows only on small stages, where its own line is gone.
+    const pl = document.createElement('span');
+    pl.className = 'pl';
+    pl.textContent = L.pairs + ': ';
+    pairs.replaceChildren(pl, sw.pairs);
+    if (fresh && !TTY.reduce) [nowName, notes, pairs].forEach((el, k) => el.animate([{ opacity: 0, filter: 'blur(3px)' }, { opacity: 1, filter: 'blur(0)' }], { duration: 420, delay: k * 90, easing: 'ease-out', fill: 'backwards' }));
+  }
+  function stampIt() {
+    if (!stampEl || nowScore.classList.contains('stamped')) return;
+    nowScore.classList.add('stamped');
+    if (!TTY.reduce) stampEl.animate([{ opacity: 0, scale: 1.45 }, { opacity: 1, scale: .96, offset: .7 }, { opacity: 1, scale: 1 }], { duration: 220, easing: 'ease-out' });
+  }
+  // The ritual for every bottle: the glass swirls, and so does the key, a small circle beside it,
+  // before it is pressed three times. (The key moves as a whole, so its stuck pose is untouched.)
+  function swirl() {
+    if (TTY.reduce) return;
+    liquid.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-40px)' }], { duration: 900, iterations: 2, easing: 'ease-in-out' });
+    tilt.animate([{ rotate: '0deg' }, { rotate: '-7deg' }, { rotate: '6deg' }, { rotate: '-3deg' }, { rotate: '0deg' }], { duration: 1500, easing: 'ease-in-out' });
+    const box = key.getBoundingClientRect();
+    const r = Math.min(16, Math.max(7, Math.min(box.width, box.height) * .09));
+    const lap = [];
+    for (let a = 0; a <= 12; a++) {
+      const th = (a / 12) * 2 * Math.PI;
+      lap.push({ translate: `${(Math.sin(th) * r).toFixed(1)}px ${((Math.cos(th) - 1) * r * .6).toFixed(1)}px` });
+    }
+    key.animate(lap, { duration: 750, easing: 'ease-in-out' });
+  }
+
+  // The butterfly's key, when it sticks, stays down and crooked until it is freed. `press` keeps
+  // the pose in its style; animations only travel to it.
+  const STUCK = 'translateY(2px) rotate(-9deg)';
+  let stuck = false;
+  let jolted = false; // a stuck key fails the first press, then comes up on the second
+  let stuckAnim = null;
+  function unstick() {
+    if (stuckAnim) { stuckAnim.cancel(); stuckAnim = null; }
+    press.style.transform = '';
+    stuck = false;
+    jolted = false;
+  }
+  function holdDown(frames, duration, easing) {
+    if (stuckAnim) stuckAnim.cancel();
+    press.style.transform = STUCK;
+    stuck = true;
+    stuckAnim = TTY.reduce ? null : press.animate(frames, { duration, easing });
+  }
+  // Two tries to get back up, about 2.4 s after it stuck. Neither works.
+  function strain() {
+    if (!stuck || TTY.reduce) return;
+    holdDown([
+      { transform: STUCK },
+      { transform: 'translateY(-1px) rotate(-2deg)', offset: .2 },
+      { transform: 'translateY(3px) rotate(-11deg)', offset: .42 },
+      { transform: 'translateY(-1px) rotate(-3deg)', offset: .64 },
+      { transform: 'translateY(3px) rotate(-11deg)', offset: .84 },
+      { transform: STUCK },
+    ], 640, 'ease-in-out');
+  }
+  const strainLater = (live) => wait(2400).then(() => { if (live() && stuck) strain(); });
+
+  // One press of switch `id`, drawn into wave cell `k`. The butterfly brings a fault each time.
+  const FAULTS = ['twice', 'none', 'stuck'];
+  let nextFault = 0;
+  async function strike(id, k) {
+    unstick();
+    const fault = id === 'butterfly' ? FAULTS[nextFault] : null;
+    if (fault) nextFault = (nextFault + 1) % FAULTS.length;
+    // Key travel in px is roughly to scale: 15 for 4 mm, 13 for 3.7 mm, 2 for half a millimetre.
+    const travel = id === 'butterfly' ? 2 : id === 'silent' ? 13 : 15;
+    const down = id === 'black' ? 170 : id === 'blue' ? 90 : id === 'butterfly' ? 70 : 120;
+    const sticks = fault === 'stuck';
+    if (sticks) {
+      holdDown([{ transform: 'none' }, { transform: `translateY(${travel}px)`, offset: .4 }, { transform: STUCK }], 420, 'cubic-bezier(.3, 1.6, .5, 1)');
+    } else if (!TTY.reduce) {
+      const frames = id === 'brown' || id === 'blue'
+        ? [{ transform: 'none' }, { transform: `translateY(${travel * .35}px)`, offset: .3 }, { transform: `translateY(${travel * .4}px)`, offset: .42 }, { transform: `translateY(${travel}px)`, offset: .6 }, { transform: 'none' }]
+        : [{ transform: 'none' }, { transform: `translateY(${travel}px)`, offset: .5 }, { transform: 'none' }];
+      press.animate(frames, { duration: down * 2.6, easing: 'ease-in-out' });
+    }
+    drawPulse(fault || id, id, k);
+    await wait(TTY.reduce ? 0 : down * 2.6 + (sticks ? 700 : 0) + 180);
+    return sticks;
+  }
+  // Pressing a stuck key: the first press only jolts it (and types nothing), the second frees it,
+  // with the butterfly's two ticks. Then its faults carry on: nothing, then stuck again.
+  function pressStuck(k) {
+    if (!jolted) {
+      holdDown([{ transform: STUCK }, { transform: 'translateY(4px) rotate(-12deg)', offset: .35 }, { transform: 'translateY(1px) rotate(-8deg)', offset: .7 }, { transform: STUCK }], 300, 'ease-out');
+      jolted = true;
+      drawPulse('none', 'butterfly', k);
+      return;
+    }
+    unstick();
+    if (!TTY.reduce) press.animate([{ transform: STUCK }, { transform: 'translateY(-3px) rotate(2deg)', offset: .35 }, { transform: 'translateY(.5px)', offset: .7 }, { transform: 'none' }], { duration: 380, easing: 'ease-out' });
+    drawPulse('twice', 'butterfly', k);
+    nextFault = 1;
+  }
+  async function taste(i, live) {
+    unstick();
+    show(i);
+    clearWave();
+    cell = 0;
+    nextFault = 0;
+    swirl();
+    await wait(TTY.reduce ? 0 : 800); if (!live()) return false;
+    for (let k = 0; k < 3; k++) { await strike(SWITCHES[i].id, k); if (!live()) return false; }
+    if (stuck) { stampIt(); strainLater(live); }
+    return true;
+  }
+
+  /* ---- Autoplay and taking over ---- */
+  // Six bottles, blue (the loudest) left up longest of the five, and the butterfly last: its key
+  // sticks at about 20.3 s, the stamp lands at 21.2, the key tries to get up at 23.6, and the
+  // round starts again at about 26.4 s.
+  let run = 0;
+  async function play(from) {
+    const mine = ++run;
+    const live = () => run === mine;
+    for (let i = from; live(); i = (i + 1) % SWITCHES.length) {
+      if (!await taste(i, live)) return;
+      await wait(i === SWITCHES.length - 1 ? 5200 : i === 2 ? 2200 : 1200); if (!live()) return;
+    }
+  }
+  // A visitor's tap stops the round where it is; whatever they started plays out and stays.
+  // After 12 s with no taps the round carries on from the next bottle. (The kit already asks the
+  // home page for 12 s more on every pointerdown and keydown.)
+  let idle = 0;
+  function takeOver() {
+    const mine = ++run;
+    clearTimeout(idle);
+    if (!TTY.reduce) idle = setTimeout(() => { if (run === mine) play((current + 1) % SWITCHES.length); }, 12000);
+    return mine;
+  }
+  // The keycap: a click, a tap, or Enter / Space when it has focus. One press of the bottle on
+  // the card; the visitor's presses fill the wave's three cells, then start it again.
+  const key = $('.key');
+  key.setAttribute('aria-label', L.key);
+  let cell = 0;
+  function pressKey() {
+    const mine = takeOver();
+    if (current < 0) show(0);
+    const sw = SWITCHES[current];
+    if (cell === 0) clearWave();
+    const k = cell;
+    cell = (cell + 1) % 3;
+    // A press on the key autoplay has just stuck, before its stamp (20.3-21.2 s), stops the
+    // round that would have stamped it: the stamp lands here instead. (Once on, it stays.)
+    if (stuck) { pressStuck(k); stampIt(); return; }
+    strike(sw.id, k).then((sticks) => {
+      if (!sticks || run !== mine) return;
+      stampIt();
+      strainLater(() => run === mine);
+    });
+  }
+  key.addEventListener('click', (e) => { if (e.isTrusted) pressKey(); });
+  key.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    if (!e.repeat) pressKey();
+  });
+
+  /* ---- Start ---- */
+  if (TTY.reduce) {
+    // The last scene: the butterfly's three faults on the wave, the key stuck, the stamp on.
+    show(SWITCHES.length - 1);
+    for (let k = 0; k < 3; k++) strike('butterfly', k);
+    stampIt();
+  } else {
+    show(0);
+  }
+  TTY.onShow(() => { if (!TTY.reduce) play(0); });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

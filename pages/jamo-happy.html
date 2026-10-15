@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Happiness, Assembly Instructions | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&family=Gowun+Dodum&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="malang sebul"></script>
+<style>
+  /* Flat-pack instructions for happiness: an exploded view of the word, parts lettered and
+     listed, then the parts click together and the parts list counts down to zero. In Korean
+     the parts are jamo, which is exactly how Hangul is built. And, as with every flat pack,
+     one little bag turns up at the end anyway; tap it and its part goes on the end of the word. */
+  :root {
+    --paper: #fbfaf7;
+    --ink: #1c1c1f;
+    --soft: #8b8a86;
+    --line: #d9d6cf;
+    --blue: #2f5bff;
+    --sun: #ffd84a;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Jost', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'Gowun Dodum', 'Jost', sans-serif; word-break: keep-all; }
+
+  .sheet {
+    container-type: size;
+    height: 100%;
+    padding: clamp(14px, 4cqmin, 40px);
+  }
+  .layout {
+    display: grid;
+    height: 100%;
+    grid-template-columns: minmax(0, 30cqi) 1fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas: "head head" "parts diagram" "steps steps";
+    gap: 3cqmin 4cqi;
+  }
+
+  /* Header: product name and the promise. */
+  .head { grid-area: head; display: flex; flex-wrap: wrap; align-items: baseline; gap: .4em 1.2em; border-bottom: 2px solid var(--ink); padding-bottom: 2cqmin; }
+  .product { font-size: clamp(26px, 7cqmin, 64px); font-weight: 700; letter-spacing: .02em; line-height: 1; }
+  .lang-ko .product { line-height: 1; display: flex; align-items: baseline; gap: .3em; }
+  /* The Korean model name: 행복 spelled the flat-pack way, ä for ㅐ. */
+  .model { font-family: 'Jost', sans-serif; font-weight: 700; font-size: .62em; letter-spacing: .03em; }
+  .promise { font-size: clamp(14px, 2.6cqmin, 22px); color: #4a4945; }
+
+  /* Parts list. */
+  .parts { grid-area: parts; align-self: center; display: grid; gap: 1.6cqmin; font-size: clamp(13px, 2.3cqmin, 19px); }
+  /* A plain label, so a bit under the list: no line with a joke in it (the bag's note, the captions,
+     the notes, "Nothing left over.") is ever smaller than it. */
+  .parts-title { font-weight: 700; font-size: max(10.5px, .9em); }
+  .part { display: grid; grid-template-columns: 2.2em 3.2em 1fr; align-items: center; gap: .6em; }
+  .tag {
+    display: grid;
+    place-items: center;
+    width: 1.9em;
+    height: 1.9em;
+    border: 2px solid var(--blue);
+    border-radius: 50%;
+    color: var(--blue);
+    font-family: 'Jost', sans-serif;
+    font-weight: 700;
+    font-size: .85em;
+  }
+  .icon { display: grid; place-items: center; height: 2.4em; }
+  .icon svg { width: 2.6em; height: 2.2em; overflow: visible; }
+  .icon svg * { fill: none; stroke: var(--ink); stroke-width: 6; stroke-linecap: round; }
+  .part .count { font-variant-numeric: tabular-nums; }
+  .part .count b { font-weight: 700; }
+  .part { transition: opacity .3s ease; }
+  .part.used { opacity: .38; }
+  .aside { margin-top: .6cqmin; padding-top: 1.4cqmin; border-top: 1px dashed var(--line); color: #5b5a56; font-size: .92em; line-height: 1.45; }
+  .aside .ln { display: block; }
+  /* The one-line hint: under the notes here, beside "Parts" on a phone (away from the corner
+     links of a page opened on its own). It shows once the first assembly is done. */
+  .hint { color: var(--blue); font-size: .88em; line-height: 1.3; opacity: 0; transition: opacity .6s ease; }
+  .hint.on { opacity: 1; }
+
+  /* The diagram. */
+  .diagram { grid-area: diagram; position: relative; display: grid; grid-template-rows: 1fr auto; min-height: 0; cursor: pointer; border-radius: 10px; }
+  /* Tap (or Enter / Space) to assemble it again from step 1. */
+  .diagram:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+  /* One definite cell, so the drawing can be held to the height of a short stage (the SVG then
+     letterboxes; collect() measures the drawn scale, not the box). */
+  .word { position: relative; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; min-height: 0; }
+  .word svg.letters { width: min(100%, 120cqmin); height: auto; max-height: 100%; overflow: visible; }
+  .letters .dot { fill: var(--ink); stroke: none; }
+  .letters .p:not(.dot) { fill: none; stroke: var(--ink); stroke-width: 24; stroke-linecap: round; stroke-linejoin: round; transform-box: fill-box; transform-origin: center; }
+  .word font-kku, .icon font-kku { color: var(--ink); }
+  /* Korean: 행복, and room after it for the spare part once someone fits it (see fitSpare). */
+  .hbrow { display: flex; align-items: flex-end; }
+  .kk { position: absolute; visibility: hidden; }
+  .hbrow.fitted .kk { position: static; visibility: visible; margin-left: .06em; }
+  .letters .smile { visibility: hidden; }
+  .letters .smile .bowl { fill: none; stroke: var(--ink); stroke-width: 24; stroke-linecap: round; }
+  .letters .smile .hit { fill: transparent; stroke: none; } /* the whole smile takes the tap */
+  .letters.fitted .smile { visibility: visible; }
+  .overlay { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .overlay .guide { stroke: var(--blue); stroke-width: 1.5; stroke-dasharray: 5 5; fill: none; }
+  .overlay .lead { stroke: var(--blue); stroke-width: 1.5; fill: none; }
+  .overlay .callout circle { fill: var(--paper); stroke: var(--blue); stroke-width: 2; }
+  .overlay .callout text { fill: var(--blue); font: 700 14px 'Jost', sans-serif; text-anchor: middle; dominant-baseline: central; }
+  .overlay .tick { stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; }
+  .swash { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+
+  /* The bag that turns up after "nothing left over". */
+  .spare {
+    position: absolute;
+    right: 0; top: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .5em;
+    font-size: clamp(13px, 2.3cqmin, 19px);
+    line-height: 1.3;
+    visibility: hidden;
+  }
+  .spare.on { visibility: visible; }
+  /* The bag is a button: tap it to fit the spare part (see fitSpare). */
+  .bag {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: clamp(72px, 13cqmin, 120px);
+    aspect-ratio: 1.15;
+    padding: 14% 0 0;
+    border: 2px solid var(--ink);
+    border-radius: 6% 6% 14% 14% / 8% 8% 16% 16%;
+    background: rgba(255, 255, 255, .7);
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+    container-type: inline-size; /* the ㅋㅋ inside is sized to the bag */
+  }
+  .bag:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+  /* the zip, and the hole it hangs from; the zip opens when the part is taken out */
+  .bag::before { content: ""; position: absolute; left: 6%; right: 6%; top: 13%; height: 5%; border-block: 2px solid var(--ink); transition: top .25s ease, height .25s ease; }
+  .bag.open::before { top: 8%; height: 15%; }
+  .bag::after { content: ""; position: absolute; left: 50%; top: 4%; width: 9%; aspect-ratio: 1; translate: -50% 0; border: 2px solid var(--ink); border-radius: 50%; }
+  .bag svg { width: 50%; height: auto; overflow: visible; }
+  .bag svg * { fill: none; stroke: var(--ink); stroke-width: 24; stroke-linecap: round; }
+  .bag svg .dot { fill: var(--ink); stroke: none; }
+  .bag font-kku { color: var(--ink); }
+  .bag.empty .in { visibility: hidden; }
+  .spare-note { display: grid; grid-template-columns: auto auto; gap: .45em; align-items: start; white-space: nowrap; }
+  .spare-note .tag { width: 1.7em; height: 1.7em; margin-top: -.1em; }
+  /* the note's two lines come one after the other: the count, then the comeback */
+  .spare-note { opacity: 0; transition: opacity .4s ease; }
+  .spare-note .l1, .spare-note .l2 { display: block; }
+  .spare-note .l2 { opacity: 0; transition: opacity .4s ease; }
+  .spare-note.on, .spare-note .l2.on { opacity: 1; }
+
+  /* What each part is for: each line shows as its part clicks home. */
+  .captions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15em), 1fr)); gap: 1.2cqmin 3cqi; padding-top: 1.6cqmin; font-size: clamp(12px, 2.1cqmin, 18px); }
+  .cap { display: grid; grid-template-columns: auto 1fr; gap: .6em; align-items: center; line-height: 1.3; opacity: 0; translate: 0 .4em; transition: opacity .38s ease, translate .38s cubic-bezier(.3, 1.4, .5, 1); }
+  .cap.out { opacity: 1; translate: 0 0; }
+  .cap .tag { width: 1.7em; height: 1.7em; }
+  .lang-ko .captions { grid-template-columns: repeat(auto-fit, minmax(min(100%, 11em), 1fr)); }
+  /* The notes from the parts list, again: used only by the short-stage ticker (see below). */
+  .cap.cap-aside { display: none; }
+
+  /* Steps along the bottom: a real sequence, so numbered. */
+  .steps { grid-area: steps; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2cqi; font-size: clamp(12px, 2.2cqmin, 18px); }
+  .step { display: flex; align-items: center; gap: .6em; color: var(--soft); transition: color .3s ease; }
+  .step b { display: grid; place-items: center; flex: none; width: 2em; height: 2em; border: 2px solid currentColor; border-radius: 50%; font-family: 'Jost', sans-serif; transition: background .3s ease, color .3s ease, border-color .3s ease; }
+  .step.on { color: var(--ink); }
+  .step.on b { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .step.done b { background: var(--sun); border-color: var(--ink); color: var(--ink); }
+  /* "Nothing left over." gets a highlighter stroke the moment step 3 lights up: the promise. */
+  .step mark {
+    color: inherit;
+    padding: 0 .12em;
+    background: linear-gradient(transparent 30%, var(--sun) 30%, var(--sun) 92%, transparent 92%) left / 0% 100% no-repeat;
+    transition: background-size .4s ease-out;
+  }
+  .step mark.on { background-size: 100% 100%; }
+
+  @container (max-width: 620px) {
+    .layout {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr auto auto;
+      grid-template-areas: "head" "diagram" "parts" "steps";
+      gap: 2.4cqmin;
+    }
+    .parts { grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 1cqmin 3cqi; font-size: 12px; }
+    .part .count { white-space: nowrap; }
+    .parts-title, .aside { grid-column: 1 / -1; }
+    /* the two notes on one line under the parts */
+    .aside { display: flex; flex-wrap: wrap; gap: 0 1.2em; margin-top: 0; padding-top: .9cqmin; font-size: 11.5px; }
+    .aside .ln { display: inline; }
+    .parts-title { grid-row: 1; }
+    .hint { grid-row: 1; grid-column: 1 / -1; justify-self: end; align-self: center; font-size: clamp(11.5px, 2.1cqmin, 14px); text-align: right; }
+    .part { grid-template-columns: auto auto 1fr; justify-items: start; gap: .35em; }
+    .icon { height: 1.8em; }
+    .icon svg { width: 1.9em; height: 1.7em; }
+    .steps { font-size: clamp(11.5px, 2.2cqmin, 15px); gap: 1.6cqi; }
+    /* the last English step has the longest label: a wider column keeps it to two lines */
+    .lang-en .steps { grid-template-columns: 1fr 1fr 1.35fr; }
+    .step span { line-height: 1.15; }
+    .captions { grid-template-columns: 1fr 1fr; font-size: clamp(11.5px, 2.1cqmin, 14px); gap: 1cqmin 3cqi; }
+    /* Phones: under the word, the note beside the bag. */
+    .spare { top: auto; bottom: 0; flex-direction: row-reverse; align-items: flex-end; font-size: clamp(13px, 2.5cqmin, 17px); }
+    .bag { width: clamp(58px, 13cqmin, 96px); }
+  }
+  /* A short phone stage (358×396 in the home page): the word comes first, and the bag lands in a
+     strip of its own under the word instead of on it. There is no room for the notes and the
+     captions as blocks, so they come one line at a time at the top of the drawing, where the
+     parts flew in step 1 (empty once it is built): the notes as step 3 lights up, the captions
+     after the bag (Korean two at a time, English three of them one at a time; see TICKER). */
+  @container (max-width: 620px) and (max-height: 480px) {
+    .aside { display: none; }
+    /* the ticker's own strip on top (room for two lines in English, where the notes can wrap on
+       a 328 px stage; one in Korean), the bag's below; the parts of step 1 still fly into both
+       (the overlay covers the whole box) */
+    .word { padding: 34px 0 56px; }
+    .lang-ko .word { padding-top: 17px; }
+    /* and the English word low in its box: most of its parts fly up, and need room */
+    .word svg.letters { align-self: end; }
+    .hbrow { align-self: end; }
+    .captions { position: absolute; left: 0; right: 0; top: 0; z-index: 2; padding: 0; gap: 2px 3cqi; font-size: 12px; grid-template-columns: 1fr; pointer-events: none; }
+    .lang-ko .captions { grid-template-columns: 1fr 1fr; }
+    .cap, .cap.cap-aside { display: none; }
+    .cap.now { display: grid; opacity: 1; translate: 0 0; animation: cap-in .35s ease-out; }
+    .cap.cap-aside.now { display: block; grid-column: 1 / -1; color: #5b5a56; }
+  }
+  /* The smallest stage (328×288, the home page on a 360×520 phone): no ticker, no spec line,
+     the parts list in three columns (English without its icons), so the word still has room. */
+  @container (max-width: 620px) and (max-height: 300px) {
+    .word, .lang-ko .word { padding: 0 0 50px; }
+    .bag { width: 52px; }
+    .captions, .promise { display: none; }
+    .parts { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5cqmin 2cqi; font-size: 11px; }
+    .lang-en .part .icon { display: none; }
+  }
+  @keyframes cap-in { from { opacity: 0; translate: 0 .35em; } }
+  /* Opened on its own, the tty.link links sit at the bottom right; keep the steps above them. */
+  html:not(.embedded) .sheet { padding-bottom: max(clamp(14px, 4cqmin, 40px), 54px); }
+  @media (max-width: 600px) { html:not(.embedded) .sheet { padding-bottom: 46px; } }
+  @media (prefers-reduced-motion: reduce) {
+    .cap, .hint, .spare-note, .spare-note .l2 { opacity: 1; translate: none; transition: none; animation: none; }
+    .spare { visibility: visible; }
+    .step mark { background-size: 100% 100%; transition: none; }
+  }
+</style>
+</head>
+<body>
+<main class="sheet">
+  <div class="layout">
+    <header class="head">
+      <h1 class="product" data-lang="en">HÄPPY</h1>
+      <h1 class="product" data-lang="ko"><span class="model">HÄNGBOK</span><font-kku font="sebul" size="1em">행복 조립 설명서</font-kku></h1>
+      <p class="promise" data-lang="en">Assembly time: about 20 min. Allow a lifetime.</p>
+      <p class="promise" data-lang="ko">조립 시간: 약 20분. 넉넉히 잡으면 평생.</p>
+    </header>
+
+    <section class="parts" aria-label="Parts">
+      <p class="parts-title" data-lang="en">Parts</p>
+      <p class="parts-title" data-lang="ko">부품</p>
+      <!-- English parts: four shapes make every letter of the word. -->
+      <div class="part" data-lang="en" data-type="a"><span class="tag">a</span><span class="icon"><svg viewBox="0 0 40 40"><line x1="20" y1="4" x2="20" y2="36"/></svg></span><span class="count">Upright <b>×5</b></span></div>
+      <div class="part" data-lang="en" data-type="b"><span class="tag">b</span><span class="icon"><svg viewBox="0 0 40 40"><line x1="6" y1="20" x2="34" y2="20"/></svg></span><span class="count">Crossbar <b>×2</b></span></div>
+      <div class="part" data-lang="en" data-type="c"><span class="tag">c</span><span class="icon"><svg viewBox="0 0 40 40"><line x1="10" y1="36" x2="30" y2="4"/></svg></span><span class="count">Slant <b>×4</b></span></div>
+      <div class="part" data-lang="en" data-type="d"><span class="tag">d</span><span class="icon"><svg viewBox="0 0 40 40"><path d="M8 6 H18 A14 14 0 0 1 18 34 H8"/></svg></span><span class="count">Bowl <b>×2</b></span></div>
+      <div class="part" data-lang="en" data-type="e"><span class="tag">e</span><span class="icon"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="4" style="fill:var(--ink);stroke:none"/></svg></span><span class="count">Dot <b>×2</b></span></div>
+      <!-- Korean parts: the six jamo of 행복. -->
+      <div class="part" data-lang="ko" data-type="a"><span class="tag">a</span><span class="icon"><font-kku font="malang" size="1.5em">ㅎ</font-kku></span><span class="count">초성 <b>×1</b></span></div>
+      <div class="part" data-lang="ko" data-type="b"><span class="tag">b</span><span class="icon"><font-kku font="malang" size="1.5em">ㅐ</font-kku></span><span class="count">중성 <b>×1</b></span></div>
+      <div class="part" data-lang="ko" data-type="c"><span class="tag">c</span><span class="icon"><font-kku font="malang" size="1.5em">ㅇ</font-kku></span><span class="count">종성 <b>×1</b></span></div>
+      <div class="part" data-lang="ko" data-type="d"><span class="tag">d</span><span class="icon"><font-kku font="malang" size="1.5em">ㅂ</font-kku></span><span class="count">초성 <b>×1</b></span></div>
+      <div class="part" data-lang="ko" data-type="e"><span class="tag">e</span><span class="icon"><font-kku font="malang" size="1.5em">ㅗ</font-kku></span><span class="count">중성 <b>×1</b></span></div>
+      <div class="part" data-lang="ko" data-type="f"><span class="tag">f</span><span class="icon"><font-kku font="malang" size="1.5em">ㄱ</font-kku></span><span class="count">종성 <b>×1</b></span></div>
+      <p class="aside" data-lang="en"><span class="ln">Screws: 0. We checked twice.</span> <span class="ln">Tools: none. A friend helps.</span></p>
+      <p class="aside" data-lang="ko"><span class="ln">나사: 0개. 두 번 확인했어요.</span> <span class="ln">공구: 필요 없음. 친구 1명 권장.</span></p>
+      <!-- One line on what to tap: the bag once it has dropped, the drawing once the spare is in. -->
+      <p class="hint" id="assemble-hint"><span data-lang="en">Tap the bag to fit the spare part.</span><span data-lang="ko">봉투를 눌러 남은 부품을 끼워 보세요.</span></p>
+    </section>
+
+    <section class="diagram" aria-label="Exploded view">
+      <div class="word">
+        <svg class="letters" data-lang="en" viewBox="-6 -26 592 206" role="img" aria-label="HAPPY">
+          <!-- H -->
+          <line class="p" data-type="a" x1="26" y1="32" x2="26" y2="148" data-x="-26" data-y="-24" data-r="-6"/>
+          <line class="p" data-type="a" x1="102" y1="32" x2="102" y2="148" data-x="10" data-y="-34" data-r="5"/>
+          <line class="p" data-type="b" x1="26" y1="90" x2="102" y2="90" data-x="-8" data-y="54" data-r="-4"/>
+          <!-- A -->
+          <line class="p" data-type="c" x1="140" y1="148" x2="187" y2="32" data-x="-18" data-y="-30" data-r="-10"/>
+          <line class="p" data-type="c" x1="187" y1="32" x2="234" y2="148" data-x="16" data-y="-38" data-r="9"/>
+          <line class="p" data-type="b" x1="160" y1="110" x2="214" y2="110" data-x="4" data-y="52" data-r="6"/>
+          <!-- P -->
+          <line class="p" data-type="a" x1="274" y1="32" x2="274" y2="148" data-x="-14" data-y="30" data-r="-4"/>
+          <path class="p" data-type="d" d="M274 32 H302 A30 30 0 0 1 302 92 H274" data-x="18" data-y="-40" data-r="8"/>
+          <!-- P -->
+          <line class="p" data-type="a" x1="372" y1="32" x2="372" y2="148" data-x="-8" data-y="36" data-r="5"/>
+          <path class="p" data-type="d" d="M372 32 H400 A30 30 0 0 1 400 92 H372" data-x="26" data-y="-34" data-r="-7"/>
+          <!-- Y -->
+          <line class="p" data-type="c" x1="466" y1="32" x2="510" y2="92" data-x="-20" data-y="-34" data-r="-9"/>
+          <line class="p" data-type="c" x1="554" y1="32" x2="510" y2="92" data-x="22" data-y="-30" data-r="10"/>
+          <line class="p" data-type="a" x1="510" y1="96" x2="510" y2="148" data-x="12" data-y="40" data-r="6"/>
+          <!-- Two dots, last out of the box: they go on the A. -->
+          <circle class="p dot" data-type="e" cx="170" cy="-6" r="11" data-x="-60" data-y="40" data-r="0"/>
+          <circle class="p dot" data-type="e" cx="204" cy="-6" r="11" data-x="70" data-y="56" data-r="0"/>
+          <!-- The spare from the bag, once someone fits it: two dots and a bowl on its side, as
+               tall as the letters, eyes well apart over a wider mouth and the whole face tipped
+               10° like a sticker, so it reads as a face and not as a ü. The drawing widens to make
+               room for it (viewBox to FITTED_BOX); the hit box is the bag's drawing box too. -->
+          <g class="smile"><rect class="hit" x="580" y="36" width="112" height="128"/><g transform="rotate(-10 636 100)"><circle class="dot" cx="610" cy="54" r="11"/><circle class="dot" cx="662" cy="54" r="11"/><path class="bowl" d="M596 100 V108 A40 40 0 0 0 676 108 V100"/></g></g>
+        </svg>
+        <span class="hbrow" data-lang="ko"><font-kku class="hb" font="malang" size="1em">행복</font-kku><font-kku class="kk" font="malang" size="1em" aria-hidden="true">ㅋㅋ</font-kku></span>
+        <svg class="overlay" aria-hidden="true"></svg>
+        <div class="spare">
+          <button class="bag" type="button">
+            <!-- English: two dots and a bowl, loose, which happen to be a smile. The very parts that
+                 get fitted after the Y (same units, same strokes, same box as g.smile's hit box). -->
+            <svg class="in" data-lang="en" viewBox="580 36 112 128" aria-hidden="true"><g transform="rotate(-10 636 100)"><circle class="dot" cx="610" cy="54" r="11"/><circle class="dot" cx="662" cy="54" r="11"/><path class="bowl" d="M596 100 V108 A40 40 0 0 0 676 108 V100"/></g></svg>
+            <font-kku class="in" data-lang="ko" font="malang" size="46cqi" aria-hidden="true">ㅋㅋ</font-kku>
+          </button>
+          <p class="spare-note" data-lang="en"><span class="tag">f</span><span><span class="l1">Left over: 1 smile.</span><span class="l2">Some assembly required.</span></span></p>
+          <p class="spare-note" data-lang="ko"><span class="tag">g</span><span><span class="l1">남은 부품: ㅋ ×2</span><span class="l2">남는 건 ㅋㅋ뿐</span></span></p>
+        </div>
+      </div>
+      <div class="captions">
+        <p class="cap cap-aside" data-lang="en">Screws: 0. We checked twice. Tools: none. A friend helps.</p>
+        <p class="cap cap-aside" data-lang="ko">나사: 0개. 두 번 확인했어요. 공구: 필요 없음. 친구 1명 권장.</p>
+        <p class="cap" data-lang="en"><span class="tag">a</span><span>Upright: stand by someone.</span></p>
+        <p class="cap" data-lang="en"><span class="tag">b</span><span>Crossbar: without it, H is just two I's.</span></p>
+        <p class="cap" data-lang="en"><span class="tag">c</span><span>Slant: lean on each other. See&nbsp;A.</span></p>
+        <p class="cap" data-lang="en"><span class="tag">d</span><span>Bowl: room for a big smile.</span></p>
+        <p class="cap" data-lang="en"><span class="tag">e</span><span>Dots: make it sound Swedish.</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">a</span><span>ㅎ: “하하”의 ㅎ</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">b</span><span>ㅐ: “애썼어”의 ㅐ</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">c</span><span>ㅇ: “응, 여기 있어”의 ㅇ</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">d</span><span>ㅂ: “밥은 먹었어?”의 ㅂ</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">e</span><span>ㅗ: “오, 왔어?”의 ㅗ</span></p>
+        <p class="cap" data-lang="ko"><span class="tag">f</span><span>ㄱ: “괜찮아”의 ㄱ</span></p>
+      </div>
+    </section>
+
+    <ol class="steps" aria-label="Steps">
+      <li class="step"><b>1</b><span data-lang="en">Check the parts</span><span data-lang="ko">부품 확인</span></li>
+      <li class="step"><b>2</b><span data-lang="en">Put them together</span><span data-lang="ko">조립하기</span></li>
+      <li class="step"><b>3</b><span data-lang="en">Enjoy. <mark>Nothing left over.</mark></span><span data-lang="ko">즐기기. <mark>남는 부품 없음.</mark></span></li>
+    </ol>
+  </div>
+</main>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const word = document.querySelector('.word');
+  const overlay = document.querySelector('.overlay');
+  const steps = [...document.querySelectorAll('.step')];
+  const caps = [...document.querySelectorAll('.cap')];
+  const spare = document.querySelector('.spare');
+  // Parts list rows by part letter, with how many of each there are.
+  const stock = {};
+  document.querySelectorAll('.part[data-type]').forEach((row) => {
+    const b = row.querySelector('.count b');
+    stock[row.dataset.type] = { row, b, n: parseInt(b.textContent.replace('×', ''), 10), left: 0 };
+  });
+  const setLeft = (type, n) => {
+    const s = stock[type];
+    if (!s) return;
+    s.left = n;
+    s.b.textContent = '×' + n;
+    s.row.classList.toggle('used', n === 0);
+  };
+  const restock = () => Object.keys(stock).forEach((t) => setLeft(t, stock[t].n));
+  const NS = 'http://www.w3.org/2000/svg';
+  const host = document.querySelector('.hb');
+
+  /* ---- Parts: where each one sits when assembled, and how far it flies out ----
+     English parts are SVG strokes (offsets in viewBox units). Korean parts are the jamo nodes
+     font-kku draws for 행복, each with an offset in em; where its ink actually sits is
+     measured from the rendered node (see inkBox), so the guides follow any word, font or size. */
+  const KO_PARTS = [
+    { glyph: 0, role: 'choseong', move: [-.3, -.34], turn: -8, tag: 'a' },
+    { glyph: 0, role: 'jungseong', move: [.34, -.16], turn: 7, tag: 'b' },
+    { glyph: 0, role: 'jongseong', move: [-.06, .42], turn: -5, tag: 'c' },
+    { glyph: 1, role: 'choseong', move: [.16, -.42], turn: 6, tag: 'd' }, // clear of ㅐ even when held under the rule
+    { glyph: 1, role: 'jungseong', move: [.42, .06], turn: -6, tag: 'e' },
+    { glyph: 1, role: 'jongseong', move: [.12, .44], turn: 5, tag: 'f' },
+  ];
+
+  /* A font-kku jamo node is a whole em box of one conjoining jamo, placed with a CSS
+     transform and sometimes clipped. Its ink is found from the font's own text metrics:
+     the glyph's ink box inside the untransformed node, cut by the clip-path, then carried
+     through the node's transform (see inkBox). */
+  const meter = document.createElement('canvas').getContext('2d');
+  const centre = (r) => [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2];
+  // The assembled ink box [left, top, right, bottom] in viewport pixels.
+  function inkBox(node) {
+    const saved = [node.style.transform, node.style.translate, node.style.rotate];
+    node.style.transform = 'none'; node.style.translate = 'none'; node.style.rotate = 'none';
+    const box = node.getBoundingClientRect();
+    const w = node.offsetWidth, h = node.offsetHeight;
+    [node.style.transform, node.style.translate, node.style.rotate] = saved;
+    const cs = getComputedStyle(node);
+    meter.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const m = meter.measureText(node.textContent);
+    const fa = m.fontBoundingBoxAscent, fd = m.fontBoundingBoxDescent;
+    const lh = cs.lineHeight === 'normal' ? fa + fd : parseFloat(cs.lineHeight);
+    const padL = parseFloat(cs.paddingLeft) || 0, padT = parseFloat(cs.paddingTop) || 0;
+    const base = padT + (lh - (fa + fd)) / 2 + fa;
+    let x0 = padL - m.actualBoundingBoxLeft, x1 = padL + m.actualBoundingBoxRight;
+    let y0 = base - m.actualBoundingBoxAscent, y1 = base + m.actualBoundingBoxDescent;
+    const clip = /inset\(([^)]*)\)/.exec(cs.clipPath);
+    if (clip) {
+      const v = clip[1].split(/\s+round\s+/)[0].trim().split(/\s+/);
+      const [t, r, b, l] = [v[0], v[1] ?? v[0], v[2] ?? v[0], v[3] ?? v[1] ?? v[0]]
+        .map((x, i) => (x.endsWith('%') ? parseFloat(x) / 100 * (i % 2 ? w : h) : parseFloat(x) || 0));
+      x0 = Math.max(x0, l); x1 = Math.min(x1, w - r); y0 = Math.max(y0, t); y1 = Math.min(y1, h - b);
+    }
+    const [ox, oy] = cs.transformOrigin.split(' ').map(parseFloat);
+    const matrix = cs.transform === 'none' ? new DOMMatrix() : new DOMMatrix(cs.transform);
+    const pts = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => matrix.transformPoint(new DOMPoint(x - ox, y - oy)));
+    const xs = pts.map((p) => box.left + ox + p.x), ys = pts.map((p) => box.top + oy + p.y);
+    return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+  }
+
+  let parts = [];
+  let unit = 1; // English: pixels per viewBox unit of the drawn word
+  let origin = [0, 0]; // English: where the viewBox's 0,0 lands, in viewport pixels
+  function collect() {
+    if (!ko) {
+      const svg = document.querySelector('.letters');
+      const box = svg.getBoundingClientRect();
+      const vb = svg.viewBox.baseVal;
+      // On a short stage the drawing is held to the height and letterboxed in a wider box.
+      unit = Math.min(box.width / vb.width, box.height / vb.height);
+      const width = unit * vb.width;
+      // How far the parts fly, in pixels per viewBox unit. A narrow screen has no room to fling
+      // them far sideways, but a phone stage is tall: there they fly further up and down, into
+      // the empty space above and below the word (up to twice as far). On a short phone stage
+      // the word is drawn smaller and low (see the CSS) to leave room around it, and the parts
+      // fly as far as on a desktop. fit() keeps them all inside.
+      const cs = getComputedStyle(word), strip = parseFloat(cs.paddingBottom);
+      const kx = unit * (width < 560 && !strip ? 1 : 1.4);
+      let ky = kx;
+      if (width < 560 && !strip) {
+        const free = (word.getBoundingClientRect().height - parseFloat(cs.paddingTop) - unit * vb.height) / 2;
+        ky = Math.max(kx, Math.min(unit * 2, (free + 30 * unit - 28) / 40));
+      }
+      // Where the viewBox lands on screen (the SVG keeps its aspect ratio and centres the word).
+      const ox = box.left + (box.width - width) / 2 - vb.x * unit, oy = box.top + (box.height - unit * vb.height) / 2 - vb.y * unit;
+      origin = [ox, oy];
+      parts = [...svg.querySelectorAll('.p')].map((el) => ({
+        el, type: el.dataset.type, tag: el.dataset.type,
+        dx: +el.dataset.x * kx, dy: +el.dataset.y * ky, turn: +el.dataset.r,
+        // a straight stroke's two ends, in viewport pixels, for keeping callouts off it
+        ends: el.tagName === 'line' ? [['x1', 'y1'], ['x2', 'y2']].map(([a, b]) => [ox + el[a].baseVal.value * unit, oy + el[b].baseVal.value * unit]) : null,
+      }));
+      fit();
+      return parts.length > 0;
+    }
+    const glyphs = [...host.querySelectorAll('[part="glyph"]')];
+    if (glyphs.length < 2) return false;
+    const em = parseFloat(getComputedStyle(host).fontSize);
+    parts = KO_PARTS.map((p) => ({
+      ...p,
+      el: glyphs[p.glyph].querySelector(`[part~="${p.role}"]`),
+      dx: p.move[0] * em, dy: p.move[1] * em,
+    })).filter((p) => p.el);
+    if (parts.length !== KO_PARTS.length) return false;
+    fit();
+    return true;
+  }
+
+  // Assembled box of a part [left, top, right, bottom] in viewport pixels: the ink of a jamo,
+  // or an English stroke with its round ends (the SVG box leaves out the 24-unit stroke).
+  function homeBox(p) {
+    if (ko) return inkBox(p.el);
+    const prev = p.el.style.transform;
+    p.el.style.transform = 'none';
+    const q = p.el.getBoundingClientRect();
+    p.el.style.transform = prev;
+    const pad = p.el.classList.contains('dot') ? 0 : 12 * unit;
+    return [q.left - pad, q.top - pad, q.right + pad, q.bottom + pad];
+  }
+  // Assembled centre of a part, in overlay pixels.
+  function home(p) {
+    const base = overlay.getBoundingClientRect();
+    const [x, y] = centre(homeBox(p));
+    return [x - base.left, y - base.top];
+  }
+
+  /* Every exploded part stays inside the drawing's box. On a short stage there is little room
+     above the word, and a part flung up would cross the header rule into the subtitle. Each
+     part's move is cut back just enough, and where it ends up is kept (in overlay pixels) for
+     the guides and callouts. */
+  function fit() {
+    const ov = overlay.getBoundingClientRect(), m = 4;
+    const clamp = (v, lo, hi) => (lo > hi ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, v)));
+    const put = (p, dx, dy) => {
+      const [cx, cy] = centre(p.r);
+      // the box turned by the part's tilt
+      const a = Math.abs(p.turn) * Math.PI / 180, w = (p.r[2] - p.r[0]) / 2, h = (p.r[3] - p.r[1]) / 2;
+      const hw = w * Math.cos(a) + h * Math.sin(a), hh = w * Math.sin(a) + h * Math.cos(a);
+      const ex = clamp(cx + dx, ov.left + m + hw, ov.right - m - hw);
+      const ey = clamp(cy + dy, ov.top + m + hh, ov.bottom - m - hh);
+      p.dx = ex - cx; p.dy = ey - cy;
+      p.home = [cx - ov.left, cy - ov.top];
+      p.box = [ex - hw - ov.left, ey - hh - ov.top, ex + hw - ov.left, ey + hh - ov.top];
+      if (p.ends) {
+        // the stroke's centre line once tilted and moved, plus half the stroke
+        const t = p.turn * Math.PI / 180, mx = (p.ends[0][0] + p.ends[1][0]) / 2, my = (p.ends[0][1] + p.ends[1][1]) / 2;
+        p.seg = p.ends.map(([x, y]) => [mx + (x - mx) * Math.cos(t) - (y - my) * Math.sin(t) + p.dx - ov.left,
+          my + (x - mx) * Math.sin(t) + (y - my) * Math.cos(t) + p.dy - ov.top]);
+        p.half = 12 * unit;
+      }
+    };
+    parts.forEach((p) => { p.r = homeBox(p); put(p, p.dx, p.dy); });
+    // The two loose dots must not land on a stroke (black on black, they would vanish): if one
+    // does, it goes a little shorter or further, or a little to the side, until it is clear.
+    parts.filter((p) => p.el.classList.contains('dot')).forEach((p) => {
+      const [dx, dy] = [p.dx, p.dy], r = (p.box[2] - p.box[0]) / 2 + 3;
+      const clear = () => parts.every((q) => q === p || depth(q, (p.box[0] + p.box[2]) / 2, (p.box[1] + p.box[3]) / 2, r) === 0);
+      if (clear()) return;
+      for (const [f, side] of [[.8, 0], [1.2, 0], [1, 1], [1, -1], [.6, 0], [1.4, 0], [.8, 1], [.8, -1], [1.2, 1], [1.2, -1]]) {
+        put(p, dx * f + side * r * 1.6, dy * f);
+        if (clear()) return;
+      }
+      put(p, dx, dy);
+    });
+  }
+  // How far a circle (x, y, r) reaches into a part (0 if it does not touch it).
+  function depth(p, x, y, r) {
+    if (p.seg) {
+      const [[ax, ay], [bx, by]] = p.seg, vx = bx - ax, vy = by - ay;
+      const s = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy || 1)));
+      return Math.max(0, r + p.half - Math.hypot(x - ax - vx * s, y - ay - vy * s));
+    }
+    const [x0, y0, x1, y1] = p.box;
+    return Math.max(0, r - Math.hypot(x - Math.max(x0, Math.min(x, x1)), y - Math.max(y0, Math.min(y, y1))));
+  }
+  const touches = (p, x, y, r) => depth(p, x, y, r) > 0;
+  // Is there ink of the exploded part at (x, y), in overlay pixels? English asks the SVG itself
+  // (the point carried back through the part's move and tilt); a jamo has its ink box.
+  function inkAt(p, x, y) {
+    if (ko) { const [x0, y0, x1, y1] = p.box; return x >= x0 && x <= x1 && y >= y0 && y <= y1; }
+    const ov = overlay.getBoundingClientRect();
+    const hx = p.home[0] + ov.left, hy = p.home[1] + ov.top;
+    const qx = x + ov.left - p.dx - hx, qy = y + ov.top - p.dy - hy, t = -p.turn * Math.PI / 180;
+    const pt = new DOMPoint((hx + qx * Math.cos(t) - qy * Math.sin(t) - origin[0]) / unit, (hy + qx * Math.sin(t) + qy * Math.cos(t) - origin[1]) / unit);
+    return p.el.classList.contains('dot') ? p.el.isPointInFill(pt) : p.el.isPointInStroke(pt);
+  }
+  /* A callout goes just clear of its part, on the side the part flew to if there is room
+     there, otherwise turned a little at a time (or a little further out); never on another
+     callout, and on another part only if there is no clear spot at all (then on the least of one). */
+  function calloutSpot(p, W, H, taken) {
+    const R = 11;
+    const [x0, y0, x1, y1] = p.box, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    const base = Math.atan2(p.dy, p.dx);
+    let best = null, bestCost = Infinity;
+    for (const turn of [0, 30, -30, 60, -60, 90, -90, 120, -120, 150, -150, 180]) {
+      const a = base + turn * Math.PI / 180, ux = Math.cos(a), uy = Math.sin(a);
+      // out along (ux, uy) until the circle is clear of the part's box on one axis; strokes are
+      // thinner than their box, so step back in while the circle stays clear of the stroke
+      const tx = Math.abs(ux) > 1e-3 ? ((ux > 0 ? x1 - cx : cx - x0) + R + 3) / Math.abs(ux) : Infinity;
+      const ty = Math.abs(uy) > 1e-3 ? ((uy > 0 ? y1 - cy : cy - y0) + R + 3) / Math.abs(uy) : Infinity;
+      let t0 = Math.min(tx, ty);
+      while (t0 > R + 6 && !touches(p, cx + ux * (t0 - 4), cy + uy * (t0 - 4), R + 3)) t0 -= 4;
+      for (const more of [8, 18, 30]) { // a short leader shows, as in a real exploded view
+        const t = t0 + more, x = cx + ux * t, y = cy + uy * t;
+        if (x < R + 2 || x > W - R - 2 || y < R + 2 || y > H - R - 2) continue;
+        if (taken.some(([u, v]) => Math.hypot(x - u, y - v) < 2 * R + 4)) continue;
+        // how deep it would sit on other parts (0 when clear), and its leader too (a leader
+        // across another part makes the letter seem to name that one); a little extra for far
+        const ex = (p.box[0] + p.box[2]) / 2, ey = (p.box[1] + p.box[3]) / 2;
+        const cost = parts.reduce((sum, q) => sum + (q === p ? 0 : depth(q, x, y, R + 2)
+          + [.3, .55, .8].reduce((d, k) => d + depth(q, ex + (x - ex) * k, ey + (y - ey) * k, 1) * .5, 0)), 0)
+          + (more - 8) * .02 + Math.abs(turn) * .002;
+        if (cost < bestCost) { best = [x, y]; bestCost = cost; }
+      }
+      if (bestCost < .5) break;
+    }
+    return best || [Math.min(W - R - 2, Math.max(R + 2, cx)), Math.min(H - R - 2, Math.max(R + 2, y0 - R - 3))];
+  }
+
+  /* A CSS transform on an SVG shape works in the drawing's own units (1px there is one viewBox
+     unit), so an English part's move, kept in screen pixels like everything else here, is
+     divided by the drawn scale. (Without that a phone, drawing at about half scale, moved its
+     parts only about half as far as it meant to, and the guides overshot them.) */
+  const move = (p) => (ko ? `${p.dx}px ${p.dy}px` : `translate(${p.dx / unit}px, ${p.dy / unit}px) rotate(${p.turn}deg)`);
+  function place(p, t) {
+    // t = 1 exploded, 0 assembled
+    if (!ko) p.el.style.transform = t ? move(p) : 'none';
+    else { p.el.style.translate = t ? move(p) : ''; p.el.style.rotate = t ? `${p.turn}deg` : ''; }
+  }
+  const frames = (p) => (ko
+    ? [{ translate: move(p), rotate: `${p.turn}deg` }, { translate: '0px 0px', rotate: '0deg' }]
+    : [{ transform: move(p) }, { transform: 'translate(0px, 0px) rotate(0deg)' }]);
+
+  /* ---- Overlay: dashed alignment guides and lettered callouts ---- */
+  const el = (name, attrs, parent) => {
+    const n = document.createElementNS(NS, name);
+    Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, v));
+    (parent || overlay).append(n);
+    return n;
+  };
+  function drawGuides() {
+    overlay.replaceChildren();
+    const seen = new Set();
+    const groups = [];
+    const box = overlay.getBoundingClientRect();
+    const taken = [];
+    parts.forEach((p) => {
+      const [hx, hy] = p.home;
+      const ex = hx + p.dx, ey = hy + p.dy;
+      const g = el('g', { class: 'guides' });
+      el('line', { class: 'guide', x1: hx, y1: hy, x2: ex, y2: ey }, g);
+      // One callout per kind of part (every part in Korean).
+      if (!seen.has(p.tag)) {
+        seen.add(p.tag);
+        const [cx, cy] = calloutSpot(p, box.width, box.height, taken);
+        taken.push([cx, cy]);
+        // The leader runs from the callout until it meets the part's ink.
+        const len = Math.hypot(cx - ex, cy - ey) || 1, ux = (cx - ex) / len, uy = (cy - ey) / len;
+        let t = len - 11;
+        while (t > 0 && !inkAt(p, ex + ux * t, ey + uy * t)) t -= 1.5;
+        t = Math.max(0, t - 2);
+        el('line', { class: 'lead', x1: ex + ux * t, y1: ey + uy * t, x2: cx - ux * 11, y2: cy - uy * 11 }, g);
+        const c = el('g', { class: 'callout' }, g);
+        el('circle', { cx, cy, r: 11 }, c);
+        el('text', { x: cx, y: cy }, c).textContent = p.tag;
+      }
+      groups.push(g);
+    });
+    return groups;
+  }
+
+  function ticks(p) {
+    if (TTY.reduce) return;
+    const [hx, hy] = home(p);
+    const g = el('g', {});
+    [0, 1, 2].forEach((i) => {
+      const a = (-90 + (i - 1) * 40) * Math.PI / 180 + (p.dy > 0 ? Math.PI : 0);
+      el('line', { class: 'tick', x1: hx + Math.cos(a) * 14, y1: hy + Math.sin(a) * 14, x2: hx + Math.cos(a) * 24, y2: hy + Math.sin(a) * 24 }, g);
+    });
+    g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 420, easing: 'ease-out' }).finished.then(() => g.remove());
+  }
+
+  /* ---- Sizing the Korean word to its box ---- */
+  function sizeWord() {
+    if (!ko) return;
+    const r = word.getBoundingClientRect();
+    const cs = getComputedStyle(word);
+    const strip = parseFloat(cs.paddingBottom); // the bag's own strip, on a short stage only
+    const h = r.height - parseFloat(cs.paddingTop) - strip;
+    // A short stage keeps the word a little smaller, so the jamo flung up by about .4 em still
+    // have room under the header rule (fit() stops them there anyway); the ticker's strip on top
+    // (padding-top) is left out of h but is room for them too.
+    host.style.fontSize = (strip ? Math.max(36, Math.min(h * .6, r.width * .34)) : Math.max(60, Math.min(h * .62, r.width * .34))) + 'px';
+  }
+
+  /* ---- The spare part ----
+     After the bag drops, tapping it fits what is inside onto the end of the word: the smile after
+     HÄPPY (the drawing widens to make room), ㅋㅋ after 행복 (the word slides left). The note then
+     says nothing is left over, really. A rebuild (tap anywhere else on the drawing) undoes it. */
+  const bag = spare.querySelector('.bag');
+  const bagIn = bag.querySelector('.in');
+  const noteEl = spare.querySelector('.spare-note');
+  const lines = [spare.querySelector('.l1'), spare.querySelector('.l2')];
+  const noteText = lines[0].parentElement;
+  const showLine = (i) => (i ? lines[1] : noteEl).classList.add('on');
+  const NOTE = {
+    before: lines.map((l) => l.textContent),
+    after: TTY.t({ en: ['Left over: none.', 'Really, this time.'], ko: ['남은 부품: 0개', '이번엔 진짜.'] }),
+  };
+  const HINT = {
+    bag: TTY.t({ en: 'Tap the bag to fit the spare part.', ko: '봉투를 눌러 남은 부품을 끼워 보세요.' }),
+    again: TTY.t({ en: 'Tap the drawing to build it again.', ko: '그림을 누르면 처음부터 다시 조립해요.' }),
+  };
+  const letters = document.querySelector('.letters');
+  const smile = letters && letters.querySelector('.smile');
+  const BOX = letters && letters.getAttribute('viewBox');
+  const FITTED_BOX = '-6 -26 698 206'; // room for the smile after the Y
+  const row = document.querySelector('.hbrow');
+  const kk = document.querySelector('.kk');
+  let landed = false; // the bag is down and can be tapped
+  let fitted = false;
+  let widen = 0;
+  const syncHint = () => { hint.textContent = landed && !fitted ? HINT.bag : HINT.again; };
+
+  // ㅋㅋ after 행복: as big as it can be, up to half the word's size, inside the drawing's box.
+  function sizeKK() {
+    if (!ko) return;
+    const hs = parseFloat(host.style.fontSize) || parseFloat(getComputedStyle(host).fontSize);
+    kk.style.fontSize = '100px';
+    const perPx = kk.getBoundingClientRect().width / 100;
+    const room = word.getBoundingClientRect().width - host.getBoundingClientRect().width - 16;
+    kk.style.fontSize = Math.max(12, Math.min(hs * .5, room / (perPx || 1))) + 'px';
+  }
+
+  function unfit() {
+    fitted = false;
+    landed = false;
+    cancelAnimationFrame(widen);
+    bag.classList.remove('open', 'empty');
+    bag.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+    lines.forEach((l, i) => { l.textContent = NOTE.before[i]; });
+    noteText.style.minWidth = '';
+    noteEl.classList.remove('on');
+    lines[1].classList.remove('on');
+    if (!ko) { letters.setAttribute('viewBox', BOX); letters.classList.remove('fitted'); smile.style.visibility = ''; }
+    else { row.getAnimations().forEach((a) => a.cancel()); row.classList.remove('fitted'); kk.style.visibility = ''; }
+  }
+
+  /* The note once the part is in is shorter ("Really, this time."), and the bag sits at the right:
+     left to itself the note's box would shrink to the right, and the spot the visitor just tapped
+     (say "Some" of "Some assembly required.") would fall through to the drawing and rebuild it,
+     erasing the part they fitted. So the box keeps the width of the first note, and the new lines
+     start where the old ones did. Measured with the first note's lines, again on every resize. */
+  function keepNoteWidth() {
+    noteText.style.minWidth = '';
+    lines.forEach((l, i) => { l.textContent = NOTE.before[i]; });
+    noteText.style.minWidth = noteText.getBoundingClientRect().width + 'px';
+    lines.forEach((l, i) => { l.textContent = NOTE.after[i]; });
+  }
+
+  function fitSpare() {
+    if (!landed || fitted) return;
+    fitted = true; // (the home page keeps the page up: _kit.js asks it to on every tap and key)
+    const from = bagIn.getBoundingClientRect();
+    let target;
+    if (!ko) {
+      // Measure where the smile will be once the drawing has widened, then widen it gradually.
+      letters.setAttribute('viewBox', FITTED_BOX);
+      letters.classList.add('fitted');
+      smile.style.visibility = 'hidden';
+      target = smile.querySelector('.hit').getBoundingClientRect(); // the bag's drawing box, scaled
+      letters.setAttribute('viewBox', BOX);
+      const w0 = 592, w1 = 698, t0 = performance.now();
+      const step = (now) => {
+        const k = Math.min(1, (now - t0) / 450), e = 1 - (1 - k) ** 3;
+        letters.setAttribute('viewBox', `-6 -26 ${w0 + (w1 - w0) * e} 206`);
+        if (k < 1) widen = requestAnimationFrame(step);
+      };
+      if (TTY.reduce) letters.setAttribute('viewBox', FITTED_BOX); else widen = requestAnimationFrame(step);
+    } else {
+      sizeKK();
+      const before = host.getBoundingClientRect();
+      row.classList.add('fitted');
+      kk.style.visibility = 'hidden';
+      const after = host.getBoundingClientRect();
+      target = kk.getBoundingClientRect();
+      if (!TTY.reduce) row.animate([{ translate: `${before.left - after.left}px 0` }, { translate: '0 0' }], { duration: 450, easing: 'cubic-bezier(.3, 0, .2, 1)' });
+    }
+    const land = () => {
+      bag.classList.add('empty');
+      (ko ? kk : smile).style.visibility = '';
+      keepNoteWidth();
+      showLine(0); showLine(1);
+      syncHint();
+    };
+    bag.classList.add('open');
+    if (TTY.reduce) return land();
+    // What was in the bag flies out to its place on the word.
+    const s = Math.min(target.width / from.width, target.height / from.height);
+    const dx = target.left + target.width / 2 - (from.left + from.width / 2);
+    const dy = target.top + target.height / 2 - (from.top + from.height / 2);
+    bagIn.animate([
+      { transform: 'none' },
+      { transform: `translate(${dx * .5}px, ${dy * .5 - 40}px) scale(${(1 + s) / 2}) rotate(-12deg)`, offset: .5 },
+      { transform: `translate(${dx}px, ${dy}px) scale(${s})` },
+    ], { duration: 650, delay: 180, easing: 'cubic-bezier(.4, 0, .3, 1)', fill: 'backwards' }).finished.then(land, () => {});
+  }
+  // The bag and its note: a tap anywhere on them fits the part, and never reaches the drawing's
+  // rebuild (the bag's own Enter and Space are clicks too, and come up through here).
+  spare.addEventListener('click', (e) => { e.stopPropagation(); fitSpare(); });
+  // The fitted part is the visitor's: tapping it only nudges it, it never starts a rebuild.
+  [smile, kk].forEach((n) => n && n.addEventListener('click', (e) => {
+    if (!fitted) return;
+    e.stopPropagation();
+    if (!TTY.reduce) n.animate([{ translate: '0 0' }, { translate: '0 -6%' }, { translate: '0 0' }], { duration: 300, easing: 'ease-out' });
+  }));
+
+  /* ---- The sequence ---- */
+  let timers = [];
+  let running = null;
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  const setStep = (n) => steps.forEach((s, i) => { s.classList.toggle('on', i === n); s.classList.toggle('done', i < n); });
+  const marks = [...document.querySelectorAll('.step mark')];
+  // Captions by part letter. Elsewhere each shows as its part clicks home (.out); on a short
+  // stage the ticker shows them after the notes (the .now ones, see the CSS), a few at a time,
+  // each for as long as it takes to read (8 Korean characters or 3 English words a second).
+  // Korean: three pairs. English: five lines will not fit before 16 s, so only the three with
+  // a joke in them, one at a time. The last stays up.
+  const capOf = {};
+  const tagged = caps.filter((c) => !c.classList.contains('cap-aside'));
+  tagged.forEach((c) => { capOf[c.querySelector('.tag').textContent] = c; });
+  const asideCap = caps.find((c) => c.classList.contains('cap-aside'));
+  const TICKER = TTY.t({
+    en: { show: [['b'], ['c'], ['e']], ms: [2600, 2400] },
+    ko: { show: [['a', 'b'], ['c', 'd'], ['e', 'f']], ms: [2500, 3000] },
+  });
+  const ticker = TICKER.show.map((tags) => tags.map((t) => capOf[t]));
+  const showNow = (list) => caps.forEach((c) => c.classList.toggle('now', list.includes(c)));
+
+  // When things happen, in ms after play() starts.
+  const STEP2 = ko ? 1900 : 2500; // English waits for its two dots, out at about 2 s
+  const GAP = ko ? 110 : 80; // between parts sliding home (English has 15 of them)
+  const AFTER_DROP = { note: 650, comeback: 2000, ticker: 2500, hint: 3000 };
+
+  function play() {
+    timers.forEach(clearTimeout);
+    timers = [];
+    if (running) running.forEach((a) => a.cancel());
+    running = [];
+    unfit();
+    sizeWord();
+    if (!collect()) return setTimeout(play, 120);
+
+    spare.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+    spare.classList.toggle('on', TTY.reduce);
+    caps.forEach((c) => c.classList.toggle('out', TTY.reduce));
+    marks.forEach((m) => m.classList.toggle('on', TTY.reduce));
+    if (TTY.reduce) {
+      parts.forEach((p) => place(p, 0));
+      Object.keys(stock).forEach((t) => setLeft(t, 0));
+      overlay.replaceChildren();
+      setStep(2);
+      showNow(ticker[ticker.length - 1]);
+      showLine(0); showLine(1);
+      landed = true;
+      syncHint();
+      return;
+    }
+    showNow([]);
+    syncHint();
+    restock();
+
+    // 1. Lay out: the parts appear apart, the guides draw in, callouts pop.
+    setStep(0);
+    parts.forEach((p) => place(p, 1));
+    const groups = drawGuides();
+    parts.forEach((p, i) => {
+      if (!ko && !p.el.classList.contains('dot')) {
+        p.el.setAttribute('pathLength', '1');
+        running.push(p.el.animate([{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }],
+          { duration: 700, delay: i * 70, easing: 'cubic-bezier(.6, 0, .3, 1)', fill: 'backwards' }));
+      } else {
+        running.push(p.el.animate([{ opacity: 0, scale: '.6' }, { opacity: 1, scale: '1' }],
+          { duration: 420, delay: i * 110, easing: 'cubic-bezier(.3, 1.5, .5, 1)', fill: 'backwards' }));
+      }
+    });
+    groups.forEach((g, i) => running.push(g.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: 500 + i * 60, fill: 'backwards' })));
+
+    // 2. Put together: guides go, each part slides home with a little click, the parts list
+    //    counts it off, and the first part of each kind brings its caption.
+    later(() => {
+      setStep(1);
+      groups.forEach((g) => g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' }));
+      parts.forEach((p, i) => {
+        const a = p.el.animate(frames(p), { duration: 620, delay: 220 + i * GAP, easing: 'cubic-bezier(.5, 0, .25, 1.25)', fill: 'backwards' });
+        running.push(a);
+        later(() => place(p, 0), 220 + i * GAP);
+        later(() => {
+          ticks(p);
+          setLeft(p.tag, stock[p.tag].left - 1);
+          if (capOf[p.tag]) capOf[p.tag].classList.add('out');
+        }, 220 + i * GAP + 560);
+      });
+    }, STEP2);
+
+    // 3. Enjoy. "Nothing left over." gets its highlighter stroke, and nothing else moves.
+    const doneAt = STEP2 + 220 + parts.length * GAP + 700;
+    later(() => {
+      overlay.replaceChildren();
+      setStep(2);
+      marks.forEach((m) => m.classList.add('on'));
+    }, doneAt);
+    // (short stage: the parts-list notes, "Screws: 0. We checked twice.", at the top)
+    later(() => showNow([asideCap]), doneAt + 450);
+
+    // 4. Then a little bag drops in anyway. Its note comes a line at a time.
+    const drop = doneAt + 2000;
+    later(() => {
+      spare.classList.add('on');
+      bag.animate([
+        { transform: 'translateY(-120%) rotate(-14deg)', opacity: 0 },
+        { transform: 'translateY(6%) rotate(5deg)', opacity: 1, offset: .62 },
+        { transform: 'translateY(-3%) rotate(-2deg)', offset: .82 },
+        { transform: 'none' },
+      ], { duration: 700, easing: 'cubic-bezier(.5, 0, .5, 1)', fill: 'backwards' });
+    }, drop);
+    later(() => { landed = true; }, drop + 700);
+    later(() => showLine(0), drop + AFTER_DROP.note);
+    later(() => showLine(1), drop + AFTER_DROP.comeback);
+    let at = drop + AFTER_DROP.ticker;
+    ticker.forEach((list, k) => { later(() => showNow(list), at); at += TICKER.ms[k] || 0; });
+    // The hint says what to tap now (and stays).
+    later(() => { syncHint(); hint.classList.add('on'); }, drop + AFTER_DROP.hint);
+  }
+
+  // The drawing restarts the assembly: tap it, or focus it and press Enter or Space.
+  const hint = document.querySelector('.hint');
+  const diagram = document.querySelector('.diagram');
+  diagram.tabIndex = 0;
+  diagram.setAttribute('aria-label', TTY.t({ en: 'Exploded view', ko: '분해도' }));
+  diagram.setAttribute('aria-describedby', 'assemble-hint');
+  bag.setAttribute('aria-label', TTY.t({ en: 'Bag of spare parts', ko: '남은 부품 봉투' }));
+  if (TTY.reduce) hint.classList.add('on');
+  diagram.addEventListener('click', play);
+  diagram.addEventListener('keydown', (e) => {
+    if (e.target !== diagram || (e.key !== 'Enter' && e.key !== ' ')) return;
+    e.preventDefault();
+    if (!e.repeat) play();
+  });
+  let resized;
+  new ResizeObserver(() => {
+    clearTimeout(resized);
+    resized = setTimeout(() => {
+      sizeWord();
+      if (fitted) sizeKK();
+      if (fitted && bag.classList.contains('empty')) keepNoteWidth();
+      if (steps[0].classList.contains('on')) { collect(); parts.forEach((p) => place(p, 1)); drawGuides(); }
+    }, 150);
+  }).observe(word);
+
+  sizeWord();
+  TTY.onShow(() => {
+    // Wait until font-kku has drawn the Korean word before taking it apart.
+    const go = () => setTimeout(play, 250);
+    if (!ko || host.querySelector('[part="glyph"]')) go();
+    else host.addEventListener('font-kku:render', go, { once: true });
+  });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

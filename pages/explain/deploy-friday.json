@@ -1,0 +1,148 @@
+{
+  "id": "deploy-friday",
+  "title": {
+    "en": "Friday, 4:59 PM: Deploy",
+    "ko": "금요일 오후 4시 59분, 배포"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "\"금요일엔 배포하지 마라\"는 개발자들의 오래된 금기를, 퇴근 1분 전에 배포 버튼을 누르는 막내 개발자의 예능 한 편으로 보여 준다.",
+    "points": [
+      "칸막이 뒤로 숨는 선배 둘 → 막내는 태평하게 웃으며 마우스에 손을 올리는데, 그 앞의 커다란 초록 \"운영 배포\" 버튼을 본 선배들은 눈이 휘둥그레져 숨는다. 한 명은 바로 쏙, 한 명은 끝까지 버튼을 보며 천천히. 이유는 그다음 자막이 알려 준다: \"금요일 오후 4시 59분\". 퇴근 직전에 새 코드를 서비스에 내보냈다가 탈이 나면 누군가의 주말이 날아간다.",
+      "\"기어이 눌러 버렸다\", \"(동공지진)\", \"두근두근\", \"띠용?\" → 출연자의 속마음을 자막과 효과음 글자로 대신 말해 주는 한국 예능 편집 그대로다.",
+      "\"장애 0건\", \"(본인도 놀람)\", \"주말 사수 성공!\" → 금기를 어겼는데 아무 일도 없다. 본인이 제일 놀란다.",
+      "흑백 정지 화면 → 예능의 마지막 한 수. \"그때까지만 해도 그는 몰랐다…\" 위로 토요일 오전 3시 12분 당직 알림 \"[P1] 운영 장애 1건\"이 떨어진다. 멈춘 \"월요일에 만나요~\" 자막이 그대로 남아 있어 더 아프다.",
+      "\"원인: 금 오후 4:59 배포\" → 알림이 부르르 떨고 나서 한 줄을 덧붙인다. 장애 알림 시스템이 무표정하게 범행 시각을 찍어 준다. 첫 자막의 금요일 오후 4시 59분이 그대로 돌아온다."
+    ],
+    "terms": [
+      {
+        "term": "배포(deploy)",
+        "plain": "고친 코드를 실제 사용자가 쓰는 서비스(운영 환경, 영어로 production이라 줄여서 prod)에 내보내는 일."
+      },
+      {
+        "term": "장애·P1",
+        "plain": "장애는 서비스가 멈추거나 제대로 동작하지 않는 사고. P1은 우선순위 1(Priority 1)로, 보통 가장 급한 등급이다."
+      },
+      {
+        "term": "당직(on-call)",
+        "plain": "근무 시간이 아니어도 장애 알림이 오면 바로 대응하기로 정해 둔 담당자."
+      },
+      {
+        "term": "커밋 메시지",
+        "plain": "코드를 고칠 때마다 '무엇을 왜 고쳤는지' 남기는 한 줄 메모."
+      },
+      {
+        "term": "정지 화면",
+        "plain": "한 장면을 멈춘 채 화면에 붙잡아 두는 편집. 영화나 방송이 장면을 끝맺거나 강조할 때 쓴다."
+      }
+    ],
+    "links": [
+      {
+        "title": "Deploys: It’s Not Actually About Fridays - Charity Majors",
+        "url": "https://charity.wtf/p/deploys-its-not-actually-about-fridays",
+        "note": "'금요일 배포 금지'는 배포가 위험하다는 신호이고, 고칠 것은 요일이 아니라 배포 방식이라는 글(2019).",
+        "lang": "en"
+      },
+      {
+        "title": "Software Deployment, Speed, and Safety - Marc Brooker",
+        "url": "https://brooker.co.za/blog/2022/01/31/deployments/",
+        "note": "'금요일 문제'의 두 입장(사람들의 주말을 지키자, 금지는 나쁜 관행의 증상이다)이 둘 다 옳다고 정리한 글.",
+        "lang": "en"
+      },
+      {
+        "title": "Being On-Call - Google SRE 책",
+        "url": "https://sre.google/sre-book/being-on-call/",
+        "note": "당직이 실제로 어떻게 돌아가는지.",
+        "lang": "en"
+      },
+      {
+        "title": "Why Korean variety shows are so text-heavy - The Korea Herald",
+        "url": "https://www.koreaherald.com/article/10410946",
+        "note": "한국 예능 자막이 받아쓰기가 아니라 반응하고 농담하고 대신 느껴 주는 '또 하나의 내레이터'라는 기사.",
+        "lang": "en"
+      },
+      {
+        "title": "Freeze-frame shot - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Freeze-frame_shot",
+        "note": "정지 화면 기법.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "첫 장면 모니터의 커밋 메시지가 \"fix: 간단한 수정, 별일 없을 듯\"이다. '별일 없을 듯'이라고 적은 수정이 사고를 내는 것은 개발자들의 단골 농담이고, 정지 화면의 복선이다.",
+      "선배들은 장애 0건에도 나오지 않는다. \"주말 사수 성공!\" 장면에서 눈만 칸막이 위로 다시 올라와 지켜보고, 흑백 정지 화면에도 그 눈이 남아 있다. 처음부터 안 믿었다.",
+      "화면 아래 편집 타임라인의 마지막 클립은 정지 화면이 방송되기 전까지 이름이 물음표 셋이다. 그 장면이 나와야 \"새벽 3시\"로 바뀐다.",
+      "로고 옆 표시는 보는 사람의 시계로 진짜 금요일에만 빨간 '생방송'이고, 다른 날은 '재방송'이다.",
+      "벽시계 분침은 4시 59분에 있다가 \"주말 사수 성공!\" 장면에서 5시 정각으로 톡 넘어간다.",
+      "큰 자막은 글자가 튀어나온 뒤 받침만 늦게 툭 떨어진다. 한글 자모를 따로 움직이는 글꼴(font-kku)이라서 되는, 한국어판만의 자막 개그다."
+    ]
+  },
+  "en": {
+    "line": "This page tells the old developer rule \"don’t deploy on Friday\" as a Korean variety-show clip, in which a junior developer hits deploy one minute before home time.",
+    "points": [
+      "The two seniors ducking behind their partitions → the junior is perfectly calm and puts his hand on the mouse, but the seniors see the big green \"Deploy to prod\" button in front of him, go wide-eyed and take cover: one at once, one slowly, eyes on the button to the last. Only then does the caption give the reason: \"Friday, 4:59 PM\". Ship new code just before the weekend, and if it breaks, someone loses their weekend.",
+      "\"(visible panic)\", \"ba-dum ba-dum\", \"wait, what?\" → Korean variety shows (TV entertainment where celebrities play games, take on challenges or just live their day on camera) are famous for busy editing: pop-up captions say what each person is thinking and feeling, and big sound-effect words bounce across the screen. This clip is cut the same way, down to a \"click!\" that lands on the very frame the button goes down.",
+      "\"0 incidents\", \"(disbelief)\", \"Weekend: saved!\" → he broke the taboo and nothing happened. He is the most surprised of all.",
+      "The black-and-white freeze-frame → the show’s last trick. \"Little did he know…\", and an on-call alert drops in: \"[P1] 1 incident in prod\", Saturday, 3:12 AM. \"See you Monday~\" is still frozen on screen, which makes it hurt more.",
+      "\"Cause: Fri 4:59 PM deploy\" → the alert buzzes, then adds one more line. The monitoring system deadpans the exact minute of the crime, and the \"Friday, 4:59 PM\" of the opening caption comes back."
+    ],
+    "terms": [
+      {
+        "term": "Deploy",
+        "plain": "sending new code out to the live service people use (\"prod\", short for production)."
+      },
+      {
+        "term": "Incident, P1",
+        "plain": "an incident is an outage or a service not working properly; P1 means priority 1, usually the most urgent level."
+      },
+      {
+        "term": "On-call",
+        "plain": "the person who must respond to alerts even outside working hours."
+      },
+      {
+        "term": "Commit message",
+        "plain": "the one-line note a developer leaves with every change, saying what was changed and why."
+      },
+      {
+        "term": "Freeze-frame",
+        "plain": "holding one frame on screen to end or punctuate a scene."
+      }
+    ],
+    "links": [
+      {
+        "title": "Deploys: It’s Not Actually About Fridays - Charity Majors",
+        "url": "https://charity.wtf/p/deploys-its-not-actually-about-fridays",
+        "note": "the case (2019) that a no-Friday-deploys rule is a sign your deploys are risky, and that the fix is the deploys, not the calendar."
+      },
+      {
+        "title": "Software Deployment, Speed, and Safety - Marc Brooker",
+        "url": "https://brooker.co.za/blog/2022/01/31/deployments/",
+        "note": "both sides of \"the Friday question\" (respect people’s time; the ban is a symptom of bad practices), and why both are right."
+      },
+      {
+        "title": "Being On-Call - Google SRE book",
+        "url": "https://sre.google/sre-book/being-on-call/",
+        "note": "how on-call duty actually works."
+      },
+      {
+        "title": "Why Korean variety shows are so text-heavy - The Korea Herald",
+        "url": "https://www.koreaherald.com/article/10410946",
+        "note": "how Korean variety captions react, joke and feel on the viewer’s behalf, like an extra narrator."
+      },
+      {
+        "title": "Freeze-frame shot - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Freeze-frame_shot",
+        "note": "the freeze-frame technique.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The commit message in the first shot is \"fix: tiny change, should be fine\". Developers joke that \"should be fine\" is exactly the change that breaks things; it sets up the freeze-frame.",
+      "The seniors never come out, even at \"0 incidents\". In the \"Weekend: saved!\" scene only their eyes rise over the partitions again, and they are still there in the black-and-white freeze-frame. They never believed it.",
+      "The last clip on the edit timeline under the screen is named with three question marks until the freeze-frame airs. Only then does it become \"Sat 3 AM\".",
+      "The badge by the logo is a red \"LIVE\" only when it really is Friday on your clock, and \"RERUN\" on any other day.",
+      "The wall clock’s minute hand sits at 4:59 and ticks over to 5:00 in the \"Weekend: saved!\" scene.",
+      "Switch to Korean and the panic caption reads \"동공지진\", literally a pupil earthquake (eyes shaking with shock), in a glitchy font. In the big Korean captions the final consonants drop in a beat late: Korean writes every syllable as one block (a first consonant, a vowel and sometimes a final consonant underneath), and the page’s font (font-kku) can move the letters inside a block separately."
+    ]
+  }
+}

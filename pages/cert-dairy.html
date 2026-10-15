@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="en" data-tty-nav="bottom right">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Certificate Dairy Aisle | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Archivo+Narrow:wght@500;600;700&family=Permanent+Marker&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="sticker pixel"></script>
+<style>
+  /* HTTPS certificates sold as dairy. A refrigerated case with glass doors: cartons on two
+     shelves (three on phones), root-certificate honey locked in a cabinet on top, e-ink shelf
+     labels counting the days from today. The browser shops with a cart and reads every back
+     label: name, dates, and the farm-to-carton chain. An ACME robot restocks. */
+  :root {
+    --ice: #eef6fb;
+    --ice-2: #dbe9f2;
+    --steel: #9aa7b1;
+    --steel-hi: #e3e9ed;
+    --steel-lo: #6b7882;
+    --blue: #2a6fd6;
+    --red: #e0412f;
+    --tag: #ffd400;
+    --warn: #d93025;
+    --eink: #dfe4dc;
+    --navy: #13284a;
+    --ink: #1d2733;
+    --ok: #188038;
+    --honey: #f2a516;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container: page / size;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(70cqw 26cqh at 50% -4cqh, rgba(255,255,255,.75), transparent 70%),
+      linear-gradient(#a9b8c3 0, #c7d3da 16%, #d5dee3 62%, #bcc8cf 100%);
+    color: var(--ink);
+    font-family: 'Archivo', 'IBM Plex Sans KR', system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', 'Archivo', system-ui, sans-serif; word-break: keep-all; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid #ff9f1a; outline-offset: 2px; }
+
+  /* ---- Layout: sizes are variables so the poster can cover banner + canopy + cabinet ---- */
+  .scene {
+    --pt: 2.2cqh;
+    --px: 3cqw;
+    --banner: 13cqh;
+    --gap: 1.8cqh;
+    --floor: 12.5cqh;
+    --canopy: 6.2cqh;
+    --vault: 11cqh;
+    --base: 2.4cqh;
+    --frame: max(5px, .9cqmin);
+    --fh: calc(100cqh - var(--pt) - var(--banner) - var(--gap) - var(--floor));
+    --fw: min(100cqw - 2 * var(--px), var(--fh) * 1.72);
+    --cols: 3;
+    --rows: 2;
+    position: absolute;
+    inset: 0;
+    /* The robot waits off the right edge (and the cart off the left). Without the clip that
+       made the body scrollable sideways: a tap on a product on a phone could shift the whole
+       aisle 70 px to the left. */
+    overflow: clip;
+  }
+  @container page (max-aspect-ratio: 9/10) or (max-width: 560px) {
+    .scene {
+      --pt: 1.6cqh;
+      --px: 2.6cqw;
+      --banner: 11.5cqh;
+      --gap: 1.3cqh;
+      --floor: 11cqh;
+      --canopy: 4.8cqh;
+      --vault: 9.6cqh;
+      --base: 1.6cqh;
+      --fw: calc(100cqw - 2 * var(--px));
+      --cols: 2;
+      --rows: 3;
+    }
+  }
+
+  /* ---- Banner (front) and poster (its back) ---- */
+  .cords { position: absolute; left: 50%; top: 0; width: calc(var(--fw) * .86); height: calc(var(--pt) + 1cqh); translate: -50% 0; pointer-events: none; }
+  .cords .cord { position: absolute; top: 0; bottom: 0; width: 2px; background: #59646c; }
+  .cords .cord:first-child { left: 4%; }
+  .cords .cord:last-child { right: 4%; }
+  .banner-zone { position: absolute; left: 50%; top: var(--pt); width: calc(var(--fw) * .86); height: var(--banner); translate: -50% 0; perspective: 900px; z-index: 2; }
+  .banner {
+    position: relative;
+    container-type: size;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .5cqh;
+    width: 100%;
+    height: 100%;
+    padding: 0 7%;
+    border: 0;
+    border-radius: 3px;
+    background:
+      linear-gradient(rgba(255,255,255,.35), transparent 30%, transparent 75%, rgba(0,0,0,.08)),
+      var(--tag);
+    color: var(--navy);
+    text-align: center;
+    box-shadow: inset 0 max(3px, .45cqh) 0 var(--red), inset 0 calc(-1 * max(3px, .45cqh)) 0 var(--red), 0 .6cqh 1.6cqh rgba(40, 50, 60, .28);
+    transform-origin: 50% 0;
+    cursor: pointer;
+  }
+  .banner::before, .banner::after { content: ""; position: absolute; top: 9cqh; width: max(6px, 7cqh); aspect-ratio: 1; border-radius: 50%; background: #c9ccd0; box-shadow: inset 0 0 0 2px #8c939a; }
+  .banner::before { left: 3.4%; }
+  .banner::after { right: 3.4%; }
+  .banner .flake { position: absolute; top: 50%; width: min(34cqh, 6cqw); translate: 0 -50%; color: var(--blue); opacity: .8; }
+  .banner .flake.l { left: 3.4%; }
+  .banner .flake.r { right: 3.4%; }
+  .banner-l1 { font: 900 max(15px, min(33cqh, 5.6cqw))/1.02 'Archivo', 'IBM Plex Sans KR', sans-serif; color: var(--red); letter-spacing: -.01em; }
+  .banner-l2 { font: 700 max(11px, min(21cqh, 3.7cqw))/1.1 'Archivo', 'IBM Plex Sans KR', sans-serif; }
+  .lang-ko .banner-l1, .lang-ko .banner-l2 { font-family: 'IBM Plex Sans KR', sans-serif; letter-spacing: -.02em; }
+
+  .poster {
+    position: absolute;
+    left: 50%;
+    top: var(--pt);
+    z-index: 6;
+    container-type: size;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: calc(var(--fw) * .9);
+    height: calc(var(--banner) + var(--gap) + var(--canopy) + var(--vault) + var(--frame));
+    translate: -50% 0;
+    border-radius: 3px;
+    background: #fffdf6;
+    box-shadow: 0 1cqh 2.6cqh rgba(20, 30, 40, .35), 0 0 0 1px rgba(0,0,0,.08);
+    visibility: hidden;
+    cursor: pointer;
+  }
+  .poster.on { visibility: visible; }
+  .poster-top { display: flex; align-items: baseline; justify-content: space-between; gap: 2cqw; padding: max(5px, 3.2cqh) 3.4cqw max(4px, 2.6cqh); background: var(--blue); color: #fff; border-radius: 3px 3px 0 0; }
+  .poster-title { font: 800 max(12px, min(9cqh, 2.8cqw))/1.1 'Archivo', 'IBM Plex Sans KR', sans-serif; }
+  .lang-ko .poster-title { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 700; }
+  .poster-src { font: 600 max(11px, min(6cqh, 1.8cqw))/1 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; opacity: .85; white-space: nowrap; }
+  .p-rows { display: grid; grid-template-columns: auto 1fr; align-content: center; align-items: center; column-gap: 2.4cqw; row-gap: 2.6cqh; padding: 2cqh 4cqw 2.6cqh 3.4cqw; min-height: 0; }
+  .p-label { font: 600 max(11px, min(7.4cqh, 2.3cqw))/1.1 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; white-space: nowrap; color: var(--ink); }
+  .lang-ko .p-label { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 500; letter-spacing: -.01em; }
+  .p-label b { font-family: 'Archivo', 'IBM Plex Sans KR', sans-serif; font-weight: 800; }
+  .p-label.p-row-now { color: var(--blue); }
+  .p-track { position: relative; height: max(6px, min(5.4cqh, 1.6cqw)); border-radius: 99px; background: repeating-linear-gradient(90deg, #eef1f3 0 calc(100% / 8 - 1px), #dfe4e8 calc(100% / 8 - 1px) calc(100% / 8)); }
+  .p-bar { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--d) / 398 * 100%); min-width: 4px; border-radius: 99px; background: #8796a3; transform-origin: 0 50%; }
+  .p-row-now .p-bar { background: var(--blue); }
+  .p-row-future .p-bar { background: #8fb5ee; }
+  .p-row-47 .p-bar { background: var(--red); }
+  .p-row-milk .p-bar { background: #fff; box-shadow: inset 0 0 0 2px var(--blue); }
+  .p-row-honey .p-bar { width: 103%; background: linear-gradient(90deg, #f6b21b, #e48f06 80%, rgba(228,143,6,0)); }
+  .p-pin {
+    position: absolute;
+    left: calc(var(--d) / 398 * 100%);
+    top: 50%;
+    translate: -50% -100%;
+    padding: .25em .5em;
+    border-radius: .4em;
+    background: var(--warn);
+    color: #fff;
+    font: 800 max(11px, min(5.6cqh, 1.6cqw))/1 'Archivo', 'IBM Plex Sans KR', sans-serif;
+    white-space: nowrap;
+    margin-top: -.5em;
+  }
+  .p-pin::after { content: ""; position: absolute; left: 50%; top: 100%; translate: -50% 0; border: .35em solid transparent; border-top-color: var(--warn); }
+  /* The last beat: the 47-day bar gets the same red sticker the expired milk got, with the
+     carton's own words on it. As big as the poster title (the joke is not smaller than the heading). */
+  .p-stk {
+    position: absolute;
+    left: calc(var(--d) / 398 * 100% + var(--stk-gap, .7em));
+    top: 50%;
+    z-index: 1;
+    translate: 0 -50%;
+    rotate: -6deg;
+    padding: .3em .55em .32em;
+    border-radius: .4em;
+    background: var(--warn);
+    color: #fff;
+    font: 700 max(12px, min(9cqh, 2.8cqw))/1.05 'Archivo Narrow', sans-serif;
+    letter-spacing: .04em;
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 .2em .5em rgba(0,0,0,.3), 0 0 0 2px #fff;
+    visibility: hidden;
+  }
+  .p-stk.on { visibility: visible; }
+  .p-stk.after-pin { --stk-gap: 3.4em; }
+  /* Korean in Plex, not font-kku sticker: its ㅗ has so short a tick that 보관 read as 브관. */
+  .lang-ko .p-stk { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 700; letter-spacing: .02em; }
+  .p-foot { display: none; }
+  @container page (max-aspect-ratio: 9/10) or (max-width: 560px) {
+    .p-rows { grid-template-columns: 1fr; row-gap: .4cqh; padding: 1.2cqh 4cqw 1cqh; align-content: space-evenly; }
+    .p-label { font-size: max(11px, min(8.6cqh, 3.6cqw)); }
+    .p-track { height: max(5px, 3.6cqh); margin-bottom: 1.6cqh; }
+    .p-row-milk, .p-row-honey { display: none; }
+    .p-foot { display: block; padding: 0 4cqw max(5px, 2.4cqh); font: 600 max(11px, min(8cqh, 3.4cqw))/1.2 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; color: #5a4300; }
+    .lang-ko .p-foot { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 500; }
+    .poster-src { display: none; }
+    .p-pin { font-size: max(11px, 6cqh); translate: 0 -50%; margin: 0 0 0 .7em; padding: .2em .45em; }
+    .p-pin::after { left: auto; right: 100%; top: 50%; translate: 0 -50%; border: .3em solid transparent; border-right-color: var(--warn); }
+    /* Here each label sits over its bar: the sticker goes to the far end of the bar's row, up on
+       the free end of the label line, clear of the words and of the milk line under it. */
+    .p-stk { left: auto; right: 0; translate: 0 -76%; }
+  }
+  /* A short poster (the 358×396 phone stage: about 112px) cannot stack four labels over four bars
+     and the milk line: the label and its bar share a row again, as on wide screens. */
+  @container (max-height: 140px) {
+    .p-rows { grid-template-columns: auto 1fr; row-gap: max(3px, 2.4cqh); column-gap: 3cqw; align-content: center; }
+    .p-track { margin-bottom: 0; }
+    .p-stk { left: calc(var(--d) / 398 * 100% + var(--stk-gap, .5em)); right: auto; translate: 0 -50%; padding: .22em .45em .24em; }
+    .p-stk .stk-l { display: block; }
+    /* From 2029 there is no room here for both the NOW pin and the sticker; the blue label says now. */
+    .p-stk.after-pin { --stk-gap: .5em; }
+    .p-track:has(> .p-stk.on) > .p-pin { visibility: hidden; }
+  }
+
+  /* ---- The aisle goes on: neighbouring cases, out of focus ---- */
+  .aisle {
+    position: absolute;
+    top: calc(var(--pt) + var(--banner) + var(--gap) + .8cqh);
+    bottom: var(--floor);
+    width: max(0px, calc((100cqw - var(--fw)) / 2 - 1.6cqw));
+    display: grid;
+    grid-template-rows: var(--canopy) 1fr var(--base);
+    padding: 0 var(--frame);
+    background: linear-gradient(90deg, #8c99a3, #c3ccd2 40%, #9aa6af);
+    filter: blur(1.2px) brightness(.88) saturate(.75);
+    overflow: hidden;
+  }
+  .aisle.l { left: 0; padding-left: 0; }
+  .aisle.r { right: 0; padding-right: 0; }
+  .a-canopy { margin: 0 calc(-1 * var(--frame)); background: linear-gradient(#3d7ed8, #1b55ad); }
+  .a-shelves { position: relative; margin-top: var(--frame); display: grid; grid-template-rows: repeat(calc(var(--rows) + 1), 1fr); background: linear-gradient(var(--ice), var(--ice-2)); }
+  .a-row { position: relative; border-bottom: max(10px, 2.4cqh) solid #66737c; }
+  .a-row::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 26%;
+    bottom: 6%;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 3.4cqw, #e4edf3 3.4cqw 4.6cqw),
+      linear-gradient(var(--c, #e9b949) 0 30%, #f7f8f6 30% 100%);
+  }
+  .a-row:nth-child(2)::before { --c: #7cb55a; }
+  .a-row:nth-child(3)::before { --c: #e0412f; }
+  .aisle.r .a-row::before { --c: #8e6bd1; }
+  .aisle.r .a-row:nth-child(2)::before { --c: #f08a24; }
+  .aisle.r .a-row:nth-child(3)::before { --c: #2a6fd6; }
+  .a-base { margin: 0 calc(-1 * var(--frame)); background: #2f373c; }
+  .aisle::after { content: ""; position: absolute; inset: var(--canopy) 0 var(--base); background: linear-gradient(112deg, transparent 0 30%, rgba(255,255,255,.22) 30% 36%, transparent 36%), repeating-linear-gradient(90deg, transparent 0 calc(var(--fw) / 3 - 4px), #c3cdd4 calc(var(--fw) / 3 - 4px) calc(var(--fw) / 3)); }
+  .aisle.l::after { background-position: 0 0, right 0 top 0; }
+  @container page (max-aspect-ratio: 9/10) or (max-width: 560px) { .aisle { display: none; } }
+
+  /* ---- The refrigerated case ---- */
+  .fridge {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--pt) + var(--banner) + var(--gap));
+    bottom: var(--floor);
+    width: var(--fw);
+    translate: -50% 0;
+    display: grid;
+    grid-template-rows: var(--canopy) var(--vault) 1fr var(--base);
+    padding: 0 var(--frame);
+    border-radius: 1cqmin 1cqmin 0 0;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.08) 0 2px, rgba(0,0,0,.03) 2px 5px),
+      linear-gradient(90deg, #7f8c96, #c9d2d8 12%, #a4b0b9 40%, #d6dde2 70%, #8d9aa4);
+    box-shadow: 0 0 0 1px rgba(40,50,60,.25), 1.2cqw 1.6cqh 3cqh rgba(30, 40, 50, .25);
+    z-index: 1;
+  }
+  .canopy {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2.4cqw;
+    margin: 0 calc(-1 * var(--frame));
+    border-radius: 1cqmin 1cqmin 0 0;
+    background: linear-gradient(#4a90f0, #1f63cc 55%, #164f9f);
+    color: #fff;
+    box-shadow: inset 0 -.35cqh 0 rgba(0,0,0,.25), inset 0 .3cqh 0 rgba(255,255,255,.35);
+    overflow: hidden;
+  }
+  .canopy::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 0 30%, rgba(255,255,255,.18) 30% 34%, transparent 34%); pointer-events: none; }
+  .canopy-title { font: 800 max(14px, min(calc(var(--canopy) * .5), 3.2cqw))/1 'Archivo', sans-serif; letter-spacing: .16em; text-transform: uppercase; text-shadow: 0 0 .45em rgba(170, 215, 255, .9); white-space: nowrap; }
+  .lang-ko .canopy-title { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 700; letter-spacing: .32em; text-indent: .32em; }
+  .canopy .flake { width: max(14px, calc(var(--canopy) * .48)); color: #cfe6ff; }
+
+  /* Locked cabinet on top: one jar, a spotlight, a padlock. */
+  .vault {
+    position: relative;
+    container: vault / size;
+    margin-top: var(--frame);
+    border-radius: .5cqmin;
+    background:
+      radial-gradient(26cqw 120cqh at 22cqw -10cqh, rgba(255, 214, 140, .55), transparent 70%),
+      linear-gradient(#3a2b1f, #1d1611);
+    box-shadow: inset 0 0 0 2px #59483a, inset 0 -5px 0 #2b2018;
+    overflow: hidden;
+  }
+  .vault-in { position: absolute; inset: 0; display: flex; align-items: center; gap: 3cqw; padding: 0 3cqw 0 9cqw; }
+  .vault .prod { position: relative; flex: none; display: flex; align-items: flex-end; height: 92cqh; padding: 0; border: 0; background: none; cursor: pointer; }
+  .vault .art { height: 84cqh; width: calc(84cqh * var(--ar)); }
+  .vault .prod::before { content: ""; position: absolute; left: -70%; right: -70%; top: -10%; bottom: -4%; background: radial-gradient(50% 70% at 50% 18%, rgba(255, 220, 150, .42), transparent 72%); pointer-events: none; }
+  .vault .prod::after { content: ""; position: absolute; left: -16%; right: -16%; bottom: 0; height: 9cqh; border-radius: 2px; background: linear-gradient(#7a2433, #4e1420); box-shadow: 0 2px 3px rgba(0,0,0,.5); z-index: -1; }
+  .vault .tagrow { position: static; flex: none; height: auto; padding: 0; }
+  .plaque {
+    margin-left: auto;
+    padding: max(4px, 6cqh) max(8px, 1.6cqw);
+    border-radius: 3px;
+    background: linear-gradient(135deg, #e9cd84, #b88a2e 55%, #e2c477);
+    color: #3b2a0b;
+    font: 700 max(11px, min(15cqh, 1.5cqw))/1.15 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    text-align: center;
+    box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 2px 4px rgba(0,0,0,.4);
+  }
+  .lang-ko .plaque { font-family: 'IBM Plex Sans KR', sans-serif; letter-spacing: .02em; }
+  .plaque small { display: block; font-size: max(10px, .86em); font-weight: 600; text-transform: none; opacity: .85; }
+  .vault-glass { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 0 14%, rgba(255,255,255,.16) 14% 18%, transparent 18% 22%, rgba(255,255,255,.08) 22% 23%, transparent 23% 64%, rgba(255,255,255,.12) 64% 70%, transparent 70%); box-shadow: inset 0 0 0 max(2px, .4cqmin) rgba(200, 210, 218, .55); }
+  .vault-glass::after { content: ""; position: absolute; top: 0; bottom: 0; left: var(--lock, 58%); width: max(2px, .3cqw); background: rgba(210, 220, 228, .6); }
+  .padlock { position: absolute; left: var(--lock, 58%); bottom: 6cqh; width: max(16px, 26cqh); translate: -50% 0; color: #c99a2e; filter: drop-shadow(0 2px 2px rgba(0,0,0,.5)); pointer-events: none; }
+  .vault-dim, .case-dim { position: absolute; inset: 0; background: #0a1520; opacity: 0; pointer-events: none; }
+
+  /* Shelves: a grid of cells. Each cell is a container: art, labels and stickers scale with it. */
+  .case {
+    position: relative;
+    margin-top: var(--frame);
+    overflow: hidden;
+    border-radius: .4cqmin .4cqmin 0 0;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(120, 150, 170, .22) 0 .18cqmin, transparent .24cqmin) 0 0 / 1.6cqmin 1.6cqmin,
+      linear-gradient(var(--ice), var(--ice-2));
+  }
+  .cells, .lights, .doors { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--cols), 1fr); grid-template-rows: repeat(var(--rows), 1fr); }
+  .lights, .doors { pointer-events: none; }
+  .lights .tube { position: relative; grid-column: 1 / -1; }
+  .lights .tube::before { content: ""; position: absolute; left: 1.5%; right: 1.5%; top: 0; height: max(3px, .9cqh); border-radius: 0 0 99px 99px; background: #fbfeff; box-shadow: 0 0 1.4cqh .4cqh rgba(215, 238, 255, .95); }
+  .lights .tube::after { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 50% at 50% 0, rgba(255,255,255,.7), transparent 75%); }
+  .cell { --rail: 25cqh; position: relative; container: cell / size; }
+  @container page (max-aspect-ratio: 9/10) or (max-width: 560px) {
+    .cell { --rail: 27cqh; }
+    /* Low and a little tighter, so its top stays under the new carton's shelf label (358×396: label to 346px). */
+    .robot .robot-say { bottom: 4%; right: 74%; max-width: none; padding: .4em .7em; line-height: 1.2; }
+  }
+  .rail {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--rail);
+    background: linear-gradient(#c8d1d7, #9aa7b1 18%, #7f8c96 20%, #5c6870 22%, #4a555d);
+    box-shadow: 0 -.6cqh 0 rgba(255,255,255,.65);
+  }
+  .rail::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 5cqh; background: linear-gradient(rgba(170, 186, 198, 0), rgba(170, 186, 198, .55)); }
+  .cell .prod {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 5cqh;
+    bottom: calc(var(--rail) + .6cqh);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3cqw;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .cell .art { height: min(var(--ah), var(--aw) / var(--ar)); width: calc(min(var(--ah), var(--aw) / var(--ar)) * var(--ar)); }
+  .cell[data-kind="carton"] { --ah: 68cqh; --aw: 24cqw; }
+  .cell[data-kind="home"] { --ah: 68cqh; --aw: 32cqw; }
+  .cell[data-kind="ev"] { --ah: 60cqh; --aw: 32cqw; }
+  .cell[data-kind="cheese"] { --ah: 46cqh; --aw: 60cqw; }
+  .unit { position: relative; display: block; flex: none; transition: translate .2s; }
+  .unit-side { filter: brightness(.93) saturate(.92); }
+  .unit-side .art { height: calc(min(var(--ah), var(--aw) / var(--ar)) * .94); width: calc(min(var(--ah), var(--aw) / var(--ar)) * .94 * var(--ar)); }
+  .unit-back { position: absolute; left: 50%; bottom: 7cqh; translate: -30% 0; filter: brightness(.86); z-index: -1; }
+  .unit-main.gone { visibility: hidden; }
+  @media (hover: hover) { .prod:hover .unit-main { translate: 0 -3cqh; } }
+  .pedestal { position: absolute; left: 50%; bottom: calc(var(--rail) + .6cqh); width: 32cqw; height: 8cqh; translate: -50% 0; border-radius: 2px 2px 0 0; background: linear-gradient(#1f6b45, #0f4a2e); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
+  .cell[data-kind="ev"] .prod { bottom: calc(var(--rail) + 8.6cqh); }
+  .cell::after { content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: max(2px, .8cqw); background: linear-gradient(90deg, rgba(120, 140, 155, .14), rgba(120, 140, 155, .3)); }
+
+  .doors { z-index: 3; perspective: 1400px; }
+  .door {
+    position: relative;
+    grid-row: 1 / -1;
+    border: max(3px, .5cqmin) solid #c3cdd4;
+    border-radius: 3px;
+    background:
+      linear-gradient(112deg, transparent 0 16%, rgba(255,255,255,.3) 16% 21%, transparent 21% 25%, rgba(255,255,255,.16) 25% 26.4%, transparent 26.4% 60%, rgba(255,255,255,.2) 60% 67%, transparent 67%),
+      linear-gradient(rgba(215, 232, 244, .05), rgba(215, 232, 244, .16) 80%, rgba(240, 248, 252, .4));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.55), inset 0 0 1.2cqmin rgba(255,255,255,.35);
+    transform-origin: 0 50%;
+  }
+  .door::after { content: ""; position: absolute; right: 5%; top: 26%; height: 40%; width: max(4px, .7cqmin); border-radius: 99px; background: linear-gradient(90deg, #7d8a94, #f4f7f9 45%, #8d9aa4); box-shadow: 1px 2px 3px rgba(0,0,0,.25); }
+  /* Three shelves: the handle stays between two label rails (it hid the last digit of "D-80"). */
+  @container page (max-aspect-ratio: 9/10) or (max-width: 560px) { .door::after { top: 36%; height: 19%; } }
+  .base { margin: 0 calc(-1 * var(--frame)); background: repeating-linear-gradient(90deg, #2b3237 0 max(3px, .5cqmin), #3c464d max(3px, .5cqmin) max(6px, 1cqmin)); border-top: 2px solid #c3cdd4; }
+
+  /* Price tags: yellow price, e-ink days left. */
+  .tagrow { position: absolute; left: 0; right: 0; bottom: 0; height: var(--rail); display: flex; align-items: center; justify-content: center; gap: 2cqw; padding: 2.6cqh 3cqw 2cqh; }
+  .price {
+    display: grid;
+    place-items: center;
+    align-self: stretch;
+    min-width: 2.6em;
+    padding: 0 .45em;
+    border-radius: 2px;
+    background: var(--tag);
+    color: #1b1b1b;
+    font: 900 clamp(12px, 7.4cqh, 17px)/1 'Archivo', 'IBM Plex Sans KR', sans-serif;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0,0,0,.35);
+  }
+  .price.wordy { font: 800 clamp(11px, 5.6cqh, 13px)/1.05 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; text-align: center; }
+  .eink {
+    display: grid;
+    align-content: center;
+    align-self: stretch;
+    min-width: 0;
+    padding: .2em .55em .25em;
+    border-radius: 3px;
+    background: var(--eink);
+    color: #16181a;
+    box-shadow: 0 0 0 max(2px, .7cqh) #2c3236, 0 1px 3px rgba(0,0,0,.4);
+    font: 600 clamp(11px, 6cqh, 13px)/1.15 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif;
+  }
+  .eink-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lang-ko .eink-name { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 500; }
+  .eink-row { display: flex; align-items: center; gap: .45em; white-space: nowrap; }
+  .eink-word { font: 600 max(10px, .82em)/1 'Archivo Narrow', sans-serif; text-transform: uppercase; letter-spacing: .05em; }
+  .eink-d { font: 800 1.32em/1.05 'Archivo', sans-serif; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .eink-d.over { color: #c4251b; }
+  .eink.off .eink-name, .eink.off .eink-row { visibility: hidden; }
+  @container cell (max-height: 150px) {
+    .eink-name { display: none; }
+    .tagrow { padding-top: 3.6cqh; padding-bottom: 3.4cqh; }
+    .note { top: 10cqh; width: min(80%, 10.5em); font-size: 11px; padding: .4em .5em; }
+    .note .note-h { display: none; }
+    .note .note-code { margin-top: 0; display: flex; gap: .35em; align-items: flex-start; }
+  }
+  @container cell (max-width: 220px) {
+    .tagrow { gap: 1.6cqw; padding-left: 1.5cqw; padding-right: 1.5cqw; }
+    .price { min-width: 0; padding: 0 .25em; font-size: 11.5px; letter-spacing: -.02em; }
+    .eink { padding-left: .4em; padding-right: .4em; }
+    .eink-row { gap: .3em; }
+    .eink-d { font-size: 1.18em; }
+  }
+  @container vault (max-height: 70px) {
+    .vault .eink-name { display: none; }
+  }
+  @container vault (max-width: 460px) {
+    .vault-in { gap: 2.4cqw; padding-left: 4cqw; padding-right: 2.4cqw; }
+    .vault .price { display: none; }
+    .plaque { padding: 4px 6px; font-size: 11px; letter-spacing: .01em; }
+  }
+
+  /* ---- Product art ---- */
+  .art { position: relative; display: block; container-type: size; perspective: 600px; }
+  .art-inner { position: absolute; inset: 0; transform-style: preserve-3d; }
+  .art.flipped .art-inner { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .face-back { transform: rotateY(180deg); }
+  .art-svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 .6cqh .5cqh rgba(20, 40, 60, .25)); }
+
+  /* Stickers: font-kku sticker on a coloured disc (it needs colour behind its white edge). */
+  .stk {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    padding: max(3px, 5cqw) max(4px, 7cqw);
+    border-radius: 999px;
+    color: #fff;
+    font: 900 max(11px, 14cqw)/1 'Archivo', sans-serif;
+    letter-spacing: .02em;
+    white-space: nowrap;
+    box-shadow: 0 .8cqh 1.2cqh rgba(0,0,0,.28), 0 0 0 max(1.5px, 2cqw) #fff;
+  }
+  .stk-fresh { right: -16%; top: 30%; background: #16a34a; rotate: 9deg; }
+  .stk-soon { left: -18%; top: 58%; background: var(--tag); color: var(--red); rotate: -9deg; border-radius: 8cqw; }
+  .stk-expired { left: 50%; top: 44%; translate: -50% 0; background: var(--warn); rotate: -14deg; border-radius: 6cqw; font-size: max(12px, 19cqw); padding: max(4px, 6cqw) max(6px, 9cqw); }
+  .stk-fresh [part~="jamo"] { color: #fff36b; }
+  .stk-soon :is([part~="choseong"], [part~="head"]), .stk-soon [part~="jongseong"] { color: var(--red); }
+  .stk-soon [part~="jungseong"] { color: var(--navy); }
+  .stk-expired [part~="jamo"] { color: #fff36b; }
+  .stk-expired [part~="jungseong"] { color: #fff; }
+  /* Mini copies (basket, crate) keep stickers small. */
+  .mini .stk { display: none; }
+  .mini.expired .face-front::after { content: ""; position: absolute; left: 4%; right: 8%; top: 44%; height: 16%; border-radius: 2px; background: var(--warn); rotate: -14deg; box-shadow: 0 0 0 1px #fff; }
+
+  /* Spoiled: yesterday's milk goes off at the start. Green tinge, a sick face, stink lines, a fly. */
+  .spoil { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .spoil > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .spoil .tinge { mix-blend-mode: multiply; }
+  .spoil .stink path { fill: none; stroke: #7d9a33; stroke-width: 5.5; stroke-linecap: round; }
+  .spoil .stink { animation: stink 1.5s ease-in-out infinite; opacity: 0; }
+  .spoil .stink:nth-of-type(2) { animation-delay: -.5s; }
+  .spoil .stink:nth-of-type(3) { animation-delay: -1s; }
+  @keyframes stink { 0% { transform: translateY(8px); opacity: 0; } 35% { opacity: .9; } 100% { transform: translateY(-16px); opacity: 0; } }
+  .fly { position: absolute; left: 0; top: 0; width: max(16px, 32cqw); aspect-ratio: 1.3; margin: -10% 0 0 -16%; animation: fly-loop 1.8s linear infinite; }
+  .fly svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .fly .wings { transform-origin: 50% 70%; animation: flap .08s steps(2) infinite; }
+  @keyframes flap { 50% { transform: scaleY(.45); } }
+  @keyframes fly-loop {
+    0% { translate: 66cqw -4cqh; } 14% { translate: 96cqw 4cqh; } 30% { translate: 84cqw 22cqh; } 46% { translate: 40cqw 14cqh; }
+    62% { translate: 2cqw 2cqh; } 78% { translate: 10cqw -14cqh; } 90% { translate: 40cqw -10cqh; } 100% { translate: 66cqw -4cqh; }
+  }
+  .spoiled .face-front > .art-svg { transform-origin: 50% 100%; animation: bloat 2.2s ease-in-out infinite; }
+  @keyframes bloat { 50% { transform: scale(1.045, .99); } }
+  .mini .spoil .face, .mini .spoil .stink { display: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .spoil .stink, .fly, .fly .wings, .spoiled .face-front > .art-svg { animation: none; }
+    .spoil .stink { opacity: .8; }
+    .fly { translate: 80cqw -6cqh; }
+  }
+
+  /* For the opening gag the aisle dims around yesterday's milk. */
+  .spot { position: absolute; inset: 0; z-index: 5; pointer-events: none; opacity: 0; background: radial-gradient(circle at var(--sx, 50%) var(--sy, 50%), transparent 0 var(--sr, 80px), rgba(8, 18, 28, .6) calc(var(--sr, 80px) + 4cqmin)); }
+
+  /* The red slip the browser sticks on the homemade milk. */
+  .note {
+    position: absolute;
+    left: 50%;
+    top: 26cqh;
+    z-index: 2;
+    width: min(94%, 17em);
+    padding: .5em .7em .55em;
+    border-radius: 3px;
+    background: var(--warn);
+    color: #fff;
+    font: 700 clamp(11px, 6.2cqh, 13.5px)/1.2 'Archivo', 'IBM Plex Sans KR', sans-serif;
+    translate: -50% 0;
+    rotate: -4deg;
+    box-shadow: 0 .8cqh 1.6cqh rgba(0,0,0,.3);
+    pointer-events: none;
+  }
+  .note::before { content: ""; position: absolute; left: 50%; top: -.55em; width: 3.4em; height: 1.1em; translate: -50% 0; rotate: 3deg; background: rgba(255, 255, 255, .62); box-shadow: 0 1px 1px rgba(0,0,0,.1); }
+  .note-h { display: flex; align-items: flex-start; gap: .4em; }
+  .note-h .warn-ico { flex: none; width: 1.15em; margin-top: .02em; color: #fff; }
+  .note-small { display: none; flex: none; width: 1.1em; color: #fff; }
+  @container cell (max-height: 150px) { .note-small { display: block; } }
+  .note-ico { display: block; width: 1.4em; margin-bottom: .25em; color: #fff; }
+  .note-code { display: block; margin-top: .25em; font: 600 .92em/1.15 'Archivo Narrow', sans-serif; letter-spacing: .01em; overflow-wrap: anywhere; opacity: .95; }
+  .lang-ko .note { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 600; }
+  .note[hidden] { display: none; }
+
+  /* ---- Floor: the cart and the robot ---- */
+  .floor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--floor);
+    z-index: 4;
+    background:
+      radial-gradient(calc(var(--fw) * .52) 80% at 50% 0, rgba(226, 240, 250, .6), transparent 75%),
+      linear-gradient(rgba(30, 40, 50, .28), transparent 22%),
+      repeating-linear-gradient(90deg, transparent 0 calc(9cqw - 1px), rgba(255,255,255,.45) calc(9cqw - 1px) 9cqw),
+      linear-gradient(transparent 0 48%, rgba(255,255,255,.4) 48% calc(48% + 1px), transparent calc(48% + 1px)),
+      linear-gradient(#a3afb7, #c9d2d7 40%, #d6dee2);
+  }
+  html:not(.embedded) .scene { --lift: 0px; }
+  @container page (min-aspect-ratio: 9/10) and (min-width: 561px) {
+    html:not(.embedded) .scene { --floor: calc(12.5cqh + 34px); --lift: 34px; }
+  }
+  .floor::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: rgba(0,0,0,.25); }
+  /* The hint: a sticker on the shop floor, pointing up at the shelves (the cart rolls over it).
+     Narrow, the floor is full (the cart parks on the left, the robot works on the right), so the
+     hint hangs under the banner instead, in a gap made for it. */
+  .floor-hint, .top-hint {
+    position: absolute;
+    left: 50%;
+    bottom: calc(10% + var(--lift, 0px) * .5);
+    translate: -50% 0;
+    max-width: min(46%, 26em);
+    margin: 0;
+    padding: .28em .85em .3em;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, .8);
+    box-shadow: inset 0 0 0 1.5px rgba(31, 87, 170, .4), 0 1px 2px rgba(0, 0, 0, .12);
+    color: var(--navy);
+    font: 600 clamp(11px, 1.6cqh, 14px)/1.2 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif;
+    text-align: center;
+    text-wrap: balance;
+    pointer-events: none;
+  }
+  .lang-ko .floor-hint, .lang-ko .top-hint { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 500; letter-spacing: -.01em; }
+  .top-hint { display: none; }
+  @container page (max-aspect-ratio: 9/10) or (max-width: 560px) {
+    .scene { --hint: clamp(11px, 1.7cqh, 13px); --gap: calc(1.3cqh + var(--hint) * 1.55); }
+    .floor-hint { display: none; }
+    .top-hint { display: block; top: calc(var(--pt) + var(--banner) + .65cqh + 1px); bottom: auto; z-index: 1; max-width: 94%; padding: .1em .7em .14em; font-size: var(--hint); white-space: nowrap; }
+  }
+  .cart { position: absolute; left: 0; bottom: calc(6% + var(--lift, 0px) * .94); height: calc(92% - var(--lift, 0px) * .92); aspect-ratio: 1.5; container-type: size; }
+  .cart-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .cart-load { position: absolute; left: 26%; width: 62%; bottom: 40%; height: 70%; display: flex; align-items: flex-end; justify-content: center; gap: 4cqw; }
+  .cart-load .art { height: 64cqh; width: calc(64cqh * var(--ar)); rotate: -6deg; }
+  .cart-plate {
+    position: absolute;
+    left: 30%;
+    top: 30%;
+    padding: .15em .45em .2em;
+    border-radius: 3px;
+    background: var(--red);
+    color: #fff;
+    font: 800 max(11px, 13cqh)/1 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0,0,0,.35);
+  }
+  .lang-ko .cart-plate { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 700; letter-spacing: 0; }
+  .cart-lock { position: absolute; left: 86%; bottom: 74%; width: max(24px, 36cqh); aspect-ratio: 1; translate: -50% 0; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #4cc77a, #188038); color: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.85), 0 4px 10px rgba(0,0,0,.3); }
+  .cart-lock .lock-ico { width: 52%; }
+  .say {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    padding: .5em .75em;
+    border-radius: .7em;
+    font: 700 max(11px, min(15cqh, 14px))/1.25 'Archivo', 'IBM Plex Sans KR', sans-serif;
+    white-space: nowrap;
+    box-shadow: 0 6px 16px rgba(0,0,0,.25);
+  }
+  .say::after { content: ""; position: absolute; top: 100%; border: .45em solid transparent; }
+  .cart-say { left: calc(100% + 10px); bottom: 34%; background: var(--warn); color: #fff; font-family: 'Archivo Narrow', sans-serif; font-weight: 700; }
+  .cart-say::after { right: 100%; top: 50%; translate: 0 -50%; border-right-color: var(--warn); }
+  .cart-say.right { left: auto; right: calc(100% + 10px); }
+  .cart-say.right::after { right: auto; left: 100%; border-right-color: transparent; border-left-color: var(--warn); }
+  .lang-ko .cart-say { font-family: 'IBM Plex Sans KR', sans-serif; }
+  /* The two joke bubbles are sized by the stage, not by the small cart and robot boxes (they were
+     11px on phones, smaller than every sign around them). */
+  .cart-say, .robot .robot-say { font-size: clamp(14px, 2.2vh, 19px); }
+  @container page (max-aspect-ratio: 9/10) or (max-width: 560px) {
+    .cart-say, .robot .robot-say { font-size: clamp(14px, 3.9vw, 17.6px); }
+    /* Opened on its own on a phone, the robot has stepped aside for the kit's nav, and the bubble would
+       cover the end of the parked cart's BROWSER plate: a touch smaller there (12px at 360 wide). */
+    html:not(.embedded) .robot .robot-say { font-size: clamp(12px, 3.3vw, 17.6px); }
+  }
+  /* Bubbles with more than one line: each line keeps together; narrow, the cart's first line splits in two. */
+  .say-l { white-space: nowrap; }
+  .robot-say .say-l { display: block; }
+  .say-code { display: block; margin-top: .25em; font: 600 max(10px, .85em)/1.15 'Archivo Narrow', sans-serif; letter-spacing: .02em; opacity: .92; }
+  @container page (max-aspect-ratio: 9/10) or (max-width: 560px) {
+    .cart-say .say-l { display: block; }
+  }
+
+  .robot { position: absolute; left: 0; bottom: calc(4% + var(--lift, 0px) * .96); height: calc(96% - var(--lift, 0px) * .96); aspect-ratio: .84; container-type: size; }
+  .robot-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .robot-chest, .robot-arm, .robot-say { pointer-events: none; }
+  .robot-chest { position: absolute; left: 18%; top: 48.5%; width: 64%; height: 21.5%; display: grid; place-items: center; color: #fff; font: 900 max(11px, 15cqh)/1 'Archivo', sans-serif; letter-spacing: .04em; }
+  .robot-arm { position: absolute; left: 50%; bottom: 91%; width: max(5px, 9cqw); height: 0; translate: -50% 0; background: repeating-linear-gradient(#e7ecef 0 6px, #9aa7b1 6px 8px); border-radius: 3px; box-shadow: inset -2px 0 0 rgba(0,0,0,.15); }
+  .robot-arm::before { content: ""; position: absolute; left: 50%; top: -6px; width: 300%; height: 12px; translate: -50% 0; border: 3px solid #56616a; border-bottom-width: 5px; border-top: 0; border-radius: 0 0 6px 6px; }
+  .robot-crate { position: absolute; left: 76%; bottom: 14%; width: 46%; height: 34%; }
+  .crate-load { position: absolute; left: 6%; right: 6%; bottom: 30%; height: 150%; display: flex; align-items: flex-end; justify-content: center; gap: 4%; }
+  .crate-load .art { height: 46cqh; width: calc(46cqh * var(--ar)); }
+  .crate-unit { display: block; padding: 0; border: 0; background: none; cursor: pointer; }
+  .crate-unit.gone { visibility: hidden; }
+  .crate-front { position: absolute; inset: 0; pointer-events: none; border-radius: 3px; background: repeating-linear-gradient(90deg, #2a6fd6 0 18%, #1f57aa 18% 26%); box-shadow: inset 0 3px 0 rgba(255,255,255,.3); }
+  .robot-say { right: 70%; bottom: 76%; background: #fff; color: var(--ink); white-space: normal; width: max-content; max-width: 16em; }
+  .robot-say::after { right: 1.4em; border-top-color: #fff; }
+  .lang-ko .robot-say { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 600; }
+  .hide { visibility: hidden; }
+
+  /* ---- Back label (inspection card) ---- */
+  .scrim { position: absolute; inset: 0; z-index: 7; background: rgba(12, 24, 36, .28); opacity: 0; visibility: hidden; transition: opacity .25s, visibility 0s .25s; }
+  .scrim.on { opacity: 1; visibility: visible; transition: opacity .25s; }
+  .insp {
+    --u: clamp(12px, 1.9cqmin, 16px);
+    position: absolute;
+    z-index: 8;
+    display: none;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: "art head" "art rows" "trace trace" "verdict verdict";
+    align-items: start;
+    column-gap: 1.1em;
+    width: min(46em, calc(var(--fw) * .94));
+    padding: 1em 1.2em 1.1em;
+    border-radius: .9em;
+    background: #fff;
+    color: var(--ink);
+    font-size: var(--u);
+    box-shadow: 0 1.2em 3em rgba(10, 25, 40, .38), 0 0 0 1px rgba(0,0,0,.06);
+  }
+  .insp.on { display: grid; }
+  .insp-art { grid-area: art; position: relative; width: 7em; height: 100%; min-height: 8.4em; }
+  .insp-art .art { position: absolute; }
+  .insp-head { grid-area: head; padding-right: 2.2em; }
+  .insp-kicker { font: 700 max(10px, .72em)/1 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--blue); }
+  .insp-title { margin-top: .3em; font: 800 1.28em/1.15 'Archivo', 'IBM Plex Sans KR', sans-serif; }
+  .lang-ko .insp-title { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 700; }
+  .insp-tag { margin-top: .3em; font: 500 .9em/1.35 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; color: #4a5660; }
+  .lang-ko .insp-tag { font-family: 'IBM Plex Sans KR', sans-serif; font-size: .84em; }
+  .insp-rows { grid-area: rows; display: grid; grid-template-columns: auto 1fr auto; align-items: center; column-gap: .9em; row-gap: .3em; margin-top: .6em; padding-top: .6em; border-top: 1px solid #e2e7eb; }
+  .r-label { font: 600 max(10px, .78em)/1.3 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; letter-spacing: .07em; text-transform: uppercase; color: #5a6772; white-space: nowrap; }
+  .lang-ko .r-label { font-family: 'IBM Plex Sans KR', sans-serif; letter-spacing: 0; font-size: max(10px, .82em); }
+  .r-val { min-width: 0; font: 700 .98em/1.3 'Archivo', 'IBM Plex Sans KR', sans-serif; }
+  .r-val .mono { font-family: 'Archivo Narrow', sans-serif; font-weight: 700; font-size: 1.04em; }
+  .r-hint { margin-left: .35em; font: 500 max(10px, .82em)/1 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; color: #5a6772; }
+  .lang-ko .r-hint { font-family: 'IBM Plex Sans KR', sans-serif; }
+  .chk { display: grid; place-items: center; width: 1.45em; height: 1.45em; border-radius: 50%; background: var(--ok); color: #fff; font: 900 .8em/1 'Archivo', sans-serif; }
+  .chk.bad { background: var(--warn); }
+  .chk.none { background: #cfd6db; }
+  .rv { opacity: 0; }
+  .rv.in { opacity: 1; }
+  .insp-trace { grid-area: trace; margin-top: .85em; }
+  .trace-h { font: 700 max(10px, .76em)/1 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #5a6772; margin-bottom: .5em; }
+  .lang-ko .trace-h { font-family: 'IBM Plex Sans KR', sans-serif; letter-spacing: .02em; font-size: max(10px, .82em); }
+  .stations { display: flex; align-items: stretch; gap: 1.1em; padding: 0; list-style: none; }
+  .station { position: relative; flex: 1 1 0; min-width: 0; padding: .5em .6em .55em; border: 1px solid #dde4e9; border-radius: .6em; background: #f5f8fa; }
+  .station + .station::before { content: ""; position: absolute; right: calc(100% + .3em); top: 50%; width: .5em; height: .5em; border: solid #8a98a3; border-width: .16em .16em 0 0; translate: 0 -50%; rotate: 45deg; }
+  .st-top { display: flex; align-items: center; gap: .35em; }
+  .st-ico { flex: none; width: 1.35em; height: 1.35em; }
+  .st-role { font: 600 max(10px, .72em)/1.15 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; color: #5a6772; }
+  .lang-ko .st-role { font-family: 'IBM Plex Sans KR', sans-serif; font-size: max(10px, .76em); }
+  .st-name { display: block; margin-top: .3em; font: 800 .96em/1.15 'Archivo', 'IBM Plex Sans KR', sans-serif; overflow-wrap: anywhere; }
+  .st-via { display: block; font: 500 max(10px, .72em)/1.2 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; color: #6b7882; }
+  .st-stat { display: block; margin-top: .35em; font: 700 max(10.5px, .8em)/1.15 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; color: var(--ok); }
+  .st-stat.bad { color: var(--warn); }
+  .lang-ko .st-stat { font-family: 'IBM Plex Sans KR', sans-serif; }
+  .insp-verdict { grid-area: verdict; display: flex; align-items: center; flex-wrap: wrap; gap: .4em .7em; margin-top: .85em; padding: .6em .8em; border-radius: .6em; font: 800 1em/1.25 'Archivo', 'IBM Plex Sans KR', sans-serif; }
+  .lang-ko .insp-verdict { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 700; }
+  .v-ok { background: #e3f3e7; color: #0d5c29; }
+  .v-bad { background: var(--warn); color: #fff; flex-wrap: nowrap; }
+  .v-info { background: #fff3c4; color: #4d3a00; }
+  .v-root { background: #fbe9c6; color: #5a3500; font-weight: 700; }
+  .v-bad .warn-ico { flex: none; width: 1.6em; color: #fff; }
+  .v-code { display: block; font: 600 .88em/1.2 'Archivo Narrow', sans-serif; letter-spacing: .02em; opacity: .95; overflow-wrap: anywhere; }
+  /* Chrome's way past the warning, worn: a greasy thumbprint on the link everyone has pressed. */
+  .v-proceed { display: block; margin-top: .4em; font: 600 max(10px, .84em)/1.2 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; color: rgba(255, 255, 255, .8); }
+  .lang-ko .v-proceed { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 500; }
+  .v-proceed u { position: relative; text-underline-offset: .16em; }
+  .v-proceed u::after {
+    content: "";
+    position: absolute;
+    left: 58%;
+    top: 46%;
+    width: 2.3em;
+    height: 2.9em;
+    translate: -50% -50%;
+    rotate: 24deg;
+    border-radius: 50%;
+    background: repeating-radial-gradient(ellipse 60% 70% at 50% 58%, rgba(70, 12, 6, .5) 0 .07em, transparent .07em .22em);
+    -webkit-mask: radial-gradient(closest-side, #000 45%, transparent);
+            mask: radial-gradient(closest-side, #000 45%, transparent);
+    pointer-events: none;
+  }
+  .v-chip { display: inline-flex; align-items: center; gap: .3em; padding: .15em .55em; border-radius: 99px; font: 700 .9em/1.3 'Archivo Narrow', sans-serif; }
+  .v-chip.ok { background: #fff; color: #0d5c29; }
+  .v-chip.bad { background: #fff; color: var(--warn); }
+  .insp-x { position: absolute; right: .7em; top: .7em; display: grid; place-items: center; width: 2em; height: 2em; padding: 0; border: 0; border-radius: 50%; background: #eef2f5; color: #3b4852; font: 700 1.1em/1 'Archivo', sans-serif; cursor: pointer; }
+  .insp-x:hover { background: #e1e7ec; }
+  .insp .note { left: 1em; top: 3.6em; width: 7.4em; translate: 0 0; rotate: -7deg; font-size: max(10px, .8em); z-index: 3; padding: .45em .55em .5em; }
+  .insp .note .note-code { margin-top: 0; font-size: 1em; line-height: 1.2; }
+  .insp .glassy::after { content: ""; position: absolute; inset: -6%; border-radius: 4px; background: linear-gradient(115deg, transparent 0 20%, rgba(255,255,255,.35) 20% 26%, transparent 26%); box-shadow: inset 0 0 0 2px rgba(190, 205, 215, .6); }
+  @container page (max-aspect-ratio: 9/10) or (max-width: 560px) {
+    .insp {
+      --u: clamp(12px, 3.4cqw, 14px);
+      left: 0 !important;
+      right: 0;
+      bottom: 0;
+      top: auto !important;
+      width: auto !important;
+      padding: .9em 1em 1em;
+      border-radius: 1.1em 1.1em 0 0;
+    }
+    .insp-art { width: 5em; min-height: 7em; }
+    html:not(.embedded) .insp { padding-bottom: 3.6em; }
+    .stations { gap: .9em; }
+    .station { padding: .4em .45em .45em; }
+    .st-via { display: none; }
+    .insp .note { left: .6em; top: 2.8em; width: 6.6em; }
+  }
+  .flyer { position: fixed; z-index: 9; pointer-events: none; }
+  .flyer .art { width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="cords" aria-hidden="true"><i class="cord"></i><i class="cord"></i></div>
+  <div class="banner-zone">
+    <button class="banner" type="button" aria-describedby="poster-hint">
+      <svg class="flake l" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><path d="M9.4 3.6L12 6l2.6-2.4M9.4 20.4L12 18l2.6 2.4M3.6 10.6L6.6 9.6 5.9 6.5M18.1 17.5l-.7-3.1 3-1M3.6 13.4l3 1-.7 3.1M18.1 6.5l-.7 3.1 3 1"/></g></svg>
+      <span class="banner-l1"><span data-lang="en">47 days max from 2029.</span><span data-lang="ko">2029년부터 최대 47일.</span></span>
+      <span class="banner-l2"><span data-lang="en">Certificates now need refrigeration.</span><span data-lang="ko">이제 인증서도 냉장 보관.</span></span>
+      <svg class="flake r" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><path d="M9.4 3.6L12 6l2.6-2.4M9.4 20.4L12 18l2.6 2.4M3.6 10.6L6.6 9.6 5.9 6.5M18.1 17.5l-.7-3.1 3-1M3.6 13.4l3 1-.7 3.1M18.1 6.5l-.7 3.1 3 1"/></g></svg>
+    </button>
+  </div>
+
+  <p class="top-hint"><span data-lang="en">↓ Pick a product to read its back label</span><span data-lang="ko">↓ 상품을 누르면 뒷면 라벨이 보여요</span></p>
+  <div class="aisle l" aria-hidden="true"><i class="a-canopy"></i><i class="a-shelves"><i class="a-row"></i><i class="a-row"></i><i class="a-row"></i></i><i class="a-base"></i></div>
+  <div class="aisle r" aria-hidden="true"><i class="a-canopy"></i><i class="a-shelves"><i class="a-row"></i><i class="a-row"></i><i class="a-row"></i></i><i class="a-base"></i></div>
+
+  <div class="fridge">
+    <header class="canopy">
+      <svg class="flake" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><path d="M9.4 3.6L12 6l2.6-2.4M9.4 20.4L12 18l2.6 2.4"/></g></svg>
+      <h1 class="canopy-title"><span data-lang="en">Fresh Certificates</span><span data-lang="ko">신선 인증서</span></h1>
+      <svg class="flake" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><path d="M9.4 3.6L12 6l2.6-2.4M9.4 20.4L12 18l2.6 2.4"/></g></svg>
+    </header>
+    <div class="vault">
+      <div class="vault-in">
+        <button class="prod" type="button" data-slot="honey"></button>
+        <div class="tagrow" data-tags="honey"></div>
+        <p class="plaque">
+          <span data-lang="en">Root certificates<small>not sold in store</small></span>
+          <span data-lang="ko">루트 인증서<small>매장 진열 안 함</small></span>
+        </p>
+      </div>
+      <div class="vault-glass" aria-hidden="true"></div>
+      <svg class="padlock" viewBox="0 0 24 28" aria-hidden="true"><path d="M6.5 12V8.5a5.5 5.5 0 0 1 11 0V12" fill="none" stroke="#9aa3aa" stroke-width="2.6"/><rect x="3" y="12" width="18" height="14" rx="2.5" fill="currentColor"/><circle cx="12" cy="18" r="2" fill="#5a3f10"/><path d="M12 19v3.4" stroke="#5a3f10" stroke-width="1.6"/></svg>
+      <div class="vault-dim"></div>
+    </div>
+    <div class="case">
+      <div class="cells"></div>
+      <div class="lights" aria-hidden="true"></div>
+      <div class="doors" aria-hidden="true"></div>
+      <div class="case-dim"></div>
+    </div>
+    <div class="base" aria-hidden="true"></div>
+  </div>
+
+  <div class="floor">
+    <p class="floor-hint"><span data-lang="en">↑ Pick a product to read its back label</span><span data-lang="ko">↑ 상품을 누르면 뒷면 라벨이 보여요</span></p>
+    <div class="cart" aria-hidden="true">
+      <svg class="cart-svg cart-back" viewBox="0 0 150 100" preserveAspectRatio="none">
+        <path d="M30 12 H146 L136 58 H38 Z" fill="rgba(90,105,118,.12)"/>
+        <g stroke="#8f9ba5" stroke-width="1.3">
+          <path d="M42 12 L48 58 M58 12 L62 58 M74 12 L76 58 M90 12 L90 58 M106 12 L104 58 M122 12 L118 58 M138 12 L132 58"/>
+        </g>
+      </svg>
+      <div class="cart-load"></div>
+      <svg class="cart-svg cart-front" viewBox="0 0 150 100" preserveAspectRatio="none">
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M30 12 H146 L136 58 H38 Z" stroke="#5b6872" stroke-width="3"/>
+          <g stroke="#6f7c86" stroke-width="1.5">
+            <path d="M34 24 H143 M36 36 H141 M37 47 H138"/>
+            <path d="M46 12 L51 58 M62 12 L65 58 M78 12 L79 58 M94 12 L93 58 M110 12 L107 58 M126 12 L121 58"/>
+          </g>
+          <path d="M30 12 L12 6" stroke="#5b6872" stroke-width="3.2"/>
+          <path d="M38 58 L44 84 H134 L136 58" stroke="#5b6872" stroke-width="3"/>
+          <path d="M44 84 L30 84" stroke="#5b6872" stroke-width="3"/>
+        </g>
+        <rect x="2" y="1" width="14" height="9" rx="4" fill="var(--red)" transform="rotate(18 9 5.5)"/>
+        <g class="wheel" style="transform-box: fill-box; transform-origin: center;"><circle cx="46" cy="92" r="7" fill="#2c3338"/><circle cx="46" cy="92" r="2.6" fill="#9aa7b1"/><path d="M46 86 V98" stroke="#56616a" stroke-width="1.4"/></g>
+        <g class="wheel" style="transform-box: fill-box; transform-origin: center;"><circle cx="128" cy="92" r="7" fill="#2c3338"/><circle cx="128" cy="92" r="2.6" fill="#9aa7b1"/><path d="M128 86 V98" stroke="#56616a" stroke-width="1.4"/></g>
+      </svg>
+      <span class="cart-plate"><span data-lang="en">Browser</span><span data-lang="ko">브라우저</span></span>
+      <span class="cart-lock hide"><svg class="lock-ico" viewBox="0 0 24 24"><path d="M7 11V8a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2.6"/><rect x="4.5" y="11" width="15" height="10.5" rx="2.4" fill="currentColor"/></svg></span>
+      <span class="say cart-say hide"></span>
+    </div>
+
+    <div class="robot">
+      <div class="robot-arm" aria-hidden="true"></div>
+      <svg class="robot-svg" viewBox="0 0 100 120" aria-hidden="true">
+        <path d="M70 12 V4" stroke="#6b7882" stroke-width="2.4"/><circle class="beacon" cx="70" cy="4" r="3.4" fill="#ff5a4e"/>
+        <rect x="22" y="10" width="56" height="34" rx="10" fill="#f1f4f6" stroke="#9aa7b1" stroke-width="2"/>
+        <rect x="29" y="16" width="42" height="22" rx="7" fill="#1d2733"/>
+        <rect class="eye" x="37" y="21" width="7" height="10" rx="3.5" fill="#6ee7ff"/>
+        <rect class="eye" x="56" y="21" width="7" height="10" rx="3.5" fill="#6ee7ff"/>
+        <path d="M44 33.5 Q50 37 56 33.5" stroke="#6ee7ff" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <rect x="43" y="43" width="14" height="6" fill="#9aa7b1"/>
+        <rect x="14" y="48" width="72" height="52" rx="11" fill="#f6f8fa" stroke="#9aa7b1" stroke-width="2"/>
+        <rect x="18" y="58" width="64" height="26" rx="5" fill="var(--blue)"/>
+        <rect x="10" y="98" width="80" height="18" rx="9" fill="#2c3338"/>
+        <g class="wheel" style="transform-box: fill-box; transform-origin: center;"><circle cx="24" cy="107" r="6" fill="#56616a"/><path d="M24 102 V112 M19 107 H29" stroke="#2c3338" stroke-width="1.6"/></g>
+        <g class="wheel" style="transform-box: fill-box; transform-origin: center;"><circle cx="50" cy="107" r="6" fill="#56616a"/><path d="M50 102 V112 M45 107 H55" stroke="#2c3338" stroke-width="1.6"/></g>
+        <g class="wheel" style="transform-box: fill-box; transform-origin: center;"><circle cx="76" cy="107" r="6" fill="#56616a"/><path d="M76 102 V112 M71 107 H81" stroke="#2c3338" stroke-width="1.6"/></g>
+      </svg>
+      <span class="robot-chest" aria-hidden="true">ACME</span>
+      <div class="robot-crate"><div class="crate-load"></div><div class="crate-front" aria-hidden="true"></div></div>
+      <span class="say robot-say hide"><span data-lang="en"><span class="say-l">My cron died.</span> <span class="say-l">I was due on day <span class="due">60</span>.</span></span><span data-lang="ko"><span class="say-l">크론이 죽어 있었어요.</span> <span class="say-l">원래 <span class="due">60</span>일째 오거든요.</span></span></span>
+    </div>
+  </div>
+
+  <div class="poster" role="button" tabindex="0">
+    <div class="poster-top">
+      <h2 class="poster-title"><span data-lang="en">Certificate shelf life, then and now</span><span data-lang="ko">인증서 유통기한, 이만큼 줄었다</span></h2>
+      <span class="poster-src"><span data-lang="en">CA/B Forum SC-081</span><span data-lang="ko">CA/B 포럼 SC-081</span></span>
+    </div>
+    <div class="p-rows"></div>
+    <p class="p-foot"></p>
+  </div>
+  <p id="poster-hint" hidden><span data-lang="en">Turn the banner over to see the poster on its back.</span><span data-lang="ko">현수막을 뒤집으면 뒷면 포스터가 보여요.</span></p>
+
+  <div class="spot" aria-hidden="true"></div>
+  <div class="scrim"></div>
+  <section class="insp" aria-label="Back label">
+    <button class="insp-x" type="button">×</button>
+    <div class="insp-art"></div>
+    <div class="insp-head">
+      <p class="insp-kicker"></p>
+      <h2 class="insp-title"></h2>
+      <p class="insp-tag"></p>
+    </div>
+    <div class="insp-rows"></div>
+    <div class="insp-trace"><p class="trace-h"></p><ol class="stations"></ol></div>
+    <p class="insp-verdict rv" aria-live="polite"></p>
+  </section>
+</div>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const reduce = TTY.reduce;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const scene = $('.scene');
+  const fridge = $('.fridge');
+  const cellsEl = $('.cells');
+  const lightsEl = $('.lights');
+  const doorsEl = $('.doors');
+  const caseDim = $('.case-dim');
+  const vaultDim = $('.vault-dim');
+  const floor = $('.floor');
+  const cart = $('.cart');
+  const cartLoad = $('.cart-load');
+  const cartLock = $('.cart-lock');
+  const cartSay = $('.cart-say');
+  const robot = $('.robot');
+  const robotCrate = $('.robot-crate');
+  const robotArm = $('.robot-arm');
+  const crateLoad = $('.crate-load');
+  const robotSay = $('.robot-say');
+  const banner = $('.banner');
+  const poster = $('.poster');
+  const scrim = $('.scrim');
+  const card = $('.insp');
+  const cardArt = $('.insp-art');
+  const padlock = $('.padlock');
+
+  /* ---- Dates: everything counts from the visitor's today ---- */
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+  const diffDays = (a, b) => Math.round((b - a) / 864e5);
+  const fmt = (d) => (ko ? `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.` : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const fmtLong = (d) => (ko ? `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일` : `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}`);
+  const fin = (d) => `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+
+  const L = TTY.t({
+    en: {
+      kicker: 'Back label', name: 'Name', packed: 'Packed', best: 'Best before', trace: 'Traceability',
+      farm: 'Farm (root)', center: 'Collection center (intermediate)', pack: 'Packaging (your site)',
+      ok_: 'Signature checked ✓', bad_: "Our cow isn't in the trust store ✗", store_: 'In the trust store ✓',
+      same: 'same as the address', addr: 'address is tty.link', depends: 'depends on the address', selfRoot: 'signed by itself',
+      left: (n) => `${n} days left`, daysLeft: 'days left',
+      ok: 'Into the basket 🔒', notPrivate: 'Your connection is not private',
+      proceed: 'Advanced › <u>Proceed to tty.link (unsafe)</u>',
+      dateSay: ['One day over.', "I don't do sniff tests."], cold: '<span class="stk-l">KEEP</span> <span class="stk-l">REFRIGERATED</span>',
+      root: 'Not sold in store · kept only in your OS and browser trust stores',
+      close: 'Put it back', card: 'Back label', via: 'via Root YR', free: '$0', notSold: 'not for sale',
+      stickers: { expired: 'EXPIRED', fresh: 'FRESH', soon: 'REDUCED' },
+      milk: 'Milk: about 2 weeks', honey: 'Honey: 20 years (keeps)', posterLabel: 'Poster: certificate shelf life, then and now. Press to roll it up.',
+      bannerLabel: 'Banner: 47 days max from 2029. Certificates now need refrigeration. Press to turn it over.',
+      pick: 'Pick up and read the back label',
+      phase: (d, now, from) => (now ? `<b>${d} days</b> · now${from ? ` (from ${fmtLong(from)})` : ''}` : from ? `<b>${d} days</b> · from ${fmtLong(from)}` : `<b>${d} days</b>`),
+      pin: 'NOW',
+    },
+    ko: {
+      kicker: '뒷면 라벨', name: '상품명', packed: '제조일', best: '유통기한', trace: '이력 조회',
+      farm: '목장(루트)', center: '집유장(중간)', pack: '포장(이 사이트)',
+      ok_: '서명 확인 ✓', bad_: '우리 집 소는 신뢰 저장소에 없음 ✗', store_: '신뢰 저장소에 있음 ✓',
+      same: '주소와 같음', addr: '주소는 tty.link', depends: '주소에 따라 다름', selfRoot: '자기 자신이 서명',
+      left: (n) => `남은 날 ${n}일`, daysLeft: '남은 날',
+      ok: '장바구니에 담음 🔒', notPrivate: '연결이 비공개로 설정되어 있지 않습니다',
+      proceed: '고급 › <u>tty.link(안전하지 않음)</u>(으)로 이동',
+      dateSay: ['하루 지났네요.', '냄새는 안 맡아 봐요.'], cold: '냉장 보관',
+      root: '매장 진열 안 함 · 운영체제와 브라우저의 신뢰 저장소에만 있어요',
+      close: '제자리에 두기', card: '뒷면 라벨', via: 'Root YR 경유', free: '₩0', notSold: '비매품',
+      stickers: { expired: '폐기', fresh: '신선', soon: '임박' },
+      milk: '우유: 약 2주', honey: '꿀: 20년(잘 안 상함)', posterLabel: '포스터: 인증서 유통기한, 이만큼 줄었다. 누르면 걷혀요.',
+      bannerLabel: '현수막: 2029년부터 최대 47일. 이제 인증서도 냉장 보관. 누르면 뒤집혀요.',
+      pick: '집어서 뒷면 라벨 보기',
+      phase: (d, now, from) => (now ? `<b>${d}일</b> · 지금${from ? `(${fmtLong(from)}부터)` : ''}` : from ? `<b>${d}일</b> · ${fmtLong(from)}부터` : `<b>${d}일</b>`),
+      pin: '지금',
+    },
+  });
+  const CODE = { authority: 'NET::ERR_CERT_AUTHORITY_INVALID', date: 'NET::ERR_CERT_DATE_INVALID', name: 'NET::ERR_CERT_COMMON_NAME_INVALID' };
+
+  /* ---- Lifetimes by date, so the shelf never contradicts the poster ---- */
+  // The public maximum (CA/B Forum SC-081) and Let's Encrypt's default (its 2025-12-02 plan:
+  // 64 days from 2027-02-10, 45 from 2028-02-16). The robot is due at two thirds of that.
+  const PHASES = [{ d: 398, from: null }, { d: 200, from: new Date(2026, 2, 15) }, { d: 100, from: new Date(2027, 2, 15) }, { d: 47, from: new Date(2029, 2, 15) }];
+  const nowIdx = PHASES.reduce((k, ph, i) => (ph.from && today >= ph.from ? i : k), 0);
+  const MAX_DAYS = PHASES[nowIdx].d;
+  const LE_DAYS = today >= new Date(2028, 1, 16) ? 45 : today >= new Date(2027, 1, 10) ? 64 : 90;
+  const DUE = Math.round(LE_DAYS * 2 / 3);
+  $$('.due').forEach((el) => { el.textContent = DUE; });
+
+  /* ---- Products. made = days before today it was packed (notBefore), days = shelf life ---- */
+  const le = (cn) => [
+    { role: 'farm', name: 'ISRG Root X1', st: 'store_' },
+    { role: 'center', name: 'YR1', via: true, st: 'ok_' },
+    { role: 'pack', name: cn, st: 'ok_' },
+  ];
+  const T = (en, ko_) => (ko ? ko_ : en);
+  const leTag = T(`Let's Encrypt · ${LE_DAYS} days`, `Let's Encrypt · ${LE_DAYS}일`);
+  const PRODUCTS = {
+    ttylink: {
+      kind: 'carton', look: 'blue', facings: 3, made: -3, days: LE_DAYS, cn: 'tty.link', verdict: 'ok', chain: le('tty.link'), stickers0: ['fresh'],
+      title: T('tty.link Fresh Milk', 'tty.link 신선 우유'), tag: `${leTag} · ${L.free}`, short: T('tty.link Milk', 'tty.link 우유'), price: L.free,
+    },
+    homemade: {
+      kind: 'home', facings: 1, made: -30, days: 3650, cn: 'tty.link', verdict: 'authority',
+      chain: [{ role: 'farm', name: T('Our yard', '우리 집 마당'), st: 'bad_', icon: 'house' }, { role: 'pack', name: T('Our yard', '우리 집 마당'), st: 'ok_' }],
+      title: T('Homemade Milk', '자체 서명 우유'), tag: T('vouched for by our own cow', '우리 집 소가 직접 보증함'), short: T('Homemade Milk', '자체 서명 우유'), price: L.free,
+    },
+    cheese: {
+      kind: 'cheese', facings: 1, back: true, made: -Math.round(LE_DAYS * 4 / 9), days: LE_DAYS, cn: '*.example.com', verdict: 'wild', chain: le('*.example.com'),
+      title: T('Wildcard Cheese *.example.com', '와일드카드 치즈 *.example.com'), tag: T('goes with every subdomain (one level only: not a.b.example.com)', '모든 하위 도메인과 어울립니다(한 층만, a.b.example.com은 안 됨)'), short: T('Wildcard Cheese', '와일드카드 치즈'), price: L.free,
+    },
+    ev: {
+      kind: 'ev', facings: 1, made: -Math.round(MAX_DAYS * .6), days: MAX_DAYS, cn: 'tty.link', verdict: 'ok',
+      chain: [{ role: 'farm', name: 'Golden Pasture Root CA', st: 'ok_' }, { role: 'center', name: 'Golden Pasture EV CA', st: 'ok_' }, { role: 'pack', name: 'tty.link', st: 'ok_' }],
+      title: T('Premium EV Milk', '프리미엄 EV 우유'), tag: T('green company name in the address bar · discontinued 2019 (Chrome 77) · same milk inside', '주소창 초록 회사 이름 · 2019년 단종(크롬 77) · 내용물은 같음'), short: T('Premium EV Milk', '프리미엄 EV 우유'), price: T('$299', '₩390,000'),
+    },
+    www: {
+      kind: 'carton', look: 'red', facings: 3, made: -20, days: LE_DAYS, cn: 'www.tty.link', verdict: 'name', chain: le('www.tty.link'),
+      title: T('www.tty.link Milk', 'www.tty.link 우유'), tag: leTag, short: T('www.tty.link Milk', 'www.tty.link 우유'), price: L.free,
+    },
+    yesterday: {
+      kind: 'carton', look: 'old', facings: 1, made: -(LE_DAYS + 1), days: LE_DAYS, cn: 'tty.link', verdict: 'date', chain: le('tty.link'), stickers0: ['soon'],
+      title: T('Best Before Yesterday', '어제까지 우유'), tag: leTag, short: T('Best Before Yesterday', '어제까지 우유'), price: L.free,
+    },
+    fresh: {
+      kind: 'carton', look: 'blue', facings: 1, made: 0, days: LE_DAYS, cn: 'tty.link', verdict: 'ok', chain: le('tty.link'), stickers0: ['fresh'],
+      title: T('tty.link Fresh Milk', 'tty.link 신선 우유'), tag: `${leTag} · ${L.free}`, short: T('tty.link Milk', 'tty.link 우유'), price: L.free,
+    },
+    // ISRG Root X1 itself: 2015-06-04 to 2035-06-04, in every trust store.
+    honey: {
+      kind: 'honey', start: new Date(2015, 5, 4), end: new Date(2035, 5, 4), cn: 'ISRG Root X1', verdict: 'root',
+      chain: [{ role: 'farm', name: 'ISRG Root X1', st: 'store_' }, { role: 'farm', name: 'ISRG Root X1', st: 'ok_' }],
+      title: T('Root Certificate Honey', '루트 인증서 꿀'), tag: T('20 years · honey keeps · not sold in store', '20년 · 꿀은 잘 안 상함 · 매장 진열 안 함'), short: T('Root Certificate Honey', '루트 인증서 꿀'), price: L.notSold,
+    },
+  };
+  Object.entries(PRODUCTS).forEach(([id, p]) => {
+    p.id = id;
+    if (!p.start) { p.start = addDays(today, p.made); p.end = addDays(p.start, p.days); }
+    p.left = diffDays(today, p.end);
+    p.stickers = (p.stickers0 || []).slice();
+  });
+  // Shelf labels: Korean counts like a D-day (D-1, D-0, D+1); English just counts down, past zero.
+  const dOf = (n) => (!ko ? String(n) : n >= 0 ? `D-${n}` : `D+${-n}`);
+  const dText = (p) => dOf(p.left);
+  const dSpoken = (p) => (ko ? dText(p) : L.left(p.left));
+  const AR = { carton: .5, home: .45, ev: .45, cheese: 160 / 110, honey: 120 / 130 };
+
+  /* ---- Drawings ---- */
+  let gid = 0;
+  const LOOKS = {
+    blue: { c: '#2a6fd6', d: '#1b4fa6', side: '#d3e2f7', front: '#fbfdff', ink: '#13284a', sub: 'FRESH MILK' },
+    red: { c: '#e0412f', d: '#a92a1c', side: '#f7d9d3', front: '#fffdfb', ink: '#3f120c', sub: 'FRESH MILK' },
+    old: { c: '#6d8fbf', d: '#4c6890', side: '#dbe0e6', front: '#f4efe0', ink: '#2c3a4d', sub: 'FRESH MILK' },
+  };
+  const WARN = '<svg class="warn-ico" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 1.5 23 20.5H1Z" fill="currentColor"/><path d="M12 8.2v6" stroke="#d93025" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.4" fill="#d93025"/></svg>';
+  const LOCK = (x, y, c, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-3.2 0v-3a3.2 3.2 0 0 1 6.4 0v3" fill="none" stroke="${c}" stroke-width="1.8"/><rect x="-5" y="0" width="10" height="7.4" rx="1.6" fill="${c}"/></g>`;
+  const ICON = {
+    farm: '<svg class="st-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 11 12 4l9.5 7v9.5h-19Z" fill="#c8322b"/><path d="M2.5 11 12 4l9.5 7" fill="none" stroke="#8f1f19" stroke-width="1.4"/><rect x="8.5" y="13.5" width="7" height="7" fill="#fff"/><path d="M8.5 13.5l7 7m0-7-7 7" stroke="#c8322b" stroke-width="1.2"/></svg>',
+    house: '<svg class="st-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V21H3Z" fill="#c69a63"/><path d="M1.8 12.4 12 4l10.2 8.4" fill="none" stroke="#7a5428" stroke-width="1.8" stroke-linecap="round"/><rect x="10" y="14.5" width="4.2" height="6.5" fill="#7a5428"/><path d="M15.5 15.2c0-1.4 2.2-1.4 2.2 0 0-1.4 2.2-1.4 2.2 0 0 1.4-2.2 2.6-2.2 2.6s-2.2-1.2-2.2-2.6Z" fill="#e0412f"/></svg>',
+    center: '<svg class="st-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="8" width="15" height="9" rx="4.5" fill="#b8c3cc" stroke="#6b7882" stroke-width="1.2"/><path d="M16.5 10h3.4l2.6 3.4V17h-6Z" fill="#2a6fd6"/><circle cx="6" cy="18.5" r="2.2" fill="#2c3338"/><circle cx="18.5" cy="18.5" r="2.2" fill="#2c3338"/></svg>',
+    pack: '<svg class="st-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9.5 8.6 4.5h6.8L17 9.5Z" fill="#2a6fd6"/><rect x="7" y="9.5" width="10" height="11.5" fill="#fff" stroke="#2a6fd6" stroke-width="1.4"/><path d="M8.6 4.5h6.8V3H8.6Z" fill="#cfd8e0"/></svg>',
+  };
+
+  function svgCarton(p, back) {
+    const k = LOOKS[p.look];
+    const id = 'g' + (++gid);
+    const brandLong = p.cn.length > 9;
+    const silhouette = `
+      <path d="M13 21.5H87V31H13Z" fill="#f3f6f9" stroke="#c4ced8" stroke-width=".8"/>
+      <path d="M80 60 94 54 87 31Z" fill="${k.d}"/>
+      <path d="M80 60 94 54V190L80 196Z" fill="${k.side}"/>
+      <path d="M80 60 94 54V190L80 196Z" fill="#000" opacity=".1"/>
+      <path d="M6 60H80L87 31H13Z" fill="url(#${id}r)"/>
+      <path d="M6 60H80" stroke="#fff" stroke-opacity=".45" stroke-width="1"/>
+      <rect x="6" y="60" width="74" height="136" fill="url(#${id}f)"/>`;
+    const defs = `<defs>
+      <linearGradient id="${id}f" x1="0" x2="1"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="${k.front}"/><stop offset="1" stop-color="#dfe6ec"/></linearGradient>
+      <linearGradient id="${id}r" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${k.c}"/><stop offset="1" stop-color="${k.d}"/></linearGradient></defs>`;
+    if (back) {
+      // The back: mirrored box, a nutrition table, a barcode and a tiny traceability strip.
+      const bars = [0, 2, 3, 5, 8, 9, 11, 14, 15, 17, 20, 21, 23, 26, 28, 29, 31, 34, 36, 37, 40, 42]
+        .map((x, i) => `<rect x="${30 + x * 1.2}" y="160" width="${i % 3 === 0 ? 1.6 : .8}" height="18" fill="#1d2733"/>`).join('');
+      return `<svg class="art-svg" viewBox="0 0 100 200" aria-hidden="true">${defs}
+        <g transform="translate(100 0) scale(-1 1)">${silhouette}</g>
+        <rect x="24" y="68" width="62" height="10" fill="${k.c}"/>
+        <rect x="24" y="80" width="62" height="56" fill="#fff" stroke="#9aa7b1" stroke-width=".8"/>
+        <g stroke="#c4ced8" stroke-width=".8">${[88, 96, 104, 112, 120, 128].map((y) => `<path d="M26 ${y}H84"/>`).join('')}</g>
+        <g fill="#7b8893">${[84, 92, 100, 108, 116, 124].map((y, i) => `<rect x="27" y="${y}" width="${18 + (i * 7) % 15}" height="2.6"/><rect x="72" y="${y}" width="10" height="2.6"/>`).join('')}</g>
+        <g transform="translate(29 145)"><circle r="3" fill="#c8322b"/><path d="M4 0h8" stroke="#9aa7b1" stroke-width="1.2"/><circle cx="16" r="3" fill="#9aa7b1"/><path d="M20 0h8" stroke="#9aa7b1" stroke-width="1.2"/><circle cx="32" r="3" fill="${k.c}"/>${LOCK(47, -3, k.c, .6)}</g>
+        ${bars}</svg>`;
+    }
+    const brand = brandLong
+      ? `<text x="43" y="117" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="12.5" textLength="66" lengthAdjust="spacingAndGlyphs" fill="${k.ink}">${p.cn}</text>`
+      : `<text x="43" y="119" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="17" textLength="62" lengthAdjust="spacingAndGlyphs" fill="${k.ink}">${p.cn}</text>`;
+    return `<svg class="art-svg" viewBox="0 0 100 200" aria-hidden="true">${defs}${silhouette}
+      <text x="50" y="28.6" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6.6" fill="#3b4852">~${fin(p.end)}</text>
+      <path d="M22 46H72" stroke="#fff" stroke-opacity=".35" stroke-width="5"/>
+      <path d="M6 60H80V83C62 93 38 75 6 89Z" fill="${k.c}"/>
+      <path d="M6 89C38 75 62 93 80 83" fill="none" stroke="#fff" stroke-width="2.4"/>
+      <path d="M58 68c3-4 8-4 10 0" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
+      ${brand}
+      <text x="43" y="133" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="8.6" letter-spacing="1.4" fill="${k.c}">${k.sub}</text>
+      <path d="M43 141C43 141 30.5 155 30.5 164A12.5 12.5 0 0 0 55.5 164C55.5 155 43 141 43 141Z" fill="${k.c}" opacity=".14"/>
+      ${LOCK(43, 161, k.c, .95)}
+      <text x="43" y="189" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6.2" letter-spacing=".6" fill="#6b7987">LET'S ENCRYPT · ${p.days} DAYS</text>
+      <rect x="8" y="92" width="3.4" height="84" fill="#fff" opacity=".7"/>
+    </svg>`;
+  }
+
+  function svgHome(back) {
+    const id = 'g' + (++gid);
+    const glass = 'M33 17H57V40C57 50 76 56 76 76V184C76 192 70 196 62 196H28C20 196 14 192 14 184V76C14 56 33 50 33 40Z';
+    const cloth = `<pattern id="${id}c" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#d8443a"/><rect width="3" height="6" fill="#fff" opacity=".5"/><rect width="6" height="3" fill="#fff" opacity=".5"/></pattern>`;
+    const top = `<path d="M27 16H63L68 40 61 36 57 43 51 37 45 44 39 37 33 43 29 36 22 40Z" fill="url(#${id}c)"/>
+      <path d="M29 33C40 37 50 37 61 33" fill="none" stroke="#8b6a3e" stroke-width="1.6"/><path d="M45 35c-6 5-8 9-6 10m6-10c6 5 8 9 6 10" fill="none" stroke="#8b6a3e" stroke-width="1.3"/>`;
+    const kraft = 'M15 94 74 90 75 160 70 163 66 159 60 164 55 160 49 164 43 160 37 164 31 160 25 164 20 160 15 163Z';
+    const body = `<defs>${cloth}<linearGradient id="${id}g" x1="0" x2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#f4f2ea"/><stop offset="1" stop-color="#d9ddd8"/></linearGradient></defs>
+      <path d="${glass}" fill="url(#${id}g)" stroke="#aab6bf" stroke-width="1.6"/>
+      <path d="M35 46C33 52 22 58 20 74" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".9"/>
+      <path d="${kraft}" fill="#c9a575"/><path d="${kraft}" fill="none" stroke="#a9875a" stroke-width=".8"/>`;
+    if (back) {
+      return `<svg class="art-svg" viewBox="0 0 90 200" aria-hidden="true">${body}${top}
+        <g font-family="Permanent Marker" fill="#3a2614" text-anchor="middle">
+          <text x="45" y="112" font-size="9" transform="rotate(-4 45 112)">issued by: us</text>
+          <text x="45" y="128" font-size="9" transform="rotate(-4 45 128)">for: us</text>
+          <text x="46" y="148" font-size="8" transform="rotate(-4 46 148)">valid 10 yrs!</text>
+        </g></svg>`;
+    }
+    return `<svg class="art-svg" viewBox="0 0 90 200" aria-hidden="true">${body}${top}
+      <g font-family="Permanent Marker" fill="#3a2614" text-anchor="middle">
+        <text x="45" y="112" font-size="10.5" transform="rotate(-6 45 112)">Homemade</text>
+        <text x="44" y="136" font-size="19" transform="rotate(-5 44 136)">MILK</text>
+        <text x="40" y="153" font-size="8" transform="rotate(-4 40 153)">Cow says OK</text>
+      </g>
+      <path d="M60 147c0-2.6 3.6-2.6 3.6 0 0-2.6 3.6-2.6 3.6 0 0 2.6-3.6 4.6-3.6 4.6s-3.6-2-3.6-4.6Z" fill="#d8443a"/>
+      <rect x="17" y="170" width="3" height="20" rx="1.5" fill="#fff" opacity=".8"/></svg>`;
+  }
+
+  function svgEV(back) {
+    const id = 'g' + (++gid);
+    const glass = 'M37 12H53V44C53 54 73 60 73 80V186C73 193 67 196 60 196H30C23 196 17 193 17 186V80C17 60 37 54 37 44Z';
+    const defs = `<defs><linearGradient id="${id}g" x1="0" x2="1"><stop offset="0" stop-color="#fff"/><stop offset=".7" stop-color="#f6f4ec"/><stop offset="1" stop-color="#d8dcd6"/></linearGradient>
+      <linearGradient id="${id}a" x1="0" x2="1"><stop offset="0" stop-color="#b8862b"/><stop offset=".45" stop-color="#f6dc8a"/><stop offset="1" stop-color="#a87a22"/></linearGradient></defs>`;
+    const bottle = `<path d="${glass}" fill="url(#${id}g)" stroke="#b7bfb5" stroke-width="1.5"/>
+      <rect x="34" y="6" width="22" height="22" rx="2.5" fill="url(#${id}a)"/>
+      <path d="M36 24h18M36 20h18" stroke="#8e6a1c" stroke-width=".7" opacity=".7"/>
+      <rect x="35" y="38" width="20" height="7" fill="#0b8043"/>
+      <circle cx="45" cy="45" r="5.5" fill="url(#${id}a)" stroke="#8e6a1c" stroke-width=".6"/>
+      <path d="M38 50C36 56 24 62 22 78" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".9"/>`;
+    if (back) {
+      return `<svg class="art-svg" viewBox="0 0 90 200" aria-hidden="true">${defs}${bottle}
+        <rect x="21" y="92" width="48" height="78" rx="3" fill="#fbf6e7" stroke="#c9a44a" stroke-width="1.2"/>
+        <text x="45" y="106" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6" fill="#0b6b38">O = tty.link Dairy</text>
+        <g fill="#b9ad8a">${[114, 121, 128, 135, 142, 149, 156].map((y, i) => `<rect x="26" y="${y}" width="${30 + (i * 5) % 12}" height="2.4"/>`).join('')}</g></svg>`;
+    }
+    return `<svg class="art-svg" viewBox="0 0 90 200" aria-hidden="true">${defs}${bottle}
+      <rect x="20" y="90" width="50" height="82" rx="3" fill="#fbf6e7" stroke="#c9a44a" stroke-width="1.4"/>
+      <rect x="23" y="93" width="44" height="76" rx="2" fill="none" stroke="#c9a44a" stroke-width=".6"/>
+      <text x="45" y="105" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="6.2" letter-spacing="1.6" fill="#8a6a1f">PREMIUM</text>
+      <text x="45" y="128" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="23" fill="#0b6b38">EV</text>
+      <text x="45" y="138" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="7" letter-spacing="1.4" fill="#8a6a1f">MILK</text>
+      <rect x="24" y="145" width="42" height="11" rx="5.5" fill="#fff" stroke="#0b8043" stroke-width="1"/>
+      ${LOCK(30, 149, '#0b8043', .55)}
+      <text x="34" y="152.8" font-family="Archivo Narrow" font-weight="700" font-size="5.6" fill="#0b8043">tty.link Dairy [KR]</text>
+      <text x="45" y="164" text-anchor="middle" font-family="Archivo Narrow" font-weight="600" font-size="4.6" letter-spacing=".5" fill="#8a6a1f">EXTENDED VALIDATION</text>
+    </svg>`;
+  }
+
+  function svgCheese(back) {
+    const holes = '<g fill="#e7ad2c"><ellipse cx="26" cy="84" rx="5" ry="4"/><ellipse cx="128" cy="62" rx="4" ry="3.4"/><ellipse cx="136" cy="86" rx="5.4" ry="4.4"/><ellipse cx="24" cy="66" rx="2.6" ry="2.2"/><ellipse cx="118" cy="92" rx="3" ry="2.6"/></g><g fill="#f3c955"><ellipse cx="70" cy="40" rx="5" ry="2.4"/><ellipse cx="104" cy="28" rx="4" ry="2"/><ellipse cx="44" cy="49" rx="3" ry="1.6"/></g>';
+    const shape = `<path d="M8 56 148 40 124 14Z" fill="#ffe592"/><path d="M8 56 148 40V98L8 104Z" fill="#ffd257"/><path d="M148 40 124 14V74L148 98Z" fill="#d23f2f"/><path d="M148 40 124 14" stroke="#ffeeb0" stroke-width="1.2"/>${holes}
+      <path d="M8 56 148 40" stroke="#fff4c4" stroke-width="1.4"/>
+      <path d="M20 100 60 52M70 98 104 58" stroke="#fff" stroke-width="2.4" opacity=".35"/>`;
+    if (back) {
+      return `<svg class="art-svg" viewBox="0 0 160 110" aria-hidden="true"><g transform="translate(160 0) scale(-1 1)">${shape}</g>
+        <g transform="rotate(6.5 80 76)"><rect x="40" y="62" width="80" height="28" rx="3" fill="#fff" stroke="#9aa7b1"/>
+        <text x="80" y="73" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="7.5" fill="#13284a">SAN: *.example.com</text>
+        <g fill="#9aa7b1"><rect x="48" y="78" width="40" height="2.4"/><rect x="48" y="83" width="56" height="2.4"/></g></g></svg>`;
+    }
+    return `<svg class="art-svg" viewBox="0 0 160 110" aria-hidden="true">${shape}
+      <g transform="rotate(-6.5 80 76)"><rect x="34" y="62" width="88" height="29" rx="3" fill="#fff" stroke="#2a6fd6" stroke-width="1.4"/>
+      <text x="78" y="72.5" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="7" letter-spacing="1.6" fill="#2a6fd6">WILDCARD</text>
+      <text x="78" y="85.5" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="11.5" fill="#13284a">*.example.com</text></g></svg>`;
+  }
+
+  function svgHoney() {
+    const id = 'g' + (++gid);
+    return `<svg class="art-svg" viewBox="0 0 120 130" aria-hidden="true"><defs>
+      <linearGradient id="${id}h" x1="0" x2="1"><stop offset="0" stop-color="#d98c07"/><stop offset=".5" stop-color="#f7b928"/><stop offset="1" stop-color="#c87a05"/></linearGradient>
+      <linearGradient id="${id}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b47434"/><stop offset="1" stop-color="#6e3f16"/></linearGradient></defs>
+      <path d="M14 46 34 36H86L106 46V116L86 126H34L14 116Z" fill="url(#${id}h)"/>
+      <path d="M14 46 34 36V126L14 116Z" fill="#000" opacity=".12"/><path d="M86 36 106 46V116L86 126Z" fill="#fff" opacity=".1"/>
+      <path d="M38 44V118" stroke="#fff" stroke-width="3.4" opacity=".45" stroke-linecap="round"/>
+      <rect x="22" y="8" width="76" height="22" rx="4" fill="url(#${id}w)"/>
+      <path d="M26 15H94M26 21H94" stroke="#5a3010" stroke-width=".8" opacity=".5"/>
+      <rect x="20" y="28" width="80" height="7" rx="1.5" fill="#d6a740"/>
+      <path d="M52 34C52 44 56 47 56 52C56 56 49 56 49 52C49 48 47 44 47 34Z" fill="#f6b21b"/>
+      <path d="M60 64 80 75.5V98.5L60 110 40 98.5V75.5Z" fill="#fff6dc" stroke="#8a5a1b" stroke-width="1.4"/>
+      <text x="60" y="85" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="9.5" fill="#6b3d0e">ROOT</text>
+      <text x="60" y="95" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6" fill="#6b3d0e">ISRG Root X1</text>
+      <text x="60" y="103" text-anchor="middle" font-family="Archivo Narrow" font-weight="600" font-size="4.6" fill="#8a5a1b">2015–2035</text>
+    </svg>`;
+  }
+
+  const svgFor = (p, back) => (p.kind === 'carton' ? svgCarton(p, back) : p.kind === 'home' ? svgHome(back) : p.kind === 'ev' ? svgEV(back) : p.kind === 'cheese' ? svgCheese(back) : svgHoney());
+
+  function stickerEl(kind) {
+    const el = document.createElement('span');
+    el.className = 'stk stk-' + kind;
+    if (ko) {
+      const k = document.createElement('font-kku');
+      k.setAttribute('font', 'sticker');
+      k.setAttribute('size', kind === 'expired' ? 'max(13px, 21cqw)' : 'max(11px, 15cqw)');
+      k.textContent = L.stickers[kind];
+      el.append(k);
+    } else {
+      el.textContent = L.stickers[kind];
+    }
+    return el;
+  }
+
+  // Gone off (cartons only, drawn on the 100 × 200 carton): a green tinge and mould, a face with
+  // crossed-out eyes and its tongue out, stink lines rising, and a fly going round.
+  const SPOIL = `<svg viewBox="0 0 100 200" aria-hidden="true">
+      <path class="tinge" d="M13 21.5H87V31H13Z M80 60 94 54 87 31Z M80 60 94 54V190L80 196Z M6 60H80L87 31H13Z M6 60H80V196H6Z" fill="#b9d36c" opacity=".6"/>
+      <g fill="#86a33f" opacity=".8"><circle cx="19" cy="150" r="5"/><circle cx="26" cy="158" r="3"/><circle cx="71" cy="128" r="4.5"/><circle cx="64" cy="180" r="6"/><circle cx="88" cy="104" r="3"/><circle cx="12" cy="112" r="2.6"/></g>
+      <g class="face" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 57 l12 12 M29 57 l-12 12 M53 55 l12 12 M65 55 l-12 12 M20 83 q5 -6 10 0 t10 0 t10 0 t10 0" stroke="#fff" stroke-width="8"/>
+        <path d="M17 57 l12 12 M29 57 l-12 12 M53 55 l12 12 M65 55 l-12 12 M20 83 q5 -6 10 0 t10 0 t10 0 t10 0" stroke="#1d2733" stroke-width="4.2"/>
+        <path d="M40 83 q1 11 8 10 q5 -1 4 -10" fill="#e36a7a" stroke="#1d2733" stroke-width="2.6"/>
+      </g>
+      <g class="stink"><path d="M26 14 q-8 -10 0 -20 q8 -10 0 -20 q-8 -10 0 -20"/></g>
+      <g class="stink"><path d="M50 6 q-8 -10 0 -20 q8 -10 0 -20 q-8 -10 0 -20 q8 -10 0 -20"/></g>
+      <g class="stink"><path d="M74 14 q-8 -10 0 -20 q8 -10 0 -20 q-8 -10 0 -20"/></g>
+    </svg>
+    <span class="fly"><svg viewBox="0 0 26 20" aria-hidden="true"><g class="wings"><ellipse cx="9" cy="6" rx="6.5" ry="4" transform="rotate(-24 9 6)" fill="rgba(225,240,250,.85)" stroke="#1d2733" stroke-width=".9"/><ellipse cx="16" cy="6" rx="6.5" ry="4" transform="rotate(24 16 6)" fill="rgba(225,240,250,.85)" stroke="#1d2733" stroke-width=".9"/></g><ellipse cx="12" cy="13" rx="6" ry="4.4" fill="#1d2733"/><circle cx="19" cy="12.5" r="3.4" fill="#1d2733"/><circle cx="20.5" cy="11.4" r="1.3" fill="#d93025"/></svg></span>`;
+  function spoilArt(art) {
+    if (art.classList.contains('spoiled')) return;
+    art.classList.add('spoiled');
+    const s = document.createElement('span');
+    s.className = 'spoil';
+    s.innerHTML = SPOIL;
+    $('.face-front', art).append(s);
+  }
+
+  // A drawing of a product: front and back faces for flipping, stickers on the front.
+  function makeArt(id, { bare = false, mini = false } = {}) {
+    const p = PRODUCTS[id];
+    const art = document.createElement('span');
+    art.className = 'art art-' + p.kind + (mini ? ' mini' : '');
+    art.style.setProperty('--ar', AR[p.kind]);
+    art.dataset.id = id;
+    art.innerHTML = `<span class="art-inner"><span class="face face-front">${svgFor(p, false)}</span><span class="face face-back">${svgFor(p, true)}</span></span>`;
+    if (!bare && !mini) p.stickers.forEach((s) => art.querySelector('.face-front').append(stickerEl(s)));
+    if (mini && p.stickers.includes('expired')) art.classList.add('expired');
+    if (p.spoiled && !bare) spoilArt(art);
+    return art;
+  }
+
+  /* ---- Shelves ---- */
+  const ORDER = ['ttylink', 'homemade', 'cheese', 'ev', 'www', 'yesterday'];
+  const slots = [];
+  ORDER.forEach((id, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.innerHTML = '<div class="rail"></div><button class="prod" type="button"></button><div class="tagrow"></div>';
+    cellsEl.append(cell);
+    slots.push({ i, cell, id, btn: $('.prod', cell), tags: $('.tagrow', cell) });
+  });
+  const vaultSlot = { i: -1, cell: $('.vault'), id: 'honey', btn: $('[data-slot="honey"]'), tags: $('[data-tags="honey"]'), vault: true };
+  for (let r = 0; r < 3; r++) { const t = document.createElement('i'); t.className = 'tube'; lightsEl.append(t); }
+  const doors = [0, 1, 2].map(() => { const d = document.createElement('i'); d.className = 'door'; doorsEl.append(d); return d; });
+  const cols = () => parseInt(getComputedStyle(scene).getPropertyValue('--cols'), 10) || 3;
+  const layoutDoors = () => {
+    const c = cols();
+    doors.forEach((d, k) => { d.style.display = k < c ? '' : 'none'; });
+    $$('.tube', lightsEl).forEach((t, k) => { t.style.display = k < (c === 3 ? 2 : 3) ? '' : 'none'; });
+  };
+
+  // Where each product's front unit lives right now (a shelf slot, the cabinet, the robot's crate).
+  const HOME = {};
+  function tagsFor(slot) {
+    const p = PRODUCTS[slot.id];
+    slot.tags.innerHTML = `<span class="price${p.price.length > 4 && !/^[₩$]/.test(p.price) ? ' wordy' : ''}"></span><span class="eink"><span class="eink-name"></span><span class="eink-row"><span class="eink-word"></span><b class="eink-d"></b></span></span>`;
+    const word = $('.eink-word', slot.tags);
+    if (ko) {
+      const k = document.createElement('font-kku');
+      k.setAttribute('font', 'pixel');
+      k.setAttribute('size', slot.vault ? 'clamp(13px, 17cqh, 17px)' : 'clamp(13px, 8.2cqh, 17px)');
+      k.textContent = L.daysLeft;
+      word.append(k);
+    } else {
+      word.textContent = L.daysLeft;
+    }
+    slot.eink = $('.eink', slot.tags);
+    updateTags(slot);
+  }
+  function updateTags(slot) {
+    const p = PRODUCTS[slot.id];
+    $('.price', slot.tags).textContent = p.price;
+    $('.eink-name', slot.tags).textContent = p.short;
+    const d = $('.eink-d', slot.tags);
+    d.textContent = dText(p);
+    d.classList.toggle('over', p.left < 0);
+    slot.btn.setAttribute('aria-label', `${p.title}, ${dSpoken(p)}, ${p.price}. ${L.pick}`);
+  }
+  function fillSlot(slot) {
+    const p = PRODUCTS[slot.id];
+    if (!slot.vault) slot.cell.dataset.kind = p.kind;
+    slot.btn.replaceChildren();
+    slot.btn.setAttribute('aria-expanded', 'false');
+    const unit = (cls, art) => { const u = document.createElement('span'); u.className = 'unit ' + cls; u.append(art); return u; };
+    const main = unit('unit-main', makeArt(slot.id));
+    if (p.facings === 3) slot.btn.append(unit('unit-side', makeArt(slot.id, { bare: true })), main, unit('unit-side', makeArt(slot.id, { bare: true })));
+    else slot.btn.append(main);
+    if (p.back) slot.btn.append(unit('unit-back', makeArt(slot.id, { bare: true })));
+    $('.pedestal', slot.cell)?.remove();
+    if (p.kind === 'ev') { const ped = document.createElement('i'); ped.className = 'pedestal'; slot.cell.insertBefore(ped, slot.btn); }
+    slot.main = main;
+    HOME[slot.id] = slot;
+    if (!slot.eink) tagsFor(slot); else updateTags(slot);
+  }
+  slots.forEach(fillSlot);
+  fillSlot(vaultSlot);
+
+  // The browser's red slip, stuck on the homemade milk once it has been checked.
+  const noteHTML = `<span class="note-h">${WARN}<span>${L.notPrivate}</span></span><span class="note-code">${WARN.replace('warn-ico', 'warn-ico note-small')}<span>NET::ERR_CERT_<wbr>AUTHORITY_<wbr>INVALID</span></span>`;
+  const shelfNote = document.createElement('div');
+  shelfNote.className = 'note';
+  shelfNote.hidden = true;
+  shelfNote.innerHTML = noteHTML;
+  slots[1].cell.append(shelfNote);
+
+  /* ---- Small helpers ---- */
+  const ease = 'cubic-bezier(.3, .8, .3, 1)';
+  const rect = (el) => el.getBoundingClientRect();
+  function moveX(el, x, ms, wheels = true) {
+    const from = getComputedStyle(el).transform;
+    el.getAnimations().forEach((a) => a.cancel());
+    const to = `translateX(${x}px)`;
+    el.style.transform = to;
+    if (!ms || reduce) return;
+    el.animate([{ transform: from === 'none' ? 'translateX(0)' : from }, { transform: to }], { duration: ms, easing: 'cubic-bezier(.45, 0, .25, 1)' });
+    if (wheels) $$('.wheel', el).forEach((w) => w.animate([{ rotate: '0deg' }, { rotate: (x > (+el.dataset.px || 0) ? 1 : -1) * 540 + 'deg' }], { duration: ms, easing: 'cubic-bezier(.45, 0, .25, 1)' }));
+    el.dataset.px = x;
+  }
+  const pop = (el, ms = 380) => !reduce && el.animate([{ transform: 'scale(.4)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: .65 }, { transform: 'none', opacity: 1 }], { duration: ms, easing: 'cubic-bezier(.3, 1.4, .5, 1)' });
+  const slap = (el) => !reduce && el.animate([{ transform: 'scale(2.4) rotate(14deg)', opacity: 0 }, { transform: 'scale(.92)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }], { duration: 360, easing: 'cubic-bezier(.5, 0, .9, .5)' });
+  const colOf = (slot) => (slot.vault ? -1 : slot.i % cols());
+
+  function swing(slot, open) {
+    const d = doors[colOf(slot)];
+    if (!d) return;
+    const to = open ? 'rotateY(-24deg)' : 'none';
+    if (reduce) return;
+    const from = getComputedStyle(d).transform;
+    d.style.transform = to;
+    d.animate([{ transform: from === 'none' ? 'rotateY(0)' : from }, { transform: open ? to : 'rotateY(0)' }], { duration: open ? 380 : 460, easing: open ? 'cubic-bezier(.3, .7, .3, 1)' : 'cubic-bezier(.5, 0, .3, 1.3)' });
+  }
+
+  /* ---- The back label ---- */
+  let held = null;
+  let cardTimers = [];
+  const clearCardTimers = () => { cardTimers.forEach(clearTimeout); cardTimers = []; };
+  const narrow = () => cols() === 2;
+
+  function fillCard(p) {
+    $('.insp-kicker', card).textContent = L.kicker;
+    $('.insp-title', card).textContent = p.title;
+    $('.insp-tag', card).textContent = p.tag;
+    $('.insp-x', card).setAttribute('aria-label', L.close);
+    card.setAttribute('aria-label', `${L.card}: ${p.title}`);
+    // The wildcard is not judged against one address: the chips under it say which names it fits.
+    const nameOk = p.verdict === 'name' ? false : p.verdict === 'root' || p.verdict === 'wild' ? null : true;
+    const hint = p.verdict === 'name' ? L.addr : p.verdict === 'wild' ? L.depends : p.verdict === 'root' ? L.selfRoot : L.same;
+    const chk = (ok) => `<span class="chk rv ${ok === false ? 'bad' : ok === null ? 'none' : ''}" aria-hidden="true">${ok === false ? '✕' : ok === null ? '–' : '✓'}</span>`;
+    const best = `${fmt(p.end)} · ${p.left >= 0 || !ko ? L.left(p.left) : dText(p)}`;
+    $('.insp-rows', card).innerHTML = `
+      <span class="r-label">${L.name}</span><span class="r-val"><span class="mono">${p.cn}</span><span class="r-hint">${hint}</span></span>${chk(nameOk)}
+      <span class="r-label">${L.packed}</span><span class="r-val">${fmt(p.start)}</span><span></span>
+      <span class="r-label">${L.best}</span><span class="r-val">${best}</span>${chk(p.left >= 0)}`;
+    $('.trace-h', card).textContent = L.trace;
+    $('.stations', card).innerHTML = p.chain.map((s) => `<li class="station">
+        <span class="st-top">${ICON[s.icon || s.role]}<span class="st-role">${L[s.role]}</span></span>
+        <b class="st-name">${s.name}</b>${s.via ? `<span class="st-via">${L.via}</span>` : ''}
+        <span class="st-stat rv${s.st === 'bad_' ? ' bad' : ''}">${L[s.st]}</span></li>`).join('');
+    const v = $('.insp-verdict', card);
+    v.className = 'insp-verdict rv';
+    if (p.verdict === 'ok') { v.classList.add('v-ok'); v.textContent = L.ok; }
+    else if (p.verdict === 'root') { v.classList.add('v-root'); v.textContent = L.root; }
+    else if (p.verdict === 'wild') { v.classList.add('v-info'); v.innerHTML = '<span class="v-chip ok">✓ www.example.com</span><span class="v-chip bad">✕ a.b.example.com</span>'; }
+    else { v.classList.add('v-bad'); v.innerHTML = `${WARN}<span><span>${L.notPrivate}</span><span class="v-code">${CODE[p.verdict]}</span><span class="v-proceed">${L.proceed}</span></span>`; }
+    $('.note', card)?.remove();
+  }
+
+  // Wide screens: the card floats over the shelves. Narrow screens: a sheet from the bottom (CSS).
+  function placeCard() {
+    if (narrow()) { card.style.left = card.style.top = card.style.width = ''; return; }
+    const f = rect(fridge), s = rect(scene);
+    card.style.width = '';
+    const w = card.offsetWidth, h = card.offsetHeight;
+    const top = Math.max(f.top + rect($('.canopy')).height + 6, Math.min(f.top + (f.height - h) / 2 + 10, f.bottom - h - 4));
+    card.style.left = Math.round(f.left - s.left + (f.width - w) / 2) + 'px';
+    card.style.top = Math.round(top - s.top) + 'px';
+  }
+  // Where the drawing sits inside the card, in the card's own (untransformed) layout.
+  function artLocal(p) {
+    const bw = cardArt.offsetWidth, bh = cardArt.offsetHeight;
+    const ar = AR[p.kind];
+    const h = Math.min(bh, bw / ar * (p.kind === 'honey' || p.kind === 'cheese' ? .92 : .98));
+    const w = h * ar;
+    return { left: (bw - w) / 2, top: Math.min(4, (bh - h) / 2), width: w, height: h };
+  }
+  function seat(art, p) {
+    const b = artLocal(p);
+    Object.assign(art.style, { left: b.left + 'px', top: b.top + 'px', width: b.width + 'px', height: b.height + 'px' });
+    cardArt.append(art);
+  }
+  function openCard() {
+    card.classList.add('on');
+    scrim.classList.add('on');
+    placeCard();
+  }
+  function cardIn() {
+    if (!reduce) {
+      card.animate(narrow()
+        ? [{ transform: 'translateY(100%)' }, { transform: 'none' }]
+        : [{ transform: 'translateY(4%) scale(.94)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 380, easing: ease });
+    }
+  }
+  function closeCard(instant) {
+    clearCardTimers();
+    scrim.classList.remove('on');
+    if (instant || reduce) { card.classList.remove('on'); cardArt.replaceChildren(); return; }
+    const a = card.animate(narrow()
+      ? [{ transform: 'none' }, { transform: 'translateY(100%)' }]
+      : [{ opacity: 1 }, { opacity: 0, transform: 'scale(.97)' }], { duration: 260, easing: 'ease-in' });
+    a.onfinish = () => { if (!held) { card.classList.remove('on'); cardArt.replaceChildren(); } };
+  }
+
+  // A drawing travels from one box to another (FLIP), turning over on the way if asked.
+  function fly(art, from, to, { ms = 520, flip = null, lift = true } = {}) {
+    const big = from.width > to.width ? from : to;
+    const box = document.createElement('div');
+    box.className = 'flyer';
+    Object.assign(box.style, { left: big.left + 'px', top: big.top + 'px', width: big.width + 'px', height: big.height + 'px' });
+    art.style.cssText = '';
+    art.style.setProperty('--ar', AR[PRODUCTS[art.dataset.id].kind]);
+    box.append(art);
+    scene.append(box);
+    const at = (r) => ({ x: r.left - big.left, y: r.top - big.top, s: r.width / big.width });
+    const a = at(from), b = at(to);
+    const tf = (x, y, k) => `translate(${x}px, ${y}px) scale(${k})`;
+    const mid = tf((a.x + b.x) / 2, (a.y + b.y) / 2 - Math.max(30, Math.abs(a.y - b.y) * .25), (a.s + b.s) / 2 * 1.06);
+    const frames = lift
+      ? [{ transform: tf(a.x, a.y, a.s) }, { transform: mid, offset: .5 }, { transform: tf(b.x, b.y, b.s) }]
+      : [{ transform: tf(a.x, a.y, a.s) }, { transform: tf(b.x, b.y, b.s) }];
+    box.style.transformOrigin = '0 0';
+    const inner = $('.art-inner', art);
+    if (flip !== null) {
+      art.classList.toggle('flipped', flip);
+      inner.animate([{ transform: flip ? 'rotateY(0)' : 'rotateY(180deg)' }, { transform: flip ? 'rotateY(180deg)' : 'rotateY(0)' }], { duration: ms * .8, delay: ms * .15, easing: 'ease-in-out', fill: 'backwards' });
+    }
+    return box.animate(frames, { duration: ms, easing: 'cubic-bezier(.4, 0, .2, 1)', fill: 'forwards' }).finished.then(() => { art.remove(); box.remove(); return art; });
+  }
+
+  let chain = Promise.resolve();
+  let gen = 0;
+  const serial = (fn) => (chain = chain.then(fn).catch((e) => console.error(e)));
+
+  // Pick a product up, turn it over, read the back label. The autoplay uses this too.
+  function pick(id, opts = {}) { return serial(() => doPick(id, opts)); }
+  function putBack(opts = {}) { return serial(() => doPutBack(opts)); }
+
+  async function doPick(id, { pace = 90, auto = false } = {}) {
+    const g = gen;
+    if (held) {
+      const same = held.id === id;
+      await doPutBack({ ms: 300 });
+      if (same) return;
+    }
+    if (g !== gen) return;
+    const p = PRODUCTS[id];
+    const slot = HOME[id];
+    fillCard(p);
+    openCard();
+    const local = artLocal(p);
+    const cr = rect(cardArt);
+    const box = { left: cr.left + local.left, top: cr.top + local.top, width: local.width, height: local.height };
+    cardIn();
+    const art = makeArt(id);
+    held = { id, slot, art };
+    slot.btn.setAttribute('aria-expanded', 'true');
+    if (slot.vault) {
+      // The honey stays behind glass: the padlock rattles, the label is read through the glass.
+      if (!reduce) padlock.animate([{ rotate: '0deg' }, { rotate: '-14deg' }, { rotate: '11deg' }, { rotate: '-7deg' }, { rotate: '0deg' }], { duration: 520, easing: 'ease-out' });
+      art.classList.add('glassy');
+      seat(art, p);
+      pop(art, 420);
+    } else {
+      const from = rect($('.art', slot.main));
+      slot.main.classList.add('gone');
+      swing(slot, true);
+      if (reduce) { art.classList.add('flipped'); seat(art, p); }
+      else { await fly(art, from, box, { ms: 480, flip: true }); if (held?.art !== art) return; seat(art, p); }
+    }
+    revealChecks(p, auto ? pace : reduce ? 0 : pace);
+  }
+
+  function revealChecks(p, pace) {
+    clearCardTimers();
+    const steps = $$('.rv', card);
+    const show = (el) => { el.classList.add('in'); if (el.classList.contains('insp-verdict')) verdictFx(p); };
+    if (!pace) { steps.forEach(show); return; }
+    steps.forEach((el, k) => cardTimers.push(setTimeout(() => { show(el); pop(el, 320); }, pace * (k + 1))));
+  }
+
+  // What the verdict does to the product itself.
+  function verdictFx(p) {
+    if (p.verdict === 'authority') {
+      p.noted = true;
+      const n = document.createElement('div');
+      n.className = 'note';
+      n.innerHTML = `<span class="note-code">${WARN.replace('warn-ico', 'warn-ico note-ico')}NET::ERR_<wbr>CERT_<wbr>AUTHORITY_<wbr>INVALID</span>`;
+      card.append(n);
+      slap(n);
+    }
+    if (p.verdict === 'date') addSticker(p.id, 'expired');
+  }
+  function addSticker(id, kind) {
+    const p = PRODUCTS[id];
+    if (p.stickers.includes(kind)) return;
+    p.stickers.push(kind);
+    const targets = [$('.art', HOME[id].main)];
+    if (held?.id === id) targets.push(held.art);
+    targets.forEach((a) => {
+      if (!a) return;
+      if (a.classList.contains('mini')) { a.classList.add(kind); return; }
+      const st = stickerEl(kind);
+      $('.face-front', a).append(st);
+      slap(st);
+    });
+  }
+
+  // The opening: yesterday's milk ticks over from D-1 to D+1 on its shelf label and goes off on
+  // the spot (green, swollen, a face, a fly), and the EXPIRED / 폐기 sticker comes down on it.
+  function setD(slot, text, over) {
+    const d = $('.eink-d', slot.tags);
+    d.textContent = text;
+    d.classList.toggle('over', over);
+  }
+  function spoil(id) {
+    const p = PRODUCTS[id];
+    if (p.spoiled) return;
+    p.spoiled = true;
+    const art = $('.art', HOME[id].main);
+    if (art) {
+      spoilArt(art);
+      if (!reduce) art.animate([{ transform: 'none' }, { transform: 'scale(1.16, 1.06)', offset: .35 }, { transform: 'scale(.96, 1.02)', offset: .7 }, { transform: 'none' }], { duration: 520, easing: 'ease-out', composite: 'add' });
+    }
+    if (held?.id === id) spoilArt(held.art);
+  }
+  const spot = $('.spot');
+  function spotOn(slot, ms) {
+    if (reduce) return;
+    const c = rect(slot.cell), sc = rect(scene);
+    spot.style.setProperty('--sx', Math.round(c.left + c.width / 2 - sc.left) + 'px');
+    spot.style.setProperty('--sy', Math.round(c.top + c.height * .4 - sc.top) + 'px');
+    spot.style.setProperty('--sr', Math.round(Math.max(c.width, c.height) * .62) + 'px');
+    spot.animate([{ opacity: 0 }, { opacity: 1, offset: .2 }, { opacity: 1, offset: .8 }, { opacity: 0 }], { duration: ms, easing: 'ease-in-out' });
+  }
+  function slapExpired(id) {
+    addSticker(id, 'expired');
+    if (!reduce) HOME[id].cell.animate([{ transform: 'none' }, { transform: 'translate(1.5%, 1%) rotate(.8deg)' }, { transform: 'translate(-1%, -.5%)' }, { transform: 'none' }], { duration: 280, delay: 240 });
+  }
+
+  async function doPutBack({ ms = 460, into = null } = {}) {
+    if (!held) return;
+    const g = gen;
+    const { id, slot, art } = held;
+    held = null;
+    slot.btn.setAttribute('aria-expanded', 'false');
+    const from = rect(art);
+    closeCard(false);
+    if (slot.vault) { art.remove(); return; }
+    if (into) {
+      // Into the basket: the next carton moves to the front of the shelf.
+      slot.main.classList.remove('gone');
+      if (!reduce) { await fly(art, from, into.box, { ms, flip: false }); }
+      if (g === gen) into.done();
+    } else {
+      const to = rect($('.art', slot.main));
+      if (!reduce) await fly(art, from, to, { ms, flip: false });
+      if (g !== gen) return;
+      slot.main.classList.remove('gone');
+      if (PRODUCTS[id].noted && id === 'homemade' && shelfNote.hidden) { shelfNote.hidden = false; slap(shelfNote); }
+    }
+    swing(slot, false);
+  }
+
+  /* ---- Cart, robot ---- */
+  const floorX = (slot) => { const r = rect(slot.cell), f = rect(floor); return r.left + r.width / 2 - f.left; };
+  let cartAt = 'off';
+  let robotAt = 'off';
+  function cartTo(where, ms = 0) {
+    cartAt = where;
+    const w = cart.offsetWidth;
+    let x = where === 'off' ? -w * 1.4 : where === 'park' ? (narrow() ? 6 : floorX(slots[0]) - w * .57) : floorX(HOME[where] || slots[0]) - w * .57;
+    if (where !== 'off') x = clearOfNav(x, cart, [rect(cart)]);   // its BROWSER plate, too
+    cartSay.classList.toggle('right', x + w / 2 > floor.offsetWidth / 2);
+    moveX(cart, x, ms);
+  }
+  function robotTo(where, ms = 0) {
+    robotAt = where;
+    const w = robot.offsetWidth;
+    let x = where === 'off' ? floor.offsetWidth + w * .3 : floorX(slots[5]) - w * .5;
+    if (where === 'aside') x = clearOfNav(x);
+    moveX(robot, x, ms);
+  }
+  // Opened on its own, the page gets the kit's "? :)" in a corner; on phones that is the bottom
+  // right, right where the robot stops under yesterday's slot. After the swap he rolls left
+  // ('aside') until his crate, with yesterday's milk in it (a button), is out from under it.
+  // (The cart, stopping under the right-hand column on a phone, keeps clear of it the same way.)
+  // The nav is pinned to the bottom right (<html data-tty-nav>): left to itself the kit moved it to
+  // the bottom left at 648×732 and 440×972, over the parked cart or pushing it off the stage. Should
+  // it ever sit on the left, whatever is under it steps right instead.
+  function clearOfNav(x, el = robot, boxes = null) {
+    const nav = document.querySelector('.tty-nav');
+    if (!nav || getComputedStyle(nav).display === 'none') return x;
+    const n = rect(nav), r = rect(el), f = rect(floor);
+    const box = (boxes || [rect(robotCrate), ...$$('.crate-unit', crateLoad).map(rect)]).filter((q) => q.width);
+    const top = Math.min(...box.map((q) => q.top)), bottom = Math.max(...box.map((q) => q.bottom));
+    const left = Math.min(...box.map((q) => q.left)) - r.left, right = Math.max(...box.map((q) => q.right)) - r.left;
+    const gap = 8;
+    if (bottom <= n.top - gap || top >= n.bottom + gap) return x;          // above or below it
+    if (f.left + x + left >= n.right + gap || f.left + x + right <= n.left - gap) return x;
+    if (n.left + n.width / 2 < f.left + f.width / 2) return Math.max(x, n.right + gap - f.left - left);
+    return Math.min(x, n.left - gap - f.left - right);
+  }
+  function addToCart(id) {
+    const mini = makeArt(id, { mini: true });
+    cartLoad.append(mini);
+    return mini;
+  }
+  function showLock() { cartLock.classList.remove('hide'); pop(cartLock, 460); }
+  // At yesterday's milk the cart does what people don't: no sniff test, the code and nothing else.
+  const DATE_SAY = `<span class="say-l">${L.dateSay[0]}</span> <span class="say-l">${L.dateSay[1]}</span><span class="say-code">${CODE.date}</span>`;
+  function say(el, text, html = false) {
+    if (text === null) { el.classList.add('hide'); return; }
+    if (text !== undefined) el[html ? 'innerHTML' : 'textContent'] = text;
+    el.classList.remove('hide');
+    pop(el, 360);
+  }
+
+  // The ACME robot swaps the expired carton for a fresh one: arm up, out, in, up, down.
+  function reach() {
+    const art = rect($('.art', slots[5].main));
+    const r = rect(robot);
+    return Math.max(10, r.top + r.height * .09 - (art.top + art.height * .55));
+  }
+  function armTo(h, ms) {
+    const from = robotArm.offsetHeight;
+    robotArm.style.height = h + 'px';
+    if (!reduce && ms) robotArm.animate([{ height: from + 'px' }, { height: h + 'px' }], { duration: ms, easing: 'cubic-bezier(.4, 0, .2, 1)' });
+  }
+  // The expired carton ends up in the robot's crate, where it can still be picked up and read.
+  const crateSlot = {
+    i: -2, id: 'yesterday', crate: true, cell: robot,
+    get btn() { return $('.crate-unit[data-id="yesterday"]', crateLoad) || document.createElement('button'); },
+    get main() { return $('.crate-unit[data-id="yesterday"]', crateLoad) || document.createElement('span'); },
+  };
+  function crateUnit(id) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'unit crate-unit';
+    b.dataset.id = id;
+    b.append(makeArt(id, { mini: true }));
+    if (id === 'yesterday') {
+      const p = PRODUCTS.yesterday;
+      b.setAttribute('aria-label', `${p.title}, ${dSpoken(p)}. ${L.pick}`);
+      b.setAttribute('aria-expanded', 'false');
+      b.addEventListener('click', () => onProduct(crateSlot));
+    } else {
+      b.tabIndex = -1;
+      b.setAttribute('aria-hidden', 'true');
+    }
+    return b;
+  }
+  function restock() {
+    const g = gen;
+    const later = (ms, fn) => setTimeout(() => { if (g === gen) fn(); }, ms);
+    const slot = slots[5];
+    // The slot is between cartons for about a second: not pickable meanwhile.
+    slot.btn.disabled = true;
+    swing(slot, true);
+    armTo(reach(), 380);
+    later(450, () => {
+      // Out goes the expired one, into the crate; the fresh one waits there.
+      const from = rect($('.art', slot.main));
+      const unit = crateUnit('yesterday');
+      crateLoad.prepend(unit);
+      const to = rect($('.art', unit));
+      unit.style.visibility = 'hidden';
+      const fresh = $('.crate-unit[data-id="fresh"]', crateLoad);
+      const freshFrom = rect($('.art', fresh));
+      slot.id = 'fresh';
+      fillSlot(slot);
+      HOME.yesterday = crateSlot;
+      slot.main.classList.add('gone');
+      einkOff(slot);
+      armTo(0, 460);
+      fly(makeArt('yesterday'), from, to, { ms: 460, lift: false }).then(() => { if (g === gen) unit.style.visibility = ''; });
+      later(560, () => {
+        // Up goes the fresh one.
+        fresh.remove();
+        const target = rect($('.art', slot.main));
+        armTo(reach(), 420);
+        fly(makeArt('fresh'), freshFrom, target, { ms: 440, lift: false }).then(() => { if (g === gen) slot.main.classList.remove('gone'); });
+      });
+      later(1080, () => { armTo(0, 380); swing(slot, false); einkOn(slot, true); slot.btn.disabled = false; });
+      later(1100, () => robotTo('aside', 600));   // arm coming down, he rolls clear of the kit's nav
+    });
+  }
+
+  /* ---- E-ink ---- */
+  function einkOff(slot) { slot.eink.classList.add('off'); }
+  function einkOn(slot, flash) {
+    slot.eink.classList.remove('off');
+    if (flash && !reduce) slot.eink.animate([{ filter: 'invert(1)' }, { filter: 'invert(0)', offset: .3 }, { filter: 'invert(1)', offset: .5 }, { filter: 'invert(0)' }], { duration: 420, easing: 'steps(4, end)' });
+  }
+  function einkBlink(slot) {
+    if (reduce) return;
+    const d = $('.eink-d', slot.tags);
+    d.animate([{ opacity: 1 }, { opacity: 0 }, { opacity: 1 }, { opacity: 0 }, { opacity: 1 }, { opacity: 0 }, { opacity: 1 }], { duration: 1300, easing: 'steps(1, end)' });
+    slot.eink.animate([{ filter: 'invert(1)' }, { filter: 'invert(0)' }], { duration: 300, easing: 'steps(2, end)' });
+  }
+
+  /* ---- Lights ---- */
+  function lightsOn() {
+    if (reduce) { caseDim.style.opacity = 0; vaultDim.style.opacity = 0; lightsEl.style.opacity = 1; return; }
+    const k = [{ opacity: .82 }, { opacity: .1, offset: .12 }, { opacity: .7, offset: .2 }, { opacity: .05, offset: .34 }, { opacity: .5, offset: .42 }, { opacity: 0, offset: .55 }, { opacity: 0 }];
+    caseDim.style.opacity = 0;
+    vaultDim.style.opacity = 0;
+    lightsEl.style.opacity = 1;
+    caseDim.animate(k, { duration: 900, easing: 'steps(1, end)' });
+    vaultDim.animate(k, { duration: 900, delay: 160, easing: 'steps(1, end)', fill: 'backwards' });
+    lightsEl.animate(k.map((f) => ({ ...f, opacity: 1 - f.opacity / .82 })), { duration: 900, easing: 'steps(1, end)' });
+  }
+
+  /* ---- Poster ---- */
+  $('.p-rows').innerHTML = PHASES.map((ph, i) => `
+      <span class="p-label">${L.phase(ph.d, i === nowIdx, ph.from)}</span>
+      <span class="p-track p-row-${ph.d}${i === nowIdx ? ' p-row-now' : i > nowIdx ? ' p-row-future' : ''}" style="--d:${ph.d}"><i class="p-bar"></i>${i === nowIdx ? `<b class="p-pin">${L.pin}</b>` : ''}</span>`).join('')
+    + `<span class="p-label p-row-milk">${L.milk}</span><span class="p-track p-row-milk" style="--d:14"><i class="p-bar"></i></span>`
+    + `<span class="p-label p-row-honey">${L.honey}</span><span class="p-track p-row-honey" style="--d:398"><i class="p-bar"></i></span>`;
+  $$('.p-label').forEach((l, k) => { const tr = l.nextElementSibling; if (tr && tr.classList.contains('p-row-now')) l.classList.add('p-row-now'); });
+  $('.p-foot').textContent = `${L.milk} · ${L.honey}`;
+  // The sticker for the 47-day bar (the last beat of the loop).
+  const cold = document.createElement('span');
+  cold.className = 'p-stk';
+  cold.innerHTML = L.cold;
+  if (nowIdx === 3) cold.classList.add('after-pin');   // from 2029 the NOW pin is on this bar too
+  $('.p-track.p-row-47', poster).append(cold);
+  banner.setAttribute('aria-label', L.bannerLabel);
+  poster.setAttribute('aria-label', L.posterLabel);
+  let posterOn = false;
+  function posterDown(slow) {
+    if (posterOn) return;
+    posterOn = true;
+    poster.classList.add('on');
+    cold.classList.add('on');
+    banner.style.visibility = 'hidden';
+    if (reduce) return;
+    banner.animate([{ transform: 'none', visibility: 'visible' }, { transform: 'rotateX(-90deg)', visibility: 'visible' }], { duration: 260, easing: 'ease-in' });
+    poster.animate([{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 100% 0)', offset: .3 }, { clipPath: 'inset(0 0 0 0)' }], { duration: slow ? 820 : 560, easing: 'cubic-bezier(.3, .7, .3, 1)' });
+    const bars = $$('.p-bar', poster);
+    bars.forEach((b, k) => b.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }], { duration: slow ? 600 : 400, delay: (slow ? 550 : 300) + k * (slow ? 180 : 70), easing: 'cubic-bezier(.3, .8, .3, 1)', fill: 'backwards' }));
+    const pin = $('.p-pin', poster);
+    if (pin) pin.animate([{ opacity: 0, transform: 'translateY(-60%)' }, { opacity: 1, transform: 'none' }], { duration: 380, delay: slow ? 1500 : 700, easing: 'cubic-bezier(.3, 1.5, .5, 1)', fill: 'backwards' });
+    // Then the 47-day bar gets slapped like the milk did, and the poster shakes the same way.
+    const late = slow ? 1900 : 1000;
+    cold.animate([{ transform: 'scale(2.4) rotate(14deg)', opacity: 0 }, { transform: 'scale(.92)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }], { duration: 360, delay: late, easing: 'cubic-bezier(.5, 0, .9, .5)', fill: 'backwards' });
+    poster.animate([{ transform: 'none' }, { transform: 'translate(.5%, 1.2%) rotate(.5deg)' }, { transform: 'translate(-.4%, -.5%)' }, { transform: 'none' }], { duration: 280, delay: late + 240 });
+  }
+  function posterUp(instant) {
+    if (!posterOn) return;
+    posterOn = false;
+    banner.style.visibility = '';
+    cold.getAnimations().forEach((a) => a.cancel());
+    if (instant || reduce) { poster.classList.remove('on'); cold.classList.remove('on'); return; }
+    poster.animate([{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(0 0 100% 0)' }], { duration: 360, easing: 'ease-in' }).onfinish = () => { if (!posterOn) { poster.classList.remove('on'); cold.classList.remove('on'); } };
+    banner.animate([{ transform: 'rotateX(-90deg)' }, { transform: 'rotateX(-90deg)', offset: .5 }, { transform: 'none' }], { duration: 560, easing: 'ease-out' });
+  }
+
+  /* ---- Reset and the final scene ---- */
+  function reset() {
+    gen++;
+    chain = Promise.resolve();
+    clearCardTimers();
+    held = null;
+    closeCard(true);
+    spot.getAnimations().forEach((a) => a.cancel());
+    $$('.flyer').forEach((f) => f.remove());
+    Object.values(PRODUCTS).forEach((p) => { p.stickers = (p.stickers0 || []).slice(); p.noted = false; p.spoiled = false; });
+    slots[5].id = 'yesterday';
+    slots[5].btn.disabled = false;
+    slots.forEach(fillSlot);
+    fillSlot(vaultSlot);
+    delete HOME.fresh;
+    shelfNote.hidden = true;
+    doors.forEach((d) => { d.getAnimations().forEach((a) => a.cancel()); d.style.transform = ''; });
+    cartLoad.replaceChildren();
+    cartLock.classList.add('hide');
+    say(cartSay, null);
+    say(robotSay, null);
+    crateLoad.replaceChildren(crateUnit('fresh'));
+    armTo(0, 0);
+    cartTo('off');
+    robotTo('off');
+    posterUp(true);
+    slots.forEach((s) => s.eink.classList.remove('off'));
+    vaultSlot.eink.classList.remove('off');
+  }
+
+  function finalScene() {
+    reset();
+    addToCart('ttylink');
+    cartLock.classList.remove('hide');
+    cartTo('park');
+    PRODUCTS.homemade.noted = true;
+    shelfNote.hidden = false;
+    PRODUCTS.yesterday.stickers.push('expired');
+    PRODUCTS.yesterday.spoiled = true;
+    crateLoad.replaceChildren(crateUnit('yesterday'));
+    slots[5].id = 'fresh';
+    fillSlot(slots[5]);
+    HOME.yesterday = crateSlot;
+    robotTo('aside');
+    say(robotSay);
+    posterDown();
+  }
+
+  /* ---- Autoplay: one 24-second scene, the same functions a visitor uses ---- */
+  let timers = [];
+  let auto = false;
+  let idle = 0;
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  const stopTimers = () => { timers.forEach(clearTimeout); timers = []; };
+  const SCRIPT = [
+    [0, () => {
+      reset();
+      lightsOn();
+      if (!reduce) {
+        $$('.unit, .vault .prod', fridge).forEach((u, k) => u.animate([{ transform: 'translateY(-14%)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 360, delay: 260 + k * 45, easing: 'cubic-bezier(.3, 1.3, .5, 1)', fill: 'backwards' }));
+        // The other labels wake up one by one while the lights flicker; yesterday's waits.
+        [...slots, vaultSlot].forEach(einkOff);
+        [...slots.slice(0, 5), vaultSlot].forEach((s, k) => setTimeout(() => einkOn(s, true), 600 + k * 90));
+      }
+    }],
+    // The 3-second gag: yesterday's label comes on a day early, quietly, and ticks over in the
+    // spotlight; only the last tick flashes, and that is when the milk goes off.
+    [900, () => { setD(slots[5], dOf(1), false); einkOn(slots[5], false); }],
+    [1200, () => spotOn(slots[5], 1800)],
+    [1550, () => setD(slots[5], dOf(0), false)],
+    [2000, () => { updateTags(slots[5]); einkOn(slots[5], true); spoil('yesterday'); }],
+    [2500, () => slapExpired('yesterday')],
+    // Then the browser goes shopping and reads every label.
+    [3000, () => cartTo('ttylink', 700)],
+    [3650, () => pick('ttylink', { pace: 460, auto: true })],
+    // The trust-store tick stays up 2 s; the carton lands in the basket just before the cart moves on (8.0 s).
+    [7500, () => {
+      const mini = addToCart('ttylink');
+      mini.style.visibility = 'hidden';
+      putBack({ ms: 450, into: { box: rect(mini), done: () => { mini.style.visibility = ''; showLock(); } } });
+    }],
+    [8000, () => cartTo('homemade', 650)],
+    [8600, () => pick('homemade', { pace: 420, auto: true })],
+    [12650, () => putBack({ ms: 520 })],
+    [13000, () => cartTo('yesterday', 650)],
+    [13650, () => einkBlink(slots[5])],
+    [13800, () => say(cartSay, DATE_SAY, true)],
+    [16700, () => { say(cartSay, null); cartTo('park', 800); }],
+    // The punchline: the renewal robot turns up after the fact, with an excuse.
+    [17000, () => robotTo('fresh', 850)],
+    [17750, () => say(robotSay)],
+    [17900, restock],
+    [19650, () => posterDown(true)],
+  ];
+
+  function startLoop() {
+    stopTimers();
+    auto = true;
+    SCRIPT.forEach(([t, fn]) => at(t, fn));
+    at(24000, startLoop);
+  }
+  // A visitor takes over: the autoplay stops where it is and comes back 12 s after the last touch.
+  function takeOver() {
+    if (reduce) return;
+    if (auto) { auto = false; stopTimers(); }
+    clearTimeout(idle);
+    idle = setTimeout(startLoop, 12000);
+  }
+  // Any touch or key counts (the kit also asks the home page to hold this page meanwhile).
+  addEventListener('pointerdown', takeOver, { passive: true });
+  addEventListener('keydown', takeOver);
+
+  /* ---- Visitor input ---- */
+  function onProduct(slot) {
+    takeOver();
+    if (held && held.id === slot.id) putBack();
+    else pick(slot.id);
+  }
+  [...slots, vaultSlot].forEach((slot) => slot.btn.addEventListener('click', () => onProduct(slot)));
+  $('.insp-x').addEventListener('click', () => { takeOver(); putBack(); });
+  // A tap on the dimmed shelf: if it lands on another product, that one is picked instead.
+  scrim.addEventListener('click', (e) => {
+    takeOver();
+    const under = document.elementsFromPoint(e.clientX, e.clientY).find((el) => el.matches('.prod, .crate-unit[data-id="yesterday"]'));
+    const slot = under && [...slots, vaultSlot, crateSlot].find((sl) => sl.btn === under);
+    if (slot && slot.id !== held?.id) pick(slot.id); else putBack();
+  });
+  // While the card is still fading in or out, the product under it is still showing: a tap there picks that product.
+  // Once the card is fully up, a tap on it does nothing.
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('.insp-x')) return;
+    if (!card.getAnimations().some((a) => a.playState === 'running')) return;
+    const under = document.elementsFromPoint(e.clientX, e.clientY).find((el) => el.matches('.prod, .crate-unit[data-id="yesterday"]'));
+    const slot = under && [...slots, vaultSlot, crateSlot].find((sl) => sl.btn === under);
+    if (slot && slot.id !== held?.id) { takeOver(); pick(slot.id); }
+  });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && held) { takeOver(); putBack(); } });
+  banner.addEventListener('click', () => { takeOver(); posterDown(false); });
+  const togglePoster = () => { takeOver(); posterUp(false); };
+  poster.addEventListener('click', togglePoster);
+  poster.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePoster(); } });
+
+  /* ---- Resize: keep the cart and robot under their products ---- */
+  // The padlock hangs on the glass joint, between the e-ink label and the plaque.
+  function placeLock() {
+    const v = rect(vaultSlot.cell), e = rect(vaultSlot.eink), pl = rect($('.plaque'));
+    if (v.width) vaultSlot.cell.style.setProperty('--lock', Math.round((e.right + pl.left) / 2 - v.left) + 'px');
+  }
+  function relayout() {
+    layoutDoors();
+    placeLock();
+    if (cartAt !== 'off') cartTo(cartAt);
+    if (robotAt !== 'off') robotTo(robotAt);
+    if (held && held.art.isConnected && held.art.parentElement === cardArt) {
+      placeCard();
+      seat(held.art, PRODUCTS[held.id]);
+    }
+  }
+  addEventListener('resize', relayout);
+  layoutDoors();
+
+  /* ---- Start ---- */
+  if (reduce) finalScene();
+  else { reset(); slots.forEach((s) => s.eink.classList.remove('off')); }
+  TTY.onShow(() => { if (!reduce) startLoop(); });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(() => { relayout(); if (reduce) finalScene(); TTY.ready(); });
+})();
+</script>
+</body>
+</html>

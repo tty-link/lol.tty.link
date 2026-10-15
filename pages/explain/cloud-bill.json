@@ -1,0 +1,167 @@
+{
+  "id": "cloud-bill",
+  "title": {
+    "en": "This Month's Cloud Bill",
+    "ko": "클라우드 아파트 관리비"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "클라우드 요금 청구서를 아파트 관리비 고지서로 바꿔서, 개발자들이 매달 놀라는 '숨은 요금'을 관리비 항목처럼 읽게 만든 페이지다.",
+    "points": [
+      "이번 달 막대가 종이를 뚫고 화면 밖으로 → 클라우드는 쓴 만큼 내는 종량제라 뭘 하나 켜 두거나 잘못 설정하면 한 달 만에 요금이 몇 배로 뛴다. 그 '청구서 쇼크'를 그래프가 몸으로 보여 준다. 지난달들 높이에서 잠깐 멈추는 건 평범한 달인 척하는 것이다.",
+      "빈집 전기료와 빈방 관리비 → 아무도 안 쓰는 주말에 켜 둔 서버는 계속 돈이 나가고, 서버를 꺼도 붙어 있는 디스크(저장 공간)는 따로 돈이 나간다. 빈집에 불 켜 둔 것, 안 쓰는 방에도 평수대로 관리비가 나오는 것과 똑같다.",
+      "이사비·현관 통행료·주차 자리 → 데이터가 들어올 땐 대개 공짜인데 나갈 땐 GB마다 받고, 사설망 서버가 인터넷으로 나가는 문(NAT 게이트웨이)은 열어 둔 시간과 지나간 양만큼, 공인 IPv4 주소는 쓰든 안 쓰든 시간마다 받는다. 다 실제 요금 방식이다.",
+      "1위 '관리비 조회 수수료' → 요금 화면은 공짜지만 프로그램으로 비용을 묻는 API는 한 번에 1센트를 받는 곳이 있다. \"요금 폭탄 막으시려고 1분마다 조회하셨습니다\": 요금 폭탄을 막으려고 만든 알림 봇이 하루 몇 번만 바뀌는 숫자를 1분마다 물어서, 요금을 확인하는 비용이 고지서에서 가장 큰 항목이 됐다. 폭탄을 막으려던 일이 폭탄이 됐다.",
+      "\"방금 이 메모를 보신 것이 43,201번째 조회입니다.\" → 펀치 메모를 읽는 사이 그것도 조회 1회로 붙어 수수료가 눈앞에서 또 오른다. 이 고지서는 보는 것도 조회다."
+    ],
+    "terms": [
+      {
+        "term": "클라우드",
+        "plain": "서버와 저장 공간을 인터넷으로 빌려 쓰고 쓴 만큼 내는 서비스."
+      },
+      {
+        "term": "인스턴스",
+        "plain": "클라우드에서 빌린 서버 한 대. 켜져 있는 동안 시간(또는 초) 단위로 돈이 나간다."
+      },
+      {
+        "term": "디스크·스냅숏",
+        "plain": "서버에 붙은 저장 공간과 그 백업. 지울 때까지 용량만큼 매달 돈이 나간다."
+      },
+      {
+        "term": "NAT 게이트웨이",
+        "plain": "바깥에서 직접 못 들어오는 서버들이 인터넷으로 나갈 때 지나는 공동 출입구."
+      },
+      {
+        "term": "공인 IPv4 주소",
+        "plain": "인터넷 어디서나 찾아올 수 있는 주소. 클라우드에서는 서버에 붙여 두기만 해도, 쓰든 안 쓰든 시간마다 돈이 나간다."
+      },
+      {
+        "term": "DEBUG 로그",
+        "plain": "프로그램이 '여기1', '여기2'까지 시시콜콜 적는 가장 자세한 기록. 받아 쌓는 양(GB)만큼 돈이 든다."
+      },
+      {
+        "term": "API",
+        "plain": "프로그램끼리 묻고 답하는 창구."
+      },
+      {
+        "term": "요금 알림 봇",
+        "plain": "요금이 갑자기 뛰면 메신저로 알려 주려고 개발자들이 흔히 만드는 작은 프로그램. 정해 둔 간격마다 비용 API를 불러 숫자를 확인한다."
+      }
+    ],
+    "links": [
+      {
+        "title": "클라우드 컴퓨팅 (위키백과)",
+        "url": "https://ko.wikipedia.org/wiki/%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C_%EC%BB%B4%ED%93%A8%ED%8C%85",
+        "note": "필요할 때 빌려 쓰고 쓴 만큼 내는 방식",
+        "lang": "ko"
+      },
+      {
+        "title": "인스턴스 중지 및 시작 작동 방식 (AWS 문서)",
+        "url": "https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/UserGuide/how-ec2-instance-stop-start-works.html",
+        "note": "서버를 꺼도 디스크(EBS) 저장 요금은 나온다는 공식 설명(맨 아래 '비용')"
+      },
+      {
+        "title": "퍼블릭 IPv4 주소 요금 (AWS 한국 블로그)",
+        "url": "https://aws.amazon.com/ko/blogs/korea/new-aws-public-ipv4-address-charge-public-ip-insights/",
+        "note": "2024년 2월 1일부터 연결 여부와 관계없이 모든 퍼블릭 IPv4 주소에 시간당 0.005달러"
+      },
+      {
+        "title": "Overview of Data Transfer Costs for Common Architectures (AWS 아키텍처 블로그)",
+        "url": "https://aws.amazon.com/blogs/architecture/overview-of-data-transfer-costs-for-common-architectures/",
+        "note": "들어오는 데이터는 무료, 인터넷으로 나가는 데이터와 NAT 게이트웨이 처리량은 유료",
+        "lang": "en"
+      },
+      {
+        "title": "Cost Explorer로 비용과 사용량 분석 (AWS 문서)",
+        "url": "https://docs.aws.amazon.com/ko_kr/cost-management/latest/userguide/ce-what-is.html",
+        "note": "화면은 무료, API 요청은 건당 0.01달러, 요금 데이터는 24시간에 한 번 이상 갱신"
+      }
+    ],
+    "deep": [
+      "막대 높이는 과장이 아니다 → 눈금(위끝 63만 원)에 맞춘 진짜 비율이라, 지난달의 6.7배쯤 되는 이번 달 막대가 그래프 칸 두 배 넘게 솟아 종이 밖으로 나간다.",
+      "'A동 = 가용 영역 a'(넓은 화면에서만) → 클라우드 데이터 센터 묶음(가용 영역) 이름을 아파트 동 이름으로 썼다.",
+      "조회 횟수는 그 달의 '분' 수다 → 30일인 달은 43,200회, 31일인 달은 44,640회. 고지서는 늘 지난달 것이고, 시간으로 매기는 항목도 그 달 시간 수로 다시 계산된다.",
+      "고지서 줄을 눌러 메모를 볼 때마다(누를 때만) 수수료가 1센트(약 14원)씩 오르고 메모 끝에 \"※ 이 메모도 비용 API로 불러왔습니다\"가 붙는다. 가만히 보기만 해도 16초쯤 1회가 붙는다 → 보는 것도 조회다.",
+      "'주말 소등 신청'(누를 때만)을 하면 전기료·이사비·통행료·음식물만 줄고 빈방·주차 자리·창고·조회 수수료엔 '꺼도 그대로'가 붙는다. 8번 줄이 찍힌 뒤라면 메모가 \"조회는 주말에도 1분마다 합니다.\" 전기료 전월 값 73,920원은 평일 22일(528시간)만 켠 값이라, 평일이 22일인 달(2026년 9월 등)에 신청하면 전기료가 전월과 똑같아지고 증감이 '–'가 된다."
+    ]
+  },
+  "en": {
+    "line": "It prints a cloud bill as a monthly apartment statement, so the cloud's sneaky charges read like everyday household fees.",
+    "points": [
+      "This month's bar punches through the top of the paper → cloud is pay-as-you-go, so one thing left running or one bad setting can multiply the bill in a month. The chart acts out the bill shock. The pause at last month's height is the bar pretending to be a normal month.",
+      "Electricity for an empty unit, still paying for a vacant room → a server left on over a weekend with nobody using it keeps billing, and a stopped server still pays for the disk attached to it.",
+      "Move-out fee, gate toll, parking → data coming in is generally free but data going out costs per GB; the NAT gateway (the shared front door private servers use to reach the internet) bills per hour and per GB; public IPv4 addresses cost by the hour, used or not. All real pricing models.",
+      "#1 is the balance inquiry fee → the cost dashboard is free, but one big provider charges a cent for every cost-API request. \"You checked your balance every minute to avoid bill shock\": a bot built to warn about a big bill asked every minute for numbers that change a few times a day, and checking the bill became the biggest line on the bill.",
+      "\"Reading this note just now was lookup 43,201.\" → reading the punchline was one more lookup, so the fee goes up again while you watch. On this bill, looking is a lookup."
+    ],
+    "terms": [
+      {
+        "term": "Cloud",
+        "plain": "renting servers and storage over the internet and paying for what you use."
+      },
+      {
+        "term": "Instance",
+        "plain": "one rented server, billed by the hour or second while it runs."
+      },
+      {
+        "term": "Disk and snapshot",
+        "plain": "a server's storage and its backups, billed by size every month until deleted."
+      },
+      {
+        "term": "NAT gateway",
+        "plain": "the shared exit that servers with no public address use to reach the internet."
+      },
+      {
+        "term": "Public IPv4 address",
+        "plain": "an address anyone on the internet can reach; in the cloud, each one held is billed by the hour, used or not."
+      },
+      {
+        "term": "DEBUG logging",
+        "plain": "the chattiest log level, writing down even \"got here\"; every GB of logs sent in is billed."
+      },
+      {
+        "term": "Bill-alert bot",
+        "plain": "a small script developers often write to ping the team chat when spending jumps. It calls the cost API on a timer to check the numbers."
+      },
+      {
+        "term": "관리비 고지서 (gwallibi gojiseo, the Korean version's paper)",
+        "plain": "the itemized bill a Korean apartment complex's management office sends every household each month. It adds up shared costs (cleaning, security guards, elevator upkeep) and the household's own usage (electricity, water, heating). More than half of Korean households live in apartments (2023 census, about 11.7 million homes), so this sheet is a monthly ritual for millions. Many complexes weigh each household's food waste with a card-reader bin and add the fee to the bill, which is why DEBUG logs become \"food waste\" in Korean and \"trash pickup\" here."
+      }
+    ],
+    "links": [
+      {
+        "title": "Cloud computing (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Cloud_computing",
+        "note": "on-demand resources, paid as you go",
+        "lang": "en"
+      },
+      {
+        "title": "How EC2 instance stop and start works (AWS docs)",
+        "url": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/how-ec2-instance-stop-start-works.html",
+        "note": "\"Costs related to instance stop and start\": no usage charges while stopped, EBS storage still charged"
+      },
+      {
+        "title": "New – AWS Public IPv4 Address Charge (AWS News Blog)",
+        "url": "https://aws.amazon.com/blogs/aws/new-aws-public-ipv4-address-charge-public-ip-insights/",
+        "note": "from February 1, 2024, $0.005 per IP per hour, in use or idle"
+      },
+      {
+        "title": "Overview of Data Transfer Costs for Common Architectures (AWS Architecture Blog)",
+        "url": "https://aws.amazon.com/blogs/architecture/overview-of-data-transfer-costs-for-common-architectures/",
+        "note": "inbound is free, outbound to the internet and NAT gateway processing are charged"
+      },
+      {
+        "title": "Analyzing your costs with AWS Cost Explorer (AWS docs)",
+        "url": "https://docs.aws.amazon.com/cost-management/latest/userguide/ce-what-is.html",
+        "note": "the UI is free, each paginated API request costs $0.01, data refreshes at least once every 24 hours"
+      }
+    ],
+    "deep": [
+      "The bar is not exaggerated → it is drawn to the chart's scale (top line $450), so a month about 6.7 times the last one rises more than twice the chart's height and leaves the paper.",
+      "\"Bldg A = availability zone a\" (wide screens only) → the cloud's groups of data centers become the apartment's buildings.",
+      "The lookup count is the number of minutes in the month → 43,200 for a 30-day month, 44,640 for 31 days. The statement is always for last month, and the hourly lines are recalculated for that month's hours.",
+      "Every tap on a line to read its note (only when you tap) is one more lookup, adding a cent to line 8 and a line \"※ This note came from the cost API too.\" Even just watching adds one at about 16 seconds → reading the bill is checking the bill.",
+      "Lights-out weekends (only when you tick it) lowers only electricity, move-out, the gate's per-GB part and trash; the empty room, parking, locker and lookups get \"billed anyway\", and once line 8 is in, the note says \"The lookups don't.\" Last month's electricity ($52.80) is exactly 22 weekdays (528 hours), so in a month with 22 weekdays, such as September 2026, ticking the box brings it to exactly that and the change column shows \"–\"."
+    ]
+  }
+}

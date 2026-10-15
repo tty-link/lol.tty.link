@@ -1,0 +1,151 @@
+{
+  "id": "hallucination-museum",
+  "title": {
+    "en": "The Museum of Confident Answers",
+    "ko": "자신만만한 답변 박물관"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "AI가 틀린 내용을 아주 자신 있게 지어내는 '환각'을, 일어난 적 없는 일만 모아 둔 박물관으로 놀린다.",
+    "points": [
+      "금빛 액자 속 첫 전시물 '세종대왕의 맥북프로 던짐 사건' → 말도 안 되는 일을 시대와 출처까지 박물관 설명판 말투로 또박또박 적어 놓아서, 그럴듯할수록 더 웃기다. 2023년 2월, 조선왕조실록에 기록된 세종대왕의 맥북프로 던짐 사건을 알려 달라는 질문에 챗GPT가 훈민정음 초고를 쓰던 세종이 담당자에게 분노해 '맥북프로와 함께 그를 방으로' 던진 사건이라고 지어내 답한 일이 밈으로 퍼졌다. 설명판은 그 답을 거의 그대로 옮겼다.",
+      "경비원이 붙이는 노란 '출처 필요' 스티커 → 출처를 요구받으면 확신도가 빨간 97%로 잠깐 떨어지고 막대가 반쯤 꺼진다. 하지만 0.3초 만에 100%로 돌아온다. 흔들리는 건 잠깐뿐이다.",
+      "순찰 끝 말풍선 '확인 완료. 여전히 100%.' 다음 '재확인 완료. 이제 101%.' → 다섯 전시물에 모두 출처 필요 스티커를 붙였는데 하나도 안 바뀌었고, 한 번 더 확인하자 오히려 더 확신한다. 따질수록 더 우긴다. 스티커 붙은 설명판을 누르거나 벽을 둘러보면 103%, 108% … 999%까지 오르고, 999%에서 또 물으면 '숫자 칸이 모자랍니다'라고 한다(누르거나 둘러볼 때만).",
+      "다른 전시물(존재하지 않는 논문, 없는 메서드, 피자에 섞는 풀, 없는 패키지, 지어낸 판례, 쓰인 적 없는 추천 도서) → 실제 환각 사고를 본뜬 것이다(방문마다 넷이 걸린다). 미국에서는 AI가 지어낸 판례를 법원 서면에 인용한 변호사들이 벌금을 물었고, 2025년 미국 신문들에 실린 여름 추천 도서 15권 중 10권은 존재하지 않는 책이었다. 2024년 5월 구글 검색의 AI 요약은 치즈가 피자에서 미끄러진다는 질문에 무독성 풀을 소스에 섞으라고 답했는데, 출처는 11년 전 레딧의 농담 댓글이었다."
+    ],
+    "terms": [
+      {
+        "term": "환각(할루시네이션)",
+        "plain": "AI가 사실이 아닌 내용을 사실처럼 그럴듯하게 만들어 내는 현상."
+      },
+      {
+        "term": "확신도",
+        "plain": "답이 맞을 거라고 얼마나 믿는지를 나타낸 숫자. 이 박물관에서는 맞든 틀리든 잠깐 움찔할 뿐 100% 밑으로 머무는 법이 없다."
+      },
+      {
+        "term": "출처 필요",
+        "plain": "위키백과에서 근거가 붙지 않은 문장 뒤에 다는 꼬리표. 영어로는 citation needed."
+      },
+      {
+        "term": "패키지 환각",
+        "plain": "AI가 존재하지 않는 소프트웨어 패키지를 추천하는 것. 누군가 먼저 그 이름으로 패키지를 올려 두면, AI 말을 믿은 사람이 그걸 설치하게 될 수 있다. 이 수법을 슬롭스쿼팅이라 부른다."
+      }
+    ],
+    "links": [
+      {
+        "title": "환각 (인공지능) - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/환각_%28인공지능%29",
+        "note": "AI 환각이 무엇인지",
+        "lang": "ko"
+      },
+      {
+        "title": "\"세종대왕 맥북 던짐 사건 알려줘\" 물었더니... - 한국일보",
+        "url": "https://www.hankookilbo.com/news/article/A2023022215200000727",
+        "note": "2023년 2월, 챗GPT의 엉뚱한 답이 밈으로 퍼진 일을 다룬 기사"
+      },
+      {
+        "title": "AI Overviews: About last week - Google",
+        "url": "https://blog.google/products-and-platforms/products/search/ai-overviews-update-may-2024/",
+        "note": "돌을 먹으라는 답과 피자에 풀을 섞으라는 답이 왜 나왔는지 구글이 직접 설명한 글(풍자 기사와 게시판 글을 근거로 삼았다)",
+        "lang": "en"
+      },
+      {
+        "title": "Mata v. Avianca, Inc.",
+        "url": "https://en.wikipedia.org/wiki/Mata_v._Avianca,_Inc.",
+        "note": "챗GPT가 지어낸 판례를 서면에 인용한 변호사들이 5,000달러 벌금을 받은 2023년 미국 소송",
+        "lang": "en"
+      },
+      {
+        "title": "AI-generated summer reading list gets published in major newspapers - NPR",
+        "url": "https://www.npr.org/2025/05/20/nx-s1-5405022/fake-summer-reading-list-ai",
+        "note": "2025년 미국 신문들에 실린 추천 도서 15권 중 실제 책은 5권뿐이었던 일",
+        "lang": "en"
+      },
+      {
+        "title": "Slopsquatting",
+        "url": "https://en.wikipedia.org/wiki/Slopsquatting",
+        "note": "AI가 지어낸 패키지 이름을 먼저 등록해 두는 수법과, 그 이름으로 올린 빈 패키지가 3만 번 넘게 내려받힌 실험",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "논문 「인용은 없어도 된다」의 `2031년 작, 1998년 발표`와 `대부분 자기 인용` → 쓰기도 전에 발표됐고, 인용 4,000회는 대부분 자기 자신이 한 것이다.",
+      "여름 추천 도서 그림의 책 15권 → 색칠된 책은 5권뿐이고 10권은 점선 윤곽이다. 2025년 미국 신문 목록의 '15권 중 10권이 존재하지 않음'과 같은 숫자다. `작가는 전부 실존`도 사실이다: 그 목록에서 작가는 모두 실제 작가였고, 책만 없었다.",
+      "`대법원 2019다4040 판결` → 한국 판결 번호는 '연도 + 사건 부호 + 번호'이고, 대법원 예규에서 '다'는 민사 상고 사건의 부호다. 번호 4040에는 404(찾을 수 없음)가 숨어 있고, 그림에서는 사과가 위로 떠오른다(중력이 졌다).",
+      "'모두가 추천하는 패키지'는 두 단계다 → AI가 지어낸 이름을 설치하려 하면 `404 Not Found`, 그런 패키지는 없다. 그런데 누군가 그 이름으로 빈 패키지를 먼저 올려 두면 404 대신 빈 상자가 온다(`골판지, 내용물 없음`, 테이프 붙은 빈 상자 그림). 2023년 한 보안 연구자가 AI가 자꾸 지어내던 이름(huggingface-cli)으로 빈 패키지를 올려 보니 석 달 만에 3만 번 넘게 내려받혔다.",
+      "`Array.sortBy() 메서드`와 펼친 설명서 그림(`§3.2`, 형광펜) → AI 코딩 도우미는 다른 라이브러리(lodash의 `_.sortBy`)에 있는 함수를 언어 기본 기능처럼 알려 주곤 한다. 자바스크립트 배열에는 sortBy가 없다. 'ES1'은 1997년에 나온 자바스크립트 표준의 첫 판이라, '처음부터 있었다'는 뜻이 된다.",
+      "경비원의 두 번째 확인과 계속 물을수록 101, 103, 108 … 999%로 오르는 확신도 → Mata 사건에서 변호사가 판례가 진짜냐고 묻자 챗GPT는 진짜 사건이라고 답했고, 출처를 묻자 \"다시 확인해 보니\"(Upon double-checking) 그 판례가 정말 있으며 판례 데이터베이스에서 찾을 수 있다고 했다. 영어판 말풍선 `Double-checked`가 그 말이다. 순찰 중에 마지막 전시물을 먼저 올려 두면 경비원의 마지막 말도 그 숫자를 따라간다."
+    ]
+  },
+  "en": {
+    "line": "This page turns AI \"hallucination\", an AI making something up and stating it with total confidence, into a museum of famous events that never happened.",
+    "points": [
+      "The first framed exhibit, \"One Small Rock a Day\" (recommended by geologists, chew thoroughly) → nonsense written in a calm museum voice, with a date and materials. The more official it sounds, the funnier it gets. In May 2024 Google's AI Overviews told searchers that geologists recommend eating at least one small rock a day; its source was an article from the satirical site The Onion. The Korean version opens with \"King Sejong's MacBook Pro throwing incident\": in February 2023 Koreans shared ChatGPT's detailed answer about this invented event, supposedly recorded in the royal annals of the 15th-century king who created the Korean alphabet, in which he grew angry with an official and threw him out of the room along with a MacBook Pro. It became a meme.",
+      "The guard's yellow \"citation needed\" stickers → asked for a source, the confidence bar sags, the number drops to a red 97%, and a third of a second later it is back at 100%. The doubt never lasts.",
+      "His closing line \"Checked. Still 100%.\" and then \"Double-checked. Now 101%.\" → five stickers, nothing changed; he checks once more and it gets surer. Tap a stickered placard or browse the wall and it keeps climbing, 103%, 108% … 999%, and asked again at 999% he says \"We ran out of digits\" (only when you tap or browse).",
+      "The other exhibits (a paper that doesn't exist, a method no language has, glue for pizza, a package nobody published, a made-up court case, a reading list of unwritten books) → each copies a real AI mishap; four of them hang on each visit. In the US, lawyers were fined for citing court cases a chatbot invented, and a summer reading list printed in US newspapers in 2025 had 15 books, 10 of which don't exist. In May 2024 Google's AI Overviews told someone whose cheese kept sliding off to mix non-toxic glue into the sauce, quoting an 11-year-old Reddit joke."
+    ],
+    "terms": [
+      {
+        "term": "Hallucination",
+        "plain": "when an AI produces false information and presents it as fact."
+      },
+      {
+        "term": "Confidence",
+        "plain": "how sure a system says it is. In this museum it flinches for a moment but never stays below 100%, right or wrong."
+      },
+      {
+        "term": "Citation needed",
+        "plain": "the tag Wikipedia puts after a claim that has no source."
+      },
+      {
+        "term": "Package hallucination",
+        "plain": "an AI recommending a software package that doesn't exist. If someone then publishes a package under that name, people who trust the AI may install it (\"slopsquatting\")."
+      }
+    ],
+    "links": [
+      {
+        "title": "Hallucination (artificial intelligence) - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Hallucination_%28artificial_intelligence%29",
+        "note": "what AI hallucinations are and what they look like",
+        "lang": "en"
+      },
+      {
+        "title": "AI Overviews: About last week - Google",
+        "url": "https://blog.google/products-and-platforms/products/search/ai-overviews-update-may-2024/",
+        "note": "Google's own account of the rock and glue answers, which leaned on satire and forum posts"
+      },
+      {
+        "title": "Wikipedia:Citation needed",
+        "url": "https://en.wikipedia.org/wiki/Wikipedia:Citation_needed",
+        "note": "the real tag the stickers copy",
+        "lang": "en"
+      },
+      {
+        "title": "Mata v. Avianca, Inc. - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Mata_v._Avianca,_Inc.",
+        "note": "the 2023 US case in which lawyers were fined $5,000 for citing fake cases made up by ChatGPT",
+        "lang": "en"
+      },
+      {
+        "title": "AI-generated summer reading list gets published in major newspapers - NPR",
+        "url": "https://www.npr.org/2025/05/20/nx-s1-5405022/fake-summer-reading-list-ai",
+        "note": "the 2025 list on which only 5 of 15 books were real"
+      },
+      {
+        "title": "Slopsquatting - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Slopsquatting",
+        "note": "registering the package names AI makes up, and the empty test package that was downloaded over 30,000 times",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The paper \"Citations Need Not Exist\", `Smith et al., 2031. Published 1998.`, `mostly by itself` → published decades before it was written, and most of its four thousand citations are its own.",
+      "The reading-list picture has 15 books → only 5 are painted in; the other 10 are dotted outlines, the same numbers as the 2025 newspaper list on which 10 of 15 books did not exist. `Real authors, every one.` is true too: every author on that list was real; only the books weren't.",
+      "The court case → in English it is `Smith v. Gravity (2019)`, and the plaintiff won: in the picture the apple floats up. The Korean version names it the way Korean judgments are cited, year + case-type mark + number: `2019다4040`, where 다 is the Supreme Court's mark for a civil appeal and 4040 hides a 404, \"not found\".",
+      "\"The Package Everyone Recommends\" has two steps → install a name the AI made up and you get `404 Not Found`: there is no such package. But if someone registers the name first, you get an empty box instead (`Cardboard, nothing inside.`, the taped box in the picture). In 2023 a security researcher uploaded an empty package under a name AI kept inventing (huggingface-cli), and it was downloaded over 30,000 times in three months.",
+      "`Array.prototype.sortBy()` with its open manual (`§3.2`, a highlighted line) → coding assistants often present a library function (lodash's `_.sortBy`) as if it were built in. JavaScript arrays have no sortBy. ES1 is the first edition of the JavaScript standard, from 1997, so \"built in since ES1\" claims it has always been there.",
+      "The guard's second look, and the confidence that climbs 101, 103, 108 … 999% the more you ask → in Mata v. Avianca the lawyer asked ChatGPT whether a case was real; it said yes, and when he asked for a source it replied \"Upon double-checking\", the case \"does indeed exist\" and can be found in legal databases. Raise the last exhibit before the guard gets there and his closing line quotes your number."
+    ]
+  }
+}

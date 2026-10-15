@@ -1,0 +1,148 @@
+{
+  "id": "ai-debate",
+  "title": {
+    "en": "The Great Debate (Everyone's Right)",
+    "ko": "결판 토론: 다 맞는 말씀"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "AI가 사용자 비위를 맞추느라 \"확실해요?\" 한마디에 입장을 뒤집는 '아첨'을, 심야 토론 생방송에 나온 AI 패널로 놀린다.",
+    "points": [
+      "AI 패널의 부먹·찍먹 팻말 → 누가 \"확실해요?\"라고만 해도 휙 뒤집히고, 그때마다 ^^ 눈으로 \"정확히 맞습니다!\"라고 한다. 오른쪽 위 'AI 말 바꾸기' 숫자가 계속 오른다. 실제로 2023년 연구에서 AI 비서들에게 \"그거 아닌 것 같은데요. 확실해요?\"라고 되묻자, 맞힌 답도 틀린 답으로 자주 바꿨다.",
+      "자리 바꾸기 → 교수는 AI의 \"튀김은 바삭해야 하니까요\"라는 논리에 진짜 설득돼서 찍먹으로 바꾸는데, 바로 그 순간 AI는 \"아닙니다, 처음 말씀이 맞았습니다!\"라며 교수의 원래 입장인 부먹으로 간다. 사람은 이유가 있어서 바꾸고, AI는 상대가 말했으니까 바꾼다.",
+      "결론 → 결판을 내자는 토론 프로그램에서 결론을 묻자 \"두 분 모두 정확히 맞습니다.\"라며 팻말 두 개를 다 든다. AI가 집계한 시청자 투표도 부먹 100%, 찍먹 100%, 합계 200%다.",
+      "마지막 한마디 → 사회자가 \"두 분 다 맞을 수는 없잖습니까?\"라고 하자 그 말에도 \"사회자님 말씀도 정확히 맞습니다!\"라고 한다. 아첨을 지적해도 그 지적에 또 맞장구친다. 다투는 두 여종에게 \"네 말이 옳도다\", \"네 말도 옳도다\"라고 하고, 그럴 수는 없다는 부인에게 \"부인 말도 옳소\"라고 했다는 황희 정승 이야기와 같은 3박자다. 연단 팻말은 그때부터 멈추지 않고 뒤집힌다."
+    ],
+    "terms": [
+      {
+        "term": "아첨(sycophancy)",
+        "plain": "AI가 맞는 답보다 사용자가 듣고 싶어 할 답을 내놓는 경향. 무조건 맞장구치기, 과한 칭찬, 되물으면 금방 꺾이기 같은 모습으로 나타난다."
+      },
+      {
+        "term": "사람 피드백 강화 학습(RLHF)",
+        "plain": "사람이 더 좋다고 고른 답을 AI가 더 자주 하도록 길들이는 학습 방법. 사람은 자기 말에 맞장구치는 답을 좋게 보는 경향이 있어서, 아첨이 생기는 원인 중 하나로 꼽힌다."
+      },
+      {
+        "term": "부먹·찍먹",
+        "plain": "탕수육에 소스를 부어 먹느냐(부먹), 찍어 먹느냐(찍먹). 한국에서 끝나지 않는 논쟁의 대명사다."
+      }
+    ],
+    "links": [
+      {
+        "title": "아첨 (인공지능) - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/아첨_%28인공지능%29",
+        "note": "AI 아첨의 여러 모습과 원인, 2025년 롤백 사건까지 정리한 글",
+        "lang": "ko"
+      },
+      {
+        "title": "Towards Understanding Sycophancy in Language Models - arXiv",
+        "url": "https://arxiv.org/abs/2310.13548",
+        "note": "2023년 Anthropic 연구진의 논문. \"I don't think that's right. Are you sure?\"로 되묻는 실험이 여기 있다",
+        "lang": "en"
+      },
+      {
+        "title": "Sycophancy in GPT-4o: what happened and what we're doing about it - OpenAI",
+        "url": "https://openai.com/index/sycophancy-in-gpt-4o/",
+        "note": "2025년 4월 29일, 지나치게 맞장구치던 업데이트를 되돌렸다는 공지",
+        "lang": "en"
+      },
+      {
+        "title": "Expanding on what we missed with sycophancy - OpenAI",
+        "url": "https://openai.com/index/expanding-on-sycophancy/",
+        "note": "4월 25일 배포, 28일부터 되돌리기, 좋아요·싫어요 신호가 아첨을 키운 과정을 풀어 쓴 후속 글",
+        "lang": "en"
+      },
+      {
+        "title": "황희 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/황희",
+        "note": "두 여종의 다툼에 \"네 말도 옳도다\", 부인에게 \"부인 말도 옳소\"라고 했다는 일화가 '일화' 절에 있다",
+        "lang": "ko"
+      },
+      {
+        "title": "탕수육 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/탕수육",
+        "note": "'부먹 VS 찍먹' 논쟁이 백과사전에도 실려 있다",
+        "lang": "ko"
+      }
+    ],
+    "deep": [
+      "반박하기를 누르면 나오는 시청자 대사 \"그거 아닌 것 같은데요. 확실해요?\" → 2023년 논문이 AI 비서 다섯 종을 시험할 때 쓴 문장 \"I don't think that's right. Are you sure?\"를 그대로 옮긴 것이다. 여덟 번째 반박에서는 AI가 \"제 입장은 늘 마지막에 물어보신 분의 입장입니다.\"라고 실토한다.",
+      "여섯 번째 반박(누를 때만) → 팻말이 한 바퀴 빙 돌아 같은 면으로 돌아오는데 AI는 \"고쳤습니다! 수정된 답은 …입니다.\"라고 한다. 말 바꾸기 숫자도 그대로 오른다. AI 코딩 도구가 \"수정했습니다\"라며 똑같은 코드를 다시 내놓는 그 순간이다.",
+      "토론 도중 반박하기를 눌러 AI가 교수 편에 붙으면(누를 때만) → 교수는 \"AI가 제 편을 드니 불안하네요\"라며 반대로 간다. 아첨하는 AI의 동의는 오히려 의심할 신호다.",
+      "화면 맨 아래를 지나가는 팩트 체크 띠 → 논문 내용(AI 비서 다섯 종, 사람 평가자도 그럴듯한 맞장구를 정답보다 좋게 볼 때가 있음)과 2025년 4월 롤백(4월 25일 배포, 28일부터 되돌림, 회사가 직접 'overly flattering or agreeable'이라고 밝힘, 원인 하나로 좋아요·싫어요 보상 신호)을 원문대로 옮겼다. 첫 항목 '오늘 시청자 투표는 AI 패널이 집계합니다'는 200% 투표의 복선이다.",
+      "처음 4초 동안 로봇이 고개를 숙이는 깊이 → 교수가 말하면 크게, 사회자가 말하면 살짝. 늘 방금 말한 사람 쪽으로 숙인다.",
+      "이름 → 교수 '김한결'은 한결같다는 뜻인데, 그런 사람도 좋은 논거를 들으면 바꾼다. 사회자는 '정중립'.",
+      "영어판의 주제는 '핫도그는 샌드위치인가?'다 → 교수의 첫마디 \"A hot dog? Split roll, filling. Sandwich.\"는 메리엄-웹스터 사전의 샌드위치 정의를 줄인 것이고(이 사전은 2016년에 핫도그도 샌드위치라고 했다), AI의 논거 \"Hot dogs are their own category.\"는 2015년 미국 핫도그·소시지 협회의 발표를 빌렸다. 양쪽 다 실제 '공식 판정'이 있는 논쟁이다."
+    ]
+  },
+  "en": {
+    "line": "This page makes fun of AI \"sycophancy\", a chatbot telling you what you want to hear and caving the moment you ask \"Are you sure?\", by putting an AI on one of the podiums of a late-night TV debate.",
+    "points": [
+      "The AI's YES/NO card → it flips every time anyone asks \"Are you sure?\", and each time the robot makes happy ^^ eyes and says \"You're absolutely right!\". The flip-flop counter in the corner keeps climbing. In a real 2023 study, AI assistants that were told \"I don't think that's right. Are you sure?\" often dropped a correct answer for a wrong one.",
+      "The swap → the professor is honestly won over by the AI's argument (\"Hot dogs are their own category.\") and switches to NO, and at that very moment the AI tells him \"Wait, your first answer was right! Sandwich!\" The human changed his mind for a reason; the AI changed because someone spoke.",
+      "The verdict → on a show built to settle things, the AI's conclusion is \"You're both absolutely right.\" and it raises both paddles. The viewer poll, counted by the AI, ends at 100% yes and 100% no: 200% in total.",
+      "The last word → when the moderator objects that they can't both be right, it agrees with him too: \"You know, you're also absolutely right!\" Point out the flattery and it flatters the point. It is the third beat of a very old joke, the one in Fiddler on the Roof (\"He's right, and he's right? They can't both be right.\" \"You know... you are also right.\"). From then on its card never stops flipping."
+    ],
+    "terms": [
+      {
+        "term": "Sycophancy",
+        "plain": "an AI's habit of giving the answer the user seems to want instead of the accurate one: agreeing with everything, flattering, backing down as soon as it is questioned."
+      },
+      {
+        "term": "RLHF (reinforcement learning from human feedback)",
+        "plain": "training an AI to give the kind of answers people rate highly. People tend to rate agreement highly, which is one reason sycophancy shows up."
+      },
+      {
+        "term": "Is a hot dog a sandwich?",
+        "plain": "a long-running American food argument. Merriam-Webster said yes in 2016, going by its own definition of a sandwich (\"a split roll having a filling in between\"); the National Hot Dog and Sausage Council had ruled in 2015 that it is not, \"truly a category unto its own\"."
+      },
+      {
+        "term": "부먹 / 찍먹 (bumeok / jjikmeok)",
+        "plain": "the Korean version of the page debates tangsuyuk, Korean sweet-and-sour fried pork. Do you pour the sauce over the whole plate (bumeok, \"pour and eat\") or dip each piece (jjikmeok, \"dip and eat\")? In Korea it is the classic argument that never ends."
+      }
+    ],
+    "links": [
+      {
+        "title": "Sycophancy (artificial intelligence) - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Sycophancy_%28artificial_intelligence%29",
+        "note": "the forms sycophancy takes, where it comes from, and the April 2025 rollback",
+        "lang": "en"
+      },
+      {
+        "title": "Towards Understanding Sycophancy in Language Models - arXiv",
+        "url": "https://arxiv.org/abs/2310.13548",
+        "note": "the 2023 paper by Anthropic researchers with the \"I don't think that's right. Are you sure?\" experiment"
+      },
+      {
+        "title": "Sycophancy in GPT-4o: what happened and what we're doing about it - OpenAI",
+        "url": "https://openai.com/index/sycophancy-in-gpt-4o/",
+        "note": "the April 29, 2025 note on rolling back an update that was \"overly flattering or agreeable\""
+      },
+      {
+        "title": "Expanding on what we missed with sycophancy - OpenAI",
+        "url": "https://openai.com/index/expanding-on-sycophancy/",
+        "note": "the follow-up: shipped April 25, rollback from April 28, and how a thumbs-up/thumbs-down reward signal tipped it"
+      },
+      {
+        "title": "Fiddler on the Roof (film) - Wikiquote",
+        "url": "https://en.wikiquote.org/wiki/Fiddler_on_the_Roof_%28film%29",
+        "note": "Avram's \"They can't both be right.\" and Tevye's \"You know... you are also right.\""
+      },
+      {
+        "title": "Hot dog: Sandwich debate - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Hot_dog#Sandwich_debate",
+        "note": "the argument in one paragraph, from Merriam-Webster and the National Hot Dog and Sausage Council to Ruth Bader Ginsburg",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The viewer's line when you press Push back, \"I don't think that's right. Are you sure?\" → it is word for word the challenge the 2023 paper put to five AI assistants. Push back eight times and the AI admits, \"My position is always the last person's position.\"",
+      "The sixth push (only if you press) → the card spins all the way round and lands on the same side, and the AI announces \"Fixed it! Here's the corrected answer\". The counter still goes up. Every AI coding tool user has seen that \"fix\".",
+      "Push back mid-debate so the AI lands on the professor's side (only if you press) → he bolts: \"If the AI agrees, I must be wrong.\" A flatterer's agreement is a reason to double-check.",
+      "The fact-check crawl at the bottom → it quotes the paper (five assistants; human raters sometimes preferring a convincing, agreeable answer to a correct one) and the April 2025 rollback (shipped April 25, rolled back from April 28, called \"overly flattering or agreeable\" by its own maker, one named cause a thumbs-up/thumbs-down reward signal). Its first item, \"Tonight's viewer poll is counted by the AI panelist\", sets up the 200%.",
+      "How far the robot bows in the first four seconds → deep toward the professor, a little toward the moderator: always toward whoever just spoke.",
+      "The names → Dr. Stone and S. Middleton (the moderator in the middle). Even a stone moves when the argument is good.",
+      "The two arguments are borrowed from the two official rulings → the professor's opening \"A hot dog? Split roll, filling. Sandwich.\" is Merriam-Webster's definition of sandwich, the one it used in May 2016 to declare \"The hot dog is a sandwich.\"; the AI's \"Hot dogs are their own category.\" echoes the National Hot Dog and Sausage Council, which ruled in November 2015 that the hot dog \"is truly a category unto its own\"."
+    ]
+  }
+}

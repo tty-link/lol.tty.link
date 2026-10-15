@@ -1,0 +1,159 @@
+{
+  "id": "works-on-my-machine",
+  "title": {
+    "en": "Certificate of Works on My Machine",
+    "ko": "내 컴퓨터에선 잘 됨 상"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "개발자의 가장 오래된 변명 \"제 컴퓨터에서는 잘 되는데요\"를 금테 상장으로 정식 수여하고, 그 변명에 돌아오는 오래된 대꾸를 곧이곧대로 해 버린 결과까지 붙인 페이지다.",
+    "points": [
+      "금테, 큼직한 \"상 장\" 글씨, 상장 번호, '타의 모범이 되므로 이 상장을 수여합니다' 같은 엄숙한 양식 → 상을 주는 내용이 '내 컴퓨터에서만 잘 됨'이다. 남의 컴퓨터나 실제 서버에서 안 되면 아무 소용 없는 코드가 남의 모범이 되었다.",
+      "증인 서명 \"localhost\" → localhost는 '지금 이 컴퓨터 자신'을 가리키는 이름이다. 잘 되는 걸 본 증인이 그 컴퓨터 하나뿐이다.",
+      "포스트잇 \"좋아요. 그럼 컴퓨터째 배포하죠.\" 뒤 '배포 완료 my-machine:latest 14.2GB' 도장 → 변명에 대한 유명한 비꼼을 곧이곧대로 해 버렸다. 프로그램을 돌아가는 환경째 상자(컨테이너)에 담아 보내는 요즘 방식이 바로 '컴퓨터째 배포'라는 개발자 농담이다.",
+      "그런데도 몇 초 뒤 \"티켓 다시 열었어요.\" 포스트잇이 또 붙는다 → 컴퓨터를 통째로 보냈는데도 안 된다. 그 코드는 끝까지 그 컴퓨터에서만 됐다.",
+      "(누를 때만) 상장을 누르면 → 다시 열린 티켓에 재현 안 됨, 어제는 됐음, 세 번 돌리니 됨, 시크릿 창에선 됨… 변명 도장으로 답하고, 네 개를 다 찍으면 '다시 닫음 · 내 컴에선 됨' 도장이 저절로 찍혀 티켓을 도로 닫는다. 결국 처음 변명으로 돌아왔다."
+    ],
+    "terms": [
+      {
+        "term": "localhost",
+        "plain": "컴퓨터가 자기 자신을 부르는 이름. 주소로 바꾸면 보통 127.0.0.1이다."
+      },
+      {
+        "term": "배포",
+        "plain": "만든 프로그램을 실제 서버에 올려 사람들이 쓰게 하는 일."
+      },
+      {
+        "term": "컨테이너",
+        "plain": "프로그램과 그 프로그램에 필요한 환경을 한 상자에 담아 어느 컴퓨터에서든 똑같이 돌게 하는 방법. 도커(Docker)가 대표적이다. 이미지 이름 끝의 `:latest`는 꼬리표를 따로 안 붙이면 저절로 붙는 기본 꼬리표라서, 이름과 달리 정말 최신판이라는 보장은 없다."
+      },
+      {
+        "term": "티켓",
+        "plain": "버그나 할 일을 한 장씩 적어 관리하는 업무 카드. 고쳤다고 닫은 티켓을 '다시 열면' 아직 안 고쳐졌다는 뜻이다."
+      },
+      {
+        "term": "플레이키 테스트",
+        "plain": "코드는 그대로인데 돌릴 때마다 통과했다 실패했다 하는 테스트. 그래서 '세 번 돌리니 됨'."
+      }
+    ],
+    "links": [
+      {
+        "title": "The \"Works on My Machine\" Certification Program",
+        "url": "https://blog.codinghorror.com/the-works-on-my-machine-certification-program/",
+        "note": "2007년 3월 제프 앳우드가 조지프 쿠니의 아이디어를 가짜 인증 배지로 꾸며 소개한 글. 인증 절차 네 단계가 실려 있다.",
+        "lang": "en"
+      },
+      {
+        "title": "로컬호스트 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/로컬호스트",
+        "note": "localhost와 127.0.0.1이 '자기 자신'을 가리키는 이유",
+        "lang": "ko"
+      },
+      {
+        "title": "What is Docker?",
+        "url": "https://docs.docker.com/get-started/docker-overview/",
+        "note": "프로그램을 환경째 컨테이너에 담아 옮기는 도커 공식 설명",
+        "lang": "en"
+      },
+      {
+        "title": "alpine - Docker Official Image",
+        "url": "https://hub.docker.com/_/alpine",
+        "note": "작은 기본 이미지 Alpine의 도커 허브 공식 페이지. 크기가 5MB밖에 안 된다고 소개한다",
+        "lang": "en"
+      },
+      {
+        "title": "BMO User Guide: Bug Statuses",
+        "url": "https://wiki.mozilla.org/BMO/UserGuide/BugStatuses",
+        "note": "모질라 버그 추적기의 상태와 종결 사유 설명. WORKSFORME와 REOPENED가 함께 나온다",
+        "lang": "en"
+      },
+      {
+        "title": "Eradicating Non-Determinism in Tests",
+        "url": "https://martinfowler.com/articles/nonDeterminism.html",
+        "note": "돌릴 때마다 결과가 다른 테스트가 왜 골칫거리인지(마틴 파울러)",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "원형 도장 맨 위의 작은 노트북과 체크 표시: 인증받은 것은 코드가 아니라 그 노트북 한 대다.",
+      "상장 번호 '제 2026-404 호'의 404는 웹에서 '페이지를 찾을 수 없음'을 뜻하는 오류 번호다. 연도는 방문한 해로 바뀐다.",
+      "서명란 직함 '개발팀장 (빌드는 됨)': 원조 'Works on My Machine' 인증 절차의 1단계도 '코드를 컴파일하라'다. 다른 사람이 고친 최신 코드를 먼저 받아 오는 건 '전혀 필수가 아니다'라고 적혀 있다.",
+      "배포 도장의 14.2GB: 도커 허브의 Alpine 공식 이미지 설명은 크기가 5MB밖에 안 된다고 소개한다. 컴퓨터를 통째로 담았더니 그보다 천 배 넘게 크다.",
+      "마무리 도장 '다시 닫음 · 내 컴에선 됨': 오래된 버그 추적기 Bugzilla에는 실제로 WORKSFORME(내 쪽에선 됨)라는 공식 종결 사유가 있다. 모질라의 안내서는 다시 열림(REOPENED) 상태를 설명하면서 바로 그 WORKSFORME 버그가 다시 열리는 경우를 예로 든다.",
+      "도장은 변명 넷 다음 원형 도장을 돌고, 덧찍은 도장은 일곱 개까지만 남는다. 마무리 도장은 네 번째 변명 뒤에 한 번만 찍히고 지워지지 않는다."
+    ]
+  },
+  "en": {
+    "line": "The oldest excuse in software, \"but it works on my machine\", is formally awarded a gold-framed certificate, and then the oldest reply to it is taken literally.",
+    "points": [
+      "Blackletter title, gold frame, \"This certifies that\" → all that ceremony for \"my code ran flawlessly… on my machine\", a claim that is worthless the moment it has to run anywhere else. The developer certifies their own code, on their own machine, and signs it themselves.",
+      "The witness signature reads \"localhost\" → localhost is the name a computer uses for itself. The only witness that it worked is the machine itself.",
+      "The sticky note \"Great. Then we'll ship your machine.\" and then a stamp \"Shipped · my-machine:latest · 14.2 GB\" → the classic sarcastic reply, taken literally. Containers, which ship a program together with its whole environment, are the running developer joke about how \"ship your machine\" actually came true.",
+      "A few seconds later, a second note: \"Ticket reopened.\" → they shipped the whole machine and it still doesn't work. It only ever worked on that one machine.",
+      "(Only if you tap) Keep tapping → the reopened ticket gets answered with \"Can't reproduce\", \"Worked yesterday\", \"Passed on retry #3\", \"Works in incognito\", and after the fourth a stamp comes down on its own: \"Closed as Works for me\". Right back to the first excuse."
+    ],
+    "terms": [
+      {
+        "term": "localhost",
+        "plain": "the name a computer uses for itself; as an address it is usually 127.0.0.1."
+      },
+      {
+        "term": "Ship",
+        "plain": "release software to the people who will use it, or put it on the servers they use."
+      },
+      {
+        "term": "Container",
+        "plain": "a box holding a program and everything it needs, so it runs the same on any machine. Docker is the best-known tool. `:latest` at the end of an image name is the tag an image gets when nobody gives it one, so despite the name it is not guaranteed to be the newest version."
+      },
+      {
+        "term": "Ticket",
+        "plain": "a card in a team's bug tracker for one bug or task. Reopening a closed ticket means \"it isn't actually fixed\"."
+      },
+      {
+        "term": "Flaky test",
+        "plain": "a test that passes or fails at random while the code stays the same, hence \"Passed on retry #3\"."
+      }
+    ],
+    "links": [
+      {
+        "title": "The \"Works on My Machine\" Certification Program",
+        "url": "https://blog.codinghorror.com/the-works-on-my-machine-certification-program/",
+        "note": "Jeff Atwood's March 2007 post that turned Joseph Cooney's idea into a mock certification badge, four steps included"
+      },
+      {
+        "title": "Localhost - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Localhost",
+        "note": "why localhost and 127.0.0.1 always mean \"this computer\"",
+        "lang": "en"
+      },
+      {
+        "title": "What is Docker?",
+        "url": "https://docs.docker.com/get-started/docker-overview/",
+        "note": "Docker's own explanation of packaging an application with its environment in a container"
+      },
+      {
+        "title": "alpine - Docker Official Image",
+        "url": "https://hub.docker.com/_/alpine",
+        "note": "Docker Hub's page for the small Alpine base image, \"only 5 MB in size\""
+      },
+      {
+        "title": "BMO User Guide: Bug Statuses",
+        "url": "https://wiki.mozilla.org/BMO/UserGuide/BugStatuses",
+        "note": "Mozilla's guide to bug statuses and resolutions, WORKSFORME and REOPENED included"
+      },
+      {
+        "title": "Eradicating Non-Determinism in Tests",
+        "url": "https://martinfowler.com/articles/nonDeterminism.html",
+        "note": "Martin Fowler on why tests with random results are so harmful"
+      }
+    ],
+    "deep": [
+      "The tiny laptop with a tick at the top of the round seal: what got certified is not the code but that one laptop.",
+      "The serial number, No. 2026-404: 404 is the web's \"Not Found\" error. The year follows the day you visit.",
+      "The signer's title, \"Lead Developer (it compiled)\": step 1 of the original Works on My Machine certification is \"Compile your application code\", and fetching your teammates' latest changes first is \"purely optional\".",
+      "The shipped image is 14.2 GB. Docker Hub's official Alpine image page calls it \"only 5 MB in size\"; ship a whole machine and you get something over a thousand times bigger.",
+      "The closing stamp, \"Closed as Works for me\": the old bug tracker Bugzilla really has an official resolution called WORKSFORME, and Mozilla's guide explains the REOPENED status with exactly that example, a WORKSFORME bug that gets reopened.",
+      "The stamps cycle through four excuses and then the seal, and only seven extra stamps stay on the paper; the closing stamp comes once, after the fourth excuse, and stays."
+    ]
+  }
+}

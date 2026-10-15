@@ -1,0 +1,140 @@
+{
+  "id": "office-findings",
+  "title": {
+    "en": "Find the Vulnerabilities",
+    "ko": "취약점 찾기"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "아늑해 보이는 사무실도 보안 점검자의 빨간 펜으로 보면 구멍이 숭숭 뚫려 있고, 비밀번호를 바꾸라고 하면 숫자 하나만 올린다는 것을 놀린다.",
+    "points": [
+      "화분과 햇살 사이로 쳐지는 빨간 동그라미 → 포스트잇 비밀번호, 잠기지 않은 화면, 주차장에서 주운 USB처럼 보안 교육에 단골로 나오는 실수가 한 방에 다 모여 있다. 마지막 총평 '아늑함. 그리고 치명적.'은 USB에 붙은 최고 등급 '치명적'을 그대로 받아 사무실 전체에 매긴다. 둘 다 사실이라서 웃긴다.",
+      "잠기지 않은 화면, '커피 제가 쏩니다' → 주인이 커피 타러 간 사이 잠기지 않은 화면을 본 동료가 주인 이름으로 한턱을 내 버렸다. 커피 타러 갔다가 커피를 사게 생겼다.",
+      "(누를 때만) 멀쩡한 물건을 누르면 붙는 초록 메모 '조명: 펌웨어 없음. 양호.' → 인터넷에 안 붙은 물건이 이 사무실에서 제일 안전하다.",
+      "(재점검 도장을 누를 때만) 안내는 '다 고쳤답니다'라는데, 다 고쳐진 사무실에서 화이트보드 비번만 hunter2가 hunter3으로 바뀌고 총평은 '깔끔함. 그리고 hunter3.' → 비밀번호를 바꾸라고 하니 숫자만 하나 올리고, 바꾼 비번을 또 '공유 금지' 밑에 적었다. 실제로 흔한 습관이다. 미국 대학 연구에서는 옛 비밀번호를 알면 새 비밀번호를 네 번 안에 맞힐 수 있는 계정이 17%였다.",
+      "(도장을 또 누를 때마다) 도장이 '재점검'에서 '재재점검'으로 → 점검은 끝나지 않는다. 누를 때마다 비밀번호 숫자가 하나씩 오르고, '재'도 하나씩 붙는다(넷까지)."
+    ],
+    "terms": [
+      {
+        "term": "모의해킹(침투 테스트)",
+        "plain": "허락을 받고 공격자처럼 들어가 보는 보안 점검. 건물에 몰래 들어가 서버실까지 가 보는 물리 점검도 있다."
+      },
+      {
+        "term": "hunter2",
+        "plain": "2004년 무렵 IRC 채팅 명장면 모음 사이트 bash.org에 올라온 대화. 비밀번호를 치면 남에게는 별표로 보인다는 말에 속아 자기 비밀번호 'hunter2'를 그대로 쳐 버린 사람의 이야기다. 그 뒤로 '모두가 아는 비밀번호'를 뜻하는 밈이 됐다."
+      },
+      {
+        "term": "재점검",
+        "plain": "지적 사항을 고쳤다고 하면 다시 와서 정말 고쳤는지 확인하는 점검. 결과는 '조치 완료'와 '미조치'로 적는다."
+      },
+      {
+        "term": "USB 떨어뜨리기",
+        "plain": "악성 USB를 주차장 같은 곳에 흘려 두고 누군가 주워 꽂기를 기다리는 공격. 실험해 보니 정말 꽂는다."
+      }
+    ],
+    "links": [
+      {
+        "title": "침투 테스트 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/침투_테스트",
+        "note": "모의해킹이 무엇이고 어떤 단계로 하는지. 종류에 재점검에 해당하는 '수정 검증'도 있다",
+        "lang": "ko"
+      },
+      {
+        "title": "bash.org 인용 #244321, 2004년 6월 보관본",
+        "url": "https://web.archive.org/web/20040604194346/http://bash.org/?244321",
+        "note": "hunter2 밈이 나온 원래 대화",
+        "lang": "en"
+      },
+      {
+        "title": "Time to rethink mandatory password changes - FTC",
+        "url": "https://www.ftc.gov/policy/advocacy-research/tech-at-ftc/2016/03/time-rethink-mandatory-password-changes",
+        "note": "비밀번호를 억지로 자주 바꾸게 하면 숫자 하나 올리기 같은 뻔한 변형만 늘어난다는 2016년 글(17% 연구도 여기 나온다)",
+        "lang": "en"
+      },
+      {
+        "title": "NIST SP 800-63B-4",
+        "url": "https://pages.nist.gov/800-63-4/sp800-63b.html",
+        "note": "미국 표준 지침. 비밀번호를 주기적으로 바꾸라고 강제하지 말라(SHALL NOT)고 적혀 있다",
+        "lang": "en"
+      },
+      {
+        "title": "Users Really Do Plug in USB Drives They Find - Google Research",
+        "url": "https://research.google/pubs/users-really-do-plug-in-usb-drives-they-find/",
+        "note": "대학 캠퍼스에 USB 297개를 떨어뜨려 본 실험(꽂힌 비율 45–98%, 첫 USB는 6분 안에)",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "모니터 포스트잇의 `Summer26!` → 대문자·소문자·숫자·기호가 다 든, 옛날식 복잡도 규칙에 딱 맞춘 비밀번호다. 그런데 '계절+연도+느낌표'라 뻔해서 유출 목록에도 600번 넘게 나온다(Have I Been Pwned, 2026년 10월). 미국 NIST 지침은 이렇게 문자 종류를 섞으라는 규칙을 강제하지 말라고 한다.",
+      "의자 위 쪽지 `5분만` 아래 빨간 `(14분 전)` → 2번 지적 \"주인은 14분째 커피 타는 중\"과 숫자가 맞는다.",
+      "화이트보드의 hunter2 → 밈인데도 진짜로 쓰는 사람이 많아 유출 목록에 6만 5천 번 넘게 나온다. 재점검 도장을 누를 때마다 hunter3, hunter4로 오르고, 도장은 '재'가 넷인 '재재재재점검'에서 더 늘지 않는다.",
+      "서버실 문을 괸 소화기 '지적 사항 1+1' → 열어 둔 서버실 문 하나, 제자리를 떠난 소화기 하나. 소화기는 정해진 자리에 걸어 두고 바로 꺼낼 수 있어야 한다. 재점검을 하면 문이 닫히고 소화기가 문 옆 벽으로 돌아간다.",
+      "재점검의 휴대폰 → 화면은 켜 둔 채 게시물만 지워진다. 폰을 꺼도 올린 사원증 사진은 그대로 남으니, 고칠 것은 게시물이다.",
+      "USB의 꼬리표 '2026 연봉' → 사실 미끼가 없어도 됐다. Google 연구에서 USB 겉모습은 꽂힐 확률을 높이지 않았고, 꽂은 사람들은 주인을 찾아 주려는 마음이었다."
+    ]
+  },
+  "en": {
+    "line": "A cozy office looks very different through a security auditor's red marker, and when people are told to change a password, they change one digit.",
+    "points": [
+      "Red marker rings between the plants and the sunshine → a sticky-note password, an unlocked screen, a USB stick from the parking lot: every classic from security awareness training in one room. The verdict, \"Cozy. Also critical.\", takes the top severity from the USB stick's chip and gives it to the whole office. It is funny because both are true.",
+      "The unlocked screen, \"Has since promised everyone donuts\" → the classic prank on anyone who walks off without locking their screen: a coworker sends a donut offer in their name. They went out for coffee and came back owing the team donuts.",
+      "(Only when you click) The green pass notes on harmless things, \"Lamp: no firmware. Pass.\" → the only safe things in this office are the ones not on the internet.",
+      "(Only when you press the Retest stamp) \"They say it's all fixed\", and everything is, except the whiteboard now says hunter3 instead of hunter2, and the verdict reads \"Tidy. Also hunter3.\" → asked to change the password, they bumped the number and wrote the new one under \"do not share\" again. It is a real habit: in a US university study, knowing someone's old password let researchers guess the new one in fewer than five tries for 17% of accounts.",
+      "(Each time you press it again) The stamp goes from \"Retest\" to \"Re-retest\" → audits never end. Each press adds one to the password and, up to four, one more \"re-\"."
+    ],
+    "terms": [
+      {
+        "term": "Penetration test",
+        "plain": "a security check where someone, with permission, tries to get in the way an attacker would. Physical tests go through doors and desks, all the way to the server room."
+      },
+      {
+        "term": "hunter2",
+        "plain": "from a chat log posted on bash.org, a collection of funny IRC chat moments, around 2004. Someone was told their password would show up as stars for everyone else, and typed \"hunter2\" in plain sight. It has been the internet's best-known password ever since."
+      },
+      {
+        "term": "Retest",
+        "plain": "the follow-up visit that checks whether reported findings were really fixed; each one is marked fixed or not fixed."
+      },
+      {
+        "term": "USB drop",
+        "plain": "leaving infected USB sticks where people will find them and waiting for someone to plug one in. Experiments show people do."
+      }
+    ],
+    "links": [
+      {
+        "title": "Red team: physical intrusion - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Red_team#Physical_intrusion",
+        "note": "physical penetration testing, where testers try to walk into a building and, say, reach the server room",
+        "lang": "en"
+      },
+      {
+        "title": "bash.org quote #244321, archived June 2004",
+        "url": "https://web.archive.org/web/20040604194346/http://bash.org/?244321",
+        "note": "the original hunter2 conversation"
+      },
+      {
+        "title": "Time to rethink mandatory password changes - FTC",
+        "url": "https://www.ftc.gov/policy/advocacy-research/tech-at-ftc/2016/03/time-rethink-mandatory-password-changes",
+        "note": "forced changes lead to predictable \"transformations\" such as incrementing a number (the 17% study is here)"
+      },
+      {
+        "title": "NIST SP 800-63B-4",
+        "url": "https://pages.nist.gov/800-63-4/sp800-63b.html",
+        "note": "the US guideline that says verifiers SHALL NOT require periodic password changes"
+      },
+      {
+        "title": "Users Really Do Plug in USB Drives They Find - Google Research",
+        "url": "https://research.google/pubs/users-really-do-plug-in-usb-drives-they-find/",
+        "note": "297 USB sticks dropped on a campus; 45–98% success, the first one plugged in within six minutes"
+      }
+    ],
+    "deep": [
+      "The sticky note says `Summer26!` → upper case, lower case, a digit and a symbol: it ticks every box of the old complexity rules, yet season + year + \"!\" is so predictable that it has leaked over 600 times (Have I Been Pwned, October 2026). The US NIST guideline now says such mix-the-character-types rules must not be imposed.",
+      "The note on the chair, `back in 5`, with a red `(14 min ago)` under it → it matches finding 2, \"Owner: coffee run, 14 minutes.\"",
+      "hunter2 on the whiteboard → a joke password, yet so many people really use it that it has leaked over 65,000 times. Each retest bumps it to hunter3, hunter4…, and the stamp stops growing at Re-re-re-retest.",
+      "The fire extinguisher propping the server room door open, \"Two-for-one deal\" → one door, two findings: the server room is open, and the extinguisher is not where it must be, mounted and easy to grab. On retest the door shuts and the extinguisher goes back on the wall beside it.",
+      "The phone on retest → the screen stays on and only the post is gone. Switching the phone off would leave the badge photo online; the post is what needed fixing.",
+      "The USB stick's \"Salaries 2026\" label → it did not even need the bait. In the Google study a drive's appearance did not raise the odds of it being plugged in; the people who plugged them in meant to find the owner."
+    ]
+  }
+}

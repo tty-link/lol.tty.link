@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home, Sweet Attack Surface | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&family=Gowun+Dodum&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="sticker dunggeun"></script>
+<style>
+  /* A cutaway house full of connected things, and the app that reports on them. Every few
+     seconds one device does something it should not, and the phone lets you know. */
+  :root {
+    --bg: #fff1e0;
+    --bg-2: #ffe3c4;
+    --ink: #2b2d42;
+    --soft: #6b6f80;
+    --alert: #ff5d5d;
+    --ok: #2bb673;
+    --card: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container-type: size;
+    overflow: hidden;
+    background: radial-gradient(90cqmax 70cqmax at 20% 10%, #fff8ef, transparent 60%), linear-gradient(var(--bg), var(--bg-2));
+    color: var(--ink);
+    font-family: 'Figtree', 'Gowun Dodum', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'Gowun Dodum', 'Figtree', sans-serif; word-break: keep-all; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: 8px; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 4cqmin;
+    height: 100%;
+    padding: 4cqmin 5cqmin;
+  }
+  .house { position: relative; }
+  .house svg { display: block; width: 100%; max-height: 92cqh; overflow: visible; }
+
+  /* devices */
+  .wifi path { fill: none; stroke: #2a9d8f; stroke-width: 4; stroke-linecap: round; animation: wifi 2.4s ease-out infinite; opacity: 0; }
+  .wifi path:nth-child(2) { animation-delay: .3s; }
+  .wifi path:nth-child(3) { animation-delay: .6s; }
+  @keyframes wifi { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
+  /* The toast flies clear of the slot: 42 units is about 10 px on the 358 × 396 phone stage. */
+  .toast { transition: transform .12s ease-out; }
+  .toaster.up .toast { transform: translateY(-42px); }
+  .steam path { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; animation: steam 2.6s ease-in-out infinite; opacity: 0; }
+  .steam path:nth-child(2) { animation-delay: -1.3s; }
+  @keyframes steam { 0% { opacity: 0; transform: translateY(6px); } 40% { opacity: .9; } 100% { opacity: 0; transform: translateY(-14px); } }
+  .bulb-glow { animation: glow 3s ease-in-out infinite alternate; }
+  @keyframes glow { from { opacity: .35; } to { opacity: .7; } }
+  .policy { transition: height 1.6s cubic-bezier(.3,.9,.3,1); }
+  .leaf { transform-origin: 505px 262px; animation: leaf 3.6s ease-in-out infinite alternate; }
+  @keyframes leaf { from { rotate: -3deg; } to { rotate: 3deg; } }
+  .door { transform-origin: 452px 0; transform-box: view-box; transition: transform .7s cubic-bezier(.3,1.3,.5,1); }
+  .door.open { transform: perspective(600px) rotateY(-58deg); }
+  .ring { fill: none; stroke: var(--alert); stroke-width: 5; opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .ring.on { animation: ring 1.1s ease-out 3; }
+  @keyframes ring { 0% { opacity: .95; transform: scale(.5); } 100% { opacity: 0; transform: scale(1.5); } }
+  .hot { fill: transparent; cursor: pointer; }
+  .hot:focus:not(:focus-visible) { outline: none; }
+  .coin { opacity: 0; }
+  .vacuum { transition: transform 1.2s ease-in-out; }
+  .vacuum.go { transform: translateX(-34px); }
+  .floorplan { fill: none; stroke: #2a9d8f; stroke-width: 4; stroke-dasharray: 9 7; opacity: 0; pointer-events: none; }
+
+  /* ---- The app ---- */
+  /* The card's padding is in px (clamped), not in cqi: cqi here would be the whole stage's
+     width, and 60 px of padding a side left the text inside at 9–11 px on desktop. */
+  .app {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    min-height: 0;
+    padding: clamp(18px, 3.6cqmin, 40px) clamp(18px, 3.6cqmin, 40px) clamp(14px, 2.6cqmin, 28px);
+    border-radius: clamp(20px, 4.6cqmin, 46px);
+    background: var(--card);
+    box-shadow: 0 0 0 .5cqi rgba(43,45,66,.06), 0 3cqi 8cqi rgba(160, 90, 30, .18);
+  }
+  .app-top { display: flex; align-items: center; gap: 2.4cqi; font-size: 3.6cqi; font-weight: 600; color: var(--soft); }
+  .app-top svg { width: 6cqi; height: 6cqi; }
+  .app h1 { margin-top: 3cqi; font-size: 8.4cqi; font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
+  .status { display: flex; align-items: center; gap: 2cqi; margin-top: 2.6cqi; font-size: 3.8cqi; color: var(--soft); }
+  .status i { width: 2.4cqi; height: 2.4cqi; border-radius: 50%; background: var(--alert); box-shadow: 0 0 0 1cqi rgba(255,93,93,.18); }
+  .status > font-kku { color: var(--soft); }
+  /* Older notifications fade out at the bottom instead of being cut mid-line. */
+  .feed { --fade: 22%; position: relative; flex: 1; min-height: 0; margin-top: 5cqi; padding: 0; list-style: none; overflow: hidden; -webkit-mask-image: linear-gradient(#000 calc(100% - var(--fade)), transparent); mask-image: linear-gradient(#000 calc(100% - var(--fade)), transparent); }
+  .notif {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3cqi;
+    margin-bottom: 3cqi;
+    padding: 3.4cqi;
+    border-radius: 4cqi;
+    background: #f7f5f2;
+  }
+  .notif:first-child { background: #fff0ee; box-shadow: inset 0 0 0 .5cqi rgba(255,93,93,.45); }
+  .ico { display: grid; place-items: center; width: 10cqi; height: 10cqi; border-radius: 3cqi; background: var(--c); }
+  .ico svg { width: 6.4cqi; height: 6.4cqi; }
+  .who { display: flex; justify-content: space-between; align-items: center; gap: 2cqi; font-size: 3.8cqi; font-weight: 800; }
+  .who time { font-weight: 400; font-size: max(10px, 3.2cqi); color: var(--soft); }
+  .who > font-kku { color: var(--ink); }
+  .what { margin-top: .8cqi; font-size: 3.8cqi; line-height: 1.38; }
+  /* Group-chat style system lines under an alert ("X added Y", "Y left"). */
+  .sys { width: fit-content; max-width: 100%; margin: -1.6cqi auto 1.6cqi; padding: .5cqi 2.6cqi; border-radius: 99px; background: #eceef3; color: #4f5464; font-size: 3.3cqi; line-height: 1.25; text-align: center; }
+  .sys + .sys { margin-top: 0; }
+  .hint { margin-top: 2cqi; font-size: max(11px, 3.2cqi); color: var(--soft); text-align: center; }
+
+  /* ---- Update all: one progress bar, one update, seven farewells ---- */
+  .update-all { margin-left: auto; padding: 1.2cqi 3.2cqi; border: 0; border-radius: 99px; background: var(--ink); color: #fff; font: inherit; font-size: max(11px, 3.2cqi); font-weight: 700; line-height: 1.2; white-space: nowrap; cursor: pointer; }
+  .update-all:disabled { background: #c9ccd6; cursor: default; }
+  .updater { display: none; flex: 1; flex-direction: column; min-height: 0; margin-top: 5cqi; }
+  .app.updating .feed { display: none; }
+  .app.updating .updater { display: flex; }
+  .up-head { display: flex; justify-content: space-between; align-items: baseline; gap: 2cqi; font-size: 4cqi; font-weight: 800; }
+  .up-head span { font-size: 3.4cqi; font-weight: 600; color: var(--soft); font-variant-numeric: tabular-nums; }
+  .bar { flex: none; height: 2.2cqi; margin-top: 2cqi; border-radius: 99px; background: #eceef2; overflow: hidden; }
+  .bar i { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--ok), #6fdca6); }
+  .up-now { margin-top: 1.6cqi; font-size: 3.4cqi; color: var(--soft); }
+  .results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2cqi; margin-top: 3cqi; padding: 0; list-style: none; }
+  .results li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: .5cqi 1.8cqi; padding: 1.8cqi 1.8cqi; border-radius: 3cqi; background: #f7f5f2; }
+  .results .ico { grid-row: span 2; width: 7.4cqi; height: 7.4cqi; border-radius: 2.2cqi; }
+  .results .ico svg { width: 5.2cqi; height: 5.2cqi; }
+  .results .nm { font-size: 3.4cqi; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .results .tag { justify-self: start; padding: .2cqi 1.4cqi; border-radius: 99px; background: #e6e8ee; color: #575c6b; font-size: max(11px, 2.9cqi); font-weight: 600; line-height: 1.35; white-space: nowrap; }
+  .results .tag.ok { background: #daf4e6; color: #17734a; }
+
+  /* Side by side on a small landscape stage the card is narrow: floors keep the alerts readable. */
+  @container (min-aspect-ratio: 1/1) {
+    .app-top { font-size: max(11px, 3.6cqi); }
+    .status, .who, .what { font-size: max(12px, 3.8cqi); }
+    .sys { font-size: max(11.5px, 3.3cqi); }
+    .who time { font-size: max(10.5px, 3.2cqi); }
+  }
+  @container (max-aspect-ratio: 1/1) {
+    .layout { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); gap: 2.4cqmin; padding: 3cqmin; align-items: start; }
+    /* The house gives way so the newest alert fits whole in the feed; only the last few
+       pixels of the feed fade, which is where the older alerts are. */
+    .house svg { max-height: 36cqh; margin: 0 auto; }
+    /* Everything in the card scales with its width, so on a near-square stage the card
+       narrows a little to keep the feed tall enough. */
+    .app { justify-self: center; width: min(100%, 80cqh); padding: 4.6cqi 5cqi 3cqi; border-radius: 6cqi; height: 100%; }
+    .app h1 { font-size: 7cqi; margin-top: 2cqi; }
+    .feed { --fade: 24px; margin-top: 3cqi; }
+    /* The two system lines after the plant are compact (as big as the "now" beside the alert,
+       never smaller), and while they are the newest thing in the feed the hint gives them its
+       line (as it does to the update screen), in reduced motion too. */
+    .sys { font-size: max(10.5px, 3.2cqi); padding: min(.5cqi, 3px) min(2.6cqi, 12px); margin: max(-1.8cqi, -9px) auto min(1.2cqi, 6px); }
+    .sys + .sys { margin-top: 0; }
+    .app.tagged .hint { display: none; }
+    /* On a phone the update screen takes the place of the status line and the hint, and the
+       results drop the device names (the icons and the badges in the picture say which is which). */
+    /* Sizes are capped so a wide portrait stage (the home stage is about 650 × 730) fits too. */
+    .app.updating .status, .app.updating .hint { display: none; }
+    .updater { margin-top: min(3cqi, 14px); }
+    .up-head { font-size: min(4cqi, 17px); }
+    .up-head span { font-size: min(3.4cqi, 14px); }
+    .bar { height: min(2.2cqi, 10px); margin-top: min(1.4cqi, 7px); }
+    .up-now { margin-top: 1.2cqi; }
+    .updater.done .up-now { display: none; }
+    .results { gap: min(1.4cqi, 8px); margin-top: min(2.4cqi, 12px); }
+    .lang-ko .results { grid-template-columns: repeat(3, 1fr); }
+    .results li { grid-template-columns: auto auto; justify-content: start; padding: min(1cqi, 5px) min(1.6cqi, 8px); border-radius: min(2.4cqi, 12px); }
+    .results .ico { grid-row: auto; width: min(6.6cqi, 27px); height: min(6.6cqi, 27px); border-radius: min(1.8cqi, 8px); }
+    .results .ico svg { width: min(4.4cqi, 20px); height: min(4.4cqi, 20px); }
+    .results .tag { font-size: clamp(11px, 2.9cqi, 14px); }
+    .results .nm { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  }
+  /* Short phone stages (about 358 × 396): a little less house and a shorter fade, so the
+     toaster's three lines still fit. */
+  @container (max-aspect-ratio: 1/1) and (max-height: 460px) {
+    .house svg { max-height: 33cqh; }
+    .app { width: min(100%, 86cqh); }
+    .feed { --fade: 16px; margin-top: 2cqi; }
+    .updater { margin-top: 2cqi; }
+    .results { gap: 1cqi; margin-top: 1.8cqi; }
+  }
+  /* Wide portrait (the home stage): four columns in two rows; a long badge wraps instead. */
+  @container (max-aspect-ratio: 1/1) and (min-width: 520px) {
+    .results, .lang-ko .results { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .results .tag { white-space: normal; }
+    /* "2FA → 3FA" stays on one line; slimmer padding (and a touch smaller below ~540 px)
+       keeps it inside a quarter-width cell. */
+    .results .tag.ok { white-space: nowrap; padding-inline: .6cqi; font-size: clamp(11px, 2.6cqi, 14px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wifi path, .steam path, .bulb-glow, .leaf { animation: none; }
+    .wifi path, .steam path { opacity: .7; }
+    .policy, .door, .toast, .vacuum { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="house">
+    <svg viewBox="0 0 600 540" role="img" aria-labelledby="house-label">
+      <title id="house-label">A house with a connected fridge, toaster, light bulb, kettle, door lock, robot vacuum, hall camera and plant sensor</title>
+      <!-- ground -->
+      <ellipse cx="300" cy="500" rx="300" ry="34" fill="#b9dca9"/>
+      <!-- roof and attic -->
+      <path d="M18 148 L300 26 L582 148 Z" fill="#e76f51" stroke="#6d3b2a" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M96 140 L300 54 L504 140 Z" fill="#ffd7ba"/>
+      <g class="wifi" transform="translate(300 92)"><path d="M-14 -6 a20 20 0 0 1 28 0"/><path d="M-24 -14 a34 34 0 0 1 48 0"/><path d="M-34 -22 a48 48 0 0 1 68 0"/></g>
+      <rect x="270" y="102" width="60" height="22" rx="5" fill="#264653"/>
+      <path d="M280 102 l-6 -18 M320 102 l6 -18" stroke="#264653" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="284" cy="113" r="3" fill="#7bd389"/><circle cx="294" cy="113" r="3" fill="#7bd389"/><circle cx="304" cy="113" r="3" fill="#ffb703"/>
+      <!-- rooms -->
+      <rect x="40" y="148" width="290" height="152" fill="#ffe8cc"/>
+      <rect x="330" y="148" width="230" height="152" fill="#e3f2fd"/>
+      <rect x="40" y="300" width="290" height="180" fill="#fff3b0"/>
+      <rect x="330" y="300" width="230" height="180" fill="#f1e3ff"/>
+      <path d="M40 300 H560" stroke="#8d6e63" stroke-width="10"/>
+      <path d="M330 148 V480" stroke="#8d6e63" stroke-width="6"/>
+      <rect x="40" y="148" width="520" height="332" fill="none" stroke="#6d4c41" stroke-width="6"/>
+      <path d="M30 482 H570" stroke="#6d4c41" stroke-width="8" stroke-linecap="round"/>
+
+      <!-- living room: sofa, the bulb and its privacy policy -->
+      <rect x="70" y="250" width="160" height="40" rx="10" fill="#577590"/>
+      <rect x="62" y="236" width="24" height="54" rx="8" fill="#43597a"/><rect x="214" y="236" width="24" height="54" rx="8" fill="#43597a"/>
+      <rect x="86" y="226" width="128" height="30" rx="8" fill="#6c87a8"/>
+      <path d="M190 152 V172" stroke="#3a3f44" stroke-width="3"/>
+      <circle class="bulb-glow" cx="190" cy="186" r="26" fill="#fff3a3"/>
+      <path d="M182 170 h16 v6 h-16 z" fill="#adb5bd"/>
+      <circle cx="190" cy="186" r="12" fill="#ffe066" stroke="#c9a227" stroke-width="2"/>
+      <g transform="translate(206 196)">
+        <rect class="policy" x="0" y="0" width="34" height="34" rx="2" fill="#fff" stroke="#ced4da" stroke-width="1.5"/>
+        <path d="M6 7 h22 M6 13 h18 M6 19 h22 M6 25 h14" stroke="#adb5bd" stroke-width="2"/>
+      </g>
+
+      <!-- balcony room: window and the plant that is fine -->
+      <rect x="370" y="170" width="100" height="74" rx="4" fill="#bde0fe" stroke="#fff" stroke-width="6"/>
+      <path d="M420 170 V244" stroke="#fff" stroke-width="4"/>
+      <path d="M484 262 h44 l-6 38 h-32 z" fill="#c8553d"/>
+      <g class="leaf"><path d="M505 262 C 488 240, 482 222, 492 206 M505 262 C 520 240, 532 226, 528 208 M505 262 C 504 238, 508 226, 506 212" stroke="#2d6a4f" stroke-width="6" fill="none" stroke-linecap="round"/></g>
+      <rect x="520" y="248" width="5" height="26" fill="#495057"/><circle cx="522.5" cy="248" r="4" fill="#2bb673"/>
+      <path class="heart" d="M536 226 l6 -6 a4 4 0 0 1 6 6 l-6 6 -6 -6 z" fill="#ff6b9a" opacity="0"/>
+
+      <!-- living room floor: the robot vacuum, which knows the floor plan by heart -->
+      <g class="vacuum">
+        <rect x="268" y="272" width="32" height="6" rx="2.5" fill="#6c757d"/>
+        <rect x="258" y="277" width="52" height="16" rx="8" fill="#4a4e69"/>
+        <path d="M263 287 h42" stroke="#22223b" stroke-width="2.4"/>
+        <circle cx="300" cy="282.5" r="2.4" fill="#7bd389"/>
+      </g>
+
+      <!-- kitchen: fridge, toaster, kettle -->
+      <rect x="58" y="330" width="76" height="150" rx="6" fill="#e9ecef" stroke="#adb5bd" stroke-width="3"/>
+      <path d="M58 384 H134" stroke="#adb5bd" stroke-width="3"/>
+      <rect x="122" y="346" width="5" height="26" rx="2" fill="#868e96"/><rect x="122" y="396" width="5" height="40" rx="2" fill="#868e96"/>
+      <rect x="68" y="342" width="46" height="22" rx="3" fill="#1d3557"/>
+      <text class="fridge-text" x="91" y="358.4" font-size="13" font-weight="800" text-anchor="middle" fill="#a8dadc" font-family="Figtree, sans-serif">2FA</text>
+      <rect x="148" y="432" width="176" height="48" fill="#d4a373"/><rect x="144" y="426" width="184" height="8" rx="2" fill="#b07d4f"/>
+      <g class="toaster">
+        <g class="toast"><rect x="170" y="388" width="14" height="22" rx="3" fill="#f6bd60"/><rect x="190" y="388" width="14" height="22" rx="3" fill="#f6bd60"/></g>
+        <rect x="160" y="398" width="54" height="28" rx="8" fill="#f4a261" stroke="#9c5a2b" stroke-width="2.4"/>
+        <path d="M168 402 h16 M190 402 h16" stroke="#9c5a2b" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="206" cy="416" r="3" fill="#9c5a2b"/>
+      </g>
+      <g class="steam" transform="translate(268 388)"><path d="M0 0 c -6 -8, 6 -12, 0 -20"/><path d="M10 2 c -6 -8, 6 -12, 0 -20"/></g>
+      <path d="M252 426 l4 -30 h30 l4 30 z" fill="#90a4ae" stroke="#546e7a" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M286 404 c 12 0, 12 16, 2 18 M252 404 l-10 -6" stroke="#546e7a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <text class="coin" x="272" y="372" font-size="13" font-weight="800" text-anchor="middle" fill="#c9a227" font-family="Figtree, sans-serif">+$0.0001</text>
+
+      <!-- hall: the front door and its very trusting lock -->
+      <rect x="446" y="342" width="84" height="138" fill="#5c4033"/>
+      <g class="door">
+        <rect x="452" y="348" width="72" height="132" fill="#b5835a"/>
+        <rect x="462" y="360" width="52" height="40" rx="3" fill="#a0714a"/><rect x="462" y="410" width="52" height="56" rx="3" fill="#a0714a"/>
+        <rect x="500" y="404" width="16" height="28" rx="3" fill="#212529"/>
+        <circle class="lock-led" cx="508" cy="412" r="3.4" fill="#ff5d5d"/>
+        <path d="M503 422 h10 M503 427 h10" stroke="#6c757d" stroke-width="2"/>
+      </g>
+      <rect x="440" y="478" width="96" height="8" rx="3" fill="#8d6e63"/>
+      <!-- hall corner: a camera that streams to more people than intended -->
+      <g class="cam">
+        <rect x="544" y="305" width="12" height="8" fill="#6c757d"/>
+        <g transform="rotate(28 548 320)"><rect x="516" y="311" width="34" height="17" rx="6" fill="#f8f9fa" stroke="#495057" stroke-width="2.4"/><circle cx="522" cy="319.5" r="4.6" fill="#212529"/><circle cx="523.2" cy="318.2" r="1.3" fill="#8fd3ff"/></g>
+        <circle cx="541" cy="317" r="2" fill="#ff5d5d"/>
+      </g>
+      <g class="live" opacity="0">
+        <rect x="446" y="310" width="58" height="20" rx="10" fill="#ff3b3b"/>
+        <circle cx="457" cy="320" r="3.4" fill="#fff"/>
+        <text x="482" y="324.6" font-size="13" font-weight="800" text-anchor="middle" fill="#fff" font-family="Figtree, sans-serif">LIVE 3</text>
+      </g>
+      <circle cx="372" cy="352" r="15" fill="#fff" stroke="#6d4c41" stroke-width="3"/>
+      <path d="M372 352 V342 M372 352 H379" stroke="#6d4c41" stroke-width="2.5" stroke-linecap="round"/>
+
+      <!-- the floor plan, as uploaded -->
+      <path class="floorplan" d="M46 154 H554 V474 H46 Z M46 300 H554 M330 154 V474"/>
+
+      <!-- alert rings and hit areas -->
+      <g class="rings"></g>
+      <g class="badges"></g>
+      <g class="hits"></g>
+    </svg>
+  </div>
+
+  <section class="app" aria-live="polite">
+    <p class="app-top">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 L12 3 L21 11 V21 H3 Z" fill="#e76f51"/><rect x="9" y="14" width="6" height="7" fill="#fff"/></svg>
+      <span data-lang="en">HomeSweetHome</span>
+      <span data-lang="ko">즐거운나의집</span>
+      <button class="update-all" type="button"></button>
+    </p>
+    <h1 data-lang="en">Home, sweet attack surface</h1>
+    <h1 data-lang="ko"><font-kku font="sticker" size="8.2cqi">즐거운 나의 공격 표면</font-kku></h1>
+    <p class="status">
+      <i aria-hidden="true"></i>
+      <span data-lang="en">8 devices online. 1 of them should be.</span>
+      <font-kku data-lang="ko" font="dunggeun" size="max(12px, 4cqi)">기기 8대 연결됨. 연결돼야 할 기기는 1대.</font-kku>
+    </p>
+    <ol class="feed"></ol>
+    <div class="updater">
+      <p class="up-head"><b></b><span></span></p>
+      <div class="bar"><i></i></div>
+      <p class="up-now"></p>
+      <ul class="results"></ul>
+    </div>
+    <p class="hint">
+      <span data-lang="en">Tap a device in the house. Or Update all.</span>
+      <span data-lang="ko">집 안의 기기나 ‘모두 업데이트’를 눌러 보세요.</span>
+    </p>
+  </section>
+</div>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const svg = document.querySelector('.house svg');
+  const feed = document.querySelector('.feed');
+  const NS = 'http://www.w3.org/2000/svg';
+
+  const ICONS = {
+    fridge: '<rect x="6" y="2" width="12" height="20" rx="2" fill="#fff"/><path d="M6 9 H18 M15 4 v3 M15 11 v4" stroke="#1d3557" stroke-width="1.6"/>',
+    toaster: '<rect x="3" y="9" width="18" height="11" rx="4" fill="#fff"/><rect x="7" y="4" width="4" height="7" rx="1" fill="#ffe8a3"/><rect x="13" y="4" width="4" height="7" rx="1" fill="#ffe8a3"/>',
+    bulb: '<circle cx="12" cy="10" r="7" fill="#fff"/><rect x="9" y="16" width="6" height="5" rx="1" fill="#fff"/>',
+    kettle: '<path d="M5 20 l2 -12 h10 l2 12 z" fill="#fff"/><path d="M17 10 c 4 0, 4 6, 1 7" stroke="#fff" stroke-width="2" fill="none"/>',
+    lock: '<rect x="5" y="10" width="14" height="11" rx="2" fill="#fff"/><path d="M8 10 V7 a4 4 0 0 1 8 0 v3" stroke="#fff" stroke-width="2.4" fill="none"/>',
+    plant: '<path d="M8 21 h8 l-1 -6 h-6 z" fill="#fff"/><path d="M12 15 C 6 12, 6 6, 9 4 C 12 7, 12 11, 12 15 C 14 9, 18 7, 20 8 C 19 12, 15 14, 12 15" fill="#fff"/>',
+    vacuum: '<circle cx="12" cy="12" r="8.5" fill="#fff"/><circle cx="12" cy="8.5" r="2.2" fill="#6a5acd"/><path d="M6.5 14.5 h11" stroke="#6a5acd" stroke-width="1.6"/>',
+    camera: '<rect x="2.5" y="7" width="13" height="10" rx="2.5" fill="#fff"/><path d="M15.5 10.5 l6 -3.5 v10 l-6 -3.5 z" fill="#fff"/><circle cx="9" cy="12" r="2.4" fill="#c4455d"/>',
+  };
+  const DEVICES = [
+    { id: 'fridge', at: [96, 404, 52], c: '#4d7cc2', name: { en: 'Fridge', ko: '냉장고' },
+      say: { en: 'Enter the 6-digit code to unlock milk. We sent the code to your toaster.', ko: '우유를 꺼내려면 6자리 인증번호를 입력하세요. 인증번호는 토스터로 보냈어요.' } },
+    { id: 'toaster', at: [187, 408, 38], c: '#f08a4b', name: { en: 'Toaster', ko: '토스터' },
+      say: { en: 'Firmware from 2014. Joined a botnet. Still makes great toast, currently in Morse code: SOS.', ko: '펌웨어는 2014년산. 봇넷에 가입했어요. 토스트는 여전히 맛있고, 지금은 모스 부호로 SOS를 굽는 중이에요.' } },
+    { id: 'bulb', at: [190, 186, 34], c: '#e0b400', name: { en: 'Light bulb', ko: '전구' },
+      say: { en: 'Updated its privacy policy (312 pages). You agreed by looking at it.', ko: '개인정보 처리방침이 바뀌었어요(312쪽). 쳐다보셨으니 동의하신 걸로 할게요.' } },
+    { id: 'kettle', at: [272, 410, 34], c: '#7d8f99', name: { en: 'Kettle', ko: '전기포트' },
+      say: { en: 'Mined $0.0001 of crypto overnight. Water: lukewarm.', ko: '밤새 코인을 0.13원어치 채굴했어요. 물은 미지근해요.' } },
+    { id: 'lock', at: [490, 414, 50], c: '#3d405b', name: { en: 'Front door', ko: '현관 도어락' },
+      say: { en: 'Unlocked. Username: admin. Password: admin. Was this you?', ko: '문이 열렸어요. 아이디 admin, 비밀번호 admin. 본인이 맞나요?' } },
+    { id: 'vacuum', at: [284, 284, 30], c: '#6a5acd', name: { en: 'Robot vacuum', ko: '로봇청소기' },
+      say: { en: 'Uploaded a map of your home to the cloud. Under the sofa is the worst.', ko: '집 평면도를 클라우드에 올렸어요. 소파 밑이 제일 더러워요.' } },
+    { id: 'camera', at: [532, 322, 26], c: '#c4455d', name: { en: 'Hall camera', ko: '현관 카메라' },
+      say: { en: 'Streaming live to the internet. 3 viewers, nobody you know.', ko: '인터넷에 생중계 중이에요. 시청자 3명, 다 모르는 사람이에요.' } },
+    { id: 'plant', at: [506, 250, 44], c: '#2bb673', name: { en: 'Plant sensor', ko: '화분 센서' },
+      say: { en: 'Soil: moist. Botnets joined: 0. Good plant.', ko: '흙 촉촉, 가입한 봇넷 0개. 기특한 화분이에요.' } },
+  ];
+  const byId = (id) => DEVICES.find((d) => d.id === id);
+  // Each round: the fridge (which texts the toaster) and the toaster open, three of the rest
+  // follow, and the plant always gets the last word. The next round brings in the two that
+  // sat this one out, plus one of the three.
+  const MIDDLE = ['bulb', 'kettle', 'lock', 'vacuum', 'camera'];
+  const shuffle = (list) => list.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map((p) => p[1]);
+  let middle = shuffle(MIDDLE).slice(0, 3);
+  const tour = () => ['fridge', 'toaster', ...middle, 'plant'].map(byId);
+  let TOUR = tour();
+  function nextRound() {
+    const benched = MIDDLE.filter((id) => !middle.includes(id));
+    middle = shuffle([...benched, shuffle(middle)[0]]);
+    TOUR = tour();
+  }
+
+  // Rings that pulse around a device, and generous hit areas to tap it.
+  const rings = {};
+  DEVICES.forEach((d) => {
+    const [x, y, r] = d.at;
+    const ring = document.createElementNS(NS, 'circle');
+    ring.setAttribute('class', 'ring');
+    ring.setAttribute('cx', x); ring.setAttribute('cy', y); ring.setAttribute('r', r);
+    svg.querySelector('.rings').append(ring);
+    rings[d.id] = ring;
+    const hit = document.createElementNS(NS, 'circle');
+    hit.setAttribute('class', 'hot');
+    hit.setAttribute('cx', x); hit.setAttribute('cy', y); hit.setAttribute('r', r + 6);
+    hit.setAttribute('tabindex', '0');
+    hit.setAttribute('role', 'button');
+    hit.setAttribute('aria-label', d.name[TTY.lang]);
+    // A click and a key press do the same thing: the device acts up and the cycle waits.
+    // Closing the update screen leaves its marks on the house: the visitor's result stays.
+    const press = () => { idleUntil = performance.now() + 9000; closePanel(); notify(d); };
+    hit.addEventListener('click', press);
+    hit.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); press(); } });
+    svg.querySelector('.hits').append(hit);
+  });
+
+  /* ---- What each device does when it misbehaves ---- */
+  const fridgeText = svg.querySelector('.fridge-text');
+  const policy = svg.querySelector('.policy');
+  const coin = svg.querySelector('.coin');
+  const door = svg.querySelector('.door');
+  const led = svg.querySelector('.lock-led');
+  const heart = svg.querySelector('.heart');
+  const vacuum = svg.querySelector('.vacuum');
+  const floorplan = svg.querySelector('.floorplan');
+  const live = svg.querySelector('.live');
+  coin.textContent = TTY.t({ en: '+$0.0001', ko: '+0.13원' });
+  let policyLength = 34;
+  // How many factors the fridge wants. Every "Update all" adds one: 2FA, 3FA, 4FA…
+  let factors = 2;
+  const fa = () => `${factors}FA`;
+  let fridgeTimers = [];
+  const ACT = {
+    fridge() {
+      if (TTY.reduce) return;
+      // Six digits, as the alert says; then back to however many factors it wants by now.
+      fridgeTimers.splice(0).forEach(clearTimeout);
+      const codes = ['******', '1?3?5?', 'code?', null];
+      codes.forEach((c, i) => fridgeTimers.push(setTimeout(() => { fridgeText.textContent = c || fa(); }, i * 650)));
+    },
+    toaster() { morseBurst(); },
+    bulb() {
+      policyLength = policyLength > 200 ? 34 : policyLength + 90;
+      policy.setAttribute('height', policyLength);
+    },
+    kettle() {
+      if (TTY.reduce) return;
+      coin.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'translateY(-4px)', offset: .3 }, { opacity: 0, transform: 'translateY(-26px)' }], { duration: 1800, easing: 'ease-out' });
+    },
+    lock() {
+      led.setAttribute('fill', '#2bb673');
+      if (TTY.reduce) return;
+      door.classList.add('open');
+      setTimeout(() => { door.classList.remove('open'); led.setAttribute('fill', '#ff5d5d'); }, 2000);
+    },
+    vacuum() {
+      if (TTY.reduce) { floorplan.style.opacity = .8; return; }
+      vacuum.classList.add('go');
+      setTimeout(() => vacuum.classList.remove('go'), 1300);
+      floorplan.animate([{ opacity: 0 }, { opacity: .85, offset: .2 }, { opacity: .85, offset: .7 }, { opacity: 0 }], { duration: 2400, easing: 'ease-out' });
+    },
+    camera() {
+      if (TTY.reduce) { live.setAttribute('opacity', 1); return; }
+      live.animate([{ opacity: 0 }, { opacity: 1, offset: .08 }, { opacity: .35, offset: .3 }, { opacity: 1, offset: .5 }, { opacity: .35, offset: .7 }, { opacity: 1, offset: .9 }, { opacity: 0 }], { duration: 2600 });
+    },
+    plant() {
+      if (TTY.reduce) { heart.setAttribute('opacity', 1); return; }
+      heart.animate([{ opacity: 0, transform: 'translateY(6px) scale(.6)' }, { opacity: 1, transform: 'translateY(-6px) scale(1.1)', offset: .4 }, { opacity: 0, transform: 'translateY(-16px)' }], { duration: 1800, easing: 'ease-out' });
+    },
+  };
+
+  // The toaster's idle habit: popping toast in Morse. ... --- ...
+  // International Morse timing on a 170 ms dot: dash = 3 dots, gap inside a letter = 1 dot,
+  // gap between letters = 3 dots (the 170 after the last sign plus 340).
+  const toaster = svg.querySelector('.toaster');
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  let morsing = false;
+  async function morse(pattern) {
+    for (const sym of pattern) {
+      if (sym === ' ') { await wait(340); continue; }
+      toaster.classList.add('up');
+      await wait(sym === '.' ? 170 : 510);
+      toaster.classList.remove('up');
+      await wait(170);
+    }
+  }
+  async function morseBurst() {
+    if (morsing || TTY.reduce) return;
+    morsing = true;
+    await morse('... --- ...');
+    morsing = false;
+  }
+
+  /* ---- The feed ---- */
+  const icon = (d) => `<span class="ico" style="--c:${d.c}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[d.id]}</svg></span>`;
+  const notifs = () => feed.querySelectorAll('.notif');
+  function stamp() {
+    const labels = TTY.t({ en: ['now', '2m', '5m', '9m', '14m'], ko: ['방금', '2분 전', '5분 전', '9분 전', '14분 전'] });
+    notifs().forEach((li, i) => { li.querySelector('time').textContent = labels[Math.min(i, labels.length - 1)]; });
+  }
+  // The tag after the punchline: the toaster pulls the good plant into its group, and the
+  // plant leaves at once. Group-chat system lines (KakaoTalk wording in Korean).
+  const SYS = TTY.t({
+    en: { invite: 'Toaster added Plant sensor to the botnet.', left: 'Plant sensor left.' },
+    ko: { invite: '토스터님이 화분 센서님을 봇넷에 초대했습니다.', left: '화분 센서님이 나갔습니다.' },
+  });
+  function system(after, text) {
+    const li = document.createElement('li');
+    li.className = 'sys';
+    li.textContent = text;
+    after.after(li);
+    if (!TTY.reduce) li.animate([{ opacity: 0, transform: 'translateY(-40%) scale(.9)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
+    return li;
+  }
+  function pulse(id) {
+    const ring = rings[id];
+    ring.classList.remove('on');
+    void ring.getBoundingClientRect();
+    if (!TTY.reduce) ring.classList.add('on');
+  }
+  const INVITE_MS = 1300, LEFT_MS = 800;
+  function plantTag(card) {
+    // Reduced motion: the same last scene as 14.0 s of autoplay, so on a portrait stage the
+    // hint gives the two lines its place here too (a tap brings it back).
+    if (TTY.reduce) { system(system(card, SYS.invite), SYS.left); app.classList.add('tagged'); return; }
+    // Only while this alert is still the newest one: a tap in between cancels the joke.
+    const still = () => notifs()[0] === card;
+    setTimeout(() => {
+      if (!still()) return;
+      const invite = system(card, SYS.invite);
+      pulse('toaster');
+      setTimeout(() => {
+        if (!still() || !invite.isConnected) return;
+        system(invite, SYS.left);
+        app.classList.add('tagged');
+        ACT.plant();
+      }, LEFT_MS);
+    }, INVITE_MS);
+  }
+  function notify(d) {
+    const li = document.createElement('li');
+    li.className = 'notif';
+    li.innerHTML = `${icon(d)}<div><p class="who"><span class="name"></span><time></time></p><p class="what"></p></div>`;
+    const name = li.querySelector('.name');
+    if (ko) {
+      const k = document.createElement('font-kku');
+      k.setAttribute('font', 'dunggeun');
+      k.setAttribute('size', 'max(12.5px, 4.2cqi)');
+      k.textContent = d.name.ko;
+      name.replaceWith(k);
+    } else {
+      name.textContent = d.name.en;
+    }
+    li.querySelector('.what').textContent = d.say[TTY.lang];
+    feed.prepend(li);
+    app.classList.remove('tagged');
+    // Five alerts at most. System lines sit under their alert, so they go before it does.
+    while (notifs().length > 5) feed.lastElementChild.remove();
+    stamp();
+    if (!TTY.reduce) li.animate([{ transform: 'translateY(-30%) scale(.94)', opacity: 0 }, { transform: 'translateY(4%) scale(1.01)', opacity: 1, offset: .65 }, { transform: 'none', opacity: 1 }], { duration: 520, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
+    pulse(d.id);
+    ACT[d.id]();
+    if (d.id === 'plant') plantTag(li);
+  }
+
+  /* ---- Update all ---- */
+  const app = document.querySelector('.app');
+  const updateBtn = document.querySelector('.update-all');
+  const upTitle = document.querySelector('.up-head b');
+  const upPct = document.querySelector('.up-head span');
+  const upNow = document.querySelector('.up-now');
+  const barFill = document.querySelector('.bar i');
+  const results = document.querySelector('.results');
+  const updater = document.querySelector('.updater');
+  const badges = svg.querySelector('.badges');
+  const UP = TTY.t({
+    en: { btn: 'Update all', busy: 'Updating…', title: (n) => `Updating ${n} devices`, check: (name) => `Checking: ${name}`,
+      done: 'Update complete', sum: (ok, eos) => `${ok} updated · ${eos} end of support`, eos: 'End of support' },
+    ko: { btn: '모두 업데이트', busy: '업데이트 중…', title: (n) => `기기 ${n}대 업데이트 중`, check: (name) => `확인 중: ${name}`,
+      done: '업데이트 완료', sum: (ok, eos) => `업데이트 ${ok}대 · 지원 종료 ${eos}대`, eos: '지원 종료' },
+  });
+  updateBtn.textContent = UP.btn;
+  const UPDATED = ['fridge'];
+  const UP_MS = 2600;
+  let upTimers = [];
+  let upBar = null;
+  const later = (ms, fn) => upTimers.push(setTimeout(fn, ms));
+  // A badge on the device in the picture: a green tick, or a grey "no more updates".
+  function badge(d, ok) {
+    const [x, y, r] = d.at;
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('transform', `translate(${x + r * .62} ${y - r * .62})`);
+    g.innerHTML = '<g>' + (ok
+      ? '<circle r="12" fill="#2bb673" stroke="#fff" stroke-width="3"/><path d="M-5 0 l3.4 3.6 l6.4 -7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+      : '<circle r="12" fill="#8d93a3" stroke="#fff" stroke-width="3"/><circle r="5.6" stroke="#fff" stroke-width="2.4" fill="none"/><path d="M-4 4 L4 -4" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>') + '</g>';
+    badges.append(g);
+    if (!TTY.reduce) g.firstChild.animate([{ transform: 'scale(0)' }, { transform: 'scale(1.25)', offset: .6 }, { transform: 'scale(1)' }], { duration: 320, easing: 'ease-out' });
+  }
+  // The one update there is, written as its changelog: the fridge wants one more factor.
+  function result(d, ok) {
+    const li = document.createElement('li');
+    li.innerHTML = `${icon(d)}<span class="nm"></span><span class="tag${ok ? ' ok' : ''}"></span>`;
+    li.querySelector('.nm').textContent = d.name[TTY.lang];
+    li.querySelector('.tag').textContent = ok ? `${factors - 1}FA → ${factors}FA` : UP.eos;
+    results.append(li);
+    if (!TTY.reduce) li.animate([{ opacity: 0, transform: 'translateY(20%)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' });
+  }
+  function finishUpdate() {
+    const ok = DEVICES.filter((d) => UPDATED.includes(d.id));
+    upTitle.textContent = UP.done;
+    upPct.textContent = '100%';
+    upNow.textContent = UP.sum(ok.length, DEVICES.length - ok.length);
+    updater.classList.add('done');
+    updateBtn.disabled = false;
+    updateBtn.textContent = UP.btn;
+    // The fridge goes first, and gets the update it least needed: one more factor.
+    factors += 1;
+    [...ok, ...DEVICES.filter((d) => !ok.includes(d))].forEach((d, i) => {
+      const go = () => { const yes = ok.includes(d); result(d, yes); badge(d, yes); if (d.id === 'fridge') { fridgeTimers.splice(0).forEach(clearTimeout); fridgeText.textContent = fa(); } };
+      if (TTY.reduce) go(); else later(i * 110, go);
+    });
+  }
+  function update() {
+    closePanel();
+    badges.replaceChildren();
+    // The cycle waits while the results are up.
+    idleUntil = performance.now() + (TTY.reduce ? 0 : UP_MS) + 9000;
+    app.classList.add('updating');
+    updateBtn.disabled = true;
+    updateBtn.textContent = UP.busy;
+    upTitle.textContent = UP.title(DEVICES.length);
+    if (TTY.reduce) { barFill.style.width = '100%'; finishUpdate(); return; }
+    upPct.textContent = '0%';
+    upBar = barFill.animate([{ width: '0%' }, { width: '100%' }], { duration: UP_MS, easing: 'cubic-bezier(.45,.05,.55,.95)', fill: 'forwards' });
+    const pct = () => {
+      if (!upBar || upBar.playState !== 'running') return;
+      upPct.textContent = Math.round(parseFloat(getComputedStyle(barFill).width) / barFill.parentNode.clientWidth * 100) + '%';
+      requestAnimationFrame(pct);
+    };
+    requestAnimationFrame(pct);
+    DEVICES.forEach((d, i) => later(i * (UP_MS / DEVICES.length), () => { upNow.textContent = UP.check(d.name[TTY.lang]); }));
+    later(UP_MS, finishUpdate);
+  }
+  // Closes the update screen only. The ticks, the grey marks and the fridge's new factor stay
+  // on the house until the next "Update all".
+  function closePanel() {
+    upTimers.splice(0).forEach(clearTimeout);
+    if (upBar) { upBar.cancel(); upBar = null; }
+    barFill.style.width = '';
+    app.classList.remove('updating');
+    updater.classList.remove('done');
+    results.replaceChildren();
+    upPct.textContent = '';
+    upNow.textContent = '';
+    updateBtn.disabled = false;
+    updateBtn.textContent = UP.btn;
+  }
+  updateBtn.addEventListener('click', update);
+
+  // The toaster starts popping SOS at once (the first thing on stage), the fridge's alert
+  // follows at 0.4 s and then one alert every 2.3 s, so the plant lands at about 11.9 s of a
+  // 16 s slot, and the toaster's invite and the plant's exit follow at 13.2 and 14.0 s: the
+  // exit still has two seconds before the next page wipes in at 16 s.
+  // The plant has the last word: it stays on top for a while before the next round.
+  let step = 0;
+  let idleUntil = 0;
+  let plantAt = -1e9;
+  const EVERY = 2300;
+  function tick() {
+    let next = EVERY;
+    if (performance.now() > idleUntil) {
+      if (app.classList.contains('updating')) closePanel();
+      const d = TOUR[step];
+      notify(d);
+      if (d.id === 'plant') plantAt = performance.now();
+      step += 1;
+      if (step === TOUR.length) { step = 0; next = 8000; nextRound(); }
+    }
+    setTimeout(tick, next);
+  }
+
+  // Reduced motion: the feed is fixed. The plant (the punchline) sits on top with the toaster's
+  // invite and its exit under it, then the toaster and the fridge that texted it. The kettle's
+  // note is the one that doesn't fit, so its coin stays visible in the picture instead.
+  if (TTY.reduce) {
+    ['kettle', 'camera', 'lock', 'fridge', 'toaster', 'plant'].forEach((id) => notify(byId(id)));
+    coin.style.opacity = 1;
+  }
+  TTY.onShow(() => {
+    if (TTY.reduce) return;
+    morseBurst();
+    setTimeout(tick, 400);
+    // An occasional SOS between alerts, but not over the plant and the lines after it.
+    setInterval(() => {
+      const plantNext = TOUR[step] && TOUR[step].id === 'plant' && performance.now() > idleUntil;
+      if (Math.random() < .5 && !plantNext && performance.now() - plantAt > 3500) morseBurst();
+    }, 6000);
+  });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

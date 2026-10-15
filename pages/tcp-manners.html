@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TCP Etiquette | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;0,800;1,400;1,500;1,700&family=Alegreya+Sans+SC:wght@500;700;800&family=Gowun+Batang:wght@400;700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="riso sebul"></script>
+<style>
+  /* One page of an old manners textbook, printed in two risograph inks: Mr. Client in pink,
+     Mr. Server in blue, purple wherever the two plates overlap. Each lesson is a TCP exchange
+     drawn as etiquette, with the sequence diagram in the margin. */
+  :root {
+    --paper: #f2ede3;
+    --desk: #d8cfbe;
+    --pink: #ff48b0;
+    --blue: #0078bf;
+    --pink-t: #c8157a;   /* the same inks, laid down heavier, for text */
+    --blue-t: #005a96;
+    --ink: #262a6c;      /* pink over blue: the overprint colour, used for running text */
+    --tint-p: #fbd0e6;
+    --tint-b: #c9e0ee;
+    --mx: 1.6px;         /* how far the blue plate missed the pink one */
+    --my: -1.1px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container: page / size;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--desk);
+    background-image:
+      radial-gradient(rgba(38, 42, 108, .07) .7px, transparent 1px),
+      linear-gradient(180deg, rgba(255,255,255,.18), rgba(0,0,0,.06));
+    background-size: 6px 6px, 100% 100%;
+    color: var(--ink);
+    font-family: 'Alegreya', 'Gowun Batang', Georgia, serif;
+  }
+  .lang-ko body { font-family: 'Gowun Batang', 'Alegreya', serif; word-break: keep-all; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2.5px solid var(--blue); outline-offset: 2px; }
+
+  /* ---------- The page ---------- */
+  .sheet {
+    --pad: clamp(10px, 2.2cqmin, 24px);
+    --tabw: clamp(70px, 8.6cqw, 104px);
+    position: absolute;
+    top: var(--pad);
+    bottom: var(--pad);
+    left: var(--pad);
+    right: calc(var(--pad) + var(--tabw));
+    container: sheet / size;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(176px, 24cqw, 270px);
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "rh rh" "cov cov" "lh lh" "figs seq" "mor mor" "fol fol";
+    column-gap: clamp(12px, 2.2cqw, 28px);
+    row-gap: clamp(6px, 1.3cqh, 14px);
+    padding: clamp(10px, 2cqh, 22px) clamp(14px, 2.6cqw, 34px) clamp(8px, 1.4cqh, 16px);
+    background-color: var(--paper);
+    /* newsprint: a faint screen of both inks and a little fibre */
+    background-image:
+      radial-gradient(rgba(255, 72, 176, .07) .6px, transparent .9px),
+      radial-gradient(rgba(0, 120, 191, .06) .6px, transparent .9px),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .25 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 5px 5px, 7px 7px, 160px 160px;
+    background-position: 0 0, 2px 3px, 0 0;
+    box-shadow: 2px 2px 0 #e9e2d3, 4px 4px 0 #ddd3c1, 6px 7px 14px rgba(60, 48, 30, .18);
+  }
+
+  .runhead {
+    grid-area: rh;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+    padding-bottom: .35em;
+    border-bottom: 1px solid rgba(38, 42, 108, .35);
+    font: 700 clamp(11px, 1.3cqi, 13px)/1.2 'Alegreya Sans SC', sans-serif;
+    letter-spacing: .14em;
+    color: var(--blue-t);
+  }
+  .lang-ko .runhead { font-family: 'Gowun Batang', serif; letter-spacing: .08em; }
+  .runhead .rh-r { color: var(--pink-t); white-space: nowrap; }
+  .runhead .rh-folio { display: none; }
+
+  .cover {
+    grid-area: cov;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 1.1em;
+    row-gap: .1em;
+    padding-bottom: clamp(4px, 1cqh, 10px);
+    position: relative;
+  }
+  /* the double rule under the title: pink and blue plates, a little off */
+  .cover::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    background: linear-gradient(var(--pink), var(--pink)) 0 0 / 100% 2px no-repeat;
+    mix-blend-mode: multiply;
+    box-shadow: 1.5px 3px 0 -.5px var(--blue);
+    opacity: .9;
+  }
+  .title { line-height: 1; font-weight: 800; mix-blend-mode: multiply; }
+  .title .en-t {
+    font-family: 'Alegreya', serif;
+    font-size: clamp(28px, 4.6cqi, 52px);
+    letter-spacing: -.005em;
+    color: var(--pink);
+    text-shadow: .035em -.025em 0 rgba(0, 120, 191, .55);
+  }
+  .title .tcp {
+    font-family: 'Alegreya Sans SC', sans-serif;
+    font-size: clamp(26px, 4.4cqi, 50px);
+    color: var(--blue);
+    text-shadow: -.03em .022em 0 rgba(255, 72, 176, .55);
+    margin-right: .18em;
+    vertical-align: baseline;
+  }
+  .sub { font-size: clamp(12.5px, 1.75cqi, 18px); font-style: italic; color: var(--ink); }
+  .lang-ko .sub { font-style: normal; font-weight: 700; color: var(--blue-t); }
+
+  /* The cover picture, the page's joke from the first second: two gentlemen who cannot finish
+     saying goodbye. Korean: on the phone, each on his own side of a split panel, bowing in turns
+     to someone who cannot see it. English: the guest keeps heading for his car and turning back
+     to wave, and the host waves him off from the door every time. It never stops. */
+  .cover { --cvh: clamp(54px, 9.5cqh, 92px); --cva: 1; padding-right: calc(var(--cvh) * var(--cva) + 10px); min-height: calc(var(--cvh) + clamp(6px, 1.2cqh, 12px)); align-content: center; }
+  .lang-en .cover { --cva: 1.4; }   /* with Mr. Client's car */
+  .cvart { position: absolute; z-index: 3; right: 0; bottom: clamp(5px, 1cqh, 10px); height: var(--cvh); aspect-ratio: var(--cva); pointer-events: none; transform-origin: 0 0; }
+  /* With motion, the picture first appears blown up (coverIntro); until then the corner is empty. */
+  @media (prefers-reduced-motion: no-preference) { .cover:not(.go) .cvart { opacity: 0; } }
+  .cvart .who { position: static; width: 100%; height: 100%; aspect-ratio: auto; translate: none; }
+  .cvart .pc { color: var(--pink); }
+  .cvart .ps { color: var(--blue); }
+  .cvart .pc, .cvart .ps { mix-blend-mode: multiply; }
+  /* the split panel of a comic-strip phone call, printed in both inks, a little off */
+  .cvart .split path { fill: none; stroke-width: 2.2; mix-blend-mode: multiply; }
+  .cvart .split .sp { stroke: var(--pink); }
+  .cvart .split .sb { stroke: var(--blue); opacity: .8; }
+  .cvart .up { transform: none; transition: none; }
+  .cvart .say { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; opacity: 0; }
+  .cvart .who .pz, .cvart .who .pz[data-k] { display: inline; }   /* both arms are drawn; opacity picks one */
+  .cvart .pz[data-k], .cvart .pc .pz[data-koff] { opacity: 0; }
+  /* the still picture (with less motion): Mr. Client mid-goodbye */
+  .cvart .pc .up { transform: rotate(var(--bow)); }
+  .cvart .pc .say, .cvart .pc .pz[data-k] { opacity: 1; }
+  /* Korean: in turns, every half second */
+  .cover.go .cvart .up { animation: cv-bow 1s ease-in-out infinite; }
+  .cover.go .cvart .say { animation: cv-say 1s ease-out infinite; }
+  .cover.go .cvart .ps .up, .cover.go .cvart .ps .say { animation-delay: .5s; animation-fill-mode: backwards; }
+  @keyframes cv-bow { 0%, 58%, 100% { transform: none; } 16%, 40% { transform: rotate(var(--bow)); } }
+  @keyframes cv-say { 0%, 10% { opacity: 0; translate: 0 2px; } 20%, 44% { opacity: 1; translate: 0 0; } 56%, 100% { opacity: 0; translate: 0 -3px; } }
+  /* English: one way out every 1.2 s. Phase 1: the guest turns for his car and takes half a step,
+     and the host waves him off. Phase 2: the guest turns back, waves, and drifts back up the drive. */
+  .cover.go .cvart .cv-go { animation: cv-leave 1.2s ease-in-out infinite; transform-origin: 1px 0; }
+  .cover.go .cvart .pc .pz[data-koff], .cover.go .cvart .ps .pz[data-k] { animation: cv-p1 1.2s linear infinite; }
+  .cover.go .cvart .pc .pz[data-k], .cover.go .cvart .ps .pz[data-koff] { animation: cv-p2 1.2s linear infinite; }
+  .cover.go .cvart .pc .pz[data-k]:last-child { animation: cv-p2 1.2s linear infinite, cv-wave2 1.2s ease-in-out infinite; transform-origin: 6.5px -32px; }
+  .cover.go .cvart .ps .pz[data-k]:last-child { animation: cv-p1 1.2s linear infinite, cv-wave1 1.2s ease-in-out infinite; transform-origin: 6.5px -32px; }
+  @keyframes cv-leave {
+    0% { transform: translate(0, 0) scale(1, 1); }
+    7% { transform: translate(0, 0) scale(-1, 1); }
+    40% { transform: translate(-12px, 0) scale(-1, 1); }
+    47% { transform: translate(-12px, 0) scale(1, 1); }
+    100% { transform: translate(0, 0) scale(1, 1); }
+  }
+  @keyframes cv-p1 { 0%, 45% { opacity: 1; } 46.5%, 100% { opacity: 0; } }
+  @keyframes cv-p2 { 0%, 45% { opacity: 0; } 46.5%, 100% { opacity: 1; } }
+  @keyframes cv-wave1 { 0%, 6%, 44%, 100% { rotate: 0deg; } 16% { rotate: -12deg; } 26% { rotate: 10deg; } 36% { rotate: -10deg; } }
+  @keyframes cv-wave2 { 0%, 50%, 96%, 100% { rotate: 0deg; } 61% { rotate: -12deg; } 73% { rotate: 10deg; } 85% { rotate: -10deg; } }
+
+  /* ---------- Index tabs: on the page's right edge (a row on top when narrow) ---------- */
+  .tabs {
+    position: absolute;
+    left: 100%;
+    top: clamp(70px, 17cqh, 150px);
+    width: var(--tabw);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(4px, 1cqh, 10px);
+  }
+  .tab {
+    position: relative;
+    display: grid;
+    gap: .15em;
+    min-height: clamp(52px, 12cqh, 96px);
+    padding: .7em .6em .7em .75em;
+    border: 0;
+    border-radius: 0 12px 12px 0;
+    background: var(--tint);
+    color: var(--ink);
+    text-align: left;
+    align-content: center;
+    cursor: pointer;
+    translate: -3px 0;
+    box-shadow: inset 6px 0 6px -6px rgba(0, 0, 0, .18), 1px 1px 0 rgba(60, 48, 30, .14);
+    transition: translate .25s, background-color .25s;
+  }
+  .tab:nth-child(odd) { --tint: var(--tint-p); }
+  .tab:nth-child(even) { --tint: var(--tint-b); }
+  .tab:hover { translate: 1px 0; }
+  .tab small { font: 700 clamp(11px, 1.1cqi, 12.5px)/1.1 'Alegreya Sans SC', sans-serif; letter-spacing: .06em; color: var(--blue-t); }
+  .tab:nth-child(odd) small { color: var(--pink-t); }
+  .tab .tn { font-size: clamp(12.5px, 1.5cqi, 16px); font-weight: 700; line-height: 1.15; }
+  .lang-ko .tab small { font-family: 'Gowun Batang', serif; letter-spacing: .02em; }
+  .tab[aria-selected="true"] {
+    background: var(--paper);
+    translate: -1px 0;
+    box-shadow: 2px 2px 0 #ddd3c1;
+    z-index: 1;
+  }
+  .tab[aria-selected="true"]::before {
+    content: "";
+    position: absolute;
+    left: .3em;
+    top: 18%;
+    bottom: 18%;
+    width: 3px;
+    background: var(--pink);
+    box-shadow: 1.5px -1px 0 var(--blue);
+    mix-blend-mode: multiply;
+  }
+
+  /* ---------- Lesson ---------- */
+  .lesson { display: contents; }
+  .lhead {
+    grid-area: lh;
+    display: flex;
+    align-items: center;
+    gap: clamp(8px, 1.2cqi, 14px);
+    min-height: clamp(28px, 5.2cqh, 46px);
+  }
+  .lno {
+    flex: none;
+    padding: .28em .6em .3em;
+    border-radius: 4px;
+    background: var(--blue);
+    color: var(--paper);
+    font: 700 clamp(12px, 1.5cqi, 15px)/1 'Alegreya Sans SC', sans-serif;
+    letter-spacing: .06em;
+    mix-blend-mode: multiply;
+    box-shadow: var(--mx) var(--my) 0 rgba(255, 72, 176, .5);
+  }
+  .lang-ko .lno { font-family: 'Gowun Batang', serif; letter-spacing: 0; }
+  .ltitle {
+    min-width: 0;
+    font: italic 700 clamp(21px, 3cqi, 33px)/1.05 'Alegreya', serif;
+    color: var(--blue);
+    text-shadow: .03em -.02em 0 rgba(255, 72, 176, .6);
+    mix-blend-mode: multiply;
+  }
+  .ltitle > font-kku { color: var(--blue); }
+  .ltitle [part="glyph"] { filter: drop-shadow(1.4px -1px 0 rgba(255, 72, 176, .75)); }
+  .hang {
+    margin-left: auto;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .45em;
+    padding: .45em .95em .5em .8em;
+    border: 2px solid var(--pink);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--pink-t);
+    font-weight: 700;
+    font-size: clamp(13px, 1.5cqi, 16px);
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--blue);
+    transition: translate .12s, box-shadow .12s;
+  }
+  .hang svg { width: 1.15em; height: 1.15em; fill: currentColor; }
+  .hang:hover { background: #fff6fb; }
+  .hang:active { translate: 2px 2px; box-shadow: 0 0 0 var(--blue); }
+  .hang[hidden] { display: none; }
+  /* Lesson 3's hint, in the textbook's pencil: what the button does, pointing at it. */
+  .hang-hint { margin-left: auto; min-width: 0; font: italic 500 clamp(12px, 1.6cqi, 15px)/1.2 'Alegreya', serif; color: var(--pink-t); text-align: right; text-wrap: balance; }
+  .lang-ko .hang-hint { font-family: 'Gowun Batang', serif; font-style: normal; font-weight: 700; }
+  .hang-hint[hidden] { display: none; }
+  .hang-hint:not([hidden]) + .hang { margin-left: 0; }
+  .hang-hint .s { display: none; }
+
+  .moral {
+    grid-area: mor;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: .8em;
+    padding: .55em 1em .6em .7em;
+    font-size: clamp(12.5px, 1.75cqi, 18px);
+    line-height: 1.35;
+    font-weight: 700;
+    isolation: isolate;
+  }
+  /* the band: a pink plate and a blue plate that do not quite line up */
+  .moral::before, .moral::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    mix-blend-mode: multiply;
+    border-radius: 3px;
+  }
+  .moral::before { inset: 0 4px 0 0; background: rgba(255, 72, 176, .22); }
+  .moral::after { inset: 3px 0 -3px 5px; background: rgba(0, 120, 191, .2); }
+  .mtag {
+    flex: none;
+    padding: .2em .55em;
+    border: 1.5px solid currentColor;
+    border-radius: 3px;
+    font: 800 max(11px, .82em)/1.1 'Alegreya Sans SC', sans-serif;
+    letter-spacing: .08em;
+    color: var(--pink-t);
+  }
+  .lang-ko .mtag { font-family: 'Gowun Batang', serif; letter-spacing: .02em; }
+  .mtext { font-style: italic; }
+  .lang-ko .mtext { font-style: normal; }
+  .moral.wait { visibility: hidden; }
+
+  .folio {
+    grid-area: fol;
+    text-align: center;
+    font: 500 clamp(11px, 1.2cqi, 13px)/1 'Alegreya Sans SC', sans-serif;
+    letter-spacing: .2em;
+    color: var(--blue-t);
+  }
+
+  /* ---------- Figures ---------- */
+  /* Figures: stacked as strips when the figure area is tall (the arrows in the margin line up
+     with them), three across when it is wide and short. */
+  .figs { grid-area: figs; container: figs / size; min-height: 0; min-width: 0; }
+  .fgrid {
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: clamp(7px, 1.6cqh, 14px) clamp(8px, 1.6cqi, 16px);
+  }
+  .fgrid.l3 { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "a b" "c d" "e e"; }
+  .fgrid.l2, .fgrid.l4 { grid-template-rows: repeat(2, minmax(0, 1fr)); }   /* lessons 2 and 4 have two pictures */
+  .fgrid.l3 .fig:nth-child(1) { grid-area: a; }
+  .fgrid.l3 .fig:nth-child(2) { grid-area: b; }
+  .fgrid.l3 .fig:nth-child(3) { grid-area: c; }
+  .fgrid.l3 .fig:nth-child(4) { grid-area: d; }
+  .fgrid.l3 .fig:nth-child(5) { grid-area: e; }
+  @container figs (min-aspect-ratio: 7 / 4) {
+    .fgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); }
+    .fgrid.l3 {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr);
+      grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas: "a b e" "c d e";
+    }
+    .fgrid.l2, .fgrid.l4 { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); }
+  }
+
+  .fig {
+    position: relative;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    min-height: 0;
+    min-width: 0;
+    padding: 4px;
+    border-radius: 8px;
+    background:
+      radial-gradient(rgba(0, 120, 191, .1) .7px, transparent 1px) 0 0 / 4px 4px;
+    box-shadow: inset 0 0 0 1.5px rgba(0, 120, 191, .55);
+  }
+  .fig.blank { opacity: 0; }
+  .fig::before {   /* the pink frame, printed a touch off the blue one */
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px rgba(255, 72, 176, .55);
+    translate: calc(var(--mx) * -1.4) calc(var(--my) * -1.4);
+    pointer-events: none;
+  }
+  .fig figcaption {
+    padding: .35em .3em .15em;
+    font-size: clamp(11px, 1.2cqi, 13px);
+    line-height: 1.3;
+    color: var(--ink);
+  }
+  .fig figcaption b {
+    font: 800 1em/1 'Alegreya Sans SC', sans-serif;
+    letter-spacing: .05em;
+    color: var(--blue-t);
+    margin-right: .4em;
+  }
+  .lang-ko .fig figcaption b { font-family: 'Gowun Batang', serif; letter-spacing: 0; }
+  .fig figcaption .xo { font-weight: 700; color: var(--pink-t); margin-right: .3em; }
+
+  .art { position: relative; container: art / size; min-height: 0; }
+  /* the floor the two gentlemen stand on */
+  .art::after {
+    content: "";
+    position: absolute;
+    left: 3%;
+    right: 3%;
+    bottom: 3cqh;
+    height: 2px;
+    background: var(--pink);
+    opacity: .45;
+    mix-blend-mode: multiply;
+  }
+
+  /* --h: how tall a gentleman stands in this figure. Everything in the art that has to sit
+     beside him (speech, the hourglass, the "Click.") is placed from it. */
+  .art > * { --h: min(54cqh, 84cqi); --side: 2cqi; }
+  .who {
+    position: absolute;
+    bottom: 3cqh;
+    height: var(--h);
+    aspect-ratio: 64 / 106;
+    overflow: visible;
+    mix-blend-mode: multiply;
+  }
+  .who.c { left: var(--side); color: var(--pink); }
+  .who.s { right: var(--side); color: var(--blue); translate: var(--mx) var(--my); }
+  .who.op { color: var(--ink); }
+
+  .bubs {
+    position: absolute;
+    top: 3cqh;
+    left: 3cqi;
+    right: 3cqi;
+    bottom: calc(var(--h) + 7cqh);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: clamp(5px, 2.6cqh, 10px);
+    font-size: clamp(11.5px, min(7.2cqi, 7cqh), 15.5px);
+    line-height: 1.32;
+    z-index: 2;
+  }
+
+  /* Wide figures on phones: the two stand at the edges and talk across the middle. */
+  @container art (min-aspect-ratio: 6 / 5) {
+    .art > * { --h: min(84cqh, 37cqi); --side: 3.5cqi; }
+    .bubs {
+      top: 4cqh;
+      bottom: 6cqh;
+      left: calc(var(--side) + var(--h) * .6);
+      right: calc(var(--side) + var(--h) * .6);
+      justify-content: center;
+      font-size: clamp(11.5px, min(4.2cqi, 9.5cqh), 15px);
+    }
+  }
+  /* Wide strips with room (desktop): face to face in the middle, words on the outside.
+     Figures marked .apart (the Korean phone calls, the hang-up in 4-1) keep to the edges. */
+  @container art (min-aspect-ratio: 6 / 5) and (min-width: 430px) {
+    .fig:not(.apart) .art > * { --h: min(90cqh, 30cqi); }
+    .fig:not(.apart) .who.c { left: auto; right: calc(50% + 2.5cqi); }
+    .fig:not(.apart) .who.s { right: auto; left: calc(50% + 2.5cqi); }
+    .fig:not(.apart) .tw { right: auto; left: calc(50% + 4cqi); }
+    .fig:not(.apart) .bubs {
+      left: 2.5cqi;
+      right: 2.5cqi;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) calc(var(--h) * 1.2 + 5cqi + 22px) minmax(0, 1fr);
+      align-content: center;
+      gap: clamp(4px, 4cqh, 9px) 0;
+      font-size: clamp(12px, min(2.7cqi, 11.5cqh), 16px);
+    }
+    .fig:not(.apart) .bub.c { grid-column: 1; justify-self: end; max-width: 100%; }
+    .fig:not(.apart) .bub.s { grid-column: 3; justify-self: start; max-width: 100%; }
+    .apart .bubs { font-size: clamp(12px, min(2.7cqi, 11.5cqh), 16px); }
+    /* 4-1: the browser's note sits a little nearer Mr. Client, clear of "Click." */
+    .fig[data-id="rst"] .bubs { left: calc(var(--side) + var(--h) * .5); }
+  }
+
+  .bub {
+    position: relative;
+    max-width: 92%;
+    padding: .42em .65em .46em;
+    border: 2px solid var(--pink);
+    border-radius: 12px;
+    background: #fffaf6;
+    color: var(--pink-t);
+    font-weight: 500;
+    align-self: flex-start;
+    text-wrap: balance;
+    transform-origin: 20% 110%;
+  }
+  .lang-ko .bub { font-weight: 700; }
+  .bub.s { align-self: flex-end; border-color: var(--blue); color: var(--blue-t); transform-origin: 80% 110%; translate: var(--mx) var(--my); }
+  /* tails point down at the speaker */
+  .bub::after {
+    content: "";
+    position: absolute;
+    bottom: -9px;
+    left: 18%;
+    width: 12px;
+    height: 9px;
+    background: inherit;
+    border: inherit;
+    border-top: 0;
+    border-right: 0;
+    border-radius: 0 0 0 2px;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    transform: skewX(-24deg);
+    border-left-width: 2px;
+  }
+  .bub.s::after { left: auto; right: 18%; transform: scaleX(-1) skewX(-24deg); }
+  @container art (min-aspect-ratio: 6 / 5) {
+    .bub::after { bottom: auto; top: 46%; left: -10px; width: 10px; height: 10px; clip-path: polygon(100% 0, 100% 100%, 0 30%); border: 0; background: var(--pink); transform: none; }
+    .bub.s::after { left: auto; right: -10px; clip-path: polygon(0 0, 0 100%, 100% 30%); background: var(--blue); transform: none; }
+  }
+  @container art (min-aspect-ratio: 6 / 5) and (min-width: 430px) {
+    .fig:not(.apart) .bub.c::after { left: auto; right: -10px; clip-path: polygon(0 0, 0 100%, 100% 30%); }
+    .fig:not(.apart) .bub.s::after { right: auto; left: -10px; clip-path: polygon(100% 0, 100% 100%, 0 30%); }
+  }
+  .bub .nw { white-space: nowrap; }
+  .bub .aside { font-size: max(11px, .86em); font-style: italic; opacity: .9; }
+  .lang-ko .bub .aside { font-style: normal; font-weight: 400; }
+  .bub.x3 { margin-right: 8px; margin-top: 8px; }
+  .bub.x3::before {   /* asked three times: the same bubble twice more behind it */
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border: 2px solid var(--blue);
+    border-radius: 12px;
+    translate: 4px -4px;
+    box-shadow: 4px -4px 0 -2px #fffaf6, 4px -4px 0 0 var(--blue);
+    z-index: -1;
+    background: #fffaf6;
+  }
+  .bub .times {
+    position: absolute;
+    top: -.9em;
+    left: -.6em;
+    padding: .05em .35em;
+    border-radius: 999px;
+    background: var(--blue);
+    color: #fff;
+    font: 800 max(11px, .82em)/1.2 'Alegreya Sans SC', sans-serif;
+    rotate: -8deg;
+  }
+  .bubs .bub.old { opacity: .42; }
+
+  /* The browser's note when the other side simply hung up. */
+  .bub.note {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .15em .5em;
+    padding: 1.35em .6em .5em;
+    border-radius: 6px;
+    border-color: var(--pink);
+    background: #fff;
+    color: var(--ink);
+    font-size: max(11.5px, .88em);
+    max-width: none;
+    width: max-content;
+    align-self: flex-start;
+    rotate: -2deg;
+    box-shadow: 3px 3px 0 rgba(0, 120, 191, .35);
+  }
+  .bub.note::after { display: none; }
+  .bub.note .bar { position: absolute; left: 0; right: 0; top: 0; height: .95em; border-bottom: 1.5px solid var(--pink); display: flex; gap: .25em; align-items: center; padding-left: .45em; }
+  .bub.note .bar i { width: .4em; height: .4em; border-radius: 50%; background: var(--pink); opacity: .7; }
+  .bub.note svg { grid-row: span 2; width: 1.6em; height: 2em; fill: none; stroke: var(--pink-t); stroke-width: 1.6; }
+  .bub.note strong { font-weight: 700; line-height: 1.2; }
+  .bub.note strong { max-width: 13em; }
+  .bub.note code { font: 600 max(11px, .86em)/1.2 ui-monospace, Menlo, Consolas, monospace; color: var(--pink-t); white-space: nowrap; }
+
+  /* a numbered sentence, and the squiggle of it being said */
+  .sn {
+    display: inline-grid;
+    place-items: center;
+    width: 1.35em;
+    height: 1.35em;
+    margin-right: .1em;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    font: 800 max(10.5px, .8em)/1 'Alegreya Sans SC', sans-serif;
+    vertical-align: .05em;
+  }
+  .sq {
+    display: inline-block;
+    width: 1.6em;
+    height: .7em;
+    margin-right: .35em;
+    vertical-align: .05em;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 12'%3E%3Cpath d='M1 6 Q5 0 9 6 T17 6 T25 6 T31 6' fill='none' stroke='%23c8157a' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  .torn { position: relative; opacity: .55; }
+  .torn::after {
+    content: "";
+    position: absolute;
+    left: -.2em;
+    right: -.2em;
+    top: 50%;
+    height: .9em;
+    translate: 0 -50%;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 14' preserveAspectRatio='none'%3E%3Cpath d='M0 7 L5 1 L10 13 L15 2 L20 12 L25 1 L30 13 L35 2 L40 8' fill='none' stroke='%230078bf' stroke-width='2.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  }
+
+  /* props */
+  .noise { position: absolute; left: 50%; bottom: 6cqh; width: 14cqi; height: 46cqh; translate: -50% 0; overflow: visible; z-index: 1; mix-blend-mode: multiply; }
+  .noise path { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+  /* the teacher's mark: a stamped corner ✕ for "don't" */
+  .xmark { position: absolute; left: -9px; top: -9px; width: clamp(30px, 6cqmin, 44px); aspect-ratio: 1; rotate: -8deg; z-index: 4; mix-blend-mode: multiply; overflow: visible; pointer-events: none; }
+  .xmark path { fill: none; stroke: var(--pink); stroke-width: 7; stroke-linecap: round; opacity: .92; }
+  .xmark path + path { stroke: var(--blue); opacity: .45; translate: 1.6px -1.2px; }
+  /* "Click." lands just above the desk phone Mr. Server is putting down */
+  .sfx {
+    position: absolute;
+    z-index: 3;
+    right: calc(var(--side) + var(--h) * .5);
+    bottom: calc(var(--h) * .6);
+    font: 800 clamp(22px, min(24cqh, 11cqi), 46px)/1 'Alegreya', serif;
+    color: var(--blue);
+    rotate: -8deg;
+    text-shadow: 2px -1.5px 0 rgba(255, 72, 176, .45);
+    mix-blend-mode: multiply;
+    transform-origin: 80% 100%;
+  }
+  .sfx > font-kku { color: var(--blue); }
+  /* On phones the middle belongs to the browser's note: "Click." goes over his head. */
+  @container art (min-aspect-ratio: 6 / 5) and (max-width: 429.9px) {
+    .sfx { right: var(--side); bottom: min(calc(var(--h) + 4cqh), calc(100cqh - 1.45em)); transform-origin: 50% 100%; }
+    .fig[data-id="rst"] .bubs { justify-content: flex-end; bottom: 9cqh; }
+    .bub.note { align-self: center; }
+  }
+
+  /* TIME_WAIT: an hourglass in Mr. Server's place, 60 seconds told in six */
+  .tw {
+    position: absolute;
+    right: var(--side);
+    bottom: 3cqh;
+    height: var(--h);
+    aspect-ratio: 64 / 106;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    justify-items: center;
+    text-align: center;
+  }
+  .tw svg { height: 100%; min-height: 0; overflow: visible; mix-blend-mode: multiply; }
+  .tw .frame { fill: var(--pink); }
+  .tw .glass { fill: rgba(255, 255, 255, .5); stroke: var(--pink); stroke-width: 1.6; }
+  .tw .sand { fill: url(#htp-dense); }
+  .tw .stream { stroke: var(--pink); stroke-width: 1.4; stroke-dasharray: 2 2; }
+  .tw .lbl { font: 800 clamp(11px, 9cqi, 13px)/1.1 'Alegreya Sans SC', sans-serif; letter-spacing: .04em; color: var(--pink-t); white-space: nowrap; }
+  .tw .num { display: block; font: 800 clamp(15px, 13cqi, 26px)/1 'Alegreya', serif; color: var(--pink-t); font-variant-numeric: tabular-nums; }
+  @container art (min-aspect-ratio: 6 / 5) {
+    .tw .lbl { font-size: clamp(11px, 3.4cqi, 13px); }
+    .tw .num { font-size: clamp(15px, 6cqi, 24px); }
+  }
+  .tw.closed .num { color: var(--blue-t); }
+
+  /* Mr. Client's car, parked behind him in the driveway */
+  .car { position: absolute; left: calc(var(--side) + var(--h) * .1); bottom: 3cqh; width: calc(var(--h) * .66); overflow: visible; mix-blend-mode: multiply; color: var(--pink); }
+  @container art (min-aspect-ratio: 6 / 5) and (min-width: 430px) { .fig:not(.apart) .car { left: auto; right: calc(50% + 2.5cqi - var(--h) * .2); width: calc(var(--h) * .8); } }
+
+  /* ---------- people (SVG) ---------- */
+  .who .suit { fill: currentColor; }
+  .who .skin { fill: #fff; stroke: currentColor; stroke-width: 1.2; }
+  .who .eyew { fill: #fff; }
+  .ink-p .tone { fill: url(#htp-l); }
+  .ink-b .tone { fill: url(#htb-l); }
+  .who .arm { fill: none; stroke: currentColor; stroke-width: 5.4; stroke-linecap: round; stroke-linejoin: round; }
+  .who .hand { fill: #fff; stroke: currentColor; stroke-width: 1.2; }
+  .who .ln { fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
+  .who .paper { fill: #fff; stroke: currentColor; stroke-width: 1.2; }
+  .who .cardtx { fill: currentColor; font: 800 7px/1 'Alegreya Sans SC', sans-serif; text-anchor: middle; }
+  .who .floor { fill: currentColor; opacity: .18; }
+  .who .door { fill: none; stroke: currentColor; stroke-width: 1.6; }
+  .who .doorfill { fill: url(#htb); opacity: .6; }
+  .who .plate { mix-blend-mode: multiply; }
+  .who .plate.pb { color: var(--blue); }
+  .who .plate.pp { color: var(--pink); }
+  .ink-p .chair, .ink-b .chair { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+
+  .up { transform: rotate(var(--bow, 0deg)); transition: transform .6s cubic-bezier(.35, .1, .25, 1); }
+  .up[data-k]:not(.on) { transform: none; }
+
+  /* things that appear on cue */
+  .rv { opacity: 0; }
+  .rv.on { opacity: 1; }
+  .pz[data-k]:not(.on), .pz.off { display: none; }
+
+  /* ---------- the sequence diagram in the margin ---------- */
+  .seq {
+    grid-area: seq;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    min-height: 0;
+    padding: .5em .7em .4em;
+    border-left: 1.5px dashed rgba(0, 120, 191, .5);
+    font-size: clamp(11.5px, 1.25cqi, 13px);
+  }
+  .seq-h { font: 800 1em/1.2 'Alegreya Sans SC', sans-serif; letter-spacing: .1em; color: var(--blue-t); }
+  .lang-ko .seq-h { font-family: 'Gowun Batang', serif; letter-spacing: .04em; }
+  .lanes { display: flex; justify-content: space-between; margin-top: .45em; font-weight: 700; font-size: max(11px, .95em); }
+  .lanes .c { color: var(--pink-t); }
+  .lanes .s { color: var(--blue-t); }
+  .seq-box { position: relative; min-height: 0; overflow: hidden; -webkit-mask: linear-gradient(transparent, #000 14px); mask: linear-gradient(transparent, #000 14px); }
+  .seq-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .seq-svg .lane { stroke-width: 2; }
+  .seq-svg .lane.c { stroke: var(--pink); }
+  .seq-svg .lane.s { stroke: var(--blue); }
+  .seq-svg .ar { fill: none; stroke-width: 1.9; stroke-linecap: round; }
+  .seq-svg .head { stroke: none; }
+  .seq-svg .p .ar { stroke: var(--pink); }
+  .seq-svg .p .head, .seq-svg .p .x { fill: var(--pink); }
+  .seq-svg .b .ar { stroke: var(--blue); }
+  .seq-svg .b .head, .seq-svg .b .x { fill: var(--blue); }
+  .seq-svg .p, .seq-svg .b { mix-blend-mode: multiply; }
+  .seq-svg .dash .ar { stroke-dasharray: 5 4; }
+  .seq-svg .x { stroke: none; }
+  .seq-svg text {
+    font: 700 1em 'Alegreya Sans SC', sans-serif;
+    letter-spacing: .02em;
+    paint-order: stroke;
+    stroke: var(--paper);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+  .seq-svg .p text { fill: var(--pink-t); }
+  .seq-svg .b text { fill: var(--blue-t); }
+  .seq-svg .nt { font-family: 'Alegreya', serif; font-style: italic; font-weight: 500; font-size: max(11px, .92em); fill: var(--ink); }
+  .seq-svg .band line { stroke: var(--ink); stroke-width: 1.2; }
+  .seq-svg .band text { fill: var(--ink); letter-spacing: .14em; font-weight: 800; }
+  .seq-svg .tag rect { stroke: none; }
+  .seq-svg .tag.p rect { fill: var(--tint-p); }
+  .seq-svg .tag.b rect { fill: var(--tint-b); }
+  .seq-svg .tag text { stroke: none; font-size: max(11px, .9em); }
+  .seq-svg .row.old { opacity: .36; }
+
+  /* ---------- Narrow: tabs on top, one figure at a time, the diagram under it ---------- */
+  @container page ((max-width: 759px) or (max-aspect-ratio: 21 / 20)) {
+    .sheet {
+      --pad: clamp(5px, 1.6cqmin, 14px);
+      right: var(--pad);
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
+      grid-template-areas: "rh" "cov" "tabs" "lh" "figs" "seq" "mor";
+      row-gap: clamp(5px, 1.2cqh, 12px);
+      padding: clamp(8px, 1.8cqh, 18px) clamp(9px, 3cqi, 22px) clamp(9px, 1.8cqh, 16px);
+    }
+    .folio { display: none; }
+    .runhead .rh-r { display: none; }
+    .runhead .rh-folio { display: inline; }
+    .cover { column-gap: .7em; }
+    .title .en-t { font-size: clamp(25px, 7.6cqi, 46px); }
+    .title .tcp { font-size: clamp(23px, 7.2cqi, 44px); }
+    .sub { font-size: clamp(12px, 3.4cqi, 17px); }
+    .tabs {
+      position: static;
+      grid-area: tabs;
+      width: auto;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 4px;
+    }
+    .tab {
+      min-height: 0;
+      padding: .45em .35em .45em .55em;
+      border-radius: 8px 8px 0 0;
+      translate: none;
+      box-shadow: inset 0 -5px 5px -5px rgba(0, 0, 0, .16);
+    }
+    .tab:hover { translate: none; }
+    .tab[aria-selected="true"] { translate: none; box-shadow: 0 0 0 1.5px var(--blue) inset; background: #fff; }
+    .tab[aria-selected="true"]::before { left: 15%; right: 15%; top: auto; bottom: 3px; width: auto; height: 3px; }
+    .tab .tn { font-size: clamp(11.5px, 3.3cqi, 15px); }
+    .tab small { font-size: 11px; }
+    .ltitle { font-size: clamp(20px, 5.6cqi, 30px); }
+    .lno { font-size: clamp(12px, 3.4cqi, 15px); }
+    .hang { font-size: clamp(12.5px, 3.6cqi, 15px); padding: .42em .8em .45em .65em; }
+    .hang-hint { font-size: clamp(11px, 3.2cqi, 12.5px); }
+    .hang-hint .l { display: none; }
+    .hang-hint .s { display: inline; }
+    .fgrid, .fgrid.l2, .fgrid.l3, .fgrid.l4 { grid-template: minmax(0, 1fr) / minmax(0, 1fr) !important; }
+    .fgrid .fig { grid-area: 1 / 1 !important; }
+    .fgrid .fig:not(.cur) { visibility: hidden; }
+    .fig figcaption { font-size: clamp(11px, 3.1cqi, 13px); }
+    .seq {
+      height: clamp(78px, 19cqh, 170px);
+      grid-template-rows: auto minmax(0, 1fr);
+      padding: .2em .1em 0;
+      border-left: 0;
+      border-top: 1.5px dashed rgba(0, 120, 191, .5);
+      font-size: 11.5px;
+    }
+    .seq-h { display: none; }
+    .lanes { margin-top: .3em; }
+    .moral { font-size: clamp(12px, 3.5cqi, 16px); padding: .45em .7em .5em .55em; gap: .6em; }
+    /* Opened on its own, the kit's "? :)" sits over the band's right end: keep the words clear of it. */
+    html:not(.embedded) .moral { padding-right: 78px; }
+    .fig[data-id="tw"] .bubs .bub.old { display: none; }
+    /* Short phone stages (358×396: a figure strip about 70 px tall): figure 3-5's two-line
+       caption goes beside the picture, so the goodbye-again bubbles get the strip's full height
+       instead of landing on the caption. */
+    @container figs (min-aspect-ratio: 3 / 1) {
+      .fig[data-id="tw"] { grid-template: minmax(0, 1fr) / minmax(0, 1fr) minmax(0, .78fr); column-gap: 4px; }
+      .fig[data-id="tw"] figcaption { align-self: center; padding: 0 .3em 0 0; }
+      .fig[data-id="tw"] .bubs { right: calc(var(--side) + var(--h) * .78); }   /* clear of "TIME_WAIT" */
+      .bubs .bub.old { display: none; }   /* two bubbles at most fit the strip */
+      /* 4-1: no room over Mr. Server's head, so "Click." lands beside him and the browser's
+         note keeps to Mr. Client's side */
+      .fig[data-id="rst"] .bub.note { align-self: flex-start; }
+      .fig[data-id="rst"] .sfx { right: calc(var(--side) + var(--h) * .64); bottom: 22cqh; font-size: 20px; }   /* clear of the note's edge */
+    }
+  }
+  /* Short phones: the subtitle folds away under the title row. */
+  @container page (max-height: 560px) and (max-width: 759px) {
+    .sub { display: none; }
+    .cover { --cvh: clamp(36px, 9cqh, 48px); }
+    .seq { height: clamp(74px, 17cqh, 120px); }
+    /* the box is only about 50 px tall: a 14 px fade would eat the newest row ("FIN · again") */
+    .seq-box { -webkit-mask: linear-gradient(transparent, #000 4px); mask: linear-gradient(transparent, #000 4px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .up, .tab, .hang { transition: none; }
+  }
+</style>
+</head>
+<body>
+<!-- halftone screens the drawings share -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="htp" width="2.6" height="2.6" patternUnits="userSpaceOnUse" patternTransform="rotate(15)"><circle cx="1.3" cy="1.3" r=".55" fill="#ff48b0"/></pattern>
+    <pattern id="htp-l" width="2.4" height="2.4" patternUnits="userSpaceOnUse" patternTransform="rotate(15)"><circle cx="1.2" cy="1.2" r=".38" fill="#ff48b0"/></pattern>
+    <pattern id="htb-l" width="2.4" height="2.4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><circle cx="1.2" cy="1.2" r=".38" fill="#0078bf"/></pattern>
+    <pattern id="htb" width="2.6" height="2.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><circle cx="1.3" cy="1.3" r=".55" fill="#0078bf"/></pattern>
+    <pattern id="htp-dense" width="2.2" height="2.2" patternUnits="userSpaceOnUse" patternTransform="rotate(15)"><circle cx="1.1" cy="1.1" r=".85" fill="#ff48b0"/></pattern>
+  </defs>
+</svg>
+
+<main class="sheet">
+  <header class="runhead">
+    <span data-lang="en">Proper Connected Living</span>
+    <span data-lang="ko">바른 연결 생활</span>
+    <span class="rh-r"></span>
+    <span class="rh-folio" data-lang="en">— 47 —</span>
+    <span class="rh-folio" data-lang="ko">- 47 -</span>
+  </header>
+
+  <div class="cover">
+    <h1 class="title" data-lang="en"><span class="en-t">TCP Etiquette</span></h1>
+    <h1 class="title" data-lang="ko"><span class="tcp">TCP</span><font-kku font="riso" size="clamp(27px, 4.6cqi, 52px)">예절 교실</font-kku></h1>
+    <p class="sub" data-lang="en">Good manners for opening and closing a connection</p>
+    <p class="sub" data-lang="ko">연결을 맺고 끊는 바른 몸가짐</p>
+    <div class="cvart" aria-hidden="true"></div>
+  </div>
+
+  <div class="tabs" role="tablist"></div>
+
+  <section class="lesson" id="lesson" role="tabpanel">
+    <div class="lhead">
+      <span class="lno"></span>
+      <h2 class="ltitle"></h2>
+      <p class="hang-hint" hidden><span class="l"></span><span class="s"></span></p>
+      <button class="hang" type="button" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 14.2c-.9-.9-.8-2.3.2-3.1C6 9.3 8.9 8.3 12 8.3s6 1 8.2 2.8c1 .8 1.1 2.2.2 3.1l-1.4 1.4c-.6.6-1.6.7-2.3.2l-1.6-1.2c-.5-.4-.7-1-.6-1.6l.2-1.2c-1.7-.5-3.7-.5-5.4 0l.2 1.2c.1.6-.1 1.2-.6 1.6l-1.6 1.2c-.7.5-1.7.4-2.3-.2z"/></svg>
+        <span class="hang-t"></span>
+      </button>
+    </div>
+    <div class="figs"><div class="fgrid"></div></div>
+    <aside class="seq">
+      <p class="seq-h"></p>
+      <div class="lanes" aria-hidden="true"><b class="c"></b><b class="s"></b></div>
+      <div class="seq-box"><svg class="seq-svg" role="img"></svg></div>
+    </aside>
+    <p class="moral wait"><b class="mtag"></b><span class="mtext"></span></p>
+  </section>
+
+  <footer class="folio">
+    <span data-lang="en">— 47 —</span>
+    <span data-lang="ko">- 47 -</span>
+  </footer>
+</main>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  // Dialogue: anything in (parentheses) is the textbook's aside, set a little smaller.
+  // A trailing "~" stays on the line with its word.
+  const say = (s) => esc(s).replace(/(\S+~+)/g, '<span class="nw">$1</span>').replace(/\(([^)]*)\)/g, '<span class="aside">($1)</span>');
+  document.title = TTY.t({ en: 'TCP Etiquette', ko: 'TCP 예절 교실' }) + ' | tty.link';
+
+  /* ---------- Copy ---------- */
+  const T = TTY.t({
+    en: {
+      lessonNo: (n) => `Lesson ${n}`,
+      lessons: ['Greetings', 'Listening', 'Goodbyes', "Don't"],
+      tabs: 'Lessons',
+      fig: 'Fig.',
+      moral: 'Remember',
+      seq: 'Sequence diagram',
+      lanes: ['Client', 'Server'],
+      wrong: "Don't",
+      // "How do you do?" is answered with "How do you do?": a greeting returned with your own, a SYN-ACK.
+      l1: ["How do you do? (I'm number 100.)", 'How do you do? (From 101, please. I\'m number 300.)', 'Charmed. (From 301, please.)'],
+      m1: 'Offer your number with both hands. Return theirs, plus one.',
+      ok: ['Mm-hm.', 'Mm-hm.'],
+      sorry: 'Sorry? I got up to 2.',
+      again: 'Third point, again:',
+      m2: "Nod at every sentence. Ask three times and they'll say it again.",
+      l3: ['Well, we should probably get going.', 'Oh, sure!', 'Drive safe now!', 'You too!'],
+      tw: 'Keys in hand, still waving, in case they wave again. TIME_WAIT: 60 s (Linux).',
+      m3: 'Whoever says goodbye first waits the longest.',
+      hang: 'Drive off',
+      hangHint: ['Go on, try to leave →', 'Try to leave →'],
+      // Mr. Server's goodbye, sent again each time (the autoplay uses the first): a new one every time.
+      byes: ['Bye now!', 'Okay, bye-bye!', 'Say hi to your mom!', 'Watch out for deer!', 'Take care now!', 'Bye!'],
+      byeAck: 'You too!',
+      secs: (n) => `${n} s`,
+      click: 'Click.',
+      note: ['The connection was reset.', 'ERR_CONNECTION_RESET'],
+      udp: "I'd tell you a UDP joke, but you might not get it.",
+      m4: 'Never hang up without a goodbye. Never talk without checking.',
+      seqLabel: (l) => `Sequence diagram for lesson ${l}: Mr. Client on the left, Mr. Server on the right.`,
+    },
+    ko: {
+      lessonNo: (n) => `제${n}과`,
+      lessons: ['첫인사', '맞장구', '작별', '이러면 안 돼요'],
+      tabs: '단원',
+      fig: '그림',
+      moral: '교훈',
+      seq: '순서도',
+      lanes: ['클라이언트 씨', '서버 씨'],
+      wrong: '틀린 예',
+      l1: ['처음 뵙겠습니다. 제 번호는 100번입니다.', '네, 101번부터 듣겠습니다. 제 번호는 300번입니다.', '301번부터 듣겠습니다. 잘 부탁드립니다.'],
+      m1: '명함은 두 손으로. 받은 번호에는 하나를 더해 돌려드립니다.',
+      ok: ['네,', '네.'],
+      sorry: '네? 2번까지 들었어요.',
+      again: '다시, 세 번째 말씀은요,',
+      m2: '말할 때마다 고개를 끄덕여 줍니다. 세 번 되물으면 다시 말해 줍니다.',
+      l3: ['그럼 이만 들어가세요~', '네~ 들어가세요~', '네 조심히 들어가시고요~', '네네~ 들어가세요~'],
+      tw: '마지막 "네네~"가 안 들렸을까 봐 수화기를 든 채 기다립니다. TIME_WAIT 60초(리눅스).',
+      m3: '먼저 작별을 꺼낸 쪽이 마지막까지 기다립니다.',
+      hang: '전화 끊기',
+      hangHint: ['끊을 수 있으면 끊어 보세요 →', '끊어 보세요 →'],
+      byes: ['네~', '네 들어가세요~', '언제 밥 한번 먹어요~', '아 네네 조심히요~', '네~ 감사합니다~', '네네네~'],
+      byeAck: '네네~',
+      secs: (n) => `${n}초`,
+      click: '뚝.',
+      note: ['연결이 재설정되었습니다', 'ERR_CONNECTION_RESET'],
+      // 던지다/받다: a joke thrown and maybe caught, like a datagram sent and maybe received.
+      udp: 'UDP 농담 하나 던질게요. 받든 말든 상관없어요.',
+      m4: '인사 없이 끊지 않고, 확인 없이 말하지 않습니다.',
+      seqLabel: (l) => `제${l}과 순서도: 왼쪽은 클라이언트 씨, 오른쪽은 서버 씨.`,
+    },
+  });
+
+  /* ---------- Drawing the two gentlemen ----------
+     One person, facing right, feet at (0, 0), about 98 units tall. The upper body turns about
+     the hip, so a bow is one rotation. Mr. Server is the same drawing mirrored. */
+  const ARM = {
+    stand: { back: 'M-4 -32 Q-7 -19 -6 -7', front: 'M6.5 -32 Q9.5 -19 8.5 -7', hands: [[-6, -6], [8.5, -6]] },
+    fold: { back: 'M-4 -31 Q-1 -18 4 -11', front: 'M6.5 -31 Q9.5 -19 6 -11', hands: [[4, -10.5], [6.5, -10.5]] },
+    card: { back: 'M-3 -31 Q4 -18 15 -21.5', front: 'M6.5 -31 Q17 -17 28.5 -22', hands: [[15, -21.5], [28.5, -22]] },
+    talk: { back: 'M-4 -32 Q-7 -19 -6 -7', front: 'M6.5 -32 Q15.5 -27 18 -37', hands: [[-6, -6], [18.3, -38]] },
+    ear: { back: 'M-4 -32 Q-7 -19 -6 -7', front: 'M6.5 -32 Q14 -31 -0.5 -44.5', hands: [[-6, -6], [-1, -45.5]] },
+    phone: { back: 'M-4 -32 Q-7 -19 -6 -7', front: 'M6.5 -32 Q17 -31 4.5 -42.5', hands: [[-6, -6], [4, -43]] },
+    mega: { back: 'M-3 -31 Q5 -27 13 -32', front: 'M6.5 -31 Q12 -32 16.5 -34', hands: [[13, -32], [16.5, -34]] },
+    slam: { back: 'M-4 -32 Q-7 -19 -6 -7', front: 'M6.5 -31 Q15 -26 19.5 -14', hands: [[-6, -6], [19.5, -13.5]] },
+    wave: { back: 'M-4 -32 Q-7 -19 -6 -7', front: 'M6.5 -32 Q18 -35 18 -48', hands: [[-6, -6], [18, -49.5]] },
+  };
+  const HANDSET = '<path d="M-8 -1.6 Q0 -3.4 8 -1.6 L8 1.6 Q0 -.2 -8 1.6 Z"/><rect x="-10.5" y="-3.4" width="5" height="6.8" rx="2"/><rect x="5.5" y="-3.4" width="5" height="6.8" rx="2"/>';
+  function armSVG(pose, part, m, card) {
+    const a = ARM[pose] || ARM.stand;
+    if (part === 'back') return `<path class="arm" d="${a.back}"/><circle class="hand" cx="${a.hands[0][0]}" cy="${a.hands[0][1]}" r="2.7"/>`;
+    let extra = '';
+    if (pose === 'card') {
+      extra = `<rect class="paper" x="13" y="-33" width="18" height="11.5" rx="1.2"/>`
+        + `<g transform="translate(22 -27.2) scale(${m} 1)"><text class="cardtx" y="2.5">${esc(card || '')}</text></g>`;
+    } else if (pose === 'phone') {
+      extra = `<g class="suit" transform="translate(2.6 -44.5) rotate(60)" style="stroke:#fff;stroke-width:.8">${HANDSET}</g>`;
+    } else if (pose === 'mega') {
+      extra = `<path class="suit" d="M14.5 -37.5 L31 -45.5 L31 -22.5 L14.5 -30.5 Z" style="stroke:#fff;stroke-width:.8"/>`
+        // "UDP" printed on the megaphone: drawn, like the rest of the picture (as text it would be 2-10 px)
+        + `<g transform="translate(23.5 -34) scale(${m} 1)"><path d="M-5.5 -2.2 V1 Q-5.5 2.2 -4 2.2 Q-2.5 2.2 -2.5 1 V-2.2 M-1.5 -2.2 V2.2 H-.6 Q1.5 2.2 1.5 0 Q1.5 -2.2 -.6 -2.2 Z M2.5 2.2 V-2.2 H4 Q5.5 -2.2 5.5 -.9 Q5.5 .4 4 .4 H2.5" fill="none" stroke="#fff" stroke-width=".95" stroke-linejoin="round"/></g>`
+        + `<path class="ln" d="M35 -42 q3 8 0 16 M39 -45 q4.5 11 0 22"/>`;
+    } else if (pose === 'slam') {
+      extra = `<g class="suit" transform="translate(21 -16.5) rotate(4)" style="stroke:#fff;stroke-width:.8">${HANDSET}</g>`;
+    } else if (pose === 'wave') {
+      extra = `<path class="ln" d="M12.5 -52 q-2.5 -3 -1 -7.5 M23.5 -52 q2.5 -3 1 -7.5"/>`;
+    }
+    const h = a.hands[1];
+    const hand = `<circle class="hand" cx="${h[0]}" cy="${h[1]}" r="2.7"/>`;
+    // the card is held from below; the phone is held over the hand
+    return pose === 'card' ? `<path class="arm" d="${a.front}"/>${extra}${hand}` : `<path class="arm" d="${a.front}"/>${hand}${extra}`;
+  }
+  function body(o, m) {
+    const arms = (part) => (o.pose2
+      ? `<g class="pz" data-koff="${o.k2}">${armSVG(o.pose, part, m, o.card)}</g><g class="pz" data-k="${o.k2}">${armSVG(o.pose2, part, m, o.card)}</g>`
+      : armSVG(o.pose, part, m, o.card));
+    const hair = o.hat
+      ? '<path class="suit" d="M-8.4 -12 C-8 -20 -2 -22.5 3 -21.6 C7 -21 9.4 -18 9.2 -14.6 L14.5 -13.4 C15 -12.4 14 -11.8 12.6 -12 L-8.6 -11 Z"/>'
+      : '<path class="suit" d="M-8.2 -9 C-9.6 -17 -4 -21.6 2 -21.2 C6.6 -20.8 9.6 -17.6 9 -14.2 C6 -16.6 1.4 -16.8 -1.6 -15.2 C-3.2 -13.2 -3.6 -11 -3.2 -8.6 C-5 -9.8 -6.6 -9.3 -8.2 -9 Z"/>';
+    const head = `<g transform="translate(1.2 -36)"><g class="head">
+        <rect class="skin" x="-2.3" y="-4.6" width="4.6" height="5.6"/>
+        <circle class="skin" cx=".5" cy="-11.5" r="8.6"/><circle class="tone" cx=".5" cy="-11.5" r="8.6"/>
+        ${hair}
+        <circle class="skin" cx="-2.6" cy="-10.6" r="1.9"/>
+        <circle class="eyew" cx="5.5" cy="-12" r="2"/>
+        <circle class="suit" cx="5.9" cy="-12" r="1.3"/>
+        <path class="ln" d="M4 -15.6 L7.4 -15.1"/>
+        <path class="ln" d="M8.9 -11.6 L10.2 -9.2 L8.7 -8.7"/>
+        <path class="ln" d="M5.2 -6.6 q1.8 1.1 3.3 -.3"/>
+        <circle class="suit" cx="4.6" cy="-8.6" r="1.6" opacity=".28"/>
+      </g></g>`;
+    const upAttr = o.bowK ? ` data-k="${o.bowK}"` : '';
+    return `${o.back || ''}
+      <ellipse class="floor" cx="2" cy="0" rx="18" ry="2.6"/>
+      <rect class="suit" x="-7.6" y="-44" width="7" height="42"/>
+      <rect class="suit" x=".6" y="-44" width="7" height="42"/>
+      <rect class="suit" x="-8.6" y="-3.4" width="9" height="3.4" rx="1.6"/>
+      <rect class="suit" x=".6" y="-3.4" width="10.6" height="3.4" rx="1.6"/>
+      ${o.front || ''}
+      <g transform="translate(0 -42)"><g class="up"${upAttr} style="--bow:${o.bow || 0}deg">
+        ${arms('back')}
+        <path class="suit" d="M-9 2 L-10.5 -30 Q-10.5 -36 -5 -36 L6 -36 Q11.5 -36 11.5 -30 L10 2 Z"/>
+        ${o.hat ? '' : '<path class="skin" style="stroke:none" d="M1.4 -36 L7.2 -36 L4.4 -27.5 Z"/><path class="suit" d="M3.7 -34.8 L5.1 -34.8 L5.7 -26.5 L4.4 -24.4 L3.1 -26.5 Z"/>'}
+        ${head}
+        ${arms('front')}
+      </g></g>`;
+  }
+  // side: 'c' (left, pink, facing right) or 's' (right, blue, facing left)
+  function person(o) {
+    const s = o.side;
+    const m = s === 's' ? -1 : 1;
+    const ink = o.op ? 'op' : s === 's' ? 'b' : 'p';
+    const flip = m < 0 ? ' transform="scale(-1 1)"' : '';
+    const inner = o.op
+      ? `<g class="plate pb" transform="translate(1.6 -1.2)">${body(o, m)}</g><g class="plate pp">${body(o, m)}</g>`
+      : body(o, m);
+    const cls = `who ${s} ink-${o.op ? 'p' : ink}${o.op ? ' op' : ''}${o.cls ? ' ' + o.cls : ''}`;
+    return `<svg class="${cls}" viewBox="-32 -104 64 106" aria-hidden="true"><g${flip}>${inner}</g></svg>`;
+  }
+  const DOOR = '<rect class="doorfill" x="-17" y="-100" width="30" height="100"/><path class="door" d="M-17 0 V-100 H13 V0"/><circle class="suit" cx="-12" cy="-48" r="1.6"/>';
+  const TABLE = '<rect class="suit" x="11" y="-53" width="23" height="2.6"/><rect class="suit" x="13" y="-51" width="2" height="51"/><rect class="suit" x="30" y="-51" width="2" height="51"/><path class="paper" d="M14 -53 L16.5 -58 L28.5 -58 L31 -53 Z"/>';
+  const CHAIRS = (() => {
+    const chair = (x, y, k) => `<g transform="translate(${x} ${y}) scale(${k})"><path class="chair" d="M-7 0 V-13 M7 0 V-13 M-8 -13 H8 L6.5 -16 H-6.5 Z M-6.5 -16 V-30 H6.5 V-16"/></g>`;
+    return `<g opacity=".75">${chair(-12, -24, .95)}${chair(12, -24, .95)}</g><g>${chair(-22, 0, 1.25)}${chair(0, 0, 1.25)}${chair(22, 0, 1.25)}</g>`;
+  })();
+  const chairs = () => `<svg class="who s ink-b" viewBox="-32 -104 64 106" aria-hidden="true">${CHAIRS}<ellipse class="floor" cx="0" cy="0" rx="30" ry="2.6"/></svg>`;
+  const car = () => `<svg class="car" viewBox="0 0 120 54" aria-hidden="true">
+      <path d="M8 40 L10 28 Q12 24 18 23 L34 21 L46 9 Q49 6 54 6 L84 6 Q90 6 93 11 L101 22 L110 24 Q115 25 115 31 L115 40 Z" fill="url(#htp)" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M50 21 L56 11 L70 11 L70 21 Z M75 21 L75 11 L88 11 L95 21 Z" fill="#fff" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="30" cy="42" r="9" fill="currentColor"/><circle cx="30" cy="42" r="3.4" fill="#fff"/>
+      <circle cx="94" cy="42" r="9" fill="currentColor"/><circle cx="94" cy="42" r="3.4" fill="#fff"/>
+    </svg>`;
+  const hourglass = () => `<div class="tw" aria-live="off">
+      <svg viewBox="0 0 40 64" aria-hidden="true">
+        <defs>
+          <clipPath id="tw-top"><path d="M9 7 C9 20 18 25 19.3 32 L20.7 32 C22 25 31 20 31 7 Z"/></clipPath>
+          <clipPath id="tw-bot"><path d="M19.3 32 C18 39 9 44 9 57 L31 57 C31 44 22 39 20.7 32 Z"/></clipPath>
+        </defs>
+        <g class="tw-turn" style="transform-origin: 20px 32px">
+          <path class="glass" d="M9 7 C9 20 18 25 19.3 32 C18 39 9 44 9 57 L31 57 C31 44 22 39 20.7 32 C22 25 31 20 31 7 Z"/>
+          <rect class="sand tw-a" clip-path="url(#tw-top)" x="0" y="9" width="40" height="23"/>
+          <rect class="sand tw-b" clip-path="url(#tw-bot)" x="0" y="57" width="40" height="0"/>
+          <line class="stream" x1="20" y1="32" x2="20" y2="57" opacity="0"/>
+          <rect class="frame" x="3" y="2.5" width="34" height="4.5" rx="1.5"/>
+          <rect class="frame" x="3" y="57" width="34" height="4.5" rx="1.5"/>
+          <rect class="frame" x="5" y="7" width="2.2" height="50"/><rect class="frame" x="32.8" y="7" width="2.2" height="50"/>
+        </g>
+      </svg>
+      <p class="lbl"><span class="tw-l">TIME_WAIT</span><span class="num"></span></p>
+    </div>`;
+  const xmark = () => '<svg class="xmark" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 8 L32 32 M32 8 L8 32"/><path d="M8 8 L32 32 M32 8 L8 32"/></svg>';
+  const noise = (k) => `<svg class="noise rv" data-k="${k}" viewBox="0 0 40 100" preserveAspectRatio="none" aria-hidden="true"><path style="stroke:var(--blue)" d="M22 0 L10 16 L28 30 L8 46 L30 60 L12 76 L26 90 L18 100"/><path style="stroke:var(--pink);opacity:.7" d="M24 2 L12 18 L30 32 L10 48 L32 62 L14 78 L28 92 L20 102"/></svg>`;
+
+  /* ---------- The cover picture: the goodbye that never ends, from the first second ----------
+     One drawing, two gentlemen facing each other; the CSS keeps them at it.
+     Korean: both on the phone, bowing, 80 units apart with a comic strip's split-panel line
+     between them (each bows at a wall). English: Mr. Server at his front door, 58 units from
+     Mr. Client, who keeps turning for his car (g.cv-go, the car stays put) and coming back. */
+  const cvart = $('.cvart');
+  {
+    const c = ko ? { pose: 'phone', bow: 26 } : { pose: 'stand', pose2: 'wave', k2: 'w' };
+    const s = ko ? { pose: 'phone', bow: 26 } : { pose: 'stand', pose2: 'wave', k2: 'w', back: DOOR };
+    // "~", just above the head (inside the bowing upper body, so it goes down with him and stays
+    // on his own side of the line)
+    const say = ko ? '<path class="say" d="M-3 -63 q2.2 -3.2 4.4 0 t4.4 0"/>' : '';
+    const withSay = (svg) => svg.replace(/(<g class="up"[^>]*>)/, `$1${say}`);
+    // English: Mr. Client's car waits behind him in the driveway (the same car as figure 3-5)
+    const carG = ko ? '' : `<g transform="translate(-75 -31.5) scale(.583)">${car().replace(/^\s*<svg[^>]*>|<\/svg>\s*$/g, '')}</g>`;
+    const split = ko ? '<g class="split"><path class="sp" d="M40 -106 V2"/><path class="sb" d="M41.6 -107.1 V.9"/></g>' : '';
+    cvart.innerHTML = `<svg class="who" viewBox="${ko ? '-15 -108 110 110' : '-76 -104 149 106'}" preserveAspectRatio="xMidYMax meet">
+        ${split}
+        <g class="pc ink-p">${carG}<g class="cv-go">${withSay(body(c, 1))}</g></g>
+        <g class="ps ink-b" transform="translate(${ko ? 80 : 58} 0) scale(-1 1)">${withSay(body(s, -1))}</g>
+      </svg>`;
+  }
+
+  /* ---------- Speech ---------- */
+  const bub = (who, k, html, cls = '') => `<p class="bub ${who} rv${cls ? ' ' + cls : ''}" data-k="${k}">${html}</p>`;
+  const sentence = (n, cls = '') => `<span class="${cls}"><span class="sn">${n}</span><i class="sq"></i></span>`;
+  const NOTE_ICON = '<svg viewBox="0 0 20 24" aria-hidden="true"><path d="M3 2 H13 L17 6 V22 H3 Z M13 2 V6 H17"/><path d="M7.5 12 v.2 M12.5 12 v.2 M7 18 q3 -2.6 6 0"/></svg>';
+
+  /* ---------- The four lessons ----------
+     figs: the figures, drawn once per visit to the lesson.
+     rows: the sequence diagram, top to bottom.
+     ms: how long the autoplay stays on the lesson (6 s unless given). On the home stage:
+       7.65 + 4.4 + 7.6 + 6.2 = 25.85 s, longer than the stage's 25 s, so the page leaves on Mr. UDP's
+       joke instead of a blank lesson 1 (on its own: 7.5 + 4.4 + 7.6 + 5 = 24.5 s a round).
+     steps: the lesson's timeline (ms from the start of the lesson). fig = print figure i,
+       on = cue keys (space separated) to switch on, row = draw diagram row i, nod = Mr. Server
+       nods, moral = print the lesson's moral, old = speech to step back (dimmed; gone where
+       the figure is a short strip, as on the 358×396 phone stage), fn = something special. */
+  const LESSON_MS = 6000;
+  const en = !ko;
+  // The cover picture's opening (the autoplay arriving at lesson 1): on the home stage it waits
+  // out the stage's wipe (0.6 s from the bottom up, but nine tenths open after 0.25 s), fills the
+  // lesson for 2 s, and flies to its corner; lesson 1's first figure prints as it leaves.
+  const COVER_IN = TTY.embedded ? 250 : 100;
+  const COVER_HOLD = 2000;
+  const COVER_FLY = 450;
+  const L1 = COVER_IN + COVER_HOLD + 150;
+  const LESSONS = [
+    {
+      moral: T.m1,
+      figs: [
+        { c: { pose: 'card', card: '100', bow: 26, bowK: '1a' }, s: { pose: 'stand' }, bubs: bub('c', '1a', say(T.l1[0])) },
+        { c: { pose: 'stand' }, s: { pose: 'card', card: '300', bow: 26, bowK: '2a' }, bubs: bub('s', '2a', say(T.l1[1])) },
+        { c: { pose: 'fold', bow: 22, bowK: '3a' }, s: { pose: 'fold', bow: 22, bowK: '3a' }, bubs: bub('c', '3a', say(T.l1[2])) },
+      ],
+      rows: [
+        { f: 'c', label: 'SYN seq=100' },
+        { f: 's', label: 'SYN, ACK seq=300 ack=101' },
+        { f: 'c', label: 'ACK ack=301' },
+        { band: 'ESTABLISHED' },
+      ],
+      steps: [
+        { t: 200, fig: 0 }, { t: 450, on: '1a', row: 0 },
+        { t: 1950, fig: 1 }, { t: 2200, on: '2a', row: 1 },
+        { t: 3650, fig: 2, moral: 1 }, { t: 3900, on: '3a', row: 2 },
+        { t: 4300, row: 3 },
+      ],
+      // When the autoplay comes round to lesson 1, the cover picture first fills the lesson
+      // (the gag, big, 2 s), then flies up into its corner; the lesson follows a little faster
+      // than from its tab: 7.65 s on the home stage, 7.5 s on its own. The moral prints with the
+      // third picture, so it stays up a little over 2 s.
+      ms: L1 + 5250,
+      intro: [
+        { t: L1, fig: 0 }, { t: L1 + 200, on: '1a', row: 0 },
+        { t: L1 + 1600, fig: 1 }, { t: L1 + 1800, on: '2a', row: 1 },
+        { t: L1 + 3200, fig: 2, moral: 1 }, { t: L1 + 3400, on: '3a', row: 2 },
+        { t: L1 + 3750, row: 3 },
+      ],
+    },
+    {
+      moral: T.m2,
+      figs: [
+        {
+          c: { pose: 'talk' }, s: { pose: 'stand' },
+          bubs: bub('c', 'a1', sentence(1) + sentence(2, 'rv" data-k="a3')) + bub('s', 'a2', `${esc(T.ok[0])} <span class="rv" data-k="a4">${esc(T.ok[1])}</span>`),
+        },
+        {
+          c: { pose: 'talk' }, s: { pose: 'stand', pose2: 'ear', k2: 'b2' }, props: noise('b1'),
+          bubs: bub('c', 'b1', sentence(3, 'torn') + `<span class="rv" data-k="b1b">${sentence(4)}${sentence(5)}${sentence(6)}</span>`)
+            + bub('s', 'b2', `<b class="times">×3</b>${say(T.sorry)}`, 'x3')
+            + bub('c', 'b3', `${say(T.again)} ${sentence(3)}`),
+        },
+      ],
+      rows: [
+        { f: 'c', label: 'seq=1' }, { f: 's', label: 'ACK ack=2' },
+        { f: 'c', label: 'seq=2' }, { f: 's', label: 'ACK ack=3' },
+        { f: 'c', label: 'seq=3', lost: true },
+        { f: 'c', label: 'seq=4, 5, 6', n: 3 },
+        { f: 's', label: 'ACK ack=3 ×3', n: 3, note: 'dup ACK' },
+        { f: 'c', label: 'seq=3', note: 'fast retransmit' },
+      ],
+      // Two pictures: the ×3 "Sorry?" is the lesson's laugh, so it gets the last 2.15 s (phones
+      // show one picture at a time), with the moral. Figure 2-1 is only nods ("Mm-hm."), so it
+      // goes quickly, and the time saved is lesson 3's.
+      ms: 4400,
+      steps: [
+        { t: 200, fig: 0 }, { t: 350, on: 'a1', row: 0 }, { t: 600, on: 'a2', row: 1, nod: 1 },
+        { t: 850, on: 'a3', row: 2 }, { t: 1100, on: 'a4', row: 3, nod: 1 },
+        { t: 1400, fig: 1 }, { t: 1600, on: 'b1', row: 4 }, { t: 1900, on: 'b1b', row: 5 },
+        { t: 2250, on: 'b2', row: 6, moral: 1, old: 'b1' }, { t: 2750, on: 'b3', row: 7 },
+      ],
+    },
+    {
+      moral: T.m3,
+      // Korean: the goodbye is on the phone (and both bow to it). English: at the front door.
+      figs: [0, 1, 2, 3].map((i) => {
+        const speaker = i === 0 || i === 3 ? 'c' : 's';
+        const k = 'abcd'[i];
+        const c = en ? { pose: i === 3 ? 'wave' : 'talk' } : { pose: 'phone' };
+        const s = en ? { pose: i === 2 ? 'wave' : 'talk', back: DOOR } : { pose: 'phone' };
+        (speaker === 'c' ? c : s).bow = en ? 0 : 16;
+        (speaker === 'c' ? c : s).bowK = k;
+        return { apart: ko, c, s, bubs: bub(speaker, k, say(T.l3[i])) };
+      }).concat([{
+        id: 'tw', c: en ? { pose: 'wave' } : { pose: 'phone' }, slot: hourglass(), props: en ? car() : '', cap: T.tw, bubs: '',
+      }]),
+      rows: [
+        { f: 'c', label: 'FIN' }, { f: 's', label: 'ACK' }, { f: 's', label: 'FIN' }, { f: 'c', label: 'ACK' },
+        { tag: ['c', 'TIME_WAIT'] },
+      ],
+      // The punchline: at 5 s, with nobody touching anything, the button is pressed once by itself
+      // and Mr. Server says goodbye again; Mr. Client answers and the hourglass turns back to 60
+      // (hangOnce). Both bubbles then stay over 2 s, and the button 3.8 s for the visitor to try.
+      ms: 7600,
+      steps: [
+        { t: 200, fig: 0, on: 'a', row: 0 }, { t: 1100, fig: 1, on: 'b', row: 1 },
+        { t: 2000, fig: 2, on: 'c', row: 2 }, { t: 2900, fig: 3, on: 'd', row: 3 },
+        { t: 3800, fig: 4, row: 4, fn: 'timewait' }, { t: 4100, moral: 1 },
+        { t: 5000, fn: 'again' },
+      ],
+    },
+    {
+      // The rule comes first, with the first picture; the two ✕ follow, and Mr. UDP has the
+      // last word (no moral after the joke). "Click." lands 2.4 s after lesson 3's endless
+      // goodbye (Mr. Client's last "You too!"): the rude way to end a call. Mr. UDP's line prints
+      // with his picture, 1.65 s in, so on the home stage it is up about 3.75 s before the next
+      // page's wipe covers it (the lesson outlasts the stage: the joke is what the page leaves on).
+      moral: T.m4,
+      figs: [
+        {
+          id: 'rst', mark: 'x', apart: 1, c: { pose: 'phone' }, s: { pose: 'slam', front: TABLE },
+          props: `<p class="sfx rv" data-k="a">${ko ? `<font-kku font="sebul" size="1.25em">${esc(T.click)}</font-kku>` : esc(T.click)}</p>`,
+          bubs: `<div class="bub note c rv" data-k="a2"><span class="bar"><i></i><i></i><i></i></span>${NOTE_ICON}<strong>${esc(T.note[0])}</strong><code>${esc(T.note[1])}</code></div>`,
+        },
+        { mark: 'x', c: { pose: 'mega', op: 1, hat: 1 }, slot: chairs(), bubs: bub('c', 'b', say(T.udp)) },
+      ],
+      rows: [
+        { f: 's', label: 'RST', note: 'reset' },
+        { f: 'c', label: 'UDP', dash: true }, { f: 'c', label: 'UDP', dash: true, lost: true }, { f: 'c', label: 'UDP', dash: true },
+      ],
+      ms: TTY.embedded ? 6200 : 5000,
+      steps: [
+        { t: 150, fig: 0, moral: 1 }, { t: 350, on: 'a', row: 0 }, { t: 650, on: 'a2' },
+        { t: 1650, fig: 1, on: 'b', row: 1 }, { t: 2000, row: 2 }, { t: 2350, row: 3 },
+      ],
+    },
+  ];
+
+  /* ---------- Page furniture ---------- */
+  const sheet = $('.sheet');
+  const tabsEl = $('.tabs');
+  const figsEl = $('.fgrid');
+  const lno = $('.lno');
+  const ltitle = $('.ltitle');
+  const moral = $('.moral');
+  const hangBtn = $('.hang');
+  const rhR = $('.rh-r');
+  const panel = $('#lesson');
+  $('.mtag').textContent = T.moral;
+  $('.seq-h').textContent = T.seq;
+  $('.lanes .c').textContent = T.lanes[0];
+  $('.lanes .s').textContent = T.lanes[1];
+  $('.hang-t').textContent = T.hang;
+  const hangHint = $('.hang-hint');
+  $('.l', hangHint).textContent = T.hangHint[0];
+  $('.s', hangHint).textContent = T.hangHint[1];
+  tabsEl.setAttribute('aria-label', T.tabs);
+
+  const tabs = T.lessons.map((name, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tab';
+    b.id = 'tab-' + (i + 1);
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-controls', 'lesson');
+    b.innerHTML = `<small>${esc(T.lessonNo(i + 1))}</small><span class="tn">${esc(name)}</span>`;
+    b.addEventListener('click', () => { interacted(); go(i); });
+    tabsEl.append(b);
+    return b;
+  });
+  tabsEl.addEventListener('keydown', (e) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    let i = tabs.indexOf(document.activeElement);
+    if (i < 0) return;
+    if (step) i = (i + step + tabs.length) % tabs.length;
+    else if (e.key === 'Home') i = 0;
+    else if (e.key === 'End') i = tabs.length - 1;
+    else return;
+    e.preventDefault();
+    tabs[i].focus();
+    interacted();
+    go(i);
+  });
+  const wideMQ = matchMedia('(min-width: 760px) and (min-aspect-ratio: 21/20)');
+  const orient = () => tabsEl.setAttribute('aria-orientation', wideMQ.matches ? 'vertical' : 'horizontal');
+  orient();
+  wideMQ.addEventListener('change', orient);
+
+  /* ---------- Building a lesson ---------- */
+  let cur = 0;
+  let figs = [];
+  let shownTitle = '';
+  function figHTML(f, li, i) {
+    const id = `${li + 1}-${i + 1}`;
+    const xo = f.mark === 'x' ? `<span class="xo">✕ ${esc(T.wrong)}</span>` : '';
+    const who = (f.c ? person(Object.assign({ side: 'c' }, f.c)) : '') + (f.s ? person(Object.assign({ side: 's' }, f.s)) : '') + (f.slot || '');
+    return `<figure class="fig blank${f.apart ? ' apart' : ''}" data-id="${f.id || ''}">
+      <div class="art">${f.props || ''}${who}${f.mark === 'x' ? xmark() : ''}<div class="bubs">${f.bubs || ''}</div></div>
+      <figcaption><b>${esc(T.fig)} ${id}</b>${xo}${f.cap ? esc(f.cap) : ''}</figcaption>
+    </figure>`;
+  }
+  function render(li) {
+    const L = LESSONS[li];
+    cur = li;
+    cvart.getAnimations().forEach((a) => a.cancel());
+    coverFades.forEach((a) => a.cancel());
+    coverFades = [];
+    figsEl.className = 'fgrid l' + (li + 1);
+    figsEl.innerHTML = L.figs.map((f, i) => figHTML(f, li, i)).join('');
+    figs = $$('.fig', figsEl);
+    tabs.forEach((t, i) => {
+      const on = i === li;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+    });
+    panel.setAttribute('aria-labelledby', tabs[li].id);
+    lno.textContent = T.lessonNo(li + 1);
+    rhR.textContent = `${T.lessonNo(li + 1)} · ${T.lessons[li]}`;
+    // Lesson titles in Korean are drawn by font-kku (sebul); a new element each time, and the
+    // text we put in is remembered here rather than read back.
+    const name = T.lessons[li];
+    if (shownTitle !== name) {
+      if (ko) {
+        const el = document.createElement('font-kku');
+        el.setAttribute('font', 'sebul');
+        el.setAttribute('size', 'clamp(21px, 3.2cqi, 34px)');
+        el.textContent = name;
+        ltitle.replaceChildren(el);
+      } else {
+        ltitle.textContent = name;
+      }
+      shownTitle = name;
+    }
+    $('.mtext').textContent = L.moral;
+    moral.classList.add('wait');
+    hangBtn.hidden = true;
+    hangHint.hidden = true;
+    hangs = 0;
+    twStop();
+    seqRows = [];
+    seqTop = null;
+    $('.seq-svg').setAttribute('aria-label', T.seqLabel(li + 1));
+    setCur(0);
+    seqDraw();
+  }
+  function setCur(i) { figs.forEach((f, k) => f.classList.toggle('cur', k === i)); }
+
+  /* ---------- Printing (the riso look in motion) ---------- */
+  const EASE = 'cubic-bezier(.2, .8, .2, 1)';
+  function printFig(f, anim) {
+    f.classList.remove('blank');
+    if (!anim) return;
+    // pink plate first, then the blue plate drops in slightly off and settles
+    f.animate([{ opacity: 0, transform: 'scale(1.025)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: EASE });
+    $$('.who.c, .xmark, .car', f).forEach((el) => el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'linear', fill: 'backwards' }));
+    $$('.who.s, .tw', f).forEach((el) => el.animate(
+      [{ opacity: 0, transform: 'translate(7px, -5px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 380, delay: 140, easing: EASE, fill: 'backwards' }));
+  }
+  function printIn(el, anim) {
+    el.classList.remove('wait');
+    if (anim) el.animate([{ opacity: 0, transform: 'translate(-4px, 3px)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: EASE });
+  }
+  function cue(keys, anim) {
+    keys.split(' ').forEach((k) => {
+      $$(`[data-k~="${k}"]`, figsEl).forEach((el) => {
+        el.classList.add('on');
+        if (anim && el.classList.contains('sfx')) {
+          el.animate([{ opacity: 0, transform: 'scale(1.8)' }, { opacity: 1, transform: 'scale(.92)', offset: .6 }, { opacity: 1, transform: 'none' }], { duration: 360, easing: 'ease-out' });
+        } else if (anim && el.classList.contains('rv')) {
+          const big = el.classList.contains('bub');
+          el.animate(big
+            ? [{ opacity: 0, transform: 'scale(.86) translateY(6px)' }, { opacity: 1, transform: 'scale(1.03)', offset: .7 }, { opacity: 1, transform: 'none' }]
+            : [{ opacity: 0 }, { opacity: 1 }], { duration: big ? 340 : 220, easing: 'ease-out' });
+          if (el.classList.contains('x3')) {
+            // asked three times: the bubble bobs three times
+            el.animate([{ transform: 'none' }, { transform: 'translateY(-3px)' }, { transform: 'none' }], { duration: 220, delay: 360, iterations: 2 });
+          }
+        }
+      });
+      $$(`[data-koff~="${k}"]`, figsEl).forEach((el) => el.classList.add('off'));
+    });
+  }
+  function nod(anim) {
+    if (!anim) return;
+    const head = $('.fig.cur .who.s .head', figsEl) || $('.who.s .head', figsEl);
+    if (head) head.animate([{ transform: 'none' }, { transform: 'rotate(-16deg) translateY(1px)' }, { transform: 'none' }], { duration: 320, easing: 'ease-in-out' });
+  }
+  function apply(step, anim) {
+    if (step.fig !== undefined) { printFig(figs[step.fig], anim); setCur(step.fig); }
+    if (step.on) cue(step.on, anim);
+    if (step.old) $$(`.bub[data-k="${step.old}"]`, figsEl).forEach((el) => el.classList.add('old'));
+    if (step.row !== undefined) seqPush(LESSONS[cur].rows[step.row], anim);
+    if (step.nod) nod(anim);
+    if (step.moral) printIn(moral, anim);
+    if (step.fn === 'timewait') {
+      twMount();
+      hangBtn.hidden = hangHint.hidden = false;
+      if (anim) { [hangBtn, hangHint].forEach((el) => el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 })); twRun(); } else twSet(1);
+    }
+    // the autoplay's own goodbye-again, unless the visitor has already pressed the button
+    if (step.fn === 'again' && !hangs) hangOnce(false, anim);
+  }
+
+  /* ---------- Sequence diagram ---------- */
+  const seqBox = $('.seq-box');
+  const seqSvg = $('.seq-svg');
+  let seqRows = [];
+  let seqTop = null;
+  function seqPush(row, anim) {
+    seqRows.push(row);
+    while (seqRows.length > 30) seqRows.shift();
+    seqDraw(anim ? row : null);
+  }
+  function rowSVG(r, y, h, xc, xs, old) {
+    const cls = `row${old ? ' old' : ''}`;
+    if (r.band) {
+      const yy = y + h * .5;
+      return `<g class="${cls} band"><line x1="${xc}" x2="${xs}" y1="${yy - 3}" y2="${yy - 3}"/><line x1="${xc}" x2="${xs}" y1="${yy + 3}" y2="${yy + 3}"/>`
+        + `<text x="${(xc + xs) / 2}" y="${yy + 4}" text-anchor="middle">${esc(r.band)}</text></g>`;
+    }
+    if (r.tag) {
+      const [side, text] = r.tag;
+      const w = text.length * 7.4 + 14;
+      const x = side === 'c' ? xc + 5 : xs - 5 - w;
+      return `<g class="${cls} tag ${side === 'c' ? 'p' : 'b'}"><rect x="${x}" y="${y + h * .18}" width="${w}" height="${Math.min(20, h * .62)}" rx="3"/>`
+        + `<text x="${x + w / 2}" y="${y + h * .18 + Math.min(20, h * .62) / 2 + 4}" text-anchor="middle">${esc(text)}</text></g>`;
+    }
+    const fromC = r.f === 'c';
+    const x0 = fromC ? xc : xs;
+    const xFull = fromC ? xs : xc;
+    const x1 = r.lost ? x0 + (xFull - x0) * .58 : xFull;
+    const y0 = y + h * .42;
+    const y1 = y0 + h * .42 * (Math.abs(x1 - x0) / Math.abs(xFull - x0));
+    const n = r.n || 1;
+    let lines = '';
+    for (let k = 0; k < n; k++) {
+      const dy = (k - (n - 1) / 2) * 4.2;
+      const ang = Math.atan2(y1 - y0, x1 - x0);
+      const hx = x1, hy = y1 + dy;
+      const a1 = ang + 2.7, a2 = ang - 2.7;
+      lines += `<path class="ar" pathLength="1" d="M${x0} ${y0 + dy} L${x1} ${y1 + dy}"/>`;
+      if (!r.lost) lines += `<path class="head" d="M${hx} ${hy} L${hx + 7 * Math.cos(a1)} ${hy + 7 * Math.sin(a1)} L${hx + 7 * Math.cos(a2)} ${hy + 7 * Math.sin(a2)} Z"/>`;
+    }
+    if (r.lost) {
+      const s = 4.5;
+      lines += `<path class="x" d="M${x1 - s} ${y1 - s - 1} l${2 * s} ${2 * s} l-1.6 1.6 l-${2 * s} -${2 * s} Z M${x1 + s} ${y1 - s - 1} l-${2 * s} ${2 * s} l1.6 1.6 l${2 * s} -${2 * s} Z"/>`;
+    }
+    const mid = (xc + xs) / 2;
+    const ty = (y0 + y1) / 2 - 5 - (n > 1 ? 4 : 0);
+    const note = r.note ? `<tspan class="nt"> · ${esc(r.note)}</tspan>` : '';
+    return `<g class="${cls} ${fromC ? 'p' : 'b'}${r.dash ? ' dash' : ''}">${lines}<text x="${mid}" y="${ty}" text-anchor="middle">${esc(r.label)}${note}</text></g>`;
+  }
+  function seqDraw(fresh) {
+    const W = seqBox.clientWidth;
+    const H = seqBox.clientHeight;
+    if (!W || !H) return;
+    seqSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const xc = 6;
+    const xs = W - 6;
+    const planned = Math.max(LESSONS[cur].rows.length, seqRows.length);
+    // (a short box, as on the 358×396 phone stage, packs its rows tighter so the newest label clears the top)
+    const rowH = Math.max(H < 70 ? 22 : 27, Math.min(46, (H - 12) / planned));
+    const contentH = seqRows.length * rowH + (H < 70 ? 9 : 14);
+    const top = Math.min(4, H - contentH);
+    // Once Mr. Server starts saying goodbye again, the older arrows fade.
+    const extras = seqRows.filter((r) => r.extra).length;
+    let rows = '';
+    seqRows.forEach((r, i) => { rows += rowSVG(r, 8 + i * rowH, rowH, xc, xs, extras > 0 && i < seqRows.length - 2); });
+    seqSvg.innerHTML = `<line class="lane c" x1="${xc}" x2="${xc}" y1="0" y2="${H}"/><line class="lane s" x1="${xs}" x2="${xs}" y1="0" y2="${H}"/><g class="rows">${rows}</g>`;
+    const g = seqSvg.lastElementChild;
+    g.setAttribute('transform', `translate(0 ${top})`);
+    if (fresh && seqTop !== null && seqTop !== top && !TTY.reduce) {
+      g.animate([{ transform: `translate(0, ${seqTop}px)` }, { transform: `translate(0, ${top}px)` }], { duration: 380, easing: EASE });
+    }
+    seqTop = top;
+    if (fresh && !TTY.reduce) {
+      const last = g.lastElementChild;
+      $$('.ar', last).forEach((p, k) => {
+        if (last.classList.contains('dash')) p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: k * 70, fill: 'backwards' });
+        else p.animate([{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }], { duration: 420, delay: k * 70, easing: 'ease-in-out', fill: 'backwards' });
+      });
+      $$('.head, .x, text, line, rect', last).forEach((el) => el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay: last.classList.contains('band') || last.classList.contains('tag') ? 0 : 330, fill: 'backwards' }));
+    }
+  }
+  new ResizeObserver(() => seqDraw()).observe(seqBox);
+
+  /* ---------- TIME_WAIT: 60 seconds, told in six ---------- */
+  const TW_MS = 6000;
+  let tw = null;
+  let twRaf = 0;
+  let twStart = 0;
+  function twMount() {
+    const el = $('.tw', figsEl);
+    tw = el && { el, a: $('.tw-a', el), b: $('.tw-b', el), stream: $('.stream', el), num: $('.num', el), lbl: $('.tw-l', el), turn: $('.tw-turn', el) };
+  }
+  function twSet(r) {
+    if (!tw) return;
+    r = Math.min(1, Math.max(0, r));
+    const topH = 23 * r;
+    tw.a.setAttribute('y', (32 - topH).toFixed(2));
+    tw.a.setAttribute('height', topH.toFixed(2));
+    const botH = 21 * (1 - r);
+    tw.b.setAttribute('y', (57 - botH).toFixed(2));
+    tw.b.setAttribute('height', botH.toFixed(2));
+    tw.stream.setAttribute('opacity', r > 0 && r < 1 ? '1' : '0');
+    const n = Math.ceil(60 * r);
+    tw.num.textContent = T.secs(n);
+    tw.el.classList.toggle('closed', r <= 0);
+    tw.lbl.textContent = r <= 0 ? 'CLOSED' : 'TIME_WAIT';
+  }
+  function twStop() { cancelAnimationFrame(twRaf); twRaf = 0; tw = null; }
+  function twRun() {
+    if (!tw) return;
+    cancelAnimationFrame(twRaf);
+    twStart = performance.now();
+    const tick = (now) => {
+      const r = Math.max(0, 1 - (now - twStart) / TW_MS);
+      twSet(r);
+      twRaf = r > 0 ? requestAnimationFrame(tick) : 0;
+    };
+    twRaf = requestAnimationFrame(tick);
+  }
+
+  /* ---------- Hang up: Mr. Server says goodbye once more ----------
+     (He never heard the last "네네~", so he sends his FIN again; Mr. Client answers, and the
+     60 seconds start over.) The autoplay does it once by itself (lesson 3 at 5 s, the page's
+     punchline); every press of the button does it again, and Mr. Server finds a new goodbye
+     each time (T.byes, round and round). Mr. Client's answer never changes. */
+  let hangs = 0;
+  function addBubble(who, text, anim) {
+    const box = $('.fig[data-id="tw"] .bubs', figsEl);
+    if (!box) return;
+    const p = document.createElement('p');
+    p.className = `bub ${who} rv on`;
+    p.innerHTML = say(text);
+    box.append(p);
+    const all = $$('.bub', box);
+    while (all.length > 4) all.shift().remove();
+    all.forEach((b, i) => b.classList.toggle('old', i < all.length - 2));
+    if (anim) p.animate([{ opacity: 0, transform: 'scale(.86) translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'ease-out' });
+  }
+  const PRESS = [{ translate: '0 0', boxShadow: '2px 2px 0 #0078bf' }, { translate: '2px 2px', boxShadow: '0 0 0 #0078bf', offset: .3 }, { translate: '0 0', boxShadow: '2px 2px 0 #0078bf' }];
+  function hangOnce(byVisitor, anim = !TTY.reduce) {
+    if (cur !== 2) return;
+    if (byVisitor) interacted();
+    else if (anim) hangBtn.animate(PRESS, { duration: 380, easing: 'ease-out' });   // the page tries the button itself
+    const bye = T.byes[hangs++ % T.byes.length];
+    const reply = () => {
+      if (cur !== 2) return;
+      addBubble('c', T.byeAck, anim);
+      seqPush({ f: 'c', label: 'ACK', extra: 1 }, anim);
+      if (!tw) twMount();
+      if (!anim) { twSet(1); return; }
+      tw.turn.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(180deg)' }], { duration: 420, easing: 'ease-in-out' });
+      twRun();
+    };
+    addBubble('s', bye, anim);
+    seqPush({ f: 's', label: 'FIN', note: 'again', extra: 1 }, anim);
+    if (anim) later(520, reply); else reply();
+  }
+  hangBtn.addEventListener('click', () => hangOnce(true));
+  // A mouse resting on the button or its hint is someone about to press it: stay on lesson 3.
+  [hangBtn, hangHint].forEach((el) => el.addEventListener('pointerenter', (e) => {
+    if (e.pointerType !== 'touch' && cur === 2 && !el.hidden) interacted();
+  }));
+
+  /* ---------- Playing ---------- */
+  let timers = [];
+  let auto = true;
+  let resumeTimer = 0;
+  // Every pending cue of the lesson on screen (a lesson change cancels them all).
+  function later(ms, fn) { timers.push(setTimeout(fn, ms)); }
+  function clearLater() { timers.forEach(clearTimeout); timers = []; }
+  function go(li, anim = !TTY.reduce) {
+    clearLater();
+    render(li);
+    // Autoplay arriving at lesson 1 opens with the cover picture; a visitor's tab goes straight in.
+    const opening = anim && auto && li === 0 && LESSONS[0].intro;
+    const steps = opening ? LESSONS[0].intro : LESSONS[li].steps;
+    if (!anim) { steps.forEach((s) => apply(s, false)); return; }
+    if (opening) coverIntro();
+    steps.forEach((s) => later(s.t, () => apply(s, true)));
+    // The page turns only if nobody has touched it since; otherwise interacted() turns it later.
+    if (auto) later(LESSONS[li].ms || LESSON_MS, () => { if (auto) go((li + 1) % LESSONS.length); });
+  }
+  // Someone touched the page: let them read. Autoplay picks up 12 s after the last touch.
+  function interacted() {
+    if (TTY.reduce) return;
+    auto = false;
+    clearTimeout(resumeTimer);
+    resumeTimer = setTimeout(() => { auto = true; go((cur + 1) % LESSONS.length); }, 12000);
+  }
+  addEventListener('pointerdown', (e) => { if (!e.target.closest('.tab, .hang')) interacted(); }, { passive: true });
+
+  // The cover picture, blown up over the (still blank) figure area, then back to its corner. On
+  // a short stage (the 358×396 phone stage's figure area is a strip about 80 px tall) it takes
+  // the whole lesson instead (its head, the figure and the diagram), which waits unseen behind it.
+  let coverFades = [];
+  function coverIntro() {
+    const figsBox = $('.figs');
+    const short = figsBox.getBoundingClientRect().height < 220;
+    const under = short ? [$('.lhead'), $('.seq')] : [];
+    const rs = [figsBox, ...under].map((el) => el.getBoundingClientRect());
+    const big = { left: Math.min(...rs.map((r) => r.left)), top: Math.min(...rs.map((r) => r.top)), right: Math.max(...rs.map((r) => r.right)), bottom: Math.max(...rs.map((r) => r.bottom)) };
+    big.width = big.right - big.left;
+    big.height = big.bottom - big.top;
+    const small = cvart.getBoundingClientRect();
+    if (!big.width || !big.height || !small.width) return;
+    const k = Math.min(big.height * .82 / small.height, big.width * .7 / small.width);
+    const dx = big.left + (big.width - small.width * k) / 2 - small.left;
+    const dy = big.top + (big.height - small.height * k) / 2 - small.top;
+    const at = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${k.toFixed(3)})`;
+    const total = COVER_IN + COVER_HOLD + COVER_FLY;
+    const off = (ms) => ms / total;
+    cvart.animate([
+      { transform: at, opacity: 0 },
+      { transform: at, opacity: 0, offset: off(COVER_IN) },
+      { transform: at, opacity: 1, offset: off(COVER_IN + 120) },
+      { transform: at, opacity: 1, offset: off(COVER_IN + COVER_HOLD), easing: 'cubic-bezier(.55, 0, .25, 1)' },
+      { transform: 'none', opacity: 1 },
+    ], { duration: total });
+    coverFades = under.map((el) => el.animate([{ opacity: 0 }, { opacity: 0, offset: off(COVER_IN + COVER_HOLD) }, { opacity: 1 }], { duration: total }));
+  }
+  function printTitle() {
+    const t = $('.cover .title');
+    const s = $('.cover .sub');
+    t.animate([{ opacity: 0, transform: 'translate(6px, -4px)' }, { opacity: 1, transform: 'none' }], { duration: 500, easing: EASE });
+    if (s) s.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, delay: 200, fill: 'backwards' });
+  }
+
+  if (TTY.reduce) go(2, false);
+  else render(0);
+  // The opening measures the page (where the cover picture blows up to), so it waits for the
+  // fonts. On the home stage they are nearly always in by the time the page is shown; opened on
+  // its own, the title prints at once and the cover picture follows when the fonts are in.
+  TTY.onShow(() => {
+    if (TTY.reduce) return;
+    printTitle();
+    // (a tab pressed before that keeps its lesson)
+    TTY.drawn.then(() => { $('.cover').classList.add('go'); if (auto) go(0); });
+  });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

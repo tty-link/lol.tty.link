@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en" data-tty-nav="top">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Token Factory | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Big+Shoulders+Display:wght@800&family=Courier+Prime:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600&family=Nanum+Gothic+Coding:wght@400;700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="sticker dunggeun sebul" data-addons="fx"></script>
+<style>
+  /* A cartoon tokenizer: sentences ride in as raw bars, a press cuts them into priced chips.
+     English comes out in a few chunky pieces. Korean gets cut into syllables, then cut again
+     into jamo (font-kku pulls each syllable apart), and the meter runs away. */
+  :root {
+    --wall: #e7e3db;
+    --wall-line: #d8d3c9;
+    --steel: #34525d;
+    --steel-dark: #213940;
+    --steel-light: #5d7c86;
+    --hazard: #ff6b1a;
+    --belt: #2a2e33;
+    --ink: #1f2a30;
+    --bar: #cfd7db;
+    --chip-1: #ffc93c;
+    --chip-2: #7fd1e8;
+    --chip-3: #ff8f7a;
+    --chip-4: #9bd17a;
+    --chip-5: #c6a7ff;
+    --paper: #fbfaf7;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background: var(--wall);
+    color: var(--ink);
+    font-family: 'Archivo', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', 'Archivo', sans-serif; word-break: keep-all; }
+
+  .factory {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+    overflow: clip;
+    container-type: size;
+    background: var(--wall);
+  }
+  /* Everything in the factory. The press's thud shakes this, inside the factory's clip, so the
+     page itself never grows past the screen (a phone would zoom out for a pixel). --rw is the
+     receipt's width, which the button row keeps clear of. */
+  .rig {
+    --rw: min(36cqw, 300px);
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(var(--wall-line) 1px, transparent 1px) 0 0 / 100% 8cqh,
+      var(--wall);
+  }
+
+  .head { position: absolute; left: 5cqw; top: 5cqh; max-width: 50cqw; }
+  /* The title stays no bigger than the punch (.caption.big): it carries no joke. 'The Token / Factory' on two lines. */
+  h1 { font-size: min(4.6cqw, 6cqh); max-width: 31cqw; font-weight: 900; font-stretch: 112%; line-height: .95; letter-spacing: -.01em; }
+  /* Kept left of the press (its left edge is at 38cqw or further right), however the title wraps. */
+  .sub { max-width: 31cqw; margin-top: 1.4cqh; font-size: min(2cqw, 2.5cqh); font-stretch: 90%; font-weight: 500; color: #4a5960; text-wrap: balance; }
+  .lang-ko .sub { font-size: min(1.9cqw, 2.4cqh); }
+
+  /* Meters */
+  .meters { position: absolute; right: 5cqw; top: 5cqh; display: flex; gap: min(1.6cqw, 2cqh); align-items: stretch; }
+  .meter {
+    display: grid;
+    align-content: center;
+    min-width: min(13cqw, 17cqh);
+    padding: min(1cqw, 1.3cqh) min(1.4cqw, 1.8cqh);
+    border-radius: min(.8cqw, 1cqh);
+    background: var(--steel-dark);
+    color: #e9f1f3;
+  }
+  .m-label { font-size: min(1.3cqw, 1.7cqh); font-weight: 600; font-stretch: 85%; color: #9fb9c1; }
+  .m-val { font-family: 'Big Shoulders Display', 'Archivo', sans-serif; font-size: min(4.6cqw, 6cqh); line-height: 1; font-variant-numeric: tabular-nums; }
+  .m-unit { font-size: min(1.2cqw, 1.6cqh); color: #9fb9c1; }
+  .gauge { width: min(13cqw, 17cqh); height: auto; align-self: center; }
+  .needle { transform-origin: 50px 52px; transition: transform .5s cubic-bezier(.3, 1.6, .5, 1); }
+
+  /* Press */
+  .press { position: absolute; left: 50%; top: 23cqh; width: min(24cqw, 32cqh); translate: -50% 0; }
+  .housing {
+    position: relative;
+    height: min(11cqw, 14cqh);
+    border-radius: min(1.2cqw, 1.5cqh) min(1.2cqw, 1.5cqh) min(.5cqw, .6cqh) min(.5cqw, .6cqh);
+    background: linear-gradient(var(--steel-light), var(--steel) 40%, var(--steel-dark));
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .25), 0 10px 24px rgba(0, 0, 0, .18);
+  }
+  .housing::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 22%;
+    background: repeating-linear-gradient(-45deg, var(--hazard) 0 10px, #1f1f1f 10px 20px);
+    border-radius: 0 0 min(.5cqw, .6cqh) min(.5cqw, .6cqh);
+  }
+  .plate { position: absolute; left: 8%; top: 16%; color: #dfe9ec; font-size: min(1.5cqw, 2cqh); font-weight: 700; font-stretch: 80%; }
+  .lamp {
+    position: absolute;
+    right: 9%; top: -22%;
+    width: min(2.6cqw, 3.4cqh); aspect-ratio: 1;
+    border-radius: 50% 50% 20% 20%;
+    background: #6b3a24;
+    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .3);
+  }
+  .lamp.on { background: #ff8a3d; box-shadow: 0 0 18px 6px rgba(255, 120, 40, .6), inset 0 -3px 0 rgba(0, 0, 0, .2); }
+  .rivets { position: absolute; inset: 9% 4% auto auto; display: flex; gap: 6px; }
+  .rivets i { width: 6px; height: 6px; border-radius: 50%; background: #a9bfc6; }
+  .ram { position: relative; width: 22%; margin: 0 auto; }
+  .piston { width: 46%; height: min(5cqw, 6.5cqh); margin: 0 auto; background: linear-gradient(90deg, #8ea3aa, #d9e3e6 45%, #7d9198); }
+  .blade {
+    width: 100%;
+    height: min(3cqw, 4cqh);
+    clip-path: polygon(0 0, 100% 0, 100% 40%, 50% 100%, 0 40%);
+    background: linear-gradient(#c8d3d7, #f4f7f8 60%, #9fb1b7);
+  }
+
+  /* Belt */
+  .belt {
+    position: absolute;
+    left: 3cqw; right: 3cqw;
+    top: 58cqh;
+    height: min(4cqw, 5cqh);
+    border-radius: 999px;
+    background: var(--belt);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, .18);
+    overflow: hidden;
+  }
+  .ribs { position: absolute; inset: 22% 4%; background: repeating-linear-gradient(90deg, #3c4248 0 10px, #2a2e33 10px 28px); }
+  .belt.run .ribs { animation: ribs .6s linear infinite; }
+  @keyframes ribs { to { background-position: 28px 0; } }
+  .belt::before, .belt::after { content: ""; position: absolute; top: 12%; width: min(3.2cqw, 4cqh); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #8b949b 0 20%, #565c63 22% 100%); }
+  .belt::before { left: 1%; }
+  .belt::after { right: 1%; }
+  .legs { position: absolute; left: 6cqw; right: 6cqw; top: calc(58cqh + min(4cqw, 5cqh)); height: 8cqh; display: flex; justify-content: space-between; }
+  .legs i { width: min(1.2cqw, 1.6cqh); background: #9aa6aa; }
+
+  .lane { position: absolute; left: 4cqw; right: 4cqw; bottom: 42cqh; height: 0; }
+  .item { position: absolute; left: 0; bottom: 0; white-space: nowrap; will-change: transform; }
+
+  .bar {
+    display: inline-flex;
+    align-items: center;
+    padding: .28em .6em;
+    border-radius: .2em;
+    background: linear-gradient(#e7edf0, var(--bar) 55%, #aeb9be);
+    box-shadow: inset 0 -.12em 0 rgba(0, 0, 0, .18), 0 .1em 0 rgba(0, 0, 0, .15);
+    color: #2d3a40;
+    font-size: var(--chip, min(3.4cqw, 4.6cqh));
+    font-weight: 800;
+    font-stretch: 95%;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: .26em .42em;
+    border-radius: .32em;
+    background: var(--c, var(--chip-1));
+    box-shadow: inset 0 -.14em 0 rgba(0, 0, 0, .18), 0 .12em 0 rgba(0, 0, 0, .2);
+    color: var(--ink);
+    font-size: var(--chip, min(3.4cqw, 4.6cqh));
+    font-weight: 800;
+    font-stretch: 95%;
+  }
+  .chip .sp { opacity: .45; font-weight: 500; margin-right: .06em; }
+  .bar > font-kku, .chip > font-kku { color: var(--ink); }
+  .chip.jamo { padding: .22em .3em; }
+  /* A thumbs-up cut down to its UTF-8 bytes, printed like a hex dump. */
+  .chip.byte { padding: .26em .34em; font-family: 'Courier Prime', monospace; font-weight: 700; }
+  .item:has(.kku-fx-open) { z-index: 3; }
+
+  .spark { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #ffb347; box-shadow: 0 0 8px #ff8a3d; pointer-events: none; }
+
+  .bin { position: absolute; right: 2.5cqw; top: calc(58cqh + min(4cqw, 5cqh) + 1cqh); width: min(11cqw, 14cqh); height: 10cqh; clip-path: polygon(0 0, 100% 0, 86% 100%, 14% 100%); background: linear-gradient(#e0662a, #b8481a); display: grid; place-items: center; color: #fff4ea; font-size: min(1.3cqw, 1.7cqh); font-weight: 800; font-stretch: 85%; }
+
+  .caption {
+    position: absolute;
+    left: 6cqw; right: 6cqw;
+    top: 74cqh;
+    text-align: center;
+    font-size: min(2.6cqw, 3.4cqh);
+    font-weight: 700;
+    font-stretch: 100%;
+    min-height: 2.8em;
+  }
+  .caption.big { font-size: min(4.6cqw, 6cqh); font-weight: 900; font-stretch: 110%; color: #c4381a; }
+  .caption > font-kku { color: inherit; }
+
+  .receipt {
+    position: absolute;
+    right: 5cqw;
+    bottom: 0;
+    width: var(--rw);
+    padding: 16px 18px 26px;
+    background: var(--paper);
+    box-shadow: 0 -6px 30px rgba(0, 0, 0, .18);
+    font-family: 'Courier Prime', monospace;
+    font-size: min(1.6cqw, 2.2cqh, 14px);
+    line-height: 1.45;
+    transform: translateY(105%);
+    -webkit-mask: linear-gradient(#000 0 calc(100% - 8px), transparent 0), conic-gradient(from 135deg at top, transparent 90deg, #000 0) bottom / 12px 8px repeat-x;
+  }
+  .lang-ko .receipt { font-family: 'Nanum Gothic Coding', monospace; }
+  .receipt h2 { font-size: 1.15em; text-align: center; }
+  .receipt .no { margin-bottom: .5em; text-align: center; opacity: .7; }
+  .receipt .row { display: flex; justify-content: space-between; gap: 1em; }
+  .receipt .row span:last-child { white-space: nowrap; }
+  .receipt .total { margin-top: .4em; padding-top: .4em; border-top: 1.5px dashed #9aa3a7; font-weight: 700; }
+  .receipt .foot { margin-top: .6em; font-size: max(10px, .9em); opacity: .75; text-align: center; }
+  /* The answer line is stamped on once the receipt is out, in the conclusion's red. */
+  .receipt .stamp {
+    justify-content: center;
+    gap: .7em;
+    width: fit-content;
+    margin: .3em auto 0;
+    padding: 0 .55em;
+    border: 1.5px solid currentColor;
+    border-radius: .25em;
+    color: #c4381a;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    transform: rotate(-3deg);
+    visibility: hidden;
+  }
+  .receipt .stamp.in { visibility: visible; }
+
+  /* The end of a shift: the button and its one-line hint, left of the receipt. */
+  .end {
+    position: absolute;
+    left: 5cqw;
+    right: calc(5cqw + var(--rw) + 2cqw);
+    bottom: 5cqh;
+    display: flex;
+    align-items: center;
+    gap: .9em;
+    font-size: min(1.7cqw, 2.2cqh, 15px);
+    pointer-events: none;
+  }
+  .again {
+    flex: none;
+    padding: .6em 1.1em;
+    border: 0;
+    border-radius: 999px;
+    background: var(--steel-dark);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .again.on { opacity: 1; pointer-events: auto; transition: opacity .4s; }
+  .again:focus-visible { outline: 3px solid var(--hazard); outline-offset: 3px; }
+  .shift-hint { font-size: .88em; font-weight: 500; line-height: 1.3; color: #4a5960; opacity: 0; }
+  .again.on + .shift-hint { opacity: 1; transition: opacity .4s .2s; }
+  .fine { position: absolute; left: 5cqw; bottom: 1.6cqh; max-width: 52cqw; font-size: min(1.15cqw, 1.6cqh, 12px); color: #6c7a80; transition: opacity .4s; }
+  /* With less motion the conclusion and the receipt are on screen together: the caption keeps left of it. */
+  .calm .caption { right: calc(5cqw + var(--rw) + 2cqw); }
+
+  /* Opened on its own, the page has the tty.link nav at the top right (pinned on <html>):
+     the meters step down below it. */
+  @container (orientation: landscape) {
+    html:not(.embedded) .meters { top: max(5cqh, 50px); }
+  }
+
+  /* Portrait stages (phones) stack the meters under the title. */
+  @container (orientation: portrait) {
+    .head { left: 5cqw; top: 3cqh; max-width: 90cqw; }
+    /* No bigger than the smallest punch here: the one-line conclusion with less motion, min(5.6cqw, 4.6cqh). */
+    h1 { font-size: min(5.6cqw, 4.6cqh); max-width: none; }
+    .sub { max-width: none; font-size: 3.4cqw; }
+    .lang-ko .sub { font-size: 3.3cqw; }
+    /* Opened on its own, the title keeps left of the tty.link nav in the top right corner. The line
+       under it starts below the nav and keeps the full width (squeezed, it took two lines and ran
+       into the meters on a 648 px stage). */
+    html:not(.embedded) h1 { max-width: calc(90cqw - var(--nav-room)); font-size: min(5.6cqw, 4.6cqh, calc((90cqw - var(--nav-room)) / 10.8)); }
+    /* The meters end above the press lamp (the housing top is 37cqh, the lamp pokes 2.2cqh above it)
+       on a near-square stage too, where sizes in cqw alone would run into it. */
+    .meters { left: 5cqw; right: auto; top: 19cqh; }
+    .meter { min-width: 24cqw; padding: min(1.6cqw, 1.2cqh) 2.4cqw; border-radius: 1.6cqw; }
+    .m-label { font-size: max(10px, min(2.6cqw, 2cqh)); line-height: 1.2; }
+    .m-val { font-size: min(8cqw, 5.4cqh); }
+    .m-unit { font-size: max(10px, min(2.4cqw, 1.9cqh)); line-height: 1.2; }
+    .gauge { width: min(22cqw, 20cqh); }
+    .press { top: 37cqh; width: 40cqw; }
+    .housing { height: 10cqh; }
+    .plate { font-size: max(10px, 2.6cqw); }
+    .lamp { width: 4.6cqw; }
+    .piston { height: 3.6cqh; }
+    .blade { height: 3.4cqh; }
+    .belt { top: 64cqh; height: 4cqh; }
+    .belt::before, .belt::after { width: 3cqh; }
+    .legs { top: 68cqh; }
+    .lane { bottom: 36cqh; }
+    .bin { top: 69.5cqh; width: 16cqw; font-size: max(10px, 2.4cqw); }
+    .caption { top: 80cqh; font-size: 4.2cqw; }
+    .caption.big { font-size: 6.6cqw; }
+    /* With less motion the conclusion stays up with the button row under it: one line. */
+    .calm .caption { right: 6cqw; }
+    .calm .caption.big { font-size: min(5.6cqw, 4.6cqh); }
+    /* The receipt rises over the belt, not the press. */
+    .rig { --rw: min(60cqw, 56cqh, 308px); }
+    .receipt { right: 4cqw; padding: 12px 14px 22px; font-size: min(3.1cqw, 2.55cqh, 14px); }
+    .end { right: 5cqw; bottom: 6cqh; font-size: min(3.4cqw, 15px); }
+    /* Once the receipt is up, the button and its hint stack in the column left of it, and the
+       fine print (which would run under the receipt) steps aside. */
+    .printed .end { right: calc(4cqw + var(--rw) + 3cqw); flex-direction: column-reverse; align-items: flex-start; gap: .5em; }
+    .printed .fine { opacity: 0; }
+    .fine { max-width: 90cqw; font-size: max(10px, 2.6cqw); }
+    .bar, .chip { --chip: 5.6cqw; }
+    /* Sixteen jamo (수고하셨습니다) on a phone's belt: slimmer sides, so fit() shrinks the letters less (10.8 px+). */
+    .chip.jamo { padding: .22em .2em; }
+  }
+  /* Short phone stages (about 360 x 400): a tighter receipt that clears the press, and a
+     conclusion on one line above the button. */
+  @container (orientation: portrait) and (max-height: 470px) {
+    .receipt { padding: 10px 12px 18px; line-height: 1.3; }
+    .receipt .no { display: none; }
+    .receipt .total { margin-top: .3em; padding-top: .3em; }
+    .receipt .stamp { margin-top: .15em; }
+    .receipt .foot { margin-top: .4em; }
+    .caption.big { font-size: min(6.6cqw, 4.6cqh); }
+  }
+  html:not(.embedded) { --nav-room: 84px; }
+  @media (min-width: 601px) { html:not(.embedded) { --nav-room: 280px; } }
+  @media (prefers-reduced-motion: reduce) { .belt.run .ribs { animation: none; } .needle { transition: none; } }
+</style>
+</head>
+<body>
+<main class="factory">
+<div class="rig">
+  <header class="head">
+    <h1 data-lang="en">The Token Factory</h1>
+    <h1 data-lang="ko"><font-kku font="sticker" size="1em">토큰 공장</font-kku></h1>
+    <p class="sub" data-lang="en">We cut your words into pieces and bill you per piece.</p>
+    <p class="sub" data-lang="ko">말을 조각내고, 조각마다 요금을 받습니다.</p>
+  </header>
+
+  <section class="meters" aria-live="polite">
+    <div class="meter"><span class="m-label" data-t="tokens"></span><b class="m-val" data-k="tokens">0</b></div>
+    <div class="meter"><span class="m-label" data-t="bill"></span><b class="m-val" data-k="bill">0</b><span class="m-unit" data-t="unit"></span></div>
+    <svg class="gauge" viewBox="0 0 100 60" aria-hidden="true">
+      <path d="M10 52 A40 40 0 0 1 36 15" fill="none" stroke="#7bc96f" stroke-width="9"/>
+      <path d="M37 14.5 A40 40 0 0 1 66 15" fill="none" stroke="#ffc93c" stroke-width="9"/>
+      <path d="M67 15.5 A40 40 0 0 1 90 52" fill="none" stroke="#e5482b" stroke-width="9"/>
+      <g class="needle" style="transform: rotate(-80deg)"><path d="M50 52 L48 50 L50 16 L52 50 Z" fill="#1f2a30"/></g>
+      <circle cx="50" cy="52" r="4.5" fill="#1f2a30"/>
+    </svg>
+  </section>
+
+  <div class="press" aria-hidden="true">
+    <div class="housing"><span class="plate" data-t="plate"></span><span class="rivets"><i></i><i></i><i></i></span><span class="lamp"></span></div>
+    <div class="ram"><div class="piston"></div><div class="blade"></div></div>
+  </div>
+
+  <div class="belt" aria-hidden="true"><div class="ribs"></div></div>
+  <div class="legs" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="bin" aria-hidden="true"><span data-t="bin"></span></div>
+  <div class="lane" aria-hidden="true"></div>
+
+  <p class="caption" aria-live="polite"></p>
+  <div class="receipt" aria-live="polite"></div>
+  <div class="end">
+    <button class="again" type="button" aria-describedby="shift-hint"></button>
+    <p class="shift-hint" id="shift-hint" data-t="hint"></p>
+  </div>
+  <p class="fine" data-t="fine"></p>
+</div>
+</main>
+
+<script>
+(() => {
+  const T = {
+    en: {
+      tokens: 'Tokens', bill: 'Your bill', unit: 'cookies', plate: 'Cutter No. 7', bin: 'Billing',
+      fine: 'A cartoon. Real tokenizers are more complicated, and pricier to explain.',
+      again: 'Next shift', hint: 'Each shift cuts new words.',
+      c4: 'Korean surcharge applied.',
+      receipt: {
+        title: 'The Token Factory', no: 'Receipt No. 0042',
+        syllables: (w) => `${w}, syllables`, jamo: (w) => `${w}, surcharge`,
+        tokens: 'Tokens', total: 'Total', cost: (n) => `${n} cookies`,
+        answer: ['Answer', 'sold separately'],
+        foot: 'Prices are made up. The feelings are real.',
+      },
+    },
+    ko: {
+      tokens: '토큰', bill: '청구액', unit: '쿠키', plate: '7번 절단기', bin: '청구',
+      fine: '만화입니다. 실제 토크나이저는 더 복잡하고, 설명하기는 더 비쌉니다.',
+      again: '다음 교대', hint: '교대마다 다른 말을 잘라요.',
+      c4: '<font-kku font="sebul" size="1em">한국어 할증 적용</font-kku>',
+      receipt: {
+        title: '토큰 공장', no: '영수증 0042번',
+        syllables: (w) => `${w} (글자)`, jamo: (w) => `${w} (자모 할증)`,
+        tokens: '토큰 합계', total: '청구액', cost: (n) => `쿠키 ${n}개`,
+        answer: ['답변', '별도'],
+        foot: '요금은 지어낸 것입니다. 서운함은 진짜입니다.',
+      },
+    },
+  };
+  const t = T[TTY.lang] || T.en;
+  document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t[el.dataset.t]; });
+  const factory = document.querySelector('.factory');
+  const rig = document.querySelector('.rig');
+  const lane = document.querySelector('.lane');
+  const belt = document.querySelector('.belt');
+  const press = document.querySelector('.press');
+  const ram = document.querySelector('.ram');
+  const lamp = document.querySelector('.lamp');
+  const caption = document.querySelector('.caption');
+  const receipt = document.querySelector('.receipt');
+  const again = document.querySelector('.again');
+  const needle = document.querySelector('.needle');
+  const val = (k) => document.querySelector(`[data-k="${k}"]`);
+  again.textContent = t.again;
+
+  const COLORS = ['var(--chip-1)', 'var(--chip-2)', 'var(--chip-3)', 'var(--chip-4)', 'var(--chip-5)'];
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  /* ---- Hangul, decomposed by font-kku, written as standalone jamo for the chips ---- */
+  const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+  const JUNG = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ';
+  const JONG = 'ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ';
+  function jamoOf(syllable) {
+    const g = FontKku.decomposeGlyph(syllable);
+    const out = [];
+    (g.jamo.choseong || []).forEach((j) => out.push(CHO[j.codePointAt(0) - 0x1100]));
+    (g.jamo.jungseong || []).forEach((j) => out.push(JUNG[j.codePointAt(0) - 0x1161]));
+    (g.jamo.jongseong || []).forEach((j) => out.push(JONG[j.codePointAt(0) - 0x11a8]));
+    return out.filter(Boolean);
+  }
+
+  /* ---- What goes through the press. The meter, the receipt and its totals are all counted
+     from these tables, so changing a word or its pieces keeps them in step (the captions
+     spell their counts out in words, so those are matched by hand). ---- */
+  const PRICE = 2; // cookies per token
+  const WORDS = {
+    hello: { text: 'Hello world', pieces: ['Hello', ' world'], line: TTY.t({ en: 'Hello world: two tokens. A bargain.', ko: 'Hello world는 두 토큰. 거저네요.' }) },
+    thanks: { text: 'Thank you', pieces: ['Thank', ' you'], line: TTY.t({ en: 'Thank you: two tokens. A bargain.', ko: 'Thank you는 두 토큰. 거저네요.' }) },
+    work: { text: 'Good work', pieces: ['Good', ' work'], line: TTY.t({ en: 'Good work: two tokens. A bargain.', ko: 'Good work는 두 토큰. 거저네요.' }) },
+    // unbelievable and strawberry are cut exactly where tiktoken's cl100k_base (GPT-4) cuts them.
+    unbelievable: { text: 'unbelievable', pieces: ['un', 'belie', 'vable'], line: TTY.t({ en: 'un, belie, vable. Three tokens, still believable.', ko: 'un, belie, vable. 세 토큰, 아직은 믿을 만하죠.' }) },
+    strawberry: { text: 'strawberry', pieces: ['str', 'aw', 'berry'], line: TTY.t({ en: 'str, aw, berry. Three tokens. Don’t ask about the r’s.', ko: 'str, aw, berry. 세 토큰. r이 몇 개인지는 묻지 마세요.' }) },
+    // One emoji, four bytes: U+1F44D is F0 9F 91 8D in UTF-8. Cut down to bytes, like a
+    // byte-level tokenizer does with a character it has no piece for (real ones often merge some).
+    thumb: { text: '👍', pieces: ['F0', '9F', '91', '8D'], bytes: true, label: TTY.t({ en: '👍, bytes', ko: '👍 (바이트)' }), line: TTY.t({ en: '👍 = F0 9F 91 8D. One thumb, four tokens.', ko: '👍 = F0 9F 91 8D. 엄지 하나에 토큰 네 개.' }) },
+  };
+  // A shift: an English greeting, one longer word (or a thumbs-up), then the same greeting in Korean.
+  // Each shift (Next shift, or the encore) moves to the next one.
+  const SHIFTS = [
+    { english: [WORDS.hello, WORDS.unbelievable], korean: '안녕하세요', line: TTY.t({ en: '안녕하세요… same hello, five already?', ko: '안녕하세요… 같은 인사인데 벌써 다섯 개?' }) },
+    { english: [WORDS.thanks, WORDS.strawberry], korean: '감사합니다', line: TTY.t({ en: '감사합니다… same thanks, five already?', ko: '감사합니다… 같은 말인데 벌써 다섯 개?' }) },
+    { english: [WORDS.work, WORDS.thumb], korean: '수고하셨습니다', line: TTY.t({ en: '수고하셨습니다… same “good work”, seven already?', ko: '수고하셨습니다… 같은 말인데 벌써 일곱 개?' }) },
+  ];
+  // A first visit starts with the first shift (Hello world, 안녕하세요); each later visit in this
+  // browser starts one shift further on, so whoever sees the factory again gets new words.
+  let shiftNo = 0;
+  try {
+    const kept = Number(localStorage.getItem('tty.tokenizer.shift'));
+    if (Number.isInteger(kept) && kept > 0) shiftNo = kept % SHIFTS.length;
+    localStorage.setItem('tty.tokenizer.shift', String((shiftNo + 1) % SHIFTS.length));
+  } catch (e) { /* storage blocked: the first shift */ }
+  let ENGLISH = SHIFTS[shiftNo].english;
+  let KOREAN = SHIFTS[shiftNo].korean;
+  const receiptRows = () => [
+    ...ENGLISH.map((r) => [r.label || r.text, r.pieces.length]),
+    [t.receipt.syllables(KOREAN), [...KOREAN].length],
+    [t.receipt.jamo(KOREAN), [...KOREAN].reduce((n, ch) => n + jamoOf(ch).length, 0)],
+  ];
+  const totalTokens = () => receiptRows().reduce((n, [, k]) => n + k, 0);
+
+  /* ---- Pieces on the belt ---- */
+  const kku = (text) => `<font-kku font="dunggeun" size="1em">${text}</font-kku>`;
+  function make(html, cls, color) {
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.innerHTML = `<span class="${cls}" style="${color ? `--c:${color}` : ''}">${html}</span>`;
+    item.style.visibility = 'hidden';
+    lane.append(item);
+    item.w = item.offsetWidth;
+    item.x = 0;
+    return item;
+  }
+  function setX(item, x) { item.x = x; item.style.transform = `translateX(${x}px)`; item.style.visibility = 'visible'; }
+  function glide(items, dx, ms, easing = 'cubic-bezier(.3, 0, .2, 1)') {
+    return Promise.all(items.map((item) => {
+      const from = item.x; const to = from + dx;
+      item.x = to;
+      const a = item.animate([{ transform: `translateX(${from}px)` }, { transform: `translateX(${to}px)` }], { duration: ms, easing, fill: 'forwards' });
+      return a.finished.then(() => { item.style.transform = `translateX(${to}px)`; a.cancel(); });
+    }));
+  }
+  function spreadTo(items, gap) {
+    const total = items.reduce((s, i) => s + i.w, 0) + gap * (items.length - 1);
+    let x = lane.clientWidth / 2 - total / 2;
+    return Promise.all(items.map((item) => {
+      const from = item.x; const to = x; x += item.w + gap;
+      item.x = to;
+      const a = item.animate([{ transform: `translateX(${from}px)` }, { transform: `translateX(${to}px)` }], { duration: 420, easing: 'cubic-bezier(.2, 1.4, .4, 1)', fill: 'forwards' });
+      return a.finished.then(() => { item.style.transform = `translateX(${to}px)`; a.cancel(); });
+    }));
+  }
+  function laidTight(items, startX) { let x = startX; items.forEach((i) => { setX(i, x); x += i.w; }); }
+
+  /* ---- Meters ---- */
+  const count = { tokens: 0, bill: 0 };
+  function add(n) {
+    const goal = { tokens: count.tokens + n, bill: (count.tokens + n) * PRICE };
+    const startT = count.tokens, startB = count.bill;
+    const dur = TTY.reduce ? 0 : 500 + n * 60;
+    const t0 = performance.now();
+    count.tokens = goal.tokens; count.bill = goal.bill;
+    const tick = (now) => {
+      const k = dur ? Math.min(1, (now - t0) / dur) : 1;
+      val('tokens').textContent = Math.round(startT + (goal.tokens - startT) * k);
+      val('bill').textContent = Math.round(startB + (goal.bill - startB) * k);
+      if (k < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    needle.style.transform = `rotate(${Math.min(84, -80 + goal.tokens * 7.6)}deg)`;
+  }
+
+  function say(html, big) {
+    caption.classList.toggle('big', !!big);
+    caption.innerHTML = html;
+    if (!TTY.reduce) caption.animate([{ transform: 'translateY(30%)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 360, easing: 'cubic-bezier(.2, 1.3, .4, 1)' });
+  }
+
+  /* ---- The press ---- */
+  function bladeTravel() {
+    const blade = ram.querySelector('.blade').getBoundingClientRect();
+    const beltTop = belt.getBoundingClientRect().top;
+    return beltTop - blade.bottom - 2;
+  }
+  function sparks() {
+    const f = rig.getBoundingClientRect();
+    const b = belt.getBoundingClientRect();
+    const cx = b.left + b.width / 2 - f.left, cy = b.top - f.top;
+    for (let i = 0; i < 8; i++) {
+      const s = document.createElement('i');
+      s.className = 'spark';
+      s.style.left = cx + 'px'; s.style.top = cy + 'px';
+      rig.append(s);
+      const ang = Math.PI * (1 + Math.random()), dist = 30 + Math.random() * 50;
+      s.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${Math.cos(ang) * dist}px, ${Math.sin(ang) * dist}px) scale(.3)`, opacity: 0 }], { duration: 420 + Math.random() * 200, easing: 'cubic-bezier(.2, .8, .4, 1)' }).finished.then(() => s.remove());
+    }
+  }
+  async function slam(onImpact, hard) {
+    const d = bladeTravel();
+    const down = ram.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${d}px)` }], { duration: hard ? 90 : 130, easing: 'cubic-bezier(.7, 0, 1, .6)', fill: 'forwards' });
+    await down.finished;
+    onImpact && onImpact();
+    sparks();
+    rig.animate([{ transform: 'none' }, { transform: `translate(${hard ? 3 : 1.5}px, ${hard ? 3 : 2}px)` }, { transform: 'translate(-2px, 0)' }, { transform: 'none' }], { duration: hard ? 260 : 200 });
+    await sleep(70);
+    const up = ram.animate([{ transform: `translateY(${d}px)` }, { transform: 'translateY(0)' }], { duration: 260, easing: 'cubic-bezier(.2, .8, .3, 1)', fill: 'forwards' });
+    await up.finished;
+    down.cancel(); up.cancel();
+  }
+
+  /* ---- Rounds ---- */
+  async function englishRound({ text, pieces, line, bytes }) {
+    const bar = make(text, 'bar');
+    setX(bar, -bar.w - 20);
+    belt.classList.add('run');
+    await glide([bar], lane.clientWidth / 2 - bar.w / 2 + bar.w + 20, 1300, 'cubic-bezier(.25, .1, .25, 1)');
+    belt.classList.remove('run');
+    let chips;
+    await slam(() => {
+      // Bytes of one character share a colour, like the jamo of one syllable.
+      chips = bytes
+        ? pieces.map((p) => make(p, 'chip byte', COLORS[4]))
+        : pieces.map((p, i) => make(p.startsWith(' ') ? `<span class="sp">␣</span>${p.slice(1)}` : p, 'chip', COLORS[(i + (text.length % 3)) % COLORS.length]));
+      laidTight(chips, bar.x);
+      bar.remove();
+    });
+    await spreadTo(chips, 10);
+    add(pieces.length);
+    say(line);
+    await sleep(1500);
+    belt.classList.add('run');
+    await exit(chips);
+    belt.classList.remove('run');
+  }
+  function exit(items) {
+    const w = lane.clientWidth;
+    return Promise.all(items.map((item, i) => {
+      const from = item.x;
+      const a = item.animate([
+        { transform: `translateX(${from}px)`, opacity: 1 },
+        { transform: `translateX(${w - 30}px)`, opacity: 1, offset: .75 },
+        { transform: `translate(${w + 10}px, 60px) rotate(${(i % 2 ? 1 : -1) * 30}deg)`, opacity: 0 },
+      ], { duration: 1100 + i * 40, easing: 'cubic-bezier(.5, 0, .7, .4)', fill: 'forwards' });
+      return a.finished.then(() => item.remove());
+    }));
+  }
+
+  async function koreanRound() {
+    const word = KOREAN;
+    const bar = make(kku(word), 'bar');
+    setX(bar, -bar.w - 20);
+    belt.classList.add('run');
+    await glide([bar], lane.clientWidth / 2 - bar.w / 2 + bar.w + 20, 1300, 'cubic-bezier(.25, .1, .25, 1)');
+    belt.classList.remove('run');
+    let syl;
+    await slam(() => {
+      syl = [...word].map((ch, i) => make(kku(ch), 'chip', COLORS[i % COLORS.length]));
+      laidTight(syl, bar.x);
+      bar.remove();
+    });
+    await spreadTo(syl, 10);
+    add(syl.length);
+    say(SHIFTS[shiftNo].line);
+    lamp.classList.add('on');
+    const blink = lamp.animate([{ opacity: 1 }, { opacity: .35 }], { duration: 260, iterations: Infinity, direction: 'alternate' });
+    await sleep(1200);
+
+    // Again, harder: each syllable is pulled apart by font-kku, then cut into jamo chips.
+    await slam(null, true);
+    syl.forEach((item) => {
+      const host = item.querySelector('font-kku');
+      if (window.FontKkuFx) FontKkuFx.scatter(host, { on: 'click', distance: 1.5, duration: 380 }).set(true);
+    });
+    await sleep(520);
+    let bits = [];
+    await slam(() => {
+      syl.forEach((item, i) => {
+        const pieces = jamoOf(item.querySelector('font-kku').getAttribute('data-source') || [...word][i]);
+        const chips = pieces.map((j) => make(kku(j), 'chip jamo', COLORS[i % COLORS.length]));
+        laidTight(chips, item.x);
+        bits = bits.concat(chips);
+        item.remove();
+      });
+    }, true);
+    fit(bits, 5);
+    await spreadTo(bits, 5);
+    add(bits.length);
+    blink.cancel();
+    say(t.c4, true);
+    press.animate([{ transform: 'none' }, { transform: 'rotate(-1.5deg)' }, { transform: 'rotate(1.5deg)' }, { transform: 'none' }], { duration: 300, iterations: 3 });
+    await sleep(2400);
+    return bits;
+  }
+  // Twelve to sixteen jamo chips must fit on a phone's belt: shrink them together if needed.
+  // (Padding and glyph boxes do not shrink in proportion, so it measures again, up to three times.)
+  function fit(items, gap) {
+    const room = lane.clientWidth * .96;
+    let k = 1;
+    for (let pass = 0; pass < 3; pass++) {
+      const total = items.reduce((s, i) => s + i.w, 0) + gap * (items.length - 1);
+      if (total <= room) return;
+      k *= room / total;
+      items.forEach((i) => { i.style.fontSize = `calc(var(--chip, 1em) * ${k})`; i.querySelector('.chip').style.fontSize = `calc(var(--chip, min(3.4cqw, 4.6cqh)) * ${k})`; i.w = i.offsetWidth; });
+    }
+  }
+
+  function printReceipt() {
+    const r = t.receipt;
+    const rows = receiptRows();
+    const tokens = totalTokens();
+    factory.classList.add('printed');
+    // The answer line is in place from the start (hidden), so stamping it moves nothing.
+    receipt.innerHTML = `<h2>${r.title}</h2><p class="no">${r.no}</p>${rows.map(([a, b]) => `<p class="row"><span>${a}</span><span>${b}</span></p>`).join('')}<p class="row total"><span>${r.tokens}</span><span>${tokens}</span></p><p class="row"><span>${r.total}</span><span>${r.cost(tokens * PRICE)}</span></p><p class="row stamp${TTY.reduce ? ' in' : ''}"><span>${r.answer[0]}</span><span>${r.answer[1]}</span></p><p class="foot">${r.foot}</p>`;
+    if (TTY.reduce) { receipt.style.transform = 'none'; return Promise.resolve(); }
+    const a = receipt.animate([{ transform: 'translateY(105%)' }, { transform: 'translateY(0)' }], { duration: 1800, easing: 'steps(14, end)', fill: 'forwards' });
+    return a.finished.then(() => { receipt.style.transform = 'none'; a.cancel(); });
+  }
+  // Thunk: "Answer sold separately" lands on the receipt like a rubber stamp.
+  function stamp() {
+    const s = receipt.querySelector('.stamp');
+    if (!s) return;
+    s.classList.add('in');
+    s.animate([{ transform: 'scale(1.7) rotate(-9deg)', opacity: 0 }, { transform: 'rotate(-3deg)', opacity: 1 }], { duration: 220, easing: 'cubic-bezier(.6, 0, .9, .5)' });
+    rig.animate([{ transform: 'none' }, { transform: 'translate(1.5px, 2px)' }, { transform: 'translate(-2px, 0)' }, { transform: 'none' }], { duration: 200, delay: 200 });
+  }
+
+  /* ---- Run ---- */
+  let running = false;
+  let encore = null;
+  let stamping = null;
+  let shifts = 0;
+  function nextShift() {
+    shiftNo = (shiftNo + 1) % SHIFTS.length;
+    ENGLISH = SHIFTS[shiftNo].english;
+    KOREAN = SHIFTS[shiftNo].korean;
+  }
+  async function run() {
+    if (running) return;
+    clearTimeout(encore);
+    clearTimeout(stamping);
+    running = true;
+    if (shifts++) nextShift();
+    again.classList.remove('on');
+    factory.classList.remove('printed');
+    receipt.style.transform = '';
+    receipt.innerHTML = '';
+    lane.replaceChildren();
+    count.tokens = 0; count.bill = 0;
+    val('tokens').textContent = '0'; val('bill').textContent = '0';
+    needle.style.transform = 'rotate(-80deg)';
+    lamp.classList.remove('on');
+    caption.textContent = '';
+    await sleep(500);
+    for (const r of ENGLISH) await englishRound(r);
+    const bits = await koreanRound();
+    caption.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' }).finished.then((a) => { caption.textContent = ''; caption.getAnimations().forEach((x) => x.cancel()); });
+    belt.classList.add('run');
+    exit(bits).then(() => belt.classList.remove('run'));
+    await printReceipt();
+    lamp.classList.remove('on');
+    again.classList.add('on');
+    running = false;
+    stamping = setTimeout(stamp, 500);
+    // Left alone, the factory starts another shift after a while.
+    encore = setTimeout(run, 9000);
+  }
+
+  // The end state, for visitors who asked for less motion: the jamo on the belt, the conclusion,
+  // the receipt where it fits beside the conclusion (not on a portrait stage), and the button.
+  function still() {
+    lane.replaceChildren();
+    const word = KOREAN;
+    let bits = [];
+    [...word].forEach((ch, i) => jamoOf(ch).forEach((j) => bits.push(make(kku(j), 'chip jamo', COLORS[i % COLORS.length]))));
+    const lay = () => {
+      bits.forEach((b) => { b.style.fontSize = ''; b.querySelector('.chip').style.fontSize = ''; b.w = b.offsetWidth; });
+      fit(bits, 5);
+      const total = bits.reduce((s, i) => s + i.w, 0) + 5 * (bits.length - 1);
+      let x = lane.clientWidth / 2 - total / 2;
+      bits.forEach((b) => { setX(b, x); x += b.w + 5; });
+    };
+    lay();
+    // The chips' letters may still be loading: lay them out again once they are drawn.
+    document.fonts.ready.then(() => requestAnimationFrame(() => requestAnimationFrame(lay)));
+    count.tokens = 0; add(totalTokens());
+    lamp.classList.add('on');
+    factory.classList.add('calm');
+    say(t.c4, true);
+    if (factory.clientWidth > factory.clientHeight) printReceipt();
+    else { factory.classList.remove('printed'); receipt.innerHTML = ''; receipt.style.transform = ''; }
+    again.classList.add('on');
+  }
+
+  again.addEventListener('click', () => {
+    TTY.hold(20000);
+    if (TTY.reduce) { nextShift(); still(); } else run();
+  });
+  let shown = false;
+  TTY.onShow(() => { shown = true; if (TTY.reduce) still(); else run(); });
+  // A phone turned with less motion: lay the still scene out for the new shape.
+  let turning = 0;
+  addEventListener('resize', () => { if (!TTY.reduce || !shown) return; clearTimeout(turning); turning = setTimeout(still, 200); });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

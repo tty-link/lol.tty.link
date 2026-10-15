@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Today's Status Board | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;1,500&family=Gowun+Dodum&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="dunggeun"></script>
+<style>
+  /* A station departure board, except every line is an HTTP status code read kindly.
+     The code and its reason phrase arrive on real split flaps: each flap is four halves,
+     the old top folds down, the new bottom falls into place. The first day runs the four
+     regulars, 200, 418, 429 and 503; on 503 the board takes its own advice and switches its
+     flaps off. Left on, it wakes up to a new day: the four regulars plus three of the others.
+     Where the real response carries a header (Retry-After, Location), the board prints it
+     above the kind words. */
+  :root {
+    --hall: #d8d2c4;
+    --board: #121418;
+    --flap: #262a31;
+    --flap-hi: #2d323a;
+    --seam: #0b0c0f;
+    --char: #f4efe1;
+    --yellow: #ffcc00;
+    --coral: #ff7a63;
+    --dim: rgba(244, 239, 225, .5);
+  }
+  html, body { height: 100%; margin: 0; }
+  /* --below: what the board leaves under itself. On the home stage that is the hint line; opened
+     on its own, a strip at the bottom for the hint on the left and the tty.link links on the right. */
+  :root { --below: 30px; }
+  html:not(.embedded) { --below: 48px; }
+  body {
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 10px;
+    overflow: hidden;
+    background:
+      linear-gradient(rgba(0, 0, 0, .05) 1px, transparent 1px) 0 0 / 100% 48px,
+      linear-gradient(90deg, rgba(0, 0, 0, .04) 1px, transparent 1px) 0 0 / 96px 100%,
+      var(--hall);
+    font-family: 'Barlow Condensed', 'Gowun Dodum', sans-serif;
+    color: var(--char);
+  }
+
+  .board {
+    container-type: inline-size;
+    width: min(94vw, 1040px, calc((94vh - var(--below)) * 1.3));
+    max-height: calc(94vh - var(--below));
+    overflow: hidden;
+    background: var(--board);
+    border-radius: 14px;
+    box-shadow: 0 0 0 6px #2b2f36, 0 0 0 7px #0b0c0f, 0 30px 60px rgba(0, 0, 0, .35);
+    cursor: pointer;
+  }
+  .board:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 11px; }
+  html:not(.embedded) body { padding-bottom: var(--below); }
+
+  .hint {
+    margin: 0;
+    color: rgba(18, 20, 24, .72);
+    font-size: clamp(13px, 1.9vmin, 16px);
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: .01em;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .lang-ko .hint { font-family: 'Gowun Dodum', sans-serif; font-size: clamp(12.5px, 1.8vmin, 15px); }
+  /* Opened on its own: in the bottom strip, level with the links in the right corner. */
+  html:not(.embedded) .hint { position: fixed; left: 14px; bottom: 19px; }
+  @media (max-width: 600px) { html:not(.embedded) .hint { left: 10px; bottom: 17px; } }
+
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.4cqi 3cqi;
+    background: var(--yellow);
+    color: var(--board);
+    font-weight: 700;
+    font-size: max(15px, 3.2cqi);
+  }
+  .clock { font-variant-numeric: tabular-nums; }
+  .clock i { font-style: normal; animation: tick 1s steps(1) infinite; }
+  @keyframes tick { 50% { opacity: 0; } }
+
+  .now { padding: 3.4cqi 3cqi 2.6cqi; display: grid; gap: 2.4cqi; }
+  .top { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4cqi; }
+
+  /* ---- Split flaps ---- */
+  .flaps { display: flex; gap: var(--gap); }
+  .code { --w: 10.4cqi; --gap: .8cqi; font-size: calc(var(--w) * 1.25); }
+  .reason { --w: 4.1cqi; --gap: .5cqi; flex-wrap: wrap; row-gap: .8cqi; font-size: calc(var(--w) * 1.22); }
+  .reason .row { display: flex; gap: var(--gap); }
+  .flap {
+    position: relative;
+    width: var(--w);
+    height: calc(var(--w) * 1.42);
+    border-radius: calc(var(--w) * .08);
+    perspective: calc(var(--w) * 8);
+    font-weight: 600;
+    line-height: 1;
+  }
+  .flap > span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50%;
+    overflow: hidden;
+    backface-visibility: hidden;
+  }
+  .flap > span > b {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 200%;
+    display: grid;
+    place-items: center;
+    font-weight: inherit;
+  }
+  .flap .t, .flap .ft { top: 0; background: var(--flap-hi); border-radius: inherit; border-bottom-left-radius: 0; border-bottom-right-radius: 0; transform-origin: 50% 100%; }
+  .flap .bt, .flap .fb { bottom: 0; background: var(--flap); border-radius: inherit; border-top-left-radius: 0; border-top-right-radius: 0; transform-origin: 50% 0; }
+  .flap .t > b, .flap .ft > b { top: 0; }
+  .flap .bt > b, .flap .fb > b { top: -100%; }
+  .flap .ft, .flap .fb { z-index: 2; visibility: hidden; }
+  .flap::after { content: ""; position: absolute; z-index: 3; left: 0; right: 0; top: calc(50% - .5px); height: 1px; background: var(--seam); }
+  .flap.blank > span > b { color: transparent; }
+
+  .msg { min-height: 1.1em; font-size: 6.6cqi; font-weight: 600; line-height: 1.04; letter-spacing: -.005em; }
+  .msg .word { display: inline-block; }
+  /* A response header, where the real response would carry one. Headers come before the body,
+     so it sits above the kind words; on wide boards it floats in the space above them. */
+  .msg { position: relative; }
+  .msg .hdr { position: absolute; left: 0; bottom: 100%; margin-bottom: .5cqi; white-space: nowrap; font-size: 2.7cqi; font-weight: 500; line-height: 1.2; letter-spacing: .02em; color: var(--yellow); font-variant-numeric: tabular-nums; }
+  .lang-ko .msg { font-size: 1px; min-height: 9cqi; }
+  .msg > font-kku { color: var(--char); }
+
+  /* ---- The rest of the board ---- */
+  .rows { margin: 0; padding: 0 0 2cqi; list-style: none; border-top: 2px solid #000; }
+  .rows li {
+    display: grid;
+    grid-template-columns: 9cqi 1fr auto;
+    gap: 2cqi;
+    align-items: baseline;
+    padding: 1.1cqi 3cqi;
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+    color: var(--dim);
+    font-size: max(14px, 2.6cqi);
+    font-weight: 500;
+    transition: color .3s, background-color .3s;
+  }
+  .rows li b { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .rows li .note { font-family: 'Barlow Condensed', 'Gowun Dodum', sans-serif; }
+  .lang-ko .rows li .note { font-family: 'Gowun Dodum', sans-serif; font-size: .9em; }
+  .rows li.on { color: var(--char); background: rgba(255, 204, 0, .08); box-shadow: inset 4px 0 0 var(--yellow); }
+  .rows li .late { color: var(--yellow); }
+  .rows li .off { color: var(--coral); }
+
+  @container (max-width: 620px) {
+    /* Code, then its reason, then the kind words. */
+    .top { display: contents; }
+    .code { order: 1; }
+    .reason { order: 2; }
+    .msg { order: 3; }
+    .code { --w: 18cqi; --gap: 1.4cqi; }
+    .reason { --w: 7.6cqi; --gap: .9cqi; row-gap: 1.6cqi; }
+    .msg { font-size: 9.4cqi; }
+    .msg .hdr { position: static; display: block; margin-bottom: 1.6cqi; font-size: 4.6cqi; }
+    .now { padding: 5cqi 4cqi 4cqi; gap: 4cqi; }
+    .rows li { grid-template-columns: 11cqi 1fr auto; padding: 2.2cqi 4cqi; font-size: max(13px, 3.8cqi); }
+    .rows li.far { display: none; }
+    /* A short board shows only its top rows, so the list runs from the current code on, the
+       way a departure board lists the next trains (otherwise 429 and 503 lit up out of sight). */
+    .rows { display: flex; flex-direction: column; }
+    .rows li { order: var(--ahead, 0); }
+  }
+  /* A narrow board on a squat screen (the phone home stage is 358×396) is short of height, not
+     width: smaller code flaps and less air, so that under the longest message (429 in Korean, two
+     lines and a header) the current row still shows. */
+  @media (min-aspect-ratio: 3/4) {
+    @container (max-width: 620px) {
+      .code { --w: 14.6cqi; }
+      .reason { --w: 7.2cqi; row-gap: 1.3cqi; }
+      .now { padding: 3.2cqi 4cqi 2.6cqi; gap: 2.8cqi; }
+      .msg .hdr { margin-bottom: 1cqi; }
+    }
+  }
+  /* Opened on its own on a screen that squat, the board also gives 48px to the bottom strip:
+     less air again, so that under 429 and 503 in Korean the current row still shows. */
+  @media (min-aspect-ratio: 3/4) and (max-height: 440px) {
+    @container (max-width: 620px) {
+      html:not(.embedded) .now { padding: 2.4cqi 4cqi 1.6cqi; gap: 2cqi; }
+    }
+  }
+  @media (prefers-reduced-motion: reduce) { .clock i { animation: none; } }
+</style>
+</head>
+<body>
+<section class="board" aria-labelledby="board-title" aria-describedby="board-hint" tabindex="0">
+  <header class="head">
+    <h1 id="board-title" style="margin:0;font:inherit">
+      <span data-lang="en">Today's status board</span>
+      <span data-lang="ko">오늘의 상태 안내</span>
+    </h1>
+    <span class="clock" aria-hidden="true"></span>
+  </header>
+  <div class="now">
+    <div class="top">
+      <div class="flaps code" aria-hidden="true"></div>
+      <p class="msg" aria-live="polite" style="margin:0"></p>
+    </div>
+    <div class="flaps reason" aria-hidden="true"></div>
+  </div>
+  <ol class="rows"></ol>
+</section>
+<p class="hint" id="board-hint">
+  <span data-lang="en">Tap the board for the next code.</span>
+  <span data-lang="ko">안내판을 누르면 다음 코드로 넘어가요.</span>
+</p>
+
+<script>
+(() => {
+  // Every reason phrase must be spelled with LETTERS below and fit 19 flaps (two rows of 11
+  // on narrow boards). hdr: the header the real response would carry.
+  const POOL = [
+    { code: '100', reason: 'CONTINUE', en: 'Go on. I’m listening.', ko: '계속 말해요. 듣고 있어요.', note: { en: 'Now boarding', ko: '탑승 중' } },
+    { code: '101', reason: 'SWITCHING PROTOCOLS', en: 'Try another way. Stay on the line.', ko: '방법을 바꿔도 연결은 그대로예요.', note: { en: 'Change here', ko: '환승' } },
+    { code: '200', reason: 'OK', en: 'You’re doing fine.', ko: '지금 잘하고 있어요.', note: { en: 'On time', ko: '정시' }, always: true },
+    { code: '201', reason: 'CREATED', en: 'You made something today.', ko: '오늘도 하나 만들었네요.', note: { en: 'Arrived', ko: '도착' } },
+    { code: '202', reason: 'ACCEPTED', en: 'It’s in. Results can take a while.', ko: '접수됐어요. 결과는 천천히 와요.', note: { en: 'Expected later', ko: '도착 예정' } },
+    { code: '204', reason: 'NO CONTENT', en: 'It’s okay to say nothing.', ko: '아무 말 안 해도 괜찮아요.', note: { en: 'Quiet car', ko: '회송' } },
+    { code: '206', reason: 'PARTIAL CONTENT', en: 'Some of it is enough for today.', ko: '오늘은 조금만 해도 돼요.', note: { en: 'Runs part way', ko: '단축 운행' } },
+    { code: '302', reason: 'FOUND', en: 'Took the long way. Still got home.', ko: '멀리 돌아도 집에는 닿아요.', note: { en: 'Diverted', ko: '우회 운행' }, hdr: 'Location: /home' },
+    { code: '304', reason: 'NOT MODIFIED', en: 'You don’t have to change to be liked.', ko: '안 바뀌어도 이미 좋아요.', note: { en: 'As scheduled', ko: '변경 없음' } },
+    { code: '418', reason: 'I’M A TEAPOT', en: 'No coffee. Have some tea.', ko: '커피는 안 돼요.\n차 한잔하고 가요.', note: { en: 'Tea stop', ko: '찻집 정차' }, always: true },
+    { code: '429', reason: 'TOO MANY REQUESTS', en: 'Rest. The world will retry.', ko: '잠깐 쉬어요. 세상은 알아서 재시도해요.', note: { en: 'Delayed: resting', ko: '지연: 휴식 중' }, tone: 'late', hdr: 'Retry-After: 600', always: true },
+    { code: '503', reason: 'SERVICE UNAVAILABLE', en: 'You’re allowed to be offline.', ko: '오프라인이어도 괜찮아요.', note: { en: 'Off today', ko: '오늘 운휴' }, tone: 'off', hdr: 'Retry-After: 86400', always: true },
+  ];
+  // The day's timetable, in code order. The first day is just the four regulars (200, 418,
+  // 429, 503): the home page's stage shows a page for about twenty seconds, and 503 is where the
+  // board switches itself off. Left on (opened on its own, or held on the home stage), it wakes up
+  // to a new day, and every day after that adds three of the others, picked afresh.
+  const others = POOL.filter((c) => !c.always);
+  function timetable(day) {
+    const pick = others.slice();
+    for (let k = pick.length - 1; k > 0; k--) {
+      const j = Math.floor(Math.random() * (k + 1));
+      [pick[k], pick[j]] = [pick[j], pick[k]];
+    }
+    const extras = day === 1 ? [] : pick.slice(0, 3);
+    return POOL.filter((c) => c.always || extras.includes(c));
+  }
+  let day = 1;
+  let CODES = timetable(day);
+  const HOLD = 3200;      // after a code's flaps stop, until the next code
+  const OFF_AFTER = 2400; // after 503's flaps stop, until the board switches its flaps off
+  const OFF_FOR = 4500;   // dark, until the next day (on the home stage the page has gone by then)
+  const DIGITS = '0123456789';
+  const LETTERS = " ABCDEFGHIJKLMNOPQRSTUVWXYZ’";
+  const board = document.querySelector('.board');
+  const codeBox = document.querySelector('.code');
+  const reasonBox = document.querySelector('.reason');
+  const msg = document.querySelector('.msg');
+  const rowsBox = document.querySelector('.rows');
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  /* ---- Clock ---- */
+  const clock = document.querySelector('.clock');
+  const tickClock = () => {
+    const d = new Date();
+    clock.innerHTML = String(d.getHours()).padStart(2, '0') + '<i>:</i>' + String(d.getMinutes()).padStart(2, '0');
+  };
+  tickClock();
+  setInterval(tickClock, 15000);
+
+  /* ---- Rows ---- */
+  let rows = [];
+  function buildRows() {
+    rowsBox.replaceChildren(...CODES.map((c) => {
+      const li = document.createElement('li');
+      const reason = c.reason.charAt(0) + c.reason.slice(1).toLowerCase().replace("i’m", "I’m");
+      li.innerHTML = `<b>${c.code}</b><span>${c.reason === 'OK' ? 'OK' : reason}</span><span class="note ${c.tone || ''}"></span>`;
+      li.querySelector('.note').textContent = TTY.t(c.note);
+      return li;
+    }));
+    rows = [...rowsBox.children];
+  }
+  buildRows();
+  // A short board cuts the list at its bottom edge; a row that would only half show is left blank.
+  function trimRows() {
+    const bottom = board.getBoundingClientRect().bottom;
+    rows.forEach((r) => { r.style.visibility = ''; });
+    rows.forEach((r) => { if (r.getBoundingClientRect().bottom > bottom + 0.5) r.style.visibility = 'hidden'; });
+  }
+  const fit = new ResizeObserver(() => trimRows());
+  fit.observe(document.querySelector('.now'));
+  fit.observe(board);
+
+  /* ---- Flaps ---- */
+  function makeFlap(ch) {
+    const f = document.createElement('span');
+    f.className = 'flap';
+    f.innerHTML = '<span class="t"><b></b></span><span class="bt"><b></b></span><span class="ft"><b></b></span><span class="fb"><b></b></span>';
+    f.dataset.ch = ' ';
+    setFace(f, ch);
+    return f;
+  }
+  function setFace(f, ch) {
+    f.dataset.ch = ch;
+    f.querySelectorAll('b').forEach((b) => { b.textContent = ch; });
+    f.classList.toggle('blank', ch === ' ');
+  }
+  // One flip: old top folds down over the new top, then the new bottom falls over the old bottom.
+  async function flip(f, to, ms) {
+    const from = f.dataset.ch;
+    const [t, bt, ft, fb] = f.children;
+    t.firstChild.textContent = to;
+    ft.firstChild.textContent = from;
+    fb.firstChild.textContent = to;
+    ft.style.visibility = 'visible';
+    f.classList.remove('blank');
+    const a = ft.animate([{ transform: 'rotateX(0deg)', filter: 'brightness(1)' }, { transform: 'rotateX(-90deg)', filter: 'brightness(.6)' }], { duration: ms / 2, easing: 'ease-in' });
+    await a.finished;
+    ft.style.visibility = 'hidden';
+    fb.style.visibility = 'visible';
+    const b = fb.animate([{ transform: 'rotateX(90deg)', filter: 'brightness(1.4)' }, { transform: 'rotateX(0deg)', filter: 'brightness(1)' }], { duration: ms / 2, easing: 'cubic-bezier(.3, 1.5, .6, 1)' });
+    await b.finished;
+    fb.style.visibility = 'hidden';
+    setFace(f, to);
+  }
+  // Like a real board, a flap runs forward through its drum until it reaches the target.
+  async function spin(f, target, set, delay) {
+    await sleep(delay);
+    if (f.dataset.ch === target) return;
+    let i = set.indexOf(f.dataset.ch); // -1 for a blank flap: the drum starts just before set[0]
+    const goal = set.indexOf(target);
+    let steps = i < 0 ? goal + 1 : (goal - i + set.length) % set.length;
+    const skip = steps > 7 ? steps - (4 + Math.floor(Math.random() * 3)) : 0;
+    i = (i + skip) % set.length;
+    steps -= skip;
+    for (let s = 1; s <= steps; s++) {
+      const next = set[(i + s) % set.length];
+      await flip(f, next, s === steps ? 150 : 74);
+    }
+  }
+
+  // The opening gag: the first code on a blank board (200 when the page opens, the first code
+  // of each new day after that) has its last flap go one too far: 200 lands on 201. It stands
+  // there, tries to turn back, twice, and since a drum only turns forward, gives up and goes all
+  // the way round. The kind words arrive while it stands on the wrong digit.
+  async function fumble(f, delay, target) {
+    await sleep(delay);
+    const goal = DIGITS.indexOf(target);
+    for (let d = 0; d <= goal; d++) await flip(f, DIGITS[d], 74);
+    await flip(f, DIGITS[(goal + 1) % 10], 150);
+    await sleep(400);
+    const top = f.querySelector('.t');
+    for (let k = 0; k < 2; k++) {
+      await top.animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(58deg)', filter: 'brightness(.75)' }, { transform: 'rotateX(0deg)' }],
+        { duration: 220, easing: 'ease-out' }).finished;
+    }
+    await f.animate([{ transform: 'none' }, { transform: 'translateY(-10%)' }, { transform: 'none' }], { duration: 200, easing: 'ease-out' }).finished;
+    await sleep(200);
+    for (let s = 2; s < 10; s++) await flip(f, DIGITS[(goal + s) % 10], 60);
+    await flip(f, target, 180);
+  }
+
+  let wide = true;
+  function layoutReason(text) {
+    // One row of 19 on wide boards; two rows of 11 on narrow ones, broken between words.
+    const per = wide ? 19 : 11;
+    const lines = [''];
+    text.split(' ').forEach((word) => {
+      const cur = lines[lines.length - 1];
+      if (!cur) lines[lines.length - 1] = word;
+      else if ((cur + ' ' + word).length <= per) lines[lines.length - 1] = cur + ' ' + word;
+      else lines.push(word);
+    });
+    while (lines.length < (wide ? 1 : 2)) lines.push('');
+    return lines.map((l) => l.padEnd(per, ' '));
+  }
+  function buildReason() {
+    wide = board.clientWidth > 620;
+    reasonBox.replaceChildren(...layoutReason('').map((l) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.append(...[...l].map((ch) => makeFlap(ch)));
+      return row;
+    }));
+  }
+  codeBox.append(...[...'   '].map((ch) => makeFlap(ch)));
+  buildReason();
+
+  /* ---- Message ---- */
+  function setMessage(c, animate) {
+    msg.replaceChildren();
+    if (TTY.lang === 'ko') {
+      const host = document.createElement('font-kku');
+      host.setAttribute('font', 'dunggeun');
+      host.setAttribute('size', wide ? '5.4cqi' : '8cqi');
+      host.setAttribute('wrap-unit', 'word');
+      host.textContent = c.ko;
+      msg.append(host);
+      if (animate) host.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 700, easing: 'cubic-bezier(.6, 0, .3, 1)' });
+    } else {
+      c.en.split(' ').forEach((word, i) => {
+        // Not "w": the tty.link wordmark script styles .w on standalone pages.
+        const w = document.createElement('span');
+        w.className = 'word';
+        w.textContent = word;
+        msg.append(w, ' ');
+        if (animate) w.animate([{ opacity: 0, transform: 'translateY(.35em)', clipPath: 'inset(0 0 100% 0)' }, { opacity: 1, transform: 'none', clipPath: 'inset(0 0 0 0)' }],
+          { duration: 420, delay: i * 70, easing: 'cubic-bezier(.2, .9, .3, 1)', fill: 'backwards' });
+      });
+    }
+    if (c.hdr) {
+      const h = document.createElement('span');
+      h.className = 'hdr';
+      h.textContent = c.hdr;
+      msg.prepend(h);
+      if (animate) h.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: 700, fill: 'backwards' });
+    }
+  }
+
+  /* ---- Cycle ---- */
+  let index = -1;
+  let timer = 0;
+  let busy = false;    // flaps are turning
+  let pending = false; // tapped while they turned: go on as soon as they stop
+  let dark = false;    // 503 has switched the flaps off
+  async function show(i) {
+    clearTimeout(timer);
+    pending = false;
+    dark = false;
+    index = i;
+    const c = CODES[i];
+    rows.forEach((r, j) => {
+      r.classList.toggle('on', j === i);
+      const ahead = (j - i + CODES.length) % CODES.length;
+      r.classList.toggle('far', ahead > 3);
+      r.style.setProperty('--ahead', ahead);
+    });
+    trimRows();
+    if (TTY.reduce) {
+      [...codeBox.children].forEach((f, k) => setFace(f, c.code[k]));
+      const lines = layoutReason(c.reason);
+      [...reasonBox.children].forEach((row, r) => [...row.children].forEach((f, k) => setFace(f, lines[r][k])));
+      setMessage(c, false);
+      return;
+    }
+    busy = true;
+    msg.style.opacity = '.0';
+    const fumbling = codeBox.lastChild.dataset.ch === ' ';
+    const jobs = [...codeBox.children].map((f, k) => (fumbling && k === 2 ? fumble(f, k * 90, c.code[k]) : spin(f, c.code[k], DIGITS, k * 90)));
+    const lines = layoutReason(c.reason);
+    [...reasonBox.children].forEach((row, r) => [...row.children].forEach((f, k) => jobs.push(spin(f, lines[r][k], LETTERS, 160 + k * 38 + r * 120))));
+    await sleep(500);
+    msg.style.opacity = '';
+    setMessage(c, true);
+    await Promise.all(jobs);
+    busy = false;
+    if (pending) return advance();
+    timer = setTimeout(c.code === '503' ? switchOff : advance, c.code === '503' ? OFF_AFTER : HOLD);
+  }
+  // 503: the board takes its own advice. Every flap folds once to its blank card, in a sweep from
+  // the right; the header, the kind words and the "Off today" row stay up.
+  async function switchOff() {
+    busy = true;
+    dark = true;
+    const box = board.getBoundingClientRect();
+    await Promise.all([...codeBox.children, ...reasonBox.querySelectorAll('.flap')].map((f) => {
+      if (f.dataset.ch === ' ') return null;
+      const r = f.getBoundingClientRect();
+      return sleep(((box.right - r.right) / box.width) * 700).then(() => flip(f, ' ', 150));
+    }));
+    busy = false;
+    if (pending) return advance();
+    timer = setTimeout(advance, OFF_FOR);
+  }
+  // After the day's last code (503) comes a new day with a new timetable.
+  function advance() {
+    if (index < CODES.length - 1) return show(index + 1);
+    day += 1;
+    CODES = timetable(day);
+    buildRows();
+    return show(0);
+  }
+  // The board opens on 200 OK. With reduced motion nothing turns over on its own, so the board
+  // shows the day's last word at once: 503, a day off.
+  const first = TTY.reduce ? CODES.length - 1 : 0;
+  let started = false;
+  const start = () => { if (!started) { started = true; show(first); } };
+  const next = () => {
+    if (!started) start();
+    else if (busy) pending = true;
+    else advance();
+  };
+  board.addEventListener('click', next);
+  // The board is focusable: Enter or Space does what a tap does.
+  board.addEventListener('keydown', (e) => {
+    if (e.target !== board || (e.key !== 'Enter' && e.key !== ' ') || e.repeat) return;
+    e.preventDefault();
+    next();
+  });
+
+  // Crossing the wide/narrow line rebuilds the reason flaps and redraws the current code at once.
+  // Before the first code (the home stage loads a page at full window size, then shrinks it to the
+  // stage) and while the board is dark, the flaps stay blank.
+  let lastWide = null;
+  addEventListener('resize', () => {
+    const w = board.clientWidth > 620;
+    if (w === lastWide) return;
+    lastWide = w;
+    buildReason();
+    if (index < 0) return;
+    const c = CODES[index];
+    const lines = layoutReason(dark ? '' : c.reason);
+    [...reasonBox.children].forEach((row, r) => [...row.children].forEach((f, k) => setFace(f, lines[r][k])));
+    setMessage(c, false);
+  });
+  lastWide = wide;
+
+  // The first second is the gag, so it waits for the fonts (on the home stage they are in by then).
+  if (TTY.reduce) start();
+  else TTY.onShow(() => TTY.drawn.then(start));
+
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

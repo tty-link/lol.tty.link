@@ -1,0 +1,142 @@
+{
+  "id": "wifi-fengshui",
+  "title": {
+    "en": "Wi-Fi Feng Shui",
+    "ko": "공유기 풍수 감정서"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "공유기 놓을 자리를 풍수가가 감정서로 봐 주는데, 풍수 말투로 하는 조언이 하나하나 실제로 맞는 와이파이 상식인 페이지다.",
+    "points": [
+      "신발장 속 공유기에 큰 `흉` 도장 → 공유기는 흔히 인터넷 선이 들어오는 단자함 바로 옆에 놓인다. 새 아파트는 그 단자함이 현관 신발장 안에 있는 경우가 많아서 공유기가 신발 사이에서 산다. 집 한쪽 끝이라 끝방까지 신호가 잘 안 간다. 풍수로 봐도, 전파로 봐도 흉.",
+      "\"배산임수는 사람에겐 명당, 공유기에겐 흉당\" → 산을 등지고 물을 내려다보는 배산임수는 풍수의 대표 명당이다. 그런데 물은 2.4GHz 전파를 잘 머금어서, 어항 바로 뒤에 둔 공유기는 실제로 어항 너머가 약하다.",
+      "\"높고 한가운데다. 명당이다. 서재만 빼고.\" → 책장 위 한가운데는 실제로 거의 모든 방에 신호가 잘 가는 자리다. 그런데 의뢰인의 서재만은 콘크리트 벽 두 장과 칸막이 한 장 너머라 −70dBm, 화상 회의가 버벅이는 세기에 머문다. 노트북에는 \"화면이 멈췄어요\"(휴대폰에서는 판정 칸 서재 줄에 \"화면 멈춤\"). 풍수가도 명당을 선언하자마자 예외를 달 수밖에 없다.",
+      "\"부엌 화기(火氣)가 2.4GHz를 흔든다\" → 풍수에서 부엌은 불을 다루는 화기의 자리다. 전자레인지는 2.45GHz 전파로 음식을 데우는데, 조금 새어 나온 전파가 같은 대역의 와이파이·블루투스를 방해할 수 있다(가까울수록 심하다). 부엌의 불기운이 정말로 기운을 흔든다.",
+      "\"옛사람은 기운이 모자란 땅에 탑을 세웠다. 우리는 메시를 산다.\" → 이 페이지의 결론이다. 풍수에는 기운이 모자란 땅에 절이나 탑을 세워 보태는 '비보(裨補)'가 있다. 신호가 약한 방 가까이에 메시 공유기를 하나 더 세우는 것이 정확히 그 일이다. 천 년 전에는 탑을 세웠고, 지금은 택배로 시킨다. 메시를 세우면 서재가 −47dBm 대길이 되고 2초 뒤 노트북에 \"잘 들려요!\"가 뜬다(휴대폰에서는 판정 칸 서재 줄의 \"잘 들림\"). 부제의 의뢰인, 화상 회의가 끊기던 서재가 그렇게 풀린다.",
+      "(공유기를 직접 끌어 볼 때만) \"비결로는 흉한데 숫자로는 길하다. 숫자를 따른다.\" → 먼 방이나 냉장고 옆처럼 비결로는 나쁜 자리인데 방마다 신호가 넉넉하면 풍수가가 비결 대신 측정값을 따른다. 와이파이 자리는 결국 재 보는 것이 답이라는 실제 조언이기도 하다."
+    ],
+    "terms": [
+      {
+        "term": "dBm",
+        "plain": "신호 세기 단위. 0에 가까울수록 세다. −30이면 공유기 바로 옆, −67보다 세면 영상 통화도 안정적이고, −70 언저리는 웹 정도, −80쯤이면 자주 끊긴다."
+      },
+      {
+        "term": "2.4GHz / 5GHz",
+        "plain": "와이파이가 쓰는 두 전파 대역. 2.4GHz는 멀리 가지만 붐비고, 5GHz는 빠르지만 벽에 약하다."
+      },
+      {
+        "term": "메시",
+        "plain": "공유기 여러 대가 한 네트워크처럼 이어져 집 구석까지 신호를 보태는 방식."
+      },
+      {
+        "term": "패철(나경)",
+        "plain": "풍수가가 방위를 보는 동심원 나침반. 이 페이지의 패철 고리에는 방위 대신 와이파이 채널이 새겨져 있다."
+      },
+      {
+        "term": "비보(裨補)",
+        "plain": "모자란 것을 도와 채움. 풍수에서는 기운이 약한 땅에 절이나 탑을 세워 땅의 기운을 보태는 일."
+      }
+    ],
+    "links": [
+      {
+        "title": "풍수 (위키백과)",
+        "url": "https://ko.wikipedia.org/wiki/%ED%92%8D%EC%88%98",
+        "note": "명당, 배산임수, 방향을 재는 패철.",
+        "lang": "ko"
+      },
+      {
+        "title": "비보사찰 (한국민족문화대백과사전)",
+        "url": "https://encykorea.aks.ac.kr/Article/E0025152",
+        "note": "땅의 기운이 쇠한 곳에 절과 탑을 세워 보완한다는 도선의 비보사탑설."
+      },
+      {
+        "title": "Microwave oven (위키백과)",
+        "url": "https://en.wikipedia.org/wiki/Microwave_oven",
+        "note": "전자레인지의 2.45GHz, 그리고 새어 나온 전파가 와이파이·블루투스를 방해한다는 이야기.",
+        "lang": "en"
+      },
+      {
+        "title": "List of WLAN channels (위키백과)",
+        "url": "https://en.wikipedia.org/wiki/List_of_WLAN_channels",
+        "note": "2.4GHz 채널마다의 주파수와 1·6·11.",
+        "lang": "en"
+      },
+      {
+        "title": "Understanding RSSI (Oscium)",
+        "url": "https://www.oscium.com/training/understanding-rssi/",
+        "note": "−30·−67·−70·−80·−90dBm이 각각 어느 정도인지 정리한 표.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "패철 바늘이 11번을 가리키는 이유 → 아래 잡기 목록의 옆집들이 2.4GHz 1번·6번(과 5GHz 36번)에 있다. 2.4GHz에서 흔히 쓰는, 서로 겹치지 않는 세 길 1·6·11 가운데 비어 있는 길이 11번이다.",
+      "전자레인지의 2.45GHz → 와이파이 6번 채널(가운데 2,437MHz)과 11번 채널(2,462MHz) 사이, 2.4GHz 와이파이 대역(2,400~2,483.5MHz)의 한가운데다. 그래서 주방 기운이 흔들린다.",
+      "비결 셋째 \"콘크리트 벽 하나에 기운이 열에 하나 밑으로 꺾인다(10dB 넘게)\" → 10dB 줄면 세기는 정확히 10분의 1이다. 이 페이지의 계산은 콘크리트 벽 하나에 12dB를 빼서, 열여섯에 하나쯤만 남는다. 말은 풍수 투인데 숫자는 그대로다.",
+      "노트북 쪽지가 서재 판정을 따라간다 → 흉이면 \"제 말 들리세요…?\", 소흉이면 \"화면이 멈췄어요\", 비보 뒤에는 \"잘 들려요!\". 화상 회의에서 실제로 신호가 약해지는 순서다. 쪽지는 큰 화면에서만 보이고, 휴대폰에서는 판정 칸 서재 메모가 같은 순서로 바뀐다(\"회의 끊김\" → \"화면 멈춤\" → \"잘 들림\").",
+      "(공유기를 직접 끌어 볼 때만) 책장 가장자리로 밀면 풍수가가 빼는 방이 바뀐다 → 공유기가 책장 끝에 걸쳐 높이 덕을 못 보고, 책장이 오히려 한쪽을 가린다. 그래서 벽 쪽 가장자리에서는 안방도 모자라 안방·서재를 함께 빼고, 거실 쪽 앞 가장자리에서는 욕실을 뺀다. 왼쪽 앞 모서리에서는 뺄 방이 없다. 예외 목록은 미리 써 둔 말이 아니라 방마다 잰 숫자에서 나온다.",
+      "첫머리 `흉` 도장은 붉은 바탕에 글자를 하얗게 남긴 백문(白文) 인장이고, 마지막 `명당` 낙관은 글자를 붉게 찍은 주문(朱文) 인장이다 → 백문은 음각, 주문은 양각 인장이라고도 한다. 시작은 음, 끝은 양."
+    ]
+  },
+  "en": {
+    "line": "A feng shui master surveys your flat to find the right spot for the router, and every piece of geomantic advice turns out to be real Wi-Fi advice.",
+    "points": [
+      "The router stuffed in the shoe cabinet gets a big red 凶 (bad luck) seal → a router usually ends up right next to the box where the internet line enters the home. In many newer Korean apartments that box sits inside the shoe cabinet by the front door, so the router lives among the shoes, at one end of the flat, and the far rooms barely get a signal. Bad luck by feng shui and by physics.",
+      "\"Water in front: good fortune for people, bad reception for routers.\" → the classic ideal site in Korean geomancy is baesan imsu: a mountain at your back and water in front of you. But water soaks up 2.4 GHz radio, and a router right behind a fish tank really is weaker on the far side. Fortune becomes reception halfway through the sentence.",
+      "\"High and central: the spot. Except for the study.\" → the top of the bookshelf, in the middle of the flat, really does reach nearly every room. But the client's study is two concrete walls and a partition away and stays at −70 dBm, where video calls stutter; its laptop says \"You’re frozen.\" (on phones, the study’s line in the ledger says \"frozen\"). The geomancer declares the perfect spot and has to add a footnote at once.",
+      "\"Kitchen fire stirs the 2.4 GHz energy.\" → feng shui treats the kitchen, where the cooking happens, as the seat of fire. A microwave oven heats food at about 2.45 GHz, and the little that leaks out can interfere with 2.4 GHz Wi-Fi and Bluetooth, especially close by. The kitchen's fire really does stir the energy.",
+      "\"Where the land was weak, the ancients raised a pagoda. We buy a mesh node.\" → the page's last word. Korean geomancy has a word, bibo (literally patching up), for strengthening land whose energy is weak, traditionally by building a temple or a pagoda on it. Putting a mesh node near the weak room is exactly that: a pagoda then, a parcel from the courier now. With it the study reaches −47 dBm, and two seconds later the laptop says \"Oh, you’re back!\" (on phones, the study's line in the ledger says \"back\"). The client from the subtitle, the study that kept dropping video calls, is sorted.",
+      "(Only when you drag the router yourself) \"By the book, bad luck. By the numbers, fine. I’ll go with the numbers.\" → on a spot the old rules frown on, like a far room or next to the fridge, but where every room still gets a good signal, the geomancer trusts the measurement over the rulebook. Which is the real advice for placing Wi-Fi, too: measure."
+    ],
+    "terms": [
+      {
+        "term": "dBm",
+        "plain": "signal strength; closer to zero is stronger. −30 is right next to the router, about −67 or better keeps video calls smooth, around −70 is enough for the web, around −80 it keeps dropping."
+      },
+      {
+        "term": "2.4 GHz / 5 GHz",
+        "plain": "the two Wi-Fi bands; 2.4 reaches further but is crowded, 5 is faster but weaker through walls."
+      },
+      {
+        "term": "mesh",
+        "plain": "several routers acting as one network to fill in the corners."
+      },
+      {
+        "term": "luopan",
+        "plain": "the geomancer's compass of concentric rings (paecheol in Korean); here the rings carry Wi-Fi channels instead of directions."
+      }
+    ],
+    "links": [
+      {
+        "title": "Feng shui (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Feng_shui",
+        "note": "qi, siting, and the luopan compass.",
+        "lang": "en"
+      },
+      {
+        "title": "Microwave oven (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Microwave_oven",
+        "note": "2.45 GHz, and the leaks that can interfere with Wi-Fi and Bluetooth.",
+        "lang": "en"
+      },
+      {
+        "title": "List of WLAN channels (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/List_of_WLAN_channels",
+        "note": "the frequency of each 2.4 GHz channel, and the 1/6/11 plan.",
+        "lang": "en"
+      },
+      {
+        "title": "Understanding RSSI (Oscium)",
+        "url": "https://www.oscium.com/training/understanding-rssi/",
+        "note": "what −30, −67, −70, −80 and −90 dBm mean in practice."
+      }
+    ],
+    "deep": [
+      "Why the compass needle points at channel 11: the neighbours in the \"Nearby\" list sit on 2.4 GHz channels 1 and 6 (and 5 GHz channel 36). Of 1, 6 and 11, the usual trio of 2.4 GHz channels that don't overlap, channel 11 is the free one.",
+      "The microwave's 2.45 GHz sits between Wi-Fi channel 6 (centred on 2,437 MHz) and channel 11 (2,462 MHz), right in the middle of the 2.4 GHz Wi-Fi band (2,400 to 2,483.5 MHz). Hence the kitchen's jitter.",
+      "Rule three, \"One concrete wall cuts the energy to under a tenth (over 10 dB)\": a 10 dB drop is exactly a tenth of the power. The page's model takes 12 dB per concrete wall, which leaves about a sixteenth. Feng shui words, real numbers.",
+      "The laptop's slip follows the study: \"Can you hear me…?\" when it is bad, \"You’re frozen.\" when it is mixed, \"Oh, you’re back!\" after the remedy. The order a real call falls apart in. The slip shows on larger screens; on phones the study’s note in the ledger runs the same way (\"drops\" → \"frozen\" → \"back\").",
+      "(Only when you drag the router yourself) Push it to the edge of the bookshelf and the geomancer’s exceptions change: hanging off the edge, the router loses the height and the shelf itself blocks one side. At the back edge the bedroom falls short too, so both the bedroom and the study are left out; at the front edge it’s the bathroom. In the left-front corner nothing is left out. The exceptions aren’t written in advance; they come from each room’s numbers.",
+      "The opening 凶 seal is solid red with the character left white (a baiwen or yin seal); the closing 明堂 seal prints its characters in red (a zhuwen or yang seal). The survey starts in yin and ends in yang."
+    ]
+  }
+}

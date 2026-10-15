@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Cron Garden | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Petrona:ital,wght@0,500;0,700;1,500&family=Azeret+Mono:wght@500;600&family=Gowun+Dodum&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="sebul dunggeun"></script>
+<style>
+  /* Healthy habits written as cron jobs, one plant per job. A day runs past in fourteen
+     seconds; whenever a job fires, its line lights up, its plant grows and cron logs it.
+     Cron mails each run's output to the crontab's owner (the MAILTO line that would stop it
+     is commented out), so a letter flies to the mailbox beside the bed every time (the
+     every-50 stretch sends 37). One job is scheduled for February 31st. Its pot stays a
+     seedling and sends nothing, and the closing line counts it a success anyway. */
+  :root {
+    --sky: #ffe1c2;
+    --sky-low: #ffd0a6;
+    --text: #23412f;
+    --paper: #f8f4e4;
+    --rule: rgba(35, 65, 47, .14);
+    --green: #3f8f4e;
+    --leaf: #6cbf5f;
+    --soil: #5b3a24;
+    --wood: #a8743f;
+    --glow: #ffe58a;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container-type: size;
+    overflow: hidden;
+    color: var(--text);
+    background: linear-gradient(180deg, var(--sky) 0%, var(--sky-low) 100%);
+    font-family: 'Petrona', Georgia, serif;
+  }
+  .lang-ko body { font-family: 'Gowun Dodum', 'Petrona', sans-serif; }
+  .mono { font-family: 'Azeret Mono', ui-monospace, monospace; }
+
+  .wrap {
+    display: grid;
+    height: 100%;
+    padding: 4.4cqmin 5cqmin;
+    gap: 2cqmin 4cqmin;
+    grid-template-columns: 1.15fr 1fr;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "head card" "garden card" "hint card";
+    /* The title and the closing line share one size: the line with the joke is never smaller
+       than the title without one. */
+    --big: max(22px, 4cqmin);
+  }
+  @container (orientation: portrait) {
+    .wrap { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr) auto auto; grid-template-areas: "head" "garden" "hint" "card"; gap: 1.6cqmin; --big: max(20px, 4.4cqmin); }
+  }
+
+  .head { grid-area: head; color: var(--head, var(--text)); }
+  .head h1 { font-size: var(--big); font-weight: 700; line-height: 1.05; letter-spacing: -.01em; }
+  .head h1 > font-kku { color: var(--head, var(--text)); }
+  .clock { margin-top: 1.2cqmin; font-size: max(14px, 2.6cqmin); font-weight: 600; letter-spacing: .02em; }
+
+  /* The svg fills whatever the grid leaves for the garden and scales to fit inside it. */
+  .garden { grid-area: garden; min-height: 0; position: relative; }
+  .garden svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; cursor: pointer; }
+  .garden svg:focus { outline: none; }
+  .garden svg:focus-visible { outline: 2px solid var(--head, var(--text)); outline-offset: 2px; border-radius: 8px; }
+  /* The one-line hint under the bed; it takes the title's colour, so it stays readable at night. */
+  .hint { grid-area: hint; text-align: center; font-size: max(11px, 1.7cqmin); line-height: 1.3; color: var(--head, var(--text)); opacity: .78; }
+  .lang-ko .hint { word-break: keep-all; }
+  .star { animation: twinkle 2.6s ease-in-out infinite; }
+  @keyframes twinkle { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .star { animation: none; } }
+
+  .card {
+    grid-area: card;
+    align-self: center;
+    /* The log's long nowrap lines must not widen the card (and re-wrap every row) as they come. */
+    min-width: 0;
+    padding: 3.4cqmin 3.6cqmin 3cqmin;
+    background: var(--paper);
+    border-radius: 6px;
+    box-shadow: 0 1.4cqmin 3.6cqmin rgba(40, 30, 10, .22);
+    font-size: max(12px, 1.9cqmin);
+  }
+  .card h2 { font-size: 1.35em; font-weight: 700; margin-bottom: .5em; }
+  /* The crontab's own first line: the setting that would stop the mail, commented out. */
+  .mailto { padding: 0 .4em .4em; font-size: .86em; color: rgba(35, 65, 47, .5); white-space: nowrap; }
+  .jobs { list-style: none; padding: 0; }
+  .job {
+    display: grid;
+    grid-template-columns: 1.4em 8.6em 1fr;
+    align-items: baseline;
+    gap: .2em .7em;
+    padding: .55em .4em;
+    /* The card's ruling: one line under each row, so it never runs through a row's text. */
+    border-bottom: 1px solid var(--rule);
+  }
+  .job:first-child { border-top: 1px solid var(--rule); }
+  .job .n { color: rgba(35, 65, 47, .5); }
+  .job .expr { font-size: .92em; white-space: nowrap; }
+  .job .what { line-height: 1.3; }
+  .lang-ko .job .what { word-break: keep-all; }
+  .job .st { grid-column: 3; font-size: .86em; color: rgba(35, 65, 47, .55); white-space: nowrap; }
+  .job.done .st { color: var(--green); font-weight: 600; }
+  /* The tail of cron's own log, the way syslog writes it. Its lines are reserved from the start,
+     so the card (and the garden above it) never changes height. */
+  .cronlog { min-height: 4.5em; margin-top: .8em; font-size: .74em; line-height: 1.5; color: rgba(35, 65, 47, .62); }
+  .cronlog span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cronlog span:last-child { color: rgba(35, 65, 47, .9); }
+  /* The closing line is in place (transparent) from the start, so its two halves appearing never
+     changes the card's height. Each half is an inline-block, so it can rise in, and still wraps
+     inside itself on a narrow card. Transparent, not hidden: opened on its own, the page has the
+     kit's nav in a corner, and the nav keeps clear of transparent text but not of hidden text, so
+     it would otherwise sit on "too." until its next look. (aria-hidden keeps the halves from screen
+     readers until they show.) */
+  .final { margin-top: .5em; font-size: var(--big); line-height: 1.2; font-weight: 700; color: var(--green); }
+  .final .fa, .final .fb { display: inline-block; max-width: 100%; opacity: 0; }
+  .final .fa.on, .final .fb.on { opacity: 1; }
+  .final font-kku.fa, .final font-kku.fb { color: var(--green); }
+  .lang-ko .final { word-break: keep-all; }
+  /* What the seedling in pot 6 says when the garden is watered. */
+  .say text { font-family: 'Petrona', Georgia, serif; font-weight: 600; fill: #23412f; }
+  .lang-ko .say text { font-family: 'Gowun Dodum', sans-serif; font-weight: 400; }
+  @container (orientation: portrait) {
+    .card { padding: 2.6cqmin 3.4cqmin; font-size: 12px; }
+    .card h2 { display: none; }
+    .job { padding: .3em .2em; grid-template-columns: 1.2em 7.6em 1fr auto; }
+    .job .st { grid-column: 4; grid-row: 1; text-align: right; }
+    .cronlog { min-height: 3em; margin-top: .4em; font-size: 10px; }
+    .cronlog span:not(:nth-last-child(-n + 2)) { display: none; }
+    .mailto { padding: 0 .2em .3em; }
+    .final { margin-top: .3em; }
+  }
+  /* A narrow phone stage (the home stage on a 360 × 800 phone is 328 × 568): at 20px the English
+     closing line takes two lines and the garden loses a quarter of its size, so the title and the
+     closing line both drop to 18px, and the number and expression columns take the short stage's
+     widths, so fewer habits wrap and the card stays short. (The short-stage rules below still
+     win: they come later.) */
+  @container (orientation: portrait) and (max-width: 340px) {
+    .wrap { --big: 18px; }
+    .job { grid-template-columns: 1em 7.2em 1fr auto; gap: .2em .55em; }
+  }
+  /* Short portrait stages (a phone opening the page on its own, about 360 × 520, and the home
+     page's phone stage, which can be under 400px tall): the clock sits beside the title, and under
+     470px the log goes and the card tightens, so the garden and its mailbox keep their room. */
+  @container (orientation: portrait) and (max-height: 560px) {
+    .wrap { padding: 3cqmin 5cqmin; gap: 1.2cqmin; --big: 18px; }
+    .head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 3cqmin; }
+    .clock { margin-top: 0; font-size: 12px; }
+    .hint { font-size: 11px; }
+    /* Opened on its own, a phone has the kit's folded nav ("?" and ":)", 34px each, 6px apart,
+       8px from the edge) right where the closing line ends: keep the line out from under it, so
+       "You did, too." goes to a second line instead (on the home stage there is no nav). */
+    html:not(.embedded) .final { padding-right: 62px; }
+  }
+  @container (orientation: portrait) and (max-height: 470px) {
+    .wrap { --big: 16px; }
+    .cronlog, .mailto { display: none; }
+    .card { padding: 2cqmin 3cqmin; font-size: 11px; }
+    /* The expression column is just wide enough for the every-50 line, so the habits keep
+       their room beside the (larger) status. */
+    .job { padding: .16em .1em; grid-template-columns: 1em 7.2em 1fr auto; gap: .2em .55em; }
+    /* "next Feb 31" sets up the punchline: it stays at 10px or more. */
+    .job .st { font-size: 10.2px; }
+    .final { margin-top: .2em; }
+  }
+  /* A phone held sideways (the home stage is then about 508 × 339): the card gets the wider column
+     and only the rows and the closing line, so the closing line is not pushed off the stage. */
+  @container (orientation: landscape) and (max-height: 420px) {
+    .wrap { grid-template-columns: 1fr 1.2fr; padding: 3cqmin 4cqmin; gap: 1.4cqmin 3cqmin; --big: 18px; }
+    .card { padding: 2.2cqmin 3cqmin; font-size: 11px; }
+    .card h2, .cronlog, .mailto { display: none; }
+    .job { padding: .2em; grid-template-columns: 1.1em 7.2em 1fr; gap: 0 .4em; }
+    .job .st { font-size: 10.5px; }
+    .final { margin-top: .3em; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="head">
+    <h1 data-lang="en">The Cron Garden</h1>
+    <h1 data-lang="ko"><font-kku font="sebul" size="1em">크론 정원</font-kku></h1>
+    <p class="clock mono" aria-live="off"></p>
+  </header>
+
+  <div class="garden">
+    <svg viewBox="0 0 700 360" preserveAspectRatio="xMidYMax meet" role="button" tabindex="0" aria-describedby="garden-hint">
+      <title data-lang="en">A raised garden bed with six plants, one for each scheduled habit, and a mailbox where cron delivers each job's output</title>
+      <title data-lang="ko">습관 하나에 식물 하나씩 여섯 식물이 자라는 화단과, 크론이 작업 결과를 편지로 넣는 우편함</title>
+      <defs><radialGradient id="moonglow"><stop offset="0" stop-color="#fff6c4" stop-opacity=".95"/><stop offset=".55" stop-color="#fff6c4" stop-opacity=".35"/><stop offset="1" stop-color="#fff6c4" stop-opacity="0"/></radialGradient></defs>
+      <g class="sky"><g class="stars" opacity="0"></g><circle class="sun" r="20" fill="#ffd166"/><circle class="moon" r="14" fill="#f4f1de" opacity="0"/></g>
+      <g class="plants"></g>
+      <g class="bed">
+        <rect x="10" y="286" width="580" height="22" rx="4" fill="#4a2f1d"/>
+        <rect x="10" y="304" width="580" height="50" rx="6" fill="var(--wood)"/>
+        <path d="M10 322 H590 M10 338 H590" stroke="#8c5e31" stroke-width="2"/>
+      </g>
+      <g class="stakes"></g>
+      <g class="mailbox" transform="translate(638 354) scale(1.2) translate(-638 -354)">
+        <rect x="633" y="236" width="9" height="118" fill="#8c5e31"/>
+        <rect x="622" y="236" width="31" height="6" rx="2" fill="#6e4524"/>
+        <g class="stubs"></g>
+        <path d="M604 238 V214 Q604 202 616 202 H664 Q676 202 676 214 V238 Z" fill="#4f7fc4"/>
+        <path d="M604 214 Q604 202 616 202 H664 Q676 202 676 214" fill="none" stroke="#7fa6dc" stroke-width="3"/>
+        <path d="M612 238 V205" stroke="#3b649f" stroke-width="2"/>
+        <path d="M604 238 L594 260" stroke="#3b649f" stroke-width="6" stroke-linecap="round"/>
+        <g class="flag" transform="rotate(-90 668 226)"><rect x="666.5" y="196" width="3" height="32" rx="1" fill="#59606b"/><rect x="669" y="196" width="14" height="10" rx="1" fill="#e2483a"/><circle cx="668" cy="226" r="2.6" fill="#2f3540"/></g>
+        <g class="pile"></g>
+        <g class="badge" opacity="0"><circle cx="612" cy="200" r="12" fill="#e2483a" stroke="#fff" stroke-width="2"/><text x="612" y="204.5" text-anchor="middle" font-size="13" font-weight="600" fill="#fff" class="mono"></text></g>
+      </g>
+      <g class="fx"></g>
+      <g class="say" opacity="0" aria-hidden="true"><path class="say-box" fill="#fffdf5" stroke="#b9ae93" stroke-width="1.5" stroke-linejoin="round"/><text class="say-text" text-anchor="middle"></text></g>
+    </svg>
+  </div>
+  <p class="hint" id="garden-hint">
+    <span data-lang="en">Tap the garden to water it once more.</span>
+    <span data-lang="ko">화단을 누르면 물을 한 번 더 줘요.</span>
+  </p>
+
+  <section class="card">
+    <h2 data-lang="en">Today’s crontab</h2>
+    <h2 data-lang="ko">오늘의 크론탭</h2>
+    <p class="mailto mono"># MAILTO=""</p>
+    <ol class="jobs"></ol>
+    <p class="cronlog mono" aria-hidden="true"></p>
+    <p class="final" aria-live="polite">
+      <span data-lang="en"><span class="fa" aria-hidden="true">All jobs succeeded.</span> <span class="fb" aria-hidden="true">You did, too.</span></span>
+      <span data-lang="ko"><font-kku class="fa" aria-hidden="true" font="dunggeun" size="1em">모든 작업 성공.</font-kku> <font-kku class="fb" aria-hidden="true" font="dunggeun" size="1em">당신도요.</font-kku></span>
+    </p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const SVG = 'http://www.w3.org/2000/svg';
+  const $ = (s) => document.querySelector(s);
+  const svg = $('.garden svg');
+  const plantsG = $('.plants'), stakesG = $('.stakes'), fx = $('.fx');
+  const sun = $('.sun'), moon = $('.moon');
+  const clock = $('.clock'), jobsEl = $('.jobs'), logEl = $('.cronlog');
+  // The closing line comes in two halves: "All jobs succeeded." and then, once job 6 has had its
+  // moment, "You did, too."
+  const finalA = $('.final .fa'), finalB = $('.final .fb');
+  const starsG = $('.stars');
+  const el = (tag, attrs, parent) => {
+    const n = document.createElementNS(SVG, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.append(n);
+    return n;
+  };
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const still = TTY.reduce;
+
+  const START = 6 * 60, END = 24 * 60, DAY_MS = 14000;
+  // cmd is what cron's log shows it running. The last job is valid crontab that never fires.
+  const JOBS = [
+    { expr: '0 8 * * *', x: 62, at: [8 * 60], cmd: 'drink --water' },
+    { expr: '*/50 * * * *', x: 158, at: [], cmd: 'stretch' },
+    { expr: '30 12 * * *', x: 254, at: [12 * 60 + 30], cmd: 'lunch --no-desk' },
+    { expr: '0 22 * * *', x: 350, at: [22 * 60], cmd: 'phone --down' },
+    { expr: '@weekly', x: 446, at: [END], cmd: 'call --friend' },
+    { expr: '0 9 31 2 *', x: 542, at: [], cmd: 'gym --start' },
+  ];
+  // */50 is minute 0 and minute 50 of every hour, Sunday 00:00 included: 37 times from 06:00.
+  for (let m = START; m <= END; m += 10) if (m % 60 === 0 || m % 60 === 50) JOBS[1].at.push(m);
+  const WHAT = TTY.t({
+    en: ['drink water', 'stretch every 50 minutes', 'eat lunch away from your desk', 'phone down', 'call someone you like', 'start working out'],
+    ko: ['물 한 잔 마시기', '50분마다 스트레칭', '자리 떠나서 점심\u00a0먹기', '휴대폰 내려놓기', '좋아하는 사람에게 전화', '운동 시작하기'],
+  });
+  const DAYS = TTY.t({ en: ['Saturday', 'Sunday'], ko: ['토요일', '일요일'] });
+  const ST = TTY.t({
+    en: { next: (t) => `next ${t}`, ran: (t) => `ran ${t}`, times: (n) => `ran ×${n}`, never: 'next Feb 31' },
+    ko: { next: (t) => `${t} 예정`, ran: (t) => `${t} 완료`, times: (n) => `${n}번 완료`, never: '2월 31일 예정' },
+  });
+  // @weekly is Sunday 00:00, so job 5's status is written out.
+  const WEEKLY = TTY.t({ en: { next: 'next Sun 00:00', ran: 'ran Sun 00:00' }, ko: { next: '일요일 00:00 예정', ran: '일요일 00:00 완료' } });
+  // Job i's status before it has run (ran = 0) and after it has run `ran` times.
+  const statusOf = (i, ran) => {
+    if (!JOBS[i].at.length) return ST.never;
+    if (i === 4) return ran ? WEEKLY.ran : WEEKLY.next;
+    if (i === 1 && ran) return ST.times(ran);
+    return (ran ? ST.ran : ST.next)(hhmm(JOBS[i].at[0]));
+  };
+  // What the seedling in pot 6 says when it is watered.
+  const SAY = TTY.t({ en: 'I’ll start on Feb 31.', ko: '2월 31일부터 할게요.' });
+  const hhmm = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+
+  /* ---- Crontab rows ---- */
+  const rows = JOBS.map((job, i) => {
+    const li = document.createElement('li');
+    li.className = 'job';
+    li.innerHTML = `<span class="n mono">${i + 1}</span><span class="expr mono"></span><span class="what"></span><span class="st mono"></span>`;
+    li.querySelector('.expr').textContent = job.expr;
+    li.querySelector('.what').textContent = WHAT[i];
+    jobsEl.append(li);
+    return li;
+  });
+
+  /* ---- Stakes ---- */
+  // A numbered sign on a stake beside each plant. Where the garden is drawn small, the sign and
+  // its number grow (from the sign's bottom edge) so the number stays 10px or more on screen;
+  // the sign's left edge stays clear of the (then larger) seedling.
+  const STAKES = JOBS.map((job, i) => {
+    el('rect', { x: job.x + 26, y: 262, width: 5, height: 30, fill: '#8c5e31' }, stakesG);
+    const board = el('rect', { rx: 3, fill: '#e9d5a7', stroke: '#8c5e31', 'stroke-width': 1.5 }, stakesG);
+    const t = el('text', { 'text-anchor': 'middle', 'font-weight': 600, fill: '#5b3a24', class: 'mono' }, stakesG);
+    t.textContent = String(i + 1);
+    return { x: job.x, board, t };
+  });
+  function sizeStakes(scale) {
+    const fs = Math.max(11, 10.6 / Math.max(scale, .2));
+    const w = Math.max(25, fs + 4), h = Math.max(18, fs + 5);
+    STAKES.forEach(({ x, board, t }) => {
+      const left = x + 16 + (SEED - 1) * 6, top = 268 - h;
+      board.setAttribute('x', left); board.setAttribute('y', top.toFixed(1));
+      board.setAttribute('width', w.toFixed(1)); board.setAttribute('height', h.toFixed(1));
+      t.setAttribute('x', (left + w / 2).toFixed(1)); t.setAttribute('y', (top + h / 2 + fs * .36).toFixed(1));
+      t.setAttribute('font-size', fs.toFixed(1));
+    });
+  }
+
+  /* ---- Plants ---- */
+  const grow = (node, ms, delay = 0) => {
+    if (still) return;
+    const len = node.getTotalLength();
+    node.style.strokeDasharray = `${len}`;
+    node.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: ms, delay, easing: 'cubic-bezier(.3, .7, .3, 1)', fill: 'backwards' });
+  };
+  const pop = (node, ms = 420, delay = 0) => {
+    if (still) return;
+    node.style.transformBox = 'fill-box';
+    node.style.transformOrigin = node.dataset.origin || 'center';
+    node.animate([{ transform: 'scale(0)' }, { transform: 'scale(1.15)', offset: .7 }, { transform: 'scale(1)' }],
+      { duration: ms, delay, easing: 'cubic-bezier(.3, 1.4, .5, 1)', fill: 'backwards' });
+  };
+  // A rotated shape lives inside its own group; the group takes the pop animation. (CSS
+  // transform-origin would otherwise also apply to the shape's own rotate(a cx cy).)
+  const leaf = (g, x, y, angle, size, color = 'var(--leaf)') => {
+    const wrap = el('g', {}, g);
+    el('ellipse', { cx: x, cy: y, rx: size, ry: size * .45, fill: color, transform: `rotate(${angle} ${x} ${y})` }, wrap);
+    return wrap;
+  };
+  // A seedling is drawn a little larger where the garden is small (SEED, set by fit()), so the one
+  // in pot 6, which stays a seedling all day, can still be seen looking around. The size sits on an
+  // inner group: the outer one takes the animations (a CSS transform would replace the attribute).
+  let SEED = 1;
+  // How large fit() found the garden drawn (screen px per svg unit).
+  let gardenScale = 1;
+  const seedSize = (inner, x) => inner.setAttribute('transform', SEED === 1 ? '' : `translate(${x} 288) scale(${SEED}) translate(${-x} -288)`);
+  const seedling = (g, x) => {
+    const s = el('g', { class: 'seedling' }, g);
+    const inner = el('g', { 'data-x': x }, s);
+    seedSize(inner, x);
+    el('path', { d: `M${x} 288 v-14`, stroke: 'var(--green)', 'stroke-width': 3, 'stroke-linecap': 'round' }, inner);
+    leaf(inner, x - 6, 272, -30, 7); leaf(inner, x + 6, 272, 30, 7);
+    return s;
+  };
+
+  const plants = JOBS.map((job, i) => {
+    const g = el('g', { class: `plant p${i}` }, plantsG);
+    return { g, sprout: seedling(g, job.x), count: 0 };
+  });
+
+  // 1. A fern that unfurls after a drink.
+  function fireWater(p) {
+    const x = JOBS[0].x;
+    if (!still) for (let k = 0; k < 3; k++) {
+      const d = el('path', { d: 'M0 -6 C 4 0, 4 4, 0 5 C -4 4, -4 0, 0 -6 Z', fill: '#69b7ff', transform: `translate(${x - 14 + k * 14} 150)` }, fx);
+      d.animate([{ transform: `translate(${x - 14 + k * 14}px, 150px)`, opacity: 1 }, { transform: `translate(${x - 14 + k * 14}px, 270px)`, opacity: .2 }],
+        { duration: 600, delay: k * 120, easing: 'cubic-bezier(.5, 0, 1, .6)' }).finished.then(() => d.remove());
+    }
+    p.sprout.remove();
+    const fronds = [[-62, 150], [-28, 112], [0, 96], [30, 112], [64, 152]];
+    fronds.forEach(([dx, h], k) => {
+      const tip = { x: x + dx, y: 288 - h };
+      const path = el('path', { d: `M${x} 288 Q${x + dx * .2} ${288 - h * .9} ${tip.x} ${tip.y}`, fill: 'none', stroke: 'var(--green)', 'stroke-width': 3.2, 'stroke-linecap': 'round' }, p.g);
+      grow(path, 900, 700 + k * 90);
+      const len = path.getTotalLength();
+      for (let j = 1; j <= 6; j++) {
+        const pt = path.getPointAtLength(len * (j / 7));
+        const l = leaf(p.g, pt.x + (dx < 0 ? -5 : 5), pt.y, dx < 0 ? -35 : 35, 7 - j * .5);
+        pop(l, 360, 900 + k * 90 + j * 70);
+      }
+    });
+  }
+
+  // 2. A vine that adds a pair of leaves at every stretch.
+  const VINE_MAX = 13;
+  let vine = null;
+  function fireStretch(p) {
+    const x = JOBS[1].x;
+    if (!vine) {
+      p.sprout.remove();
+      vine = el('path', { d: `M${x} 288 L${x} 288`, fill: 'none', stroke: 'var(--green)', 'stroke-width': 3.4, 'stroke-linecap': 'round' }, p.g);
+    }
+    p.count += 1;
+    const n = Math.min(p.count, VINE_MAX);
+    if (p.count <= VINE_MAX) {
+      const y = 288 - n * 15;
+      const sway = (k) => x + Math.sin(k * .9) * 7;
+      let d = `M${x} 288`;
+      for (let k = 1; k <= n; k++) d += ` L${sway(k).toFixed(1)} ${288 - k * 15}`;
+      vine.setAttribute('d', d);
+      const lx = sway(n);
+      const a = leaf(p.g, lx - 9, y, -25, 9);
+      const b = leaf(p.g, lx + 9, y + 3, 25, 9);
+      pop(a, 300); pop(b, 300, 60);
+    } else if (!still) {
+      p.g.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(1.6deg)' }, { transform: 'rotate(-1.2deg)' }, { transform: 'rotate(0)' }],
+        { duration: 500, easing: 'ease-in-out' });
+      p.g.style.transformBox = 'fill-box'; p.g.style.transformOrigin = '50% 100%';
+    }
+  }
+
+  // 3. A tomato plant that fruits at lunch.
+  function fireLunch(p) {
+    const x = JOBS[2].x;
+    p.sprout.remove();
+    const stems = [`M${x} 288 C ${x} 250, ${x - 4} 220, ${x} 168`, `M${x} 240 C ${x - 22} 230, ${x - 36} 214, ${x - 42} 196`, `M${x} 214 C ${x + 22} 204, ${x + 34} 190, ${x + 40} 176`];
+    stems.forEach((d, k) => grow(el('path', { d, fill: 'none', stroke: 'var(--green)', 'stroke-width': k ? 2.6 : 3.6, 'stroke-linecap': 'round' }, p.g), 700, k * 160));
+    [[x - 14, 252, -40], [x + 14, 232, 40], [x - 10, 200, -35], [x + 10, 186, 35], [x - 6, 172, -20]].forEach(([lx, ly, a], k) => pop(leaf(p.g, lx, ly, a, 11), 380, 500 + k * 70));
+    [[x - 44, 206, 13], [x + 42, 188, 12], [x - 6, 226, 14], [x + 14, 162, 10]].forEach(([cx, cy, r], k) => {
+      const t = el('g', {}, p.g);
+      el('circle', { cx, cy, r, fill: '#e2483a' }, t);
+      el('circle', { cx: cx - r * .35, cy: cy - r * .35, r: r * .28, fill: '#ff8c78' }, t);
+      el('path', { d: `M${cx - 5} ${cy - r + 1} l5 3 l5 -3 M${cx} ${cy - r + 4} v-6`, stroke: '#2f7a3c', 'stroke-width': 2, fill: 'none', 'stroke-linecap': 'round' }, t);
+      pop(t, 480, 950 + k * 140);
+    });
+  }
+
+  // 4. A moonflower that opens when the phone goes down.
+  function firePhone(p) {
+    const x = JOBS[3].x;
+    p.sprout.remove();
+    const stem = el('path', { d: `M${x} 288 C ${x + 6} 250, ${x - 8} 214, ${x} 178`, fill: 'none', stroke: 'var(--green)', 'stroke-width': 3.2, 'stroke-linecap': 'round' }, p.g);
+    grow(stem, 600);
+    pop(leaf(p.g, x - 12, 246, -30, 12), 360, 300); pop(leaf(p.g, x + 12, 222, 30, 11), 360, 380);
+    const glow = el('circle', { cx: x, cy: 170, r: 46, fill: 'url(#moonglow)' }, p.g);
+    pop(glow, 900, 600);
+    const flower = el('g', {}, p.g);
+    for (let k = 0; k < 5; k++) {
+      const petal = el('g', {}, flower);
+      el('ellipse', { cx: x, cy: 154, rx: 9, ry: 17, fill: '#fbfaf2', stroke: '#e6e2c9', 'stroke-width': 1, transform: `rotate(${k * 72} ${x} 170)` }, petal);
+      pop(petal, 520, 700 + k * 80);
+    }
+    pop(el('circle', { cx: x, cy: 170, r: 6, fill: '#f4d35e' }, flower), 300, 1150);
+  }
+
+  // 5. Once a week: the call. It blooms at midnight, as the day closes.
+  function fireWeekly(p) {
+    const x = JOBS[4].x;
+    p.sprout.remove();
+    grow(el('path', { d: `M${x} 288 C ${x - 4} 252, ${x + 6} 226, ${x} 196`, fill: 'none', stroke: 'var(--green)', 'stroke-width': 3.2, 'stroke-linecap': 'round' }, p.g), 600);
+    pop(leaf(p.g, x - 13, 252, -35, 13), 360, 250); pop(leaf(p.g, x + 13, 236, 35, 12), 360, 320);
+    const bloom = el('g', {}, p.g);
+    [[-12, 0, -18], [12, 0, 18], [0, -6, 0]].forEach(([dx, dy, a]) => el('ellipse', { cx: x + dx, cy: 180 + dy, rx: 11, ry: 19, fill: '#ff7aa8', transform: `rotate(${a} ${x + dx} ${200 + dy})` }, bloom));
+    el('path', { d: `M${x} 186 C ${x - 9} 178, ${x - 9} 170, ${x - 3} 170 C ${x} 170, ${x} 173, ${x} 175 C ${x} 173, ${x} 170, ${x + 3} 170 C ${x + 9} 170, ${x + 9} 178, ${x} 186 Z`, fill: '#fff' }, bloom);
+    bloom.dataset.origin = '50% 100%';
+    pop(bloom, 640, 600);
+    if (!still) for (let k = 0; k < 7; k++) {
+      const h = el('path', { d: 'M0 3 C -5 -1, -4 -6, 0 -3 C 4 -6, 5 -1, 0 3 Z', fill: '#ff7aa8' }, fx);
+      const dx = rand(-60, 60), dy = rand(-110, -50);
+      h.animate([{ transform: `translate(${x}px, 176px) scale(.6)`, opacity: 1 }, { transform: `translate(${x + dx}px, ${176 + dy}px) scale(1.2)`, opacity: 0 }],
+        { duration: rand(900, 1400), delay: 800 + k * 60, easing: 'cubic-bezier(.2, .7, .4, 1)', fill: 'backwards' }).finished.then(() => h.remove());
+    }
+  }
+  const FIRE = [fireWater, fireStretch, fireLunch, firePhone, fireWeekly, () => {}];
+
+  /* ---- The mailbox ---- */
+  // Cron mails whatever a job prints to the crontab's owner (MAILTO is not set), one letter
+  // per run. The first letter puts the flag up, as xbiff's mailbox does. Five fit in the box;
+  // the rest land in a heap at the foot of the post.
+  const mailbox = $('.mailbox');
+  const stubsG = mailbox.querySelector('.stubs'), pileG = mailbox.querySelector('.pile');
+  const flag = mailbox.querySelector('.flag'), badge = mailbox.querySelector('.badge');
+  // The mailbox group is drawn at MB× around the foot of its post (at FOOT); ROOT maps its own
+  // coordinates to the garden's, for letters flying in from outside it. Where the garden is
+  // drawn small (phones), the mailbox stands a little closer to the bed at 1.6× and the letters
+  // fly at 2.1×, so the gag still reads.
+  let MB = 1.2, FLY = 1.2, FOOT = 638;
+  const ROOT = (x, y) => ({ x: FOOT + (x - 638) * MB, y: 354 + (y - 354) * MB });
+  let MOUTH = ROOT(588, 212);
+  function sizeMailbox(scale) {
+    const big = scale < .62;
+    MB = big ? 1.6 : 1.2; FLY = big ? 2.1 : MB; FOOT = big ? 628 : 638;
+    mailbox.setAttribute('transform', `translate(${FOOT} 354) scale(${MB}) translate(-638 -354)`);
+    MOUTH = ROOT(588, 212);
+    // The count on the badge stays 10px or more on screen, however small the garden is drawn.
+    const fs = Math.max(13, 10.6 / (MB * Math.max(scale, .2)));
+    badge.querySelector('circle').setAttribute('r', Math.max(12, fs * .9).toFixed(1));
+    const n = badge.querySelector('text');
+    n.setAttribute('font-size', fs.toFixed(1)); n.setAttribute('y', (200 + fs * .35).toFixed(1));
+  }
+  const INSIDE = 5;
+  // Heap spots, bottom row first: 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1 (36 in all).
+  const PILE = [6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1].flatMap((n, r) => Array.from({ length: n }, (_, k) => ({
+    x: 640 - ((n - 1) * 12.5) / 2 + k * 12.5 - 8 + rand(-3.5, 3.5), y: 343 - r * 6.2 + rand(-1.5, 1.5), a: rand(-24, 24),
+  })));
+  let sent = 0, mail = 0;
+  const tilt = (a) => flag.setAttribute('transform', `rotate(${a.toFixed(1)} 668 226)`);
+  const envelope = (parent, x, y, a = 0) => {
+    const g = el('g', { transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${a.toFixed(1)})` }, parent);
+    el('rect', { width: 16, height: 11, rx: 1.5, fill: '#fffdf5', stroke: '#b9ae93', 'stroke-width': 1 }, g);
+    el('path', { d: 'M1 1.2 L8 6.6 L15 1.2', fill: 'none', stroke: '#b9ae93', 'stroke-width': 1 }, g);
+    return g;
+  };
+  // The flag swings up from flat (-90°), overshoots a little and settles upright.
+  function flagUp() {
+    if (still) { tilt(0); return; }
+    const t0 = performance.now();
+    const mine = run;
+    const swing = (now) => {
+      if (mine !== run) return;
+      const k = Math.min(1, (now - t0) / 520);
+      tilt(k < .7 ? -90 + 102 * Math.sin((k / .7) * Math.PI / 2) : 12 - 12 * Math.sin(((k - .7) / .3) * Math.PI / 2));
+      if (k < 1) requestAnimationFrame(swing);
+    };
+    requestAnimationFrame(swing);
+  }
+  // Letter n lands: in the box (an edge sticks out of the open door) or on the heap.
+  function deliver(n) {
+    mail += 1;
+    if (mail === 1) flagUp();
+    if (n <= INSIDE) {
+      const k = n - 1;
+      const g = el('g', { transform: `translate(591 ${231 - k * 5}) rotate(${k % 2 ? 6 : -5} 7 2)` }, stubsG);
+      el('rect', { width: 15, height: 4.2, rx: 1, fill: '#fffdf5', stroke: '#b9ae93', 'stroke-width': .8 }, g);
+    } else if (n - INSIDE <= PILE.length) {
+      const spot = PILE[n - INSIDE - 1];
+      envelope(pileG, spot.x, spot.y, spot.a);
+    }
+    badge.setAttribute('opacity', 1);
+    badge.querySelector('text').textContent = String(mail);
+  }
+  // The letter's flight from the plant to the mailbox (and down to the heap once it is full).
+  function post(i, p) {
+    const n = ++sent;
+    if (still) { deliver(n); return; }
+    const x0 = JOBS[i].x - 10, y0 = i === 1 ? 280 - Math.min(p.count, VINE_MAX) * 15 : 168;
+    const full = n > INSIDE && n - INSIDE <= PILE.length;
+    const peak = Math.min(y0, MOUTH.y) - 70;
+    const frames = [];
+    for (let k = 0; k <= 10; k++) {
+      const t = k / 10, u = 1 - t;
+      const x = u * u * x0 + 2 * u * t * ((x0 + MOUTH.x) / 2) + t * t * MOUTH.x;
+      const y = u * u * y0 + 2 * u * t * peak + t * t * MOUTH.y;
+      frames.push({ transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${(-20 + 30 * t).toFixed(0)}deg) scale(${FLY})`, offset: full ? t * .78 : t });
+    }
+    if (full) {
+      const spot = PILE[n - INSIDE - 1];
+      const at = ROOT(spot.x, spot.y);
+      frames.push({ transform: `translate(${at.x.toFixed(1)}px, ${at.y.toFixed(1)}px) rotate(${spot.a.toFixed(1)}deg) scale(${MB})`, offset: 1 });
+    }
+    const g = el('g', {}, fx);
+    envelope(g, 0, 0);
+    const mine = run;
+    g.animate(frames, { duration: full ? 900 : 700, easing: 'cubic-bezier(.4, 0, .6, 1)', fill: 'forwards' }).finished.then(() => {
+      g.remove();
+      if (mine === run) deliver(n);
+    });
+  }
+
+  /* ---- Sky and time ---- */
+  const SKY = [
+    [360, '#ffd9b8', '#ffc9a0', '#23412f'],
+    [600, '#bfe6ff', '#e3f4ff', '#23412f'],
+    [960, '#a9dcff', '#fff0c8', '#23412f'],
+    [1140, '#ffb38a', '#c58fd8', '#2b2340'],
+    [1260, '#3a3f86', '#6b5aa8', '#f3f0ff'],
+    [1440, '#141a3d', '#2a2f66', '#f3f0ff'],
+  ];
+  const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, t) => `rgb(${hex(a).map((v, i) => Math.round(v + (hex(b)[i] - v) * t)).join(',')})`;
+  // Stars come out after sunset; fit() spreads them over whatever sky the layout has.
+  const STARS = Array.from({ length: 16 }, (_, k) => {
+    const c = el('circle', { class: 'star', r: rand(1, 2.2), fill: '#fff8dc' }, starsG);
+    c.style.animationDelay = `${-rand(0, 2.6).toFixed(2)}s`;
+    return { c, x: (k + rand(.15, .85)) * (700 / 16), v: rand(0, 1) };
+  });
+  const placeStars = () => STARS.forEach((s) => {
+    s.c.setAttribute('cx', s.x.toFixed(1));
+    s.c.setAttribute('cy', (tall ? -200 + s.v * 300 : short ? 48 + s.v * 52 : 10 + s.v * 90).toFixed(1));
+  });
+
+  function paintSky(m) {
+    m = Math.floor(m);
+    lastMinute = m;
+    starsG.setAttribute('opacity', Math.min(1, Math.max(0, (m - 1170) / 120)).toFixed(2));
+    let k = SKY.findIndex((s) => s[0] > m);
+    if (k <= 0) k = k === 0 ? 1 : SKY.length - 1;
+    const [a, b] = [SKY[k - 1], SKY[k]];
+    const t = Math.min(1, Math.max(0, (m - a[0]) / (b[0] - a[0])));
+    document.body.style.setProperty('--sky', mix(a[1], b[1], t));
+    document.body.style.setProperty('--sky-low', mix(a[2], b[2], t));
+    document.body.style.setProperty('--head', mix(a[3], b[3], t));
+    // Sun from 06:00 to 19:00, moon after 19:30; on wide screens there is more sky to cross.
+    const top = tall ? 330 : short ? 86 : 120;
+    const sunT = (m - 360) / (1140 - 360);
+    sun.setAttribute('cx', 40 + sunT * 520);
+    sun.setAttribute('cy', 150 - Math.sin(Math.min(1, Math.max(0, sunT)) * Math.PI) * top);
+    sun.setAttribute('opacity', m < 1170 ? 1 : 0);
+    const moonT = Math.min(1, Math.max(0, (m - 1170) / 270));
+    moon.setAttribute('cx', 80 + moonT * 380);
+    moon.setAttribute('cy', 120 - Math.sin(moonT * Math.PI * .8) * (tall ? 260 : short ? 58 : 80));
+    moon.setAttribute('opacity', m >= 1170 ? .95 : 0);
+    const day = m >= END ? DAYS[1] : DAYS[0];
+    clock.textContent = `${day} ${hhmm(m)}`;
+  }
+
+  /* ---- The day ---- */
+  // syslog's cron line: "16:50:01 CRON[2304]: (you) CMD (stretch)". Jobs start at :01.
+  let pid = 2231;
+  const tail = [];
+  function cronlog(i, m) {
+    pid += 3 + Math.floor(rand(0, 9));
+    tail.push(`${hhmm(m)}:01 CRON[${pid}]: (you) CMD (${JOBS[i].cmd})`);
+    if (tail.length > 3) tail.shift();
+    logEl.replaceChildren(...tail.map((t) => Object.assign(document.createElement('span'), { textContent: t })));
+  }
+
+  let run = 0;
+  function fire(i, m) {
+    const p = plants[i];
+    FIRE[i](p);
+    cronlog(i, m);
+    post(i, p);
+    const row = rows[i];
+    row.classList.add('done');
+    row.querySelector('.st').textContent = statusOf(i, i === 1 ? p.count : 1);
+    if (!still) row.animate([{ background: 'rgba(255, 229, 138, .95)' }, { background: 'rgba(255, 229, 138, 0)' }], { duration: 900, easing: 'ease-out' });
+  }
+  function reset() {
+    plantsG.replaceChildren(); fx.replaceChildren();
+    vine = null;
+    JOBS.forEach((job, i) => { plants[i] = { g: el('g', { class: `plant p${i}` }, plantsG), sprout: null, count: 0 }; plants[i].sprout = seedling(plants[i].g, job.x); });
+    rows.forEach((r, i) => { r.classList.remove('done'); r.querySelector('.st').textContent = statusOf(i, 0); });
+    tail.length = 0;
+    pid = 2231;
+    sent = 0; mail = 0;
+    stubsG.replaceChildren(); pileG.replaceChildren();
+    tilt(-90);
+    badge.setAttribute('opacity', 0);
+    logEl.replaceChildren();
+    showHalf(finalA, false); showHalf(finalB, false);
+  }
+  // A half of the closing line on or off (on screen and for screen readers).
+  const showHalf = (half, on) => {
+    half.classList.toggle('on', on);
+    if (on) half.removeAttribute('aria-hidden'); else half.setAttribute('aria-hidden', 'true');
+  };
+  const rise = (half) => {
+    showHalf(half, true);
+    if (!still) half.animate([{ transform: 'translateY(30%)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 500, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
+  };
+  // The seedling in pot 6 moves on its own (the plant group around it sways when watered).
+  const seedling6 = (frames, ms) => {
+    const s = plants[5].sprout;
+    s.style.transformBox = 'fill-box'; s.style.transformOrigin = '50% 100%';
+    s.animate(frames, { duration: ms, easing: 'ease-in-out' });
+  };
+  // The end of the day, in beats: "All jobs succeeded." Job 6's row gets a grey pulse (cron looked,
+  // nothing was due) and its seedling looks around; its status stays "next Feb 31". Then
+  // "You did, too.", and the seedling gives a little hop, as pleased as everyone else.
+  function finish(mine) {
+    if (still) { showHalf(finalA, true); showHalf(finalB, true); return; }
+    rise(finalA);
+    const later = (ms, fn) => setTimeout(() => { if (mine === run) fn(); }, ms);
+    later(1200, () => {
+      rows[5].animate([{ background: 'rgba(35, 65, 47, 0)' }, { background: 'rgba(35, 65, 47, .16)', offset: .2 }, { background: 'rgba(35, 65, 47, 0)' }],
+        { duration: 1100, easing: 'ease-out' });
+      seedling6([{ transform: 'rotate(0)' }, { transform: 'rotate(-18deg)', offset: .3 }, { transform: 'rotate(18deg)', offset: .65 }, { transform: 'rotate(0)' }], 900);
+    });
+    later(2400, () => rise(finalB));
+    // The hop is 26 svg units, and at least 12px on screen where the garden is drawn small.
+    later(4000, () => {
+      const hop = Math.max(26, 12 / Math.max(gardenScale, .2));
+      seedling6([{ transform: 'none' }, { transform: `translateY(${-hop.toFixed(1)}px)`, offset: .35 }, { transform: 'scale(1.12, .86)', offset: .6 },
+        { transform: `translateY(${-(hop * 9 / 26).toFixed(1)}px)`, offset: .78 }, { transform: 'none' }], 750);
+    });
+  }
+
+  function day() {
+    const mine = ++run;
+    reset();
+    if (still) {
+      // the whole day at once, in the order cron would have run it, so the log tail is right
+      JOBS.flatMap((job, i) => job.at.map((m) => [m, i])).sort((a, b) => a[0] - b[0] || a[1] - b[1]).forEach(([m, i]) => fire(i, m));
+      paintSky(END);
+      finish(mine);
+      return;
+    }
+    const next = JOBS.map(() => 0);
+    const t0 = performance.now();
+    const tick = (now) => {
+      if (mine !== run) return;
+      const m = Math.min(END, START + ((now - t0) / DAY_MS) * (END - START));
+      paintSky(m);
+      JOBS.forEach((job, i) => { while (next[i] < job.at.length && job.at[next[i]] <= m) fire(i, job.at[next[i]++]); });
+      if (m < END) requestAnimationFrame(tick);
+      else {
+        setTimeout(() => { if (mine === run) finish(mine); }, 1200);
+        setTimeout(() => { if (mine === run) day(); }, 12000);
+      }
+    };
+    requestAnimationFrame(tick);
+  }
+
+  // Watered, the seedling in pot 6 promises to start, on the day in its crontab line. A paper
+  // bubble above and to the left of it for 2.2 s (a line with a joke stays up 2 s or more);
+  // watering again while it is up keeps it up longer. Its text is sized in garden units so it is
+  // 11px or more on screen.
+  const say = $('.say'), sayBox = say.querySelector('.say-box'), sayText = say.querySelector('.say-text');
+  sayText.textContent = SAY;
+  const SAY_MS = 2200;
+  let sayUntil = 0, sayTimer = 0, sayScale = 1;
+  function speak() {
+    const shown = performance.now() < sayUntil;
+    sayUntil = performance.now() + SAY_MS;
+    clearTimeout(sayTimer);
+    sayTimer = setTimeout(() => {
+      if (still) { say.setAttribute('opacity', 0); return; }
+      say.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, easing: 'ease-in' }).finished.then(() => {
+        if (performance.now() >= sayUntil - 5) say.setAttribute('opacity', 0);
+      }, () => {});
+    }, SAY_MS);
+    if (shown) return;
+    const fs = Math.max(18, 11.5 / Math.max(sayScale, .2));
+    sayText.setAttribute('font-size', fs.toFixed(1));
+    sayText.setAttribute('x', 0); sayText.setAttribute('y', 0);
+    const tw = sayText.getComputedTextLength();
+    const tip = { x: 540, y: SEED > 1 ? 256 : 262 };
+    const w = tw + fs * 1.1, h = fs * 1.7;
+    // The right edge stays clear of the mailbox's open door: its lower end (594, 260 in the
+    // mailbox's own units) with half its 6-wide stroke, and a little air. In a small garden the
+    // mailbox is drawn larger and the door reaches further left (x about 553), so the box moves
+    // left and its tail leans right, still pointing at the seedling.
+    const door = ROOT(594, 260);
+    const right = Math.min(tip.x + 26, door.x - 3 * MB - 6), left = right - w, bottom = tip.y - 18, top = bottom - h;
+    const r = Math.min(10, h / 2);
+    const tailR = Math.min(tip.x + 8, right - r), tailL = tailR - 16;
+    sayBox.setAttribute('d', `M${left + r} ${top} H${right - r} Q${right} ${top} ${right} ${top + r} V${bottom - r} Q${right} ${bottom} ${right - r} ${bottom}` +
+      ` H${tailR} L${tip.x} ${tip.y} L${tailL} ${bottom} H${left + r} Q${left} ${bottom} ${left} ${bottom - r} V${top + r} Q${left} ${top} ${left + r} ${top} Z`);
+    sayText.setAttribute('x', ((left + right) / 2).toFixed(1));
+    sayText.setAttribute('y', (top + h / 2 + fs * .34).toFixed(1));
+    say.setAttribute('opacity', 1);
+    if (!still) say.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 180, easing: 'ease-out' });
+  }
+
+  // Tap the garden (or Enter / Space on it) to water everything once more: a drop falls on
+  // each pot and every plant gives a little wiggle; the seedling in pot 6 answers but does not
+  // grow. With reduced motion, the plants just brighten.
+  function water() {
+    speak();
+    plants.forEach((p, i) => {
+      if (still) { p.g.animate([{ filter: 'brightness(1.25) saturate(1.3)' }, { filter: 'none' }], { duration: 900, easing: 'ease-out' }); return; }
+      const x = JOBS[i].x, delay = i * 70;
+      const d = el('path', { d: 'M0 -6 C 4 0, 4 4, 0 5 C -4 4, -4 0, 0 -6 Z', fill: '#69b7ff', opacity: 0 }, fx);
+      d.animate([{ transform: `translate(${x}px, 120px)`, opacity: 1 }, { transform: `translate(${x}px, 262px)`, opacity: .2 }],
+        { duration: 520, delay, easing: 'cubic-bezier(.5, 0, 1, .6)' }).finished.then(() => d.remove(), () => d.remove());
+      p.g.style.transformBox = 'fill-box'; p.g.style.transformOrigin = '50% 100%';
+      p.g.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(2.4deg)' }, { transform: 'rotate(-2deg)' }, { transform: 'rotate(0)' }], { duration: 700, delay: delay + 380, easing: 'ease-in-out' });
+    });
+  }
+  svg.setAttribute('aria-label', TTY.t({ en: 'The garden: water it once more', ko: '화단: 물을 한 번 더 주기' }));
+  svg.addEventListener('click', water);
+  svg.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    water();
+  });
+
+  // Each row's status cell keeps the width of its longest text (before and after its job has
+  // run), so a status changing never re-wraps the row and the card keeps one height.
+  function sizeStatus() {
+    rows.forEach((row, i) => {
+      const st = row.querySelector('.st');
+      const keep = st.textContent, done = row.classList.contains('done');
+      const texts = !JOBS[i].at.length ? [[ST.never, false]] : [[statusOf(i, 0), false], [statusOf(i, JOBS[i].at.length), true]];
+      st.style.width = 'max-content';
+      let w = 0;
+      texts.forEach(([text, on]) => { row.classList.toggle('done', on); st.textContent = text; w = Math.max(w, st.getBoundingClientRect().width); });
+      row.classList.toggle('done', done); st.textContent = keep;
+      st.style.width = '';
+      st.style.minWidth = `${(w / parseFloat(getComputedStyle(st).fontSize) + .05).toFixed(2)}em`;
+    });
+  }
+
+  // Landscape screens get a taller sky above the bed so the garden fills its column. Short
+  // portrait stages (the CSS rules for 560px and under) lose the top 40 of sky instead, so the bed,
+  // the letters and the mailbox are drawn larger; the sun and moon then keep to a lower arc.
+  let tall = false, short = false;
+  let lastMinute = START;
+  const fit = () => {
+    tall = innerWidth > innerHeight;
+    short = !tall && innerHeight <= 560;
+    const [vy, vh] = tall ? [-220, 580] : short ? [40, 320] : [0, 360];
+    svg.setAttribute('viewBox', `0 ${vy} 700 ${vh}`);
+    const box = svg.getBoundingClientRect();
+    const scale = Math.min(box.width / 700, box.height / vh);
+    SEED = scale < .62 ? 1.35 : 1;
+    sizeMailbox(scale);
+    sizeStakes(scale);
+    sayScale = gardenScale = scale;
+    plantsG.querySelectorAll('.seedling > g').forEach((inner) => seedSize(inner, Number(inner.dataset.x)));
+    placeStars();
+    paintSky(lastMinute);
+  };
+  addEventListener('resize', fit);
+  if (window.ResizeObserver) new ResizeObserver(fit).observe($('.garden'));
+  fit();
+  reset();
+  TTY.onShow(() => setTimeout(day, still ? 0 : 500));
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(() => { sizeStatus(); TTY.ready(); });
+})();
+</script>
+</body>
+</html>

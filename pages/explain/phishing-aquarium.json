@@ -1,0 +1,164 @@
+{
+  "id": "phishing-aquarium",
+  "title": {
+    "en": "Please Don't Feed the Phish",
+    "ko": "피싱에게 먹이를 주지 마세요"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "사기 문자·메일(피싱)을 말 그대로 물고기로 그려서, \"먹이를 주지 마세요\" 안내판이 붙은 수족관에 풀어 놓았다.",
+    "points": [
+      "몸통이 문자 말풍선인 물고기와 열쇠를 미끼로 단 낚싯바늘 → 피싱(phishing)이라는 이름은 낚시(fishing)를 해커식 철자로 바꿔 쓴 말이다. 여기서는 낚으려던 쪽이 유리 안에 갇혀 구경거리가 되고, 열쇠를 물면 고양이가 눈을 뜨고 바늘이 홱 들리며 '신고 완료' 도장이 찍힌다. 미끼를 문 쪽이 잡힌다.",
+      "황동 명판의 분류 '사칭어과 낚시꾼속'과 먹이 '비밀번호, 인증번호, 상품권' → 동물원 안내판 말투로 사기 수법을 소개한다. 먹이를 주지 말라는 건 정보를 주지 말라는 뜻이다.",
+      "물고기에 적힌 문구 → 모르는 번호의 \"엄마 나 폰 깨졌어\", 택배 주소 불일치, 검찰 사칭, 부고·청첩장 링크, 거래처가 보낸 '견적서_최종_진짜최종.pdf.exe'처럼 실제로 많이 오는 문자와 메일이라 받아 본 기억이 난다.",
+      "진짜 엄마 문자(\"밥은 먹고 다니니?\")만 끝까지 신고되지 않는다. 그런데 아무도 답장을 안 하자 엄마가 \"엄마야. 진짜 엄마야. 사기 아니야\"를 보낸다 → 사칭이 하도 많아서 진짜 엄마가 오히려 사기꾼 말투로 자기가 진짜라고 증명해야 한다. 이어서 \"엄마 인증번호 보내 줄까?\" → 증명하겠다고 명판에 적힌 먹이(인증번호)를 스스로 내민다. 인증번호는 누구에게도 알려 주면 안 되는 것인데, 수조에서 가장 낚이기 쉬운 사람이 엄마다.",
+      "(누를 때만) 피싱을 누르면 '신고 완료' 꼬리표가 붙고 볼이 빨개져 달아난다. 들킨 사기꾼이 부끄러워 도망간다. 엄마를 누르면 '오탐: 진짜 엄마'가 붙고, 꼬리표가 떨어지면 엄마가 \"방금 엄마 신고했니?\""
+    ],
+    "terms": [
+      {
+        "term": "피싱",
+        "plain": "믿을 만한 곳인 척 메시지를 보내 비밀번호나 돈을 빼내는 사기."
+      },
+      {
+        "term": "스미싱",
+        "plain": "문자메시지(SMS)로 하는 피싱. 링크를 눌러 가짜 앱을 깔게 하거나 답장을 하게 만든다."
+      },
+      {
+        "term": "오탐",
+        "plain": "정상인 것을 나쁜 것으로 잘못 판정하는 것. 영어로 false positive."
+      },
+      {
+        "term": "이중 확장자",
+        "plain": "`견적서.pdf.exe`처럼 확장자를 두 번 붙인 파일 이름. 윈도우는 알려진 확장자를 기본으로 숨겨서 실행 파일이 `견적서.pdf`로 보인다."
+      },
+      {
+        "term": "신고 버튼",
+        "plain": "메일함이나 문자 앱의 스팸·피싱 신고 기능. 명판에 적힌 이 물고기들의 천적이다."
+      }
+    ],
+    "links": [
+      {
+        "title": "피싱 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/피싱",
+        "note": "피싱의 뜻과 이름이 낚시(fishing)에서 왔다는 설명",
+        "lang": "ko"
+      },
+      {
+        "title": "스미싱 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/스미싱",
+        "note": "문자메시지로 하는 피싱. 청첩장이 왔다며 링크를 눌러 앱을 깔게 하는 수법",
+        "lang": "ko"
+      },
+      {
+        "title": "안랩, 견적 및 발주서 메일 위장 이메일 주의 당부 - 테크42",
+        "url": "https://www.tech42.co.kr/안랩-견적-및-발주서-메일-위장-이메일-주의-당부/",
+        "note": "실존 기업을 사칭한 '설계서 및 견적서 요청' 메일. 첨부를 풀어 실행 파일(.exe)을 열면 감염된다"
+      },
+      {
+        "title": "KISA 인터넷 보호나라",
+        "url": "https://www.boho.or.kr/",
+        "note": "한국인터넷진흥원의 보안 안내 사이트. 스미싱 확인서비스가 있고, 해킹·스팸·개인정보침해 상담은 118"
+      },
+      {
+        "title": "Recognize and Report Phishing - CISA",
+        "url": "https://www.cisa.gov/secure-our-world/recognize-and-report-phishing",
+        "note": "급하게 재촉하기, 개인정보 요구처럼 피싱을 알아보는 신호",
+        "lang": "en"
+      },
+      {
+        "title": "False positives and false negatives",
+        "url": "https://en.wikipedia.org/wiki/False_positives_and_false_negatives",
+        "note": "오탐(거짓 양성)과 미탐(거짓 음성)의 뜻",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "바늘의 열쇠는 먹이가 아니라 덫(허니팟)이다 → 열쇠를 물러 온 물고기부터 고양이가 신고하고, 열쇠를 문 물고기가 없으면 입이 열쇠에 가장 가까운 피싱을 신고한다. 진짜 엄마는 위 줄에서 열쇠에 눈길도 주지 않는다.",
+      "고양이는 몇 초마다 한 마리씩 신고하고 그때마다 한쪽 눈을 뜨지만 진짜 엄마는 끝까지 건드리지 않는다 → 명판의 '천적: 신고 버튼과 고양이'가 그대로 일한다. 오탐은 사람만 낸다.",
+      "가짜 자녀와 진짜 엄마는 보낸 사람 칸에서 갈린다 → 첫 화면에서 둘이 위아래로 나란히 헤엄친다. 가짜는 '모르는 번호'에서 \"엄마 나 폰 깨졌어 이 번호로 문자 줘\", 진짜는 저장된 '엄마'에서 링크도 재촉도 없이 \"밥은 먹고 다니니?\". 실제 자녀 사칭도 휴대폰 액정이 깨졌다며 모르는 번호로 연락해 온다.",
+      "'견적서_최종_진짜최종.pdf.exe' → 파일 이름 뒤에 `최종`, `최종_진짜최종`을 붙여 가며 계속 고쳐 저장하는 직장인 밈에 이중 확장자를 얹었다. 화면에서는 '.pdf.exe'가 둘째 줄로 떨어져 정체가 드러난다. 실존 거래처를 사칭한 견적·발주서 메일에 실행 파일을 숨겨 보내는 수법은 안랩이 여러 번 경고했다.",
+      "`[구청 알림] 쓰레기 무단투기 과태료`와 `저희 결혼합니다♡ 모바일 청첩장` → 지어낸 것이 아니다. 2025년 11월 경찰이 검거한 국내 최대 규모 스미싱 조직(피해 약 120억 원)이 실제로 가짜 청첩장·부고장과 '음식물 쓰레기 분리배출 위반 과태료' 같은 관청 알림으로 꾸민 링크를 보냈고, 누르면 악성 앱이 깔렸다.",
+      "명판의 '분류: 사칭어과 낚시꾼속' → 고등어과·잉어과처럼 '-어과'로 끝나 물고기 과 이름으로 읽히고, '사칭'이 이 물고기의 정체다. 생물 분류는 과가 속보다 큰 단계라 '과 → 속' 순서로 쓴다(고양이과 표범속처럼). 영어판 명판의 학명 `Phishus credentialis`는 로그인 정보(credentials)를 라틴어처럼 바꾼 말이다."
+    ]
+  },
+  "en": {
+    "line": "Phishing messages are drawn literally as fish, swimming in an aquarium under a zoo-style \"Please don't feed the phish\" sign.",
+    "points": [
+      "Fish whose bodies are message bubbles, circling a hook baited with a key → \"phishing\" is simply \"fishing\" respelled the hacker way. Here the scammers are the ones behind glass, on display, and whichever one bites the key gets the cat's one open eye, a jerk of the hook and a \"Reported\" stamp. Take the bait, get caught.",
+      "The brass plaque: \"Phishus credentialis\", diet \"passwords, codes, gift cards\" → a zoo sign describing scams as wildlife. Don't feed them means don't hand over your information.",
+      "The messages on the fish → scams really going around: \"Hi Mom, dropped my phone. New number\", an invoice called `Invoice_FINAL_final.pdf.exe`, an unpaid road toll, and an `npm Support` email asking you to update your 2FA.",
+      "Only Mom's text (\"Coming Sunday? Bring a jacket\") never gets reported. But nobody answers her, so she follows up with \"It's really Mom. Not a scam.\" → with impersonators everywhere, the real Mom has to vouch for herself the way a scammer would (compare \"The CEO (real)\"). Then \"Want my verification code?\" → to prove it, she offers the very thing on the plaque's menu, the code you never share. The easiest catch in the tank is Mom.",
+      "(Only if you tap) Tap a phish and it gets a \"Reported\" tag, blushes and darts away: a caught scammer, embarrassed. Tap Mom and you get \"False positive: real Mom\"; when the tag drops, she asks \"Did you just report me?\""
+    ],
+    "terms": [
+      {
+        "term": "Phishing",
+        "plain": "a scam message pretending to come from someone you trust, to get your password or money."
+      },
+      {
+        "term": "Smishing",
+        "plain": "phishing by text message (SMS)."
+      },
+      {
+        "term": "False positive",
+        "plain": "flagging something harmless as bad, like reporting your actual mom."
+      },
+      {
+        "term": "Double extension",
+        "plain": "a file name like `invoice.pdf.exe`. Windows hides known extensions by default, so the program shows up as `invoice.pdf`."
+      },
+      {
+        "term": "Report button",
+        "plain": "the spam or phishing report option in mail and messaging apps; on the plaque, the fish's natural predator."
+      }
+    ],
+    "links": [
+      {
+        "title": "Phishing - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Phishing",
+        "note": "how phishing works, smishing by text message, and where the \"ph\" spelling comes from",
+        "lang": "en"
+      },
+      {
+        "title": "Recognize and Report Phishing - CISA",
+        "url": "https://www.cisa.gov/secure-our-world/recognize-and-report-phishing",
+        "note": "signs of phishing, such as urgent pressure and requests for personal information"
+      },
+      {
+        "title": "Supply chain attack targets npm, +2 Billion weekly npm downloads exposed - Security Affairs",
+        "url": "https://securityaffairs.com/182030/security/supply-chain-attack-targets-npm-2-billion-weekly-npm-downloads-exposed.html",
+        "note": "the September 2025 fake npm support email that asked a maintainer to update 2FA, and the chalk and debug releases that followed"
+      },
+      {
+        "title": "Masquerading: Double File Extension - MITRE ATT&CK",
+        "url": "https://attack.mitre.org/techniques/T1036/007/",
+        "note": "how attackers hide a program behind a document's extension"
+      },
+      {
+        "title": "Smishing Scam Regarding Debt for Road Toll Services - FBI IC3",
+        "url": "https://www.ic3.gov/PSA/2024/PSA240412",
+        "note": "the FBI's 2024 warning about the unpaid-toll texts"
+      },
+      {
+        "title": "13 arrested for allegedly stealing over 12 billion won as part of Korea's largest 'smishing' ring - Korea JoongAng Daily",
+        "url": "https://www.koreajoongangdaily.com/korea/13-arrested-for-allegedly-stealing-over-12-billion-won-as-part-of-koreas-largest-smishing-ring/12129534",
+        "note": "the fake wedding invitations and municipal fine notices of the Korean version, sent for real"
+      },
+      {
+        "title": "False positives and false negatives - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/False_positives_and_false_negatives",
+        "note": "what a false positive is",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The key on the hook isn't food, it's a honeypot → whichever fish goes for it gets reported first; with nobody on the key, the cat takes the phish whose mouth is nearest it. Mom, up in the top lane, never goes for the key.",
+      "Every few seconds the cat reports a fish, opening one eye each time, but it never touches Mom's text → the plaque's \"Predators: the report button, and the cat\" is literally at work. Only humans make false positives.",
+      "The fake kid and the real Mom differ in the sender line → they swim one above the other from the first second. The scam comes from `Unknown number` (\"Hi Mom, dropped my phone. New number\"), the real one from the saved contact `Mom` with no link and no hurry. Real \"Hi Mum\" scams open exactly like this: a lost or broken phone, a new number.",
+      "`Invoice_FINAL_final.pdf.exe` → a double file extension. Windows hides known extensions by default, so this program shows up as `Invoice_FINAL_final.pdf`. On the fish, `.pdf.exe` drops onto a line of its own.",
+      "`npm Support` / `Update your 2FA or get locked out` → not made up. In September 2025 an email from the lookalike domain npmjs.help told maintainers that accounts with old 2FA would be locked from September 10. One maintainer entered his login and code, and the attackers published crypto-stealing versions of chalk, debug and 16 other packages, downloaded over 2 billion times a week.",
+      "`The CEO (real)` asking for gift cards → no real boss signs as \"(real)\", and the US Federal Trade Commission says only scammers tell you to pay with gift cards.",
+      "(Korean version) Its fish are Korea's everyday scam texts. Koreans often receive wedding invitations and funeral notices as a link in a text message, so fakes blend right in, and a classic Korean scam has someone posing as a prosecutor from the Seoul Central District Prosecutors' Office, saying your name was used in a crime. In November 2025 Korean police arrested a ring that had taken about 12 billion won (about 8 million US dollars) with fake wedding invitations, funeral notices and municipal fine notices (one read \"Fine notice for improper food-waste separation\"); the fish `[구청 알림] 쓰레기 무단투기 과태료`, a district office notice of a fine for illegal trash dumping, is that kind of text. Its office fish is a supplier's quote named `견적서_최종_진짜최종.pdf.exe`, roughly `quote_final_REALLYfinal.pdf.exe`."
+    ]
+  }
+}

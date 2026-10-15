@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Smoke Test | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Chivo+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@500;600&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="dojang dunggeun"></script>
+<style>
+  /* The oldest hardware test there is: power it up and watch for smoke. A purple board
+     (the hobbyist fab's colour), gold pads, white silkscreen with opinions about its parts. */
+  :root {
+    --mat: #34586f;
+    --mat-dot: rgba(255, 255, 255, .07);
+    --mask: #57308c;
+    --mask-deep: #431f73;
+    --copper: #8b60cc;
+    --gold: #d8ae52;
+    --silk: #f4efff;
+    --live: #ffe58f;
+    --stamp: #e2342b;
+    --ink: #10202b;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 1px 1px, var(--mat-dot) 1.2px, transparent 1.6px) 0 0 / 22px 22px,
+      radial-gradient(120% 90% at 40% 30%, #3e6982 0%, var(--mat) 55%, #29475a 100%);
+    color: var(--silk);
+    font-family: 'Archivo', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', system-ui, sans-serif; word-break: keep-all; }
+
+  .bench {
+    container-type: size;
+    /* The stamp lands from 2.4x; on a phone it would poke past the edges and widen the layout
+       viewport (the page zoomed out). The bench is the whole screen, so clipping changes nothing seen. */
+    overflow: clip;
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    gap: 2.4cqh;
+    width: 100vw;
+    height: 100vh;
+    height: 100svh;
+    padding: clamp(14px, 4cqmin, 40px);
+  }
+
+  .head h1 { font-size: clamp(26px, 5.6cqmin, 52px); font-weight: 800; font-stretch: 125%; line-height: 1; letter-spacing: -.01em; }
+  .head p { margin-top: .5em; max-width: 34em; font-size: clamp(13px, 2cqmin, 17px); font-weight: 500; color: #cfe0ea; line-height: 1.4; }
+  .head .kk > font-kku { color: var(--silk); }
+
+  /* The board takes the largest 8:5 box its row has left (the row is whatever the title and the
+     controls don't use), so a taller control row shrinks the board instead of sliding over it. */
+  .table { display: grid; place-items: center; min-height: 0; container-type: size; }
+  .board {
+    position: relative;
+    container-type: inline-size;
+    width: min(100cqw, 100cqh * 1.6);
+    aspect-ratio: 8 / 5;
+  }
+  .board svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 1.4cqi 2.4cqi rgba(0, 0, 0, .35)); }
+
+  /* Silkscreen: placed over the SVG in board percentages so Hangul can be font-kku. */
+  .silk {
+    position: absolute;
+    transform: translate(-50%, 0);
+    color: var(--silk);
+    font-family: 'Chivo Mono', ui-monospace, monospace;
+    font-size: max(10px, 1.75cqi);
+    font-weight: 600;
+    line-height: 1.15;
+    text-align: center;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .silk.left { transform: none; text-align: left; }
+  .silk font-kku { color: var(--silk); }
+  .silk .ref { display: block; opacity: .75; }
+  .silk .joke { display: block; }
+  /* C7's line is the longest; nudged right it clears U1's pins. */
+  .silk.c7 .joke { translate: 1.6cqi 0; }
+  .bom { display: none; }
+
+  .smoke { position: absolute; inset: -30% 0 0 0; width: 100%; height: 130%; pointer-events: none; }
+
+  .stamp {
+    position: absolute;
+    left: 64%;
+    top: -4%;
+    translate: -50% 0;
+    width: max-content;
+    white-space: nowrap;
+    padding: 1.4cqi 2.4cqi 1.6cqi;
+    border: .7cqi solid var(--stamp);
+    border-radius: 1.6cqi;
+    color: var(--stamp);
+    background: rgba(255, 250, 245, .9);
+    text-align: center;
+    rotate: -6deg;
+    box-shadow: 0 .8cqi 2cqi rgba(0, 0, 0, .25);
+    opacity: 0;
+    /* It lands over a corner of C7; a tap there is still for C7. */
+    pointer-events: none;
+  }
+  .stamp .big { display: block; font-size: 5.4cqi; font-weight: 800; font-stretch: 112%; line-height: 1; }
+  .stamp .small { display: block; margin-top: .6cqi; font-size: max(12px, 2.3cqi); font-weight: 600; }
+  /* The small line is set in a regular Korean face: dojang turns to mush at this size. */
+  .lang-ko .stamp .small { margin-top: 1cqi; font-family: 'IBM Plex Sans KR', sans-serif; font-size: max(13px, 2.6cqi); font-weight: 600; }
+  .stamp font-kku { color: var(--stamp); }
+  .stamp .kk { display: block; }
+  /* The window starts at the stamp's outer right edge and clips the smoke left of it, so the
+     smoke leans out from behind the stamp. (Over the top edge it would sit on the title text on a
+     phone.) Hidden (pushed left, behind the stamp) unless animated. */
+  .peek { position: absolute; left: calc(100% + .7cqi); top: -.7cqi; width: max(52px, 15.6cqi); aspect-ratio: 1; overflow: hidden; }
+  .peek svg { display: block; width: 100%; height: 100%; transform: translateX(-105%); }
+  .peek-eyes, .wisp-eyes { transform-box: fill-box; transform-origin: center; }
+
+  .wisp, .wisp-size { transform-box: view-box; transform-origin: 660px 142px; }
+  .c7can { transform-box: view-box; transform-origin: 660px 146px; }
+
+  .c7-hit { position: absolute; left: 77%; top: 18%; width: 11%; aspect-ratio: 1; border-radius: 50%; cursor: pointer; background: transparent; border: 0; }
+
+  .hint { text-align: center; font-size: clamp(12px, 1.8cqmin, 15px); font-weight: 500; line-height: 1.3; color: #b6cfdc; }
+
+  .controls { display: flex; align-items: center; justify-content: center; gap: clamp(14px, 3cqw, 36px); flex-wrap: wrap; }
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  .rocker {
+    position: relative;
+    width: clamp(52px, 9cqmin, 76px);
+    aspect-ratio: 1 / 1.25;
+    border-radius: 10px;
+    background: #1b1d22;
+    box-shadow: inset 0 0 0 3px #0b0c0f, 0 4px 0 #0b0c0f;
+    perspective: 200px;
+  }
+  .rocker i {
+    position: absolute;
+    inset: 9% 12%;
+    border-radius: 7px;
+    background: linear-gradient(#d7372f 0 48%, #a71f19 52% 100%);
+    transform: rotateX(18deg);
+    transform-origin: 50% 50%;
+    transition: transform .18s cubic-bezier(.3, 1.6, .5, 1);
+  }
+  .rocker i::before, .rocker i::after { position: absolute; left: 50%; translate: -50% 0; color: #ffd9d6; font: 700 12px/1 'Chivo Mono', monospace; }
+  .rocker i::before { content: "|"; top: 14%; }
+  .rocker i::after { content: "o"; bottom: 12%; }
+  .switch[aria-pressed="true"] .rocker i { transform: rotateX(-18deg); background: linear-gradient(#a71f19 0 48%, #d7372f 52% 100%); }
+  .switch-label { font-size: clamp(14px, 2.2cqmin, 18px); font-weight: 700; }
+
+  .meter {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 4px clamp(14px, 3cqw, 28px);
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: #182630;
+    box-shadow: inset 0 0 0 1.5px #0e171d;
+    font-family: 'Chivo Mono', ui-monospace, monospace;
+  }
+  .meter dt { font-size: clamp(11px, 1.6cqmin, 13px); color: #8fb3c6; }
+  .lang-ko .meter dt { font-family: 'IBM Plex Sans KR', sans-serif; }
+  .meter dd { margin: 0; white-space: nowrap; font-size: clamp(16px, 2.8cqmin, 24px); font-weight: 600; color: #e9f4fa; font-variant-numeric: tabular-nums; }
+  .meter dd.warm { color: #ffd166; }
+  /* The supply's mode light: CV while all is well, CC when it is holding the current at its limit. */
+  .mode { display: inline-block; margin-left: .4em; padding: 0 .35em; border-radius: 3px; font: 600 max(10px, .85em)/1.35 'Chivo Mono', monospace; font-style: normal; color: #6f8796; box-shadow: inset 0 0 0 1px #3a5262; }
+  .mode.cv { color: #7dff9a; box-shadow: inset 0 0 0 1px #3f7a53; }
+  .mode.cc { color: #fff; background: #e2342b; box-shadow: none; }
+
+  .lit { transition: fill .2s, filter .2s; transform-box: fill-box; transform-origin: center; }
+  .flow { opacity: 0; transition: opacity .3s; }
+  .on .flow { opacity: 1; }
+  .pulse { opacity: 0; }
+
+  /* A narrow stage (the phone home stage is 358×396, still landscape) keeps the controls on one
+     row: no visible switch label, a smaller rocker and meter, and a long smoke reading wraps
+     inside the meter ("C7 needed a moment") instead of pushing the meter onto a second row. */
+  @container (max-width: 520px) {
+    .controls { gap: 12px; flex-wrap: nowrap; }
+    .meter { min-width: 0; }
+    .meter dd[data-s] { white-space: normal; }
+    .rocker { width: 44px; }
+    .switch { gap: 8px; }
+    .switch-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .meter { padding: 6px 10px; gap: 1px 10px; }
+    .meter dd { font-size: 14px; }
+    .meter dt { font-size: 10px; }
+  }
+
+  /* The chip's own markings stay only while they are 10px or more (16 and 14.5 board units). */
+  @container (max-width: 560px) { .chiprev { display: none; } }
+  @container (max-width: 500px) { .chipmark { display: none; } }
+
+  /* A small board (the phone home stage, 358×396, is still landscape): 10–12px jokes on a 300px
+     board run into the parts and off the edge, so like a real board it keeps the reference
+     designators. Both languages keep C7's opinion of itself (the part the smoke comes from, the
+     part the hint says to poke) on two lines between U1 and the edge. The magic smoke grows a
+     little so its eyes still read. */
+  @container (max-width: 420px) {
+    .silk .joke, .silk.boardname { display: none; }
+    .silk .nl { display: block; }
+    .wisp-size { transform: scale(1.3); }
+  }
+  @media (min-aspect-ratio: 3/4) {
+    @container (max-width: 420px) {
+      .silk.c7 { translate: 2.5cqi 0; }
+      .silk.c7 .joke { display: block; translate: none; }
+    }
+  }
+
+  /* Portrait: like a real board, the silkscreen keeps only the reference designators,
+     and the opinions move to the bill of materials underneath. */
+  @media (max-aspect-ratio: 3/4) {
+    .bench { grid-template-rows: auto auto auto 1fr; gap: 12px; }
+    .table { place-items: start center; container-type: normal; }
+    .board { width: 100%; }
+    .silk .joke, .silk.boardname { display: none; }
+    .silk { font-size: 10px; }
+    .bom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px 12px;
+      padding: 0;
+      list-style: none;
+      font-size: 12px;
+      line-height: 1.3;
+      color: #d9e8f0;
+    }
+    .bom b { font-family: 'Chivo Mono', monospace; font-weight: 600; color: #fff; margin-right: .4em; }
+    .controls { justify-content: space-between; gap: 10px; flex-wrap: nowrap; align-self: end; }
+    .rocker { width: 44px; }
+    .switch { gap: 8px; }
+    .meter { padding: 8px 10px; gap: 2px 10px; }
+    .meter dd { font-size: 14px; }
+    .meter dt { font-size: 10px; }
+    .switch-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  }
+  @media (max-aspect-ratio: 3/4) and (max-height: 560px) {
+    .head p { display: none; }
+  }
+  /* Opened on its own, the page keeps clear of the corner links. */
+  html:not(.embedded) .bench { padding-bottom: max(clamp(14px, 4cqmin, 40px), 48px); }
+</style>
+</head>
+<body>
+<main class="bench">
+  <header class="head">
+    <div data-lang="en">
+      <h1>The Smoke Test</h1>
+      <p>Power it up. If nothing burns, it passes. Hardware's oldest test, still undefeated.</p>
+    </div>
+    <div data-lang="ko">
+      <h1 class="kk"><font-kku font="dunggeun" size="clamp(28px, 6cqmin, 54px)">스모크 테스트</font-kku></h1>
+      <p>전원을 넣어 봅니다. 아무것도 안 타면 통과. 하드웨어에서 제일 오래된 시험법이고, 아직 무패예요.</p>
+    </div>
+  </header>
+
+  <section class="table">
+    <div class="board" id="board">
+      <svg viewBox="0 0 800 500" aria-hidden="true">
+        <defs>
+          <linearGradient id="maskfill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#62379a"/>
+            <stop offset="1" stop-color="#4a2479"/>
+          </linearGradient>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3.2" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="soot-fill">
+            <stop offset=".45" stop-color="#1d1020" stop-opacity=".75"/>
+            <stop offset="1" stop-color="#1d1020" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="puffy" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.6"/></filter>
+          <radialGradient id="chipshine" cx=".3" cy=".25" r=".9">
+            <stop offset="0" stop-color="#3a3d45"/>
+            <stop offset="1" stop-color="#17181c"/>
+          </radialGradient>
+        </defs>
+
+        <!-- board -->
+        <rect x="20" y="20" width="760" height="460" rx="24" fill="url(#maskfill)" stroke="#3a1a63" stroke-width="3"/>
+        <g fill="var(--gold)">
+          <circle cx="54" cy="54" r="15"/><circle cx="746" cy="54" r="15"/><circle cx="54" cy="446" r="15"/><circle cx="746" cy="446" r="15"/>
+        </g>
+        <g fill="#34586f">
+          <circle cx="54" cy="54" r="7.5"/><circle cx="746" cy="54" r="7.5"/><circle cx="54" cy="446" r="7.5"/><circle cx="746" cy="446" r="7.5"/>
+        </g>
+
+        <!-- copper under the mask -->
+        <g fill="none" stroke="var(--copper)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".95">
+          <path id="t0" d="M70 250 H150 L210 190 V130 H242"/>
+          <path id="t1" d="M338 130 H410 L455 175 V186"/>
+          <path id="t2" d="M565 215 H604 L632 187"/>
+          <path id="t3" d="M565 292 H598 L622 316 H716"/>
+          <path id="t4" d="M435 292 H408 L372 328 V344"/>
+          <path id="t5" d="M150 250 V318 L172 340 V368"/>
+          <path d="M70 270 H118 L146 298 H226" opacity=".6"/>
+          <path d="M500 315 V352 L520 372 H560" opacity=".6"/>
+          <path d="M600 60 V96 L620 116" opacity=".6"/>
+          <path d="M435 230 H380 L360 210 H300" opacity=".6"/>
+        </g>
+        <g fill="none" stroke="var(--copper)" stroke-width="5" stroke-linecap="round">
+          <path id="d1" d="M612 316 V380"/><path id="d2" d="M647 316 V380"/><path id="d3" d="M682 316 V380"/><path id="d4" d="M716 316 V380"/>
+        </g>
+        <g fill="var(--gold)">
+          <circle cx="300" cy="210" r="6"/><circle cx="226" cy="298" r="6"/><circle cx="560" cy="372" r="6"/><circle cx="620" cy="116" r="6"/>
+        </g>
+
+        <!-- current: moving dashes and single bright pulses on the same routes -->
+        <g class="flow" fill="none" stroke="var(--live)" stroke-width="3" stroke-linecap="round" filter="url(#glow)">
+          <use href="#t0" class="dash"/><use href="#t1" class="dash"/><use href="#t2" class="dash"/><use href="#t3" class="dash"/>
+          <use href="#t4" class="dash"/><use href="#t5" class="dash"/>
+          <use href="#d1" class="dash"/><use href="#d2" class="dash"/><use href="#d3" class="dash"/><use href="#d4" class="dash"/>
+        </g>
+        <g fill="none" stroke="#fffbe8" stroke-width="6" stroke-linecap="round" filter="url(#glow)">
+          <path class="pulse" pathLength="100" d="M70 250 H150 L210 190 V130 H242"/>
+          <path class="pulse" pathLength="100" d="M338 130 H410 L455 175 V186"/>
+          <path class="pulse" pathLength="100" d="M565 215 H604 L632 187"/>
+          <path class="pulse" pathLength="100" d="M565 292 H598 L622 316 H716"/>
+          <path class="pulse" pathLength="100" d="M435 292 H408 L372 328 V344"/>
+          <path class="pulse" pathLength="100" d="M150 250 V318 L172 340 V368"/>
+        </g>
+
+        <!-- power header and its LED -->
+        <rect x="34" y="232" width="34" height="40" rx="4" fill="#1a1a1f"/>
+        <rect x="42" y="238" width="18" height="12" rx="2" fill="var(--gold)"/><rect x="42" y="255" width="18" height="12" rx="2" fill="var(--gold)"/>
+        <circle id="pwr" class="lit" cx="104" cy="214" r="8" fill="#3b2a4a"/>
+
+        <!-- R2 -->
+        <rect x="236" y="120" width="14" height="20" rx="3" fill="var(--gold)"/><rect x="330" y="120" width="14" height="20" rx="3" fill="var(--gold)"/>
+        <rect x="252" y="114" width="76" height="32" rx="14" fill="#e6c79a" stroke="#b38f5c" stroke-width="2"/>
+        <!-- a zero-ohm part: a single black band, i.e. no resistance at all -->
+        <path d="M290 114 V146" stroke="#1c1c1c" stroke-width="9"/>
+        <rect x="226" y="104" width="128" height="52" rx="8" fill="none" stroke="var(--silk)" stroke-width="1.6" opacity=".8"/>
+
+        <!-- U1 -->
+        <g fill="#c7ccd4">
+          <rect x="458" y="174" width="6" height="12"/><rect x="474" y="174" width="6" height="12"/><rect x="490" y="174" width="6" height="12"/><rect x="506" y="174" width="6" height="12"/><rect x="522" y="174" width="6" height="12"/><rect x="538" y="174" width="6" height="12"/>
+          <rect x="458" y="314" width="6" height="12"/><rect x="474" y="314" width="6" height="12"/><rect x="490" y="314" width="6" height="12"/><rect x="506" y="314" width="6" height="12"/><rect x="522" y="314" width="6" height="12"/><rect x="538" y="314" width="6" height="12"/>
+          <rect x="424" y="198" width="12" height="6"/><rect x="424" y="214" width="12" height="6"/><rect x="424" y="230" width="12" height="6"/><rect x="424" y="246" width="12" height="6"/><rect x="424" y="262" width="12" height="6"/><rect x="424" y="278" width="12" height="6"/><rect x="424" y="294" width="12" height="6"/>
+          <rect x="564" y="198" width="12" height="6"/><rect x="564" y="214" width="12" height="6"/><rect x="564" y="230" width="12" height="6"/><rect x="564" y="246" width="12" height="6"/><rect x="564" y="262" width="12" height="6"/><rect x="564" y="278" width="12" height="6"/><rect x="564" y="294" width="12" height="6"/>
+        </g>
+        <rect x="436" y="186" width="128" height="128" rx="6" fill="url(#chipshine)"/>
+        <circle cx="452" cy="202" r="5" fill="#2a2c33"/>
+        <text class="chipmark" x="500" y="246" text-anchor="middle" font-family="Chivo Mono, monospace" font-size="16" font-weight="600" fill="#9aa1ad">TTY-0042</text>
+        <text class="chiprev" x="500" y="270" text-anchor="middle" font-family="Chivo Mono, monospace" font-size="14.5" fill="#6f7682">rev B 2026</text>
+
+        <!-- C7. The silkscreen "+" and the can's minus stripe sit on the same side:
+             it went in backwards, which is where the smoke comes from. -->
+        <circle id="soot" cx="664" cy="138" r="70" fill="url(#soot-fill)" opacity="0"/>
+        <circle cx="660" cy="146" r="44" fill="none" stroke="var(--silk)" stroke-width="1.6" opacity=".8"/>
+        <path d="M703 99 V115 M695 107 H711" stroke="var(--silk)" stroke-width="2.4" stroke-linecap="round" opacity=".85"/>
+        <g class="c7can">
+          <circle id="c7" cx="660" cy="146" r="38" fill="#2b4a9b" stroke="#1a2f6b" stroke-width="3"/>
+          <path d="M660 108 A38 38 0 0 1 698 146 L686 146 A26 26 0 0 0 660 120 Z" fill="#cfd8ef" opacity=".85"/>
+          <path d="M676 120 L683 127" stroke="#2b4a9b" stroke-width="3" stroke-linecap="round"/>
+          <path d="M646 132 L674 160 M674 132 L646 160 M660 126 V166 M640 146 H680" stroke="#9fb2df" stroke-width="2.4"/>
+        </g>
+        <!-- The magic smoke, peeking out early (the 3-second gag): it rises out of C7's vent, looks
+             left and right, and is sucked straight back in. Hidden unless animated. The outer group
+             only sizes it up on a small board. -->
+        <g class="wisp-size">
+          <g class="wisp" opacity="0">
+            <g fill="#eceef4" filter="url(#puffy)">
+              <circle cx="659" cy="138" r="6.5"/><circle cx="665" cy="123" r="9"/><circle cx="657" cy="105" r="12"/>
+              <circle cx="647" cy="80" r="16"/><circle cx="677" cy="80" r="15"/><circle cx="661" cy="64" r="18"/><circle cx="662" cy="86" r="16"/>
+            </g>
+            <g class="wisp-eyes" fill="#2a1f3d"><ellipse cx="653" cy="76" rx="3.6" ry="5"/><ellipse cx="670" cy="76" rx="3.6" ry="5"/></g>
+          </g>
+        </g>
+
+        <!-- FC1: three tubes meeting in the middle -->
+        <rect x="232" y="282" width="140" height="124" rx="10" fill="#2a2c33" stroke="#17181c" stroke-width="3"/>
+        <g stroke="#555b66" stroke-width="12" stroke-linecap="round"><path d="M262 306 L302 344"/><path d="M342 306 L302 344"/><path d="M302 344 V388"/></g>
+        <g id="flux" stroke="#fff7d1" stroke-width="5" stroke-linecap="round" opacity="0" filter="url(#glow)"><path d="M262 306 L302 344"/><path d="M342 306 L302 344"/><path d="M302 344 V388"/></g>
+
+        <!-- J1 with its jumper cap -->
+        <rect x="128" y="368" width="58" height="26" rx="4" fill="#15161a"/>
+        <rect x="136" y="372" width="16" height="18" fill="var(--gold)"/><rect x="162" y="372" width="16" height="18" fill="var(--gold)"/>
+        <rect id="cap" x="132" y="364" width="50" height="22" rx="4" fill="#2b2d33" stroke="#0e0f12" stroke-width="2"/>
+
+        <!-- LEDs -->
+        <g>
+          <rect x="600" y="380" width="24" height="28" rx="5" fill="#d9d9e0"/><circle id="L1" class="lit" cx="612" cy="394" r="9" fill="#3b2a4a"/>
+          <rect x="635" y="380" width="24" height="28" rx="5" fill="#d9d9e0"/><circle id="L2" class="lit" cx="647" cy="394" r="9" fill="#3b2a4a"/>
+          <rect x="670" y="380" width="24" height="28" rx="5" fill="#d9d9e0"/><circle id="L3" class="lit" cx="682" cy="394" r="9" fill="#3b2a4a"/>
+          <rect x="704" y="380" width="24" height="28" rx="5" fill="#d9d9e0"/><circle id="L4" class="lit" cx="716" cy="394" r="9" fill="#3b2a4a"/>
+        </g>
+      </svg>
+
+      <!-- silkscreen -->
+      <p class="silk" style="left:36.25%; top:32.5%">
+        <span data-lang="en"><span class="ref">R2</span><span class="joke">resistor of patience, 0 Ω</span></span>
+        <span data-lang="ko"><span class="ref">R2</span><span class="joke"><font-kku font="dunggeun" size="max(12px, 2.25cqi)">인내 저항 0Ω</font-kku></span></span>
+      </p>
+      <p class="silk c7" style="left:82.5%; top:39.5%">
+        <span data-lang="en"><span class="ref">C7</span><span class="joke">capacitor <span class="nl">(emotional)</span></span></span>
+        <span data-lang="ko"><span class="ref">C7</span><span class="joke"><font-kku font="dunggeun" size="max(12px, 2.25cqi)">감성</font-kku><br><font-kku font="dunggeun" size="max(12px, 2.25cqi)">콘덴서</font-kku></span></span>
+      </p>
+      <p class="silk" style="left:62.5%; top:67.6%">
+        <span data-lang="en"><span class="ref">U1</span><span class="joke">chip on its shoulder</span></span>
+        <span data-lang="ko"><span class="ref">U1</span><span class="joke"><font-kku font="dunggeun" size="max(12px, 2.25cqi)">어깨에 힘 들어간 칩</font-kku></span></span>
+      </p>
+      <p class="silk" style="left:37.75%; top:83%">
+        <span data-lang="en"><span class="ref">FC1</span><span class="joke">flux capacitor, 1.21 GW</span></span>
+        <span data-lang="ko"><span class="ref">FC1</span><span class="joke"><font-kku font="dunggeun" size="max(12px, 2.25cqi)">플럭스 콘덴서</font-kku><br><font-kku font="dunggeun" size="max(12px, 2.25cqi)">1.21기가와트</font-kku></span></span>
+      </p>
+      <p class="silk left" style="left:9%; top:57%">
+        <span data-lang="en"><span class="ref">J1</span><span class="joke">do not touch<br>(touched)</span></span>
+        <span data-lang="ko"><span class="ref">J1</span><span class="joke"><font-kku font="dunggeun" size="max(12px, 2.25cqi)">만지지 마시오</font-kku><br><font-kku font="dunggeun" size="max(12px, 2.25cqi)">(만짐)</font-kku></span></span>
+      </p>
+      <p class="silk" style="left:83%; top:84.5%">
+        <span data-lang="en"><span class="ref">D1–D4</span><span class="joke">morale</span></span>
+        <span data-lang="ko"><span class="ref">D1–D4</span><span class="joke"><font-kku font="dunggeun" size="max(12px, 2.25cqi)">사기 충천</font-kku></span></span>
+      </p>
+      <p class="silk left boardname" style="left:11%; top:6.5%">
+        <span data-lang="en">soldered with love and flux</span>
+        <span data-lang="ko"><font-kku font="dunggeun" size="max(12px, 2.25cqi)">사랑과 플럭스로 납땜함</font-kku></span>
+      </p>
+
+      <canvas class="smoke" aria-hidden="true"></canvas>
+      <button class="c7-hit" type="button" aria-label="C7" aria-describedby="hint"></button>
+
+      <div class="stamp" aria-live="polite">
+        <!-- The smoke that got away, back to read the verdict (the tag beat). It sits in a window
+             that starts at the stamp's right edge, so it seems to lean out from behind the stamp. -->
+        <span class="peek" aria-hidden="true">
+          <svg viewBox="610 30 104 104">
+            <defs><filter id="puffy-peek" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.6"/></filter></defs>
+            <g fill="#eceef4" filter="url(#puffy-peek)">
+              <circle cx="657" cy="105" r="12"/><circle cx="662" cy="86" r="16"/>
+              <circle cx="647" cy="80" r="16"/><circle cx="677" cy="80" r="15"/><circle cx="661" cy="64" r="18"/>
+            </g>
+            <g class="peek-eyes" fill="#2a1f3d"><ellipse cx="653" cy="76" rx="3.6" ry="5"/><ellipse cx="670" cy="76" rx="3.6" ry="5"/></g>
+          </svg>
+        </span>
+        <div data-lang="en"><span class="big">Test passed.</span><span class="small">The smoke was decorative.</span></div>
+        <div data-lang="ko">
+          <span class="kk"><font-kku font="dojang" size="8.4cqi">통과</font-kku></span>
+          <span class="small">연기는 장식이었습니다</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <ul class="bom" data-lang="en">
+    <li><b>R2</b>resistor of patience, 0 Ω</li>
+    <li><b>C7</b>capacitor (emotional)</li>
+    <li><b>U1</b>chip on its shoulder</li>
+    <li><b>FC1</b>flux capacitor, 1.21 GW</li>
+    <li><b>J1</b>do not touch (touched)</li>
+    <li><b>D1–D4</b>morale</li>
+  </ul>
+  <ul class="bom" data-lang="ko">
+    <li><b>R2</b>인내 저항 0Ω</li>
+    <li><b>C7</b>감성 콘덴서</li>
+    <li><b>U1</b>어깨에 힘 들어간 칩</li>
+    <li><b>FC1</b>플럭스 콘덴서 1.21GW</li>
+    <li><b>J1</b>만지지 마시오 (만짐)</li>
+    <li><b>D1–D4</b>사기 충천</li>
+  </ul>
+
+  <footer class="controls">
+    <button class="switch" type="button" aria-pressed="false">
+      <span class="rocker"><i></i></span>
+      <span class="switch-label" data-lang="en">Power</span>
+      <span class="switch-label" data-lang="ko">전원</span>
+    </button>
+    <dl class="meter">
+      <div><dt data-lang="en">Voltage</dt><dt data-lang="ko">전압</dt><dd data-v>0.00 V</dd></div>
+      <div><dt data-lang="en">Current <i class="mode">OFF</i></dt><dt data-lang="ko">전류 <i class="mode">OFF</i></dt><dd data-a>0.00 A</dd></div>
+      <div><dt data-lang="en">Smoke</dt><dt data-lang="ko">연기</dt><dd data-s>–</dd></div>
+    </dl>
+  </footer>
+  <p class="hint" id="hint">
+    <span data-lang="en">Flip the switch, or poke C7.</span>
+    <span data-lang="ko">스위치를 껐다 켜 보거나, C7을 콕 눌러 보세요.</span>
+  </p>
+</main>
+
+<script>
+(() => {
+  const T = {
+    none: { en: 'none', ko: '없음' },
+    watching: { en: 'watching…', ko: '눈치 보는 중' },
+    puff: { en: '1 small puff', ko: '한 모금' },
+    emotional: { en: 'C7 needed a moment', ko: 'C7이 잠깐 울컥함' },
+    quit: { en: 'trying to quit', ko: '금연 중' },
+  };
+  const board = document.getElementById('board');
+  const svg = board.querySelector('svg');
+  const sw = document.querySelector('.switch');
+  const stamp = document.querySelector('.stamp');
+  const pulses = [...svg.querySelectorAll('.pulse')];
+  const dashes = [...svg.querySelectorAll('.dash')];
+  const leds = ['L1', 'L2', 'L3', 'L4'].map((id) => document.getElementById(id));
+  const ledOn = ['#ff6b6b', '#ffd34d', '#5be37a', '#4db6ff'];
+  const pwr = document.getElementById('pwr');
+  const flux = document.getElementById('flux');
+  const vOut = document.querySelector('[data-v]');
+  const aOut = document.querySelector('[data-a]');
+  const sOut = document.querySelector('[data-s]');
+  const modeOut = document.querySelector('.mode');
+  const soot = document.getElementById('soot');
+  const wisp = svg.querySelector('.wisp');
+  const wispEyes = svg.querySelector('.wisp-eyes');
+  const c7can = svg.querySelector('.c7can');
+  const peek = stamp.querySelector('.peek svg');
+  const peekEyes = stamp.querySelector('.peek-eyes');
+  let timers = [];
+  let anims = [];
+  const later = (ms, fn) => timers.push(setTimeout(fn, ms));
+  // When each route's pulse sets off (t0 header→R2, t1 R2→U1, t2 U1→C7, t3 U1→LEDs, t4 U1→FC1, t5 header→J1).
+  const PULSE = [0, 190, 380, 380, 380, 80];
+
+  dashes.forEach((d) => { d.setAttribute('stroke-dasharray', '7 26'); });
+
+  function light(el, color) {
+    el.setAttribute('fill', color);
+    el.style.filter = color ? `drop-shadow(0 0 6px ${color}) drop-shadow(0 0 14px ${color})` : '';
+  }
+
+  function count(el, to, unit, ms) {
+    const start = performance.now();
+    const tick = (now) => {
+      const k = Math.min(1, (now - start) / ms);
+      el.textContent = (to * (1 - Math.pow(1 - k, 3))).toFixed(2) + ' ' + unit;
+      if (k < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  /* ---- smoke: a few soft particles from C7 ---- */
+  const canvas = document.querySelector('.smoke');
+  const ctx = canvas.getContext('2d');
+  let puffs = [];
+  let raf = 0;
+  function size() {
+    const r = canvas.getBoundingClientRect();
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    canvas.width = r.width * dpr;
+    canvas.height = r.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function puff() {
+    const r = canvas.getBoundingClientRect();
+    // C7 sits at (660, 146) of the 800×500 board; the canvas extends 30% above the board.
+    const x = r.width * (660 / 800);
+    const y = r.height * ((146 / 500) * (1 / 1.3) + 0.3 / 1.3);
+    const unit = r.width / 800;
+    for (let i = 0; i < 22; i++) {
+      puffs.push({
+        x: x + (Math.random() - .5) * 18 * unit, y: y - 10 * unit,
+        vx: (Math.random() - .5) * .35 * unit, vy: -(0.55 + Math.random() * .6) * unit,
+        r: (6 + Math.random() * 8) * unit, grow: (0.12 + Math.random() * .12) * unit,
+        life: 0, max: 90 + Math.random() * 60, delay: i * 3, sway: Math.random() * 6.28,
+      });
+    }
+    if (!raf) raf = requestAnimationFrame(draw);
+  }
+  function draw() {
+    const r = canvas.getBoundingClientRect();
+    ctx.clearRect(0, 0, r.width, r.height);
+    puffs = puffs.filter((p) => p.life < p.max + p.delay);
+    puffs.forEach((p) => {
+      p.life += 1;
+      if (p.life < p.delay) return;
+      const t = (p.life - p.delay) / p.max;
+      p.x += p.vx + Math.sin(p.sway + t * 6) * .25;
+      p.y += p.vy;
+      p.r += p.grow;
+      const a = Math.sin(Math.PI * Math.min(1, t)) * .62;
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+      g.addColorStop(0, `rgba(228, 230, 236, ${a})`);
+      g.addColorStop(1, 'rgba(228, 230, 236, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    raf = puffs.length ? requestAnimationFrame(draw) : 0;
+  }
+  addEventListener('resize', size);
+  size();
+
+  /* ---- power ---- */
+  function mode(m) {
+    modeOut.className = 'mode' + (m ? ' ' + m : '');
+    modeOut.textContent = m === 'cc' ? 'CC' : m === 'cv' ? 'CV' : 'OFF';
+  }
+
+  // The bench supply when C7 smokes: the current slams into its 0.50 A limit (CC), the voltage
+  // sags and the LEDs ("morale") dim, then it all settles back as if nothing happened. The puff
+  // and a poke at C7 both use this, so the numbers always agree with the CC light.
+  let sagUntil = 0;
+  function sag(ms) {
+    mode('cc');
+    vOut.textContent = '2.71 V'; aOut.textContent = '0.50 A';
+    leds.forEach((l) => { l.style.opacity = .5; });
+    sagUntil = Math.max(sagUntil, performance.now() + ms);
+    later(ms, () => {
+      if (performance.now() < sagUntil - 20) return;
+      mode('cv');
+      vOut.textContent = '3.30 V'; aOut.textContent = '0.42 A';
+      leds.forEach((l) => { l.style.opacity = ''; });
+    });
+  }
+
+  function reset() {
+    timers.forEach(clearTimeout); timers = [];
+    anims.forEach((a) => a.cancel()); anims = [];
+    puffs = [];
+    const r = canvas.getBoundingClientRect();
+    ctx.clearRect(0, 0, r.width, r.height);
+    board.classList.remove('on');
+    sw.setAttribute('aria-pressed', 'false');
+    [pwr, ...leds].forEach((l) => light(l, '#3b2a4a'));
+    flux.setAttribute('opacity', '0');
+    // The scorch mark stays: switching off does not unburn a board.
+    sagUntil = 0;
+    leds.forEach((l) => { l.style.opacity = ''; });
+    pulses.forEach((p) => { p.style.opacity = 0; });
+    stamp.style.opacity = 0;
+    vOut.textContent = '0.00 V'; aOut.textContent = '0.00 A'; sOut.textContent = '–'; sOut.classList.remove('warm');
+    mode(null);
+  }
+
+  function finalState() {
+    board.classList.add('on');
+    sw.setAttribute('aria-pressed', 'true');
+    light(pwr, '#7dff9a');
+    leds.forEach((l, i) => light(l, ledOn[i]));
+    flux.setAttribute('opacity', '1');
+    soot.setAttribute('opacity', '1');
+    vOut.textContent = '3.30 V'; aOut.textContent = '0.42 A';
+    mode('cv');
+    sOut.textContent = TTY.t(T.puff); sOut.classList.add('warm');
+    stamp.style.opacity = 1;
+  }
+
+  function powerOn() {
+    reset();
+    if (TTY.reduce) return finalState();
+    sw.setAttribute('aria-pressed', 'true');
+    later(120, () => {
+      board.classList.add('on');
+      light(pwr, '#7dff9a');
+      count(vOut, 3.3, 'V', 600);
+      count(aOut, 0.42, 'A', 900);
+      mode('cv');
+      sOut.textContent = TTY.t(T.none);
+      dashes.forEach((d) => anims.push(d.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: -66 }], { duration: 900, iterations: Infinity })));
+      // One bright pulse races down each route, in the order the current would arrive: the one
+      // to C7 gets there just as the smoke peeks out.
+      pulses.forEach((p, i) => {
+        p.style.opacity = 1;
+        p.setAttribute('stroke-dasharray', '6 94');
+        anims.push(p.animate([{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }], { duration: 400, delay: PULSE[i], easing: 'cubic-bezier(.4, 0, .6, 1)', fill: 'both' }));
+        later(PULSE[i] + 440, () => { p.style.opacity = 0; });
+      });
+    });
+    // The LEDs and FC1 come on as the current reaches them and are settled before the smoke
+    // starts looking around (2.38 s), so nothing else moves during the 3-second gag. FC1 breathes
+    // slowly instead of strobing.
+    leds.forEach((l, i) => later(920 + i * 110, () => {
+      light(l, ledOn[i]);
+      anims.push(l.animate([{ transform: 'scale(1.3)' }, { transform: 'scale(1)' }], { duration: 240, easing: 'ease-out' }));
+    }));
+    later(920, () => {
+      flux.setAttribute('opacity', '1');
+      anims.push(flux.animate([{ opacity: .45 }, { opacity: 1 }], { duration: 600, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' }));
+    });
+    // The 3-second gag: the magic smoke peeks out of C7, looks around, and is sucked back in
+    // (C7 gulps). The meter still says "none".
+    // It stays out about two seconds: up (0.34 s), a look ahead, a long look left, a long look
+    // right, back to the middle, gone (at 2.1 s of 2.6). Head ±10° and eyes ±7 move the eyes
+    // about 10 px on the 358×396 phone stage.
+    later(900, () => {
+      anims.push(wisp.animate([
+        { opacity: 0, transform: 'scale(.3, 0)' },
+        { opacity: 1, transform: 'scale(1.06, 1.08)', offset: .13, easing: 'ease-out' },
+        { opacity: 1, transform: 'scale(1)', offset: .19 },
+        { opacity: 1, transform: 'rotate(0deg)', offset: .26 },
+        { opacity: 1, transform: 'rotate(-10deg)', offset: .34 },
+        { opacity: 1, transform: 'rotate(-10deg)', offset: .45 },
+        { opacity: 1, transform: 'rotate(10deg)', offset: .56 },
+        { opacity: 1, transform: 'rotate(10deg)', offset: .67 },
+        { opacity: 1, transform: 'rotate(0deg)', offset: .73, easing: 'cubic-bezier(.7, 0, 1, .6)' },
+        { opacity: 1, transform: 'scale(.35, 0)', offset: .81 },
+        { opacity: 0, transform: 'scale(.35, 0)' },
+      ], { duration: 2600 }));
+      anims.push(wispEyes.animate([
+        { transform: 'none' }, { transform: 'none', offset: .26 }, { transform: 'translateX(-7px)', offset: .34 },
+        { transform: 'translateX(-7px)', offset: .45 }, { transform: 'translateX(7px)', offset: .56 },
+        { transform: 'translateX(7px)', offset: .67 }, { transform: 'none', offset: .72 }, { transform: 'none' },
+      ], { duration: 2600 }));
+      anims.push(c7can.animate([
+        { transform: 'none' }, { transform: 'scale(1.13)', offset: .35 }, { transform: 'scale(.95)', offset: .7 }, { transform: 'none' },
+      ], { duration: 300, delay: 2100 }));
+    });
+    // The meter catches on as the smoke ducks back in.
+    later(2900, () => { sOut.textContent = TTY.t(T.watching); });
+    // The escape: this time the same smoke does not go back in. It pops out wide-eyed and bolts
+    // up and away (gone by 1.2 s) with the particles after it; the supply drops into CC.
+    later(3900, () => {
+      puff();
+      sag(800);
+      anims.push(wisp.animate([
+        { opacity: 0, transform: 'translateY(0) scale(.3, 0)' },
+        { opacity: 1, transform: 'translateY(0) scale(1.06, 1.1)', offset: .14, easing: 'ease-out' },
+        { opacity: 1, transform: 'translateY(0) scale(1, 1)', offset: .24, easing: 'cubic-bezier(.5, 0, .9, .6)' },
+        { opacity: .9, transform: 'translateY(-60px) scale(1.3, 1.3)', offset: .7 },
+        { opacity: 0, transform: 'translateY(-95px) scale(1.5, 1.5)' },
+      ], { duration: 1200 }));
+      anims.push(wispEyes.animate([
+        { transform: 'none' }, { transform: 'translateY(-3px) scale(1.25)', offset: .16 }, { transform: 'translateY(-3px) scale(1.25)' },
+      ], { duration: 1200 }));
+      anims.push(c7can.animate([{ transform: 'none' }, { transform: 'scale(.9)', offset: .3 }, { transform: 'none' }], { duration: 300 }));
+      // A scorch mark is left behind, for good: the attribute holds it once the fade is cancelled.
+      if (soot.getAttribute('opacity') !== '1') {
+        anims.push(soot.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 1600 }));
+        soot.setAttribute('opacity', '1');
+      }
+    });
+    later(4500, () => { sOut.textContent = TTY.t(T.puff); sOut.classList.add('warm'); });
+    later(5500, () => {
+      stamp.style.opacity = 1;
+      anims.push(stamp.animate([
+        { transform: 'scale(2.4)', opacity: 0 },
+        { transform: 'scale(.94)', opacity: 1, offset: .7 },
+        { transform: 'scale(1)', opacity: 1 },
+      ], { duration: 380, easing: 'cubic-bezier(.5, 0, .9, .4)' }));
+      anims.push(board.animate([{ transform: 'none' }, { transform: 'translate(0, .5%)' }, { transform: 'none' }], { duration: 220, delay: 300 }));
+    });
+    // The tag: two seconds after the stamp, the smoke that got away leans out from behind it,
+    // reads the verdict, looks pleased with itself (a squint and a hop) and slips back.
+    later(7700, () => {
+      anims.push(peek.animate([
+        { transform: 'translate(-105%, 0)' },
+        { transform: 'translate(-21%, 0)', offset: .15, easing: 'ease-out' },
+        { transform: 'translate(-26%, 0)', offset: .2 },
+        { transform: 'translate(-26%, 0)', offset: .6 },
+        { transform: 'translate(-26%, -7%)', offset: .66 },
+        { transform: 'translate(-26%, 0)', offset: .72 },
+        { transform: 'translate(-26%, 0)', offset: .84, easing: 'cubic-bezier(.6, 0, 1, .6)' },
+        { transform: 'translate(-105%, 0)', offset: .96 },
+        { transform: 'translate(-105%, 0)' },
+      ], { duration: 2400 }));
+      anims.push(peekEyes.animate([
+        { transform: 'none' },
+        { transform: 'none', offset: .2 },
+        { transform: 'translate(-5px, 3px)', offset: .27 },
+        { transform: 'translate(-5px, 3px)', offset: .56 },
+        { transform: 'translate(-1px, 1px) scale(1.15, .22)', offset: .62 },
+        { transform: 'translate(-1px, 1px) scale(1.15, .22)' },
+      ], { duration: 2400 }));
+    });
+  }
+
+  // A real switch: off stays off (dark board, meters at zero); on runs the test again.
+  // Left off for a while, the board is no longer smoking.
+  sw.addEventListener('click', () => {
+    if (sw.getAttribute('aria-pressed') === 'true') {
+      reset();
+      later(2600, () => { sOut.textContent = TTY.t(T.quit); });
+    } else powerOn();
+  });
+  document.querySelector('.c7-hit').addEventListener('click', () => {
+    if (!board.classList.contains('on')) return;
+    if (!TTY.reduce) puff();
+    sOut.textContent = TTY.t(T.emotional);
+    sag(600);
+  });
+
+  TTY.onShow(() => setTimeout(powerOn, TTY.reduce ? 0 : 600));
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(() => { size(); TTY.ready(); });
+})();
+</script>
+</body>
+</html>

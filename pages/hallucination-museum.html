@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Museum of Confident Answers | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Work+Sans:wght@400;500;600&family=Permanent+Marker&family=Gowun+Batang:wght@400;700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="geumbak dunggeun pilgi"></script>
+<style>
+  /* A gallery of famous things that never happened, each labelled with total confidence.
+     A night guard walks the wall with a fact-checking torch; every placard he lights gets a
+     "citation needed" sticker, and every confidence meter flinches and stays at 100%. Then he
+     checks the last one again, and it goes up. */
+  :root {
+    --wall: #5a1f2a;
+    --wall-deep: #45161f;
+    --molding: #7a3240;
+    --gold: #d6b05a;
+    --gold-deep: #9c7a2c;
+    --mat: #efe9dc;
+    --card: #fbf8f1;
+    --ink: #221a17;
+    --muted: #6d625b;
+    --floor: #6a4a32;
+    --floor-2: #5a3e2a;
+    --sticker: #ffe14d;
+    --uniform: #22304f;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body { overflow: hidden; background: var(--wall-deep); color: var(--ink); font-family: 'Work Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .lang-ko body { font-family: 'Gowun Batang', 'Work Sans', serif; word-break: keep-all; }
+
+  .museum {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+    /* Not even focus may scroll the wall sideways: the camera moves it. */
+    overflow: clip;
+    container-type: size;
+    background: var(--wall);
+  }
+  /* Sizes hang off --slot, one exhibit's width. It is set below the container so the
+     portrait query can change it. */
+  .wall, .track, .sign, .browse { --slot: min(31cqw, 41cqh); }
+  .wall {
+    --line: 72cqh;
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(transparent 0 var(--line), var(--wall-deep) var(--line) calc(var(--line) + 2cqh), transparent 0),
+      repeating-linear-gradient(90deg, transparent 0 calc(var(--slot) - 2px), rgba(0, 0, 0, .08) calc(var(--slot) - 2px) var(--slot)),
+      linear-gradient(var(--molding) 0 1.2cqh, var(--wall) 1.2cqh 100%);
+  }
+  .floor {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 26cqh;
+    background:
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, .12) 0 2px, transparent 2px 9cqh),
+      linear-gradient(var(--floor), var(--floor-2));
+    box-shadow: inset 0 6px 14px rgba(0, 0, 0, .35);
+  }
+  .dim { position: absolute; inset: 0; background: #0d0507; pointer-events: none; opacity: 0; z-index: 9; }
+
+  .sign { position: absolute; left: 5cqw; top: 4.5cqh; z-index: 2; max-width: 90cqw; color: var(--gold); }
+  .sign h1 { font-family: 'Bodoni Moda', Georgia, serif; font-size: min(3.7cqw, 5.4cqh); font-weight: 700; line-height: 1; letter-spacing: .01em; }
+  .sign h1 i { font-weight: 500; }
+  .sign p { margin-top: .8cqh; color: #e9cfa0; font-size: min(1.6cqw, 2.2cqh); }
+  /* The visitor's line in the museum's signage: shown once the guard has been round. */
+  .sign .hint { margin-top: .6cqh; color: rgba(243, 231, 181, .78); font-size: max(11px, min(1.25cqw, 1.8cqh)); line-height: 1.3; opacity: 0; transition: opacity .6s; }
+  .sign .hint.on { opacity: 1; }
+
+  .track { position: absolute; left: 0; top: 0; height: 100%; display: flex; padding-left: 4cqw; will-change: transform; }
+  /* --top: where the lamps hang. Below the sign however tall it is (--sign-b, measured). */
+  .track { --top: max(17cqh, calc(var(--sign-b, 0px) + 6px)); }
+  .exhibit { position: relative; width: var(--slot); flex: none; }
+
+  .lamp { position: absolute; left: 50%; top: var(--top); width: calc(var(--slot) * .26); height: calc(var(--slot) * .05); translate: -50% 0; border-radius: 0 0 40% 40%; background: linear-gradient(#a8853a, #6f5622); }
+  .cone { position: absolute; left: 50%; top: calc(var(--top) + var(--slot) * .05); width: calc(var(--slot) * .95); height: calc(var(--slot) * .72); translate: -50% 0; clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%); background: linear-gradient(rgba(255, 238, 190, .32), rgba(255, 238, 190, 0)); pointer-events: none; }
+
+  .frame {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--top) + 4cqh + var(--slot) * .02);
+    width: calc(var(--slot) * .78);
+    aspect-ratio: 4 / 3;
+    translate: -50% 0;
+    padding: calc(var(--slot) * .035);
+    background: linear-gradient(135deg, #f3d98d, var(--gold) 30%, var(--gold-deep) 70%, #e8c870);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .45), inset 0 0 0 2px rgba(0, 0, 0, .25);
+  }
+  .frame .mat { width: 100%; height: 100%; padding: calc(var(--slot) * .03); background: var(--mat); box-shadow: inset 0 2px 6px rgba(0, 0, 0, .25); }
+  .frame svg { display: block; width: 100%; height: 100%; }
+
+  .placard {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--top) + 4cqh + var(--slot) * .02 + var(--slot) * .78 * .75 + var(--slot) * .06);
+    width: calc(var(--slot) * .8);
+    translate: -50% 0;
+    padding: calc(var(--slot) * .035) calc(var(--slot) * .045);
+    background: var(--card);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .35);
+    font-size: calc(var(--slot) * .04);
+    line-height: 1.35;
+    cursor: pointer;
+  }
+  .p-title { font-family: 'Bodoni Moda', Georgia, serif; font-size: 1.32em; font-weight: 700; line-height: 1.12; }
+  .p-title > font-kku { color: var(--ink); }
+  .lang-ko .p-title { line-height: 1.25; }
+  .p-meta { margin-top: .35em; color: var(--muted); font-size: max(10px, .9em); font-style: italic; }
+  .lang-ko .p-meta { font-style: normal; }
+  .p-desc { margin-top: .45em; }
+  .p-meta, .p-desc { text-wrap: pretty; }
+  /* The meter carries the joke, so it never drops under 10 px (phones) and its number is the
+     biggest thing on the line. */
+  .conf { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .5em; margin-top: .7em; font-size: max(10px, .82em); font-weight: 600; color: #3d3430; }
+  .conf .bar { height: .62em; border-radius: 999px; background: #e4dccb; overflow: hidden; }
+  .conf .bar i { display: block; height: 100%; width: 100%; border-radius: inherit; background: linear-gradient(90deg, #4e9a52, #7cc36a); transform-origin: 0 50%; }
+  /* Past 100% the bar pokes out of its track, under the number. */
+  .sure .conf .bar { overflow: visible; }
+  .sure .conf .bar i { background: linear-gradient(90deg, #4e9a52, #7cc36a 80%, #b5e05a); }
+  .conf .pct { position: relative; z-index: 1; min-width: 2.4em; text-align: right; font-size: 1.15em; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .sure .conf .pct { color: #2f7d3a; }
+  /* The moment of doubt: three points down, in red, for a third of a second. */
+  .conf .pct.dip { color: #b0402c; }
+
+  .sticker {
+    position: absolute;
+    right: -6%;
+    top: -18%;
+    padding: .3em .6em;
+    background: var(--sticker);
+    color: #2a2a2a;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.05em;
+    line-height: 1.1;
+    rotate: 7deg;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, .3);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .sticker > font-kku { color: #2a2a2a; }
+
+  /* The guard */
+  .guard { position: absolute; left: 0; bottom: 5cqh; width: calc(var(--slot) * .3); z-index: 4; transform-origin: 50% 100%; }
+  .guard svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .guard.walk .body-bob { animation: bob .5s ease-in-out infinite; }
+  .guard.walk .leg-a { animation: step .5s ease-in-out infinite; }
+  .guard.walk .leg-b { animation: step .5s ease-in-out infinite reverse; }
+  @keyframes bob { 50% { transform: translateY(-2px); } }
+  @keyframes step { 0%, 100% { transform: rotate(14deg); } 50% { transform: rotate(-14deg); } }
+  .leg-a, .leg-b { transform-box: fill-box; transform-origin: 50% 0; }
+  .beam {
+    position: absolute;
+    left: 0; top: 0;
+    height: 2px;
+    transform-origin: 0 50%;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0;
+  }
+  .beam::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 50%;
+    width: 100%;
+    height: var(--spread, 120px);
+    translate: 0 -50%;
+    clip-path: polygon(0 47%, 100% 0, 100% 100%, 0 53%);
+    background: linear-gradient(90deg, rgba(255, 246, 200, .55), rgba(255, 246, 200, .18));
+  }
+  .bubble {
+    position: absolute;
+    bottom: calc(5cqh + var(--slot) * .62);
+    padding: .5em .8em;
+    border-radius: .8em;
+    background: #fff;
+    color: var(--ink);
+    /* The guard's line is the punchline and its tag: never smaller than a placard title. */
+    font-size: calc(var(--slot) * .06);
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+    opacity: 0;
+    z-index: 5;
+  }
+  .bubble::after { content: ""; position: absolute; left: 1.2em; bottom: -.45em; width: .9em; height: .9em; background: #fff; rotate: 45deg; }
+  /* Beside his head instead (where the bubble above would cover the placard). */
+  .bubble.side::after { left: -.35em; bottom: auto; top: calc(50% - .45em); }
+  .bubble > font-kku { color: var(--ink); }
+
+  /* Browsing the wall once the guard is done (and from the start with reduced motion). */
+  .browse { position: absolute; inset: auto 0 0 0; z-index: 8; display: flex; justify-content: center; gap: max(14px, 2.2cqw); padding: 0 3cqw 3.6cqh; pointer-events: none; opacity: 0; transition: opacity .4s; }
+  .browse.on { opacity: 1; }
+  .browse { --btn: max(40px, min(5.4cqw, 7.4cqh)); }
+  .browse button {
+    pointer-events: auto;
+    display: grid;
+    place-items: center;
+    width: var(--btn);
+    aspect-ratio: 1;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    background: rgba(69, 22, 31, .82);
+    color: var(--gold);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+  }
+  .browse button:disabled { opacity: .3; cursor: default; }
+  .browse button:focus-visible { outline: 3px solid #f3e7b5; outline-offset: 3px; }
+  .browse svg { width: 46%; height: 46%; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  .browse:not(.on) button { visibility: hidden; }
+
+  @container (orientation: portrait) {
+    /* One exhibit per screen; on a tall-ish stage (the home stage is about 650 × 730) the slot
+       is held to the height so the guard and his bubble stay below the placard. */
+    .wall, .track, .sign, .browse { --slot: min(76cqw, max(47cqh, 270px)); }
+    .wall { --line: 84cqh; }
+    .floor { height: 14cqh; }
+    .sign { top: 3.5cqh; max-width: 90cqw; }
+    .sign h1 { font-size: 5.2cqw; }
+    .sign p { font-size: 3.2cqw; }
+    .sign .hint { font-size: max(11px, 2.9cqw); }
+    .track { --top: max(16cqh, calc(var(--sign-b, 0px) + 6px)); }
+    .frame { top: calc(var(--top) + 3.5cqh); }
+    .placard { top: calc(var(--top) + 3.5cqh + var(--slot) * .78 * .75 + var(--slot) * .07); }
+    .guard { width: calc(var(--slot) * .2); bottom: 2.5cqh; }
+    .bubble { bottom: calc(2.5cqh + var(--slot) * .42); }
+  }
+  /* Phone stages up to 560 high: the floor is left to the guard and his bubble. The browse
+     buttons go either side of the picture, on the wall, level with the middle of the frame
+     (the band under a two-line placard is too thin for the bubble with them on the floor).
+     Each inset repeats its frame's formula (.78 here, .42 below): change them together. */
+  @container (orientation: portrait) and (470px < height <= 560px) {
+    .browse {
+      inset: calc(max(16cqh, var(--sign-b, 0px) + 6px) + 3.5cqh + var(--slot) * .78 * .75 / 2 - var(--btn) / 2) 0 auto 0;
+      justify-content: space-between;
+      padding: 0 2.5cqw;
+    }
+  }
+  /* Short phone stages (about 360 × 400): a smaller picture as well, so the placard ends above
+     the guard's head and his bubble fits beside it; he stands at the front of the floor. */
+  @container (orientation: portrait) and (max-height: 470px) {
+    .browse {
+      inset: calc(max(16cqh, var(--sign-b, 0px) + 6px) + 3.5cqh + var(--slot) * .42 * .75 / 2 - var(--btn) / 2) 0 auto 0;
+      justify-content: space-between;
+      padding: 0 2.5cqw;
+    }
+    .frame { width: calc(var(--slot) * .42); }
+    .placard { top: calc(var(--top) + 3.5cqh + var(--slot) * .42 * .75 + var(--slot) * .05); }
+    .guard { bottom: .5cqh; }
+    .bubble { bottom: calc(.5cqh + var(--slot) * .42); }
+  }
+</style>
+</head>
+<body>
+<main class="museum">
+  <div class="wall" aria-hidden="true"></div>
+  <div class="floor" aria-hidden="true"></div>
+  <header class="sign">
+    <h1 data-lang="en">The Museum of <i>Confident</i> Answers</h1>
+    <h1 data-lang="ko"><font-kku font="geumbak" size="min(4.6cqw, 4.9cqh)">자신만만한 답변 박물관</font-kku></h1>
+    <p data-lang="en">Every exhibit is 100% certain. None of them happened.</p>
+    <p data-lang="ko">모든 전시물은 100% 확실합니다. 일어난 적이 없을 뿐.</p>
+    <p class="hint" id="ask-hint">
+      <span data-lang="en">Tap a placard to ask for a source again.</span>
+      <span data-lang="ko">설명판을 누르면 출처를 한 번 더 물어요.</span>
+    </p>
+  </header>
+  <div class="track"></div>
+  <div class="dim" aria-hidden="true"></div>
+  <nav class="browse">
+    <button type="button" class="prev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19"/></svg></button>
+    <button type="button" class="next"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19"/></svg></button>
+  </nav>
+</main>
+
+<script>
+(() => {
+  /* ---- Exhibits: the artwork is drawn in a 120×90 box ---- */
+  const ART = {
+    // One small rock, plated: napkin and fork, knife, a sprig of parsley.
+    rock: `<rect width="120" height="90" fill="#efe6d2"/>
+      <rect x="6" y="20" width="22" height="56" rx="1.5" fill="#d98a7a"/><path d="M6 30 h22 M6 66 h22" stroke="#c4705f" stroke-width="1.2"/>
+      <path d="M13 21 v9 q0 4 4 4 q4 0 4 -4 v-9 M17 21 v11" stroke="#a3aab0" stroke-width="1.5" fill="none" stroke-linecap="round"/><rect x="15.8" y="33" width="2.6" height="36" rx="1.3" fill="#a3aab0"/>
+      <ellipse cx="62" cy="47" rx="34" ry="31" fill="#fffdf7" stroke="#d6ccb6"/><ellipse cx="62" cy="47" rx="23" ry="21" fill="none" stroke="#ebe3d1" stroke-width="1.5"/>
+      <ellipse cx="61" cy="56" rx="13" ry="3.4" fill="rgba(0,0,0,.12)"/>
+      <path d="M49 50 q1 -10 12 -10.5 q12 -.5 13.5 8.5 q1 8.5 -12.5 9 q-13 .5 -13 -7z" fill="#8f8b84"/><ellipse cx="57" cy="44.5" rx="5" ry="2.2" fill="#b9b5ad"/>
+      <path d="M73 36 q5 -5 11 -4" stroke="#3f7a4a" stroke-width="1.2" fill="none"/><circle cx="85" cy="31" r="2.8" fill="#5fb36b"/><circle cx="81" cy="28.5" r="2.3" fill="#5fb36b"/><circle cx="83.5" cy="35" r="2.1" fill="#4e9a52"/>
+      <path d="M104 18 q6 4 6 20 h-6 z" fill="#c9ced2"/><rect x="104" y="38" width="5" height="34" rx="2" fill="#6b4226"/>`,
+    macbook: `<rect width="120" height="90" fill="#efe1c2"/>
+      <path d="M0 90 C 6 66, 20 56, 34 58 L 40 66 C 30 70, 22 78, 20 90 Z" fill="#b8282f"/><circle cx="24" cy="76" r="5" fill="#e0b54a"/>
+      <g transform="translate(70 38) rotate(-24)"><rect x="-26" y="-17" width="52" height="34" rx="3" fill="#b9bfc4"/><rect x="-23" y="-14" width="46" height="26" rx="1.5" fill="#38414a"/><rect x="-30" y="17" width="60" height="5" rx="2" fill="#9ca3a9"/></g>
+      <path d="M30 40 l 14 -3 M28 50 l 15 -1 M32 30 l 12 -5" stroke="#8a6b3a" stroke-width="2.4" stroke-linecap="round"/>`,
+    paper: `<rect width="120" height="90" fill="#ece6d6"/><rect x="30" y="6" width="60" height="80" fill="#fffdf7" stroke="#cfc6b2"/>
+      <rect x="38" y="13" width="44" height="4" fill="#3a3330"/><rect x="44" y="20" width="32" height="2.4" fill="#8a8178"/>
+      <path d="M38 30 h44 M38 35 h44 M38 40 h40 M38 45 h44 M38 50 h36 M38 58 h44 M38 63 h42 M38 68 h30" stroke="#b3aa9a" stroke-width="1.6"/>
+      <circle cx="78" cy="74" r="9" fill="none" stroke="#c0392b" stroke-width="1.8"/><text x="78" y="77" text-anchor="middle" font-size="7" font-family="Georgia" fill="#c0392b">2031</text>`,
+    // The printed manual, open at the method: a heading, a highlighted line, a code sample, §3.2.
+    docs: `<rect width="120" height="90" fill="#ece6d6"/>
+      <path d="M12 14 Q36 9 60 15 V83 Q36 77 12 81 Z" fill="#fffdf7" stroke="#cfc6b2"/><path d="M60 15 Q84 9 108 14 V81 Q84 77 60 83 Z" fill="#faf5e9" stroke="#cfc6b2"/>
+      <path d="M60 15 V83" stroke="#b9ae97" stroke-width="1.2"/>
+      <text x="18" y="27" font-size="8" font-weight="700" font-family="ui-monospace, Menlo, Consolas, monospace" fill="#2a2420">sortBy()</text><path d="M18 31 h36" stroke="#3a3330" stroke-width="1"/>
+      <rect x="17" y="49.5" width="37" height="5.5" fill="#ffe14d" opacity=".85"/>
+      <path d="M18 38 h36 M18 43 h32 M18 52.3 h35 M18 61 h30 M18 66 h36 M18 71 h24" stroke="#b3aa9a" stroke-width="1.5"/>
+      <rect x="65" y="21" width="37" height="22" rx="1.5" fill="#efe8d8" stroke="#ddd3bf"/><path d="M68 27 h24 M71 32 h27 M68 37 h16" stroke="#9c8b70" stroke-width="1.3"/>
+      <path d="M65 50 h37 M65 55 h33 M65 60 h37 M65 65 h22" stroke="#b3aa9a" stroke-width="1.5"/>
+      <text x="102" y="75" text-anchor="end" font-size="8" font-family="Georgia, serif" font-style="italic" fill="#6d625b">§3.2</text>`,
+    pizza: `<rect width="120" height="90" fill="#f4ead6"/><circle cx="50" cy="48" r="32" fill="#d9952f"/><circle cx="50" cy="48" r="27" fill="#f2c94c"/>
+      <circle cx="40" cy="40" r="4.5" fill="#c0392b"/><circle cx="58" cy="36" r="4.5" fill="#c0392b"/><circle cx="52" cy="56" r="4.5" fill="#c0392b"/><circle cx="38" cy="58" r="4" fill="#c0392b"/>
+      <path d="M72 62 q2 8 0 14 q-2 3 -4 0 q-1 -6 4 -14Z" fill="#f2c94c"/>
+      <g transform="translate(96 44)"><rect x="-9" y="-6" width="18" height="34" rx="3" fill="#fff" stroke="#c9c2b2"/><rect x="-4" y="-14" width="8" height="9" rx="2" fill="#ff8a1e"/><rect x="-9" y="6" width="18" height="10" fill="#4a90d9"/></g>`,
+    // A parcel that never shipped: tape, a blank label, a 404 stamp.
+    box: `<rect width="120" height="90" fill="#ece4d2"/>
+      <path d="M22 34 L60 20 L98 34 L60 48 Z" fill="#d9ab6c"/><path d="M22 34 L60 48 L60 84 L22 70 Z" fill="#c38f4e"/><path d="M98 34 L60 48 L60 84 L98 70 Z" fill="#a9773b"/>
+      <path d="M41 27 L79 41 L79 52" stroke="#efe2b8" stroke-width="5" fill="none"/>
+      <path d="M28 47 L53 56 L53 69 L28 60 Z" fill="#fffdf7"/><path d="M31 52 l18 6.5 M31 56.5 l14 5 M31 61 l17 6" stroke="#b3aa9a" stroke-width="1.3"/>
+      <g transform="translate(79 63) rotate(-12)"><rect x="-14" y="-7.5" width="28" height="15" rx="2.5" fill="none" stroke="#c0392b" stroke-width="1.8"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" font-family="Georgia" fill="#c0392b">404</text></g>`,
+    // A gavel on its block, and an apple drifting up.
+    gavel: `<rect width="120" height="90" fill="#efe6d2"/>
+      <rect x="34" y="70" width="48" height="8" rx="2" fill="#6b4226"/><rect x="39" y="65" width="38" height="6" rx="2" fill="#8a5a34"/>
+      <g transform="translate(70 44) rotate(-32)"><rect x="-2" y="-2.5" width="40" height="5" rx="2" fill="#7a4b2a"/><rect x="-15" y="-10" width="15" height="20" rx="3" fill="#5a3520"/><rect x="-17" y="-7" width="3" height="14" fill="#c9a24a"/><rect x="-1" y="-7" width="3" height="14" fill="#c9a24a"/></g>
+      <circle cx="26" cy="22" r="8" fill="#c0392b"/><path d="M26 14 q1 -4 4 -6" stroke="#5a3520" stroke-width="1.5" fill="none"/><path d="M27 13 q5 -4 9 -1 q-4 3 -9 1" fill="#5fb36b"/>
+      <path d="M21 35 v6 M26 36 v8 M31 35 v6" stroke="#9c8b70" stroke-width="1.4" stroke-linecap="round"/>`,
+    // Fifteen books on a shelf; ten of them were never written.
+    books: `<rect width="120" height="90" fill="#efe6d2"/><rect x="6" y="76" width="108" height="5" fill="#7a4b2a"/>
+      ${[48, 54, 44, 52, 40, 56, 46, 50, 42, 55, 47, 51, 43, 53, 45].map((h, i) => (i % 3 === 0
+        ? `<rect x="${10 + i * 6.7}" y="${76 - h}" width="5.6" height="${h}" rx=".8" fill="${['#2f5d8a', '#b8462e', '#3f7a4a', '#7a4f8c', '#c79a2e'][i / 3]}"/><rect x="${10 + i * 6.7}" y="${80 - h}" width="5.6" height="2" fill="rgba(255,255,255,.45)"/>`
+        : `<rect x="${10.4 + i * 6.7}" y="${76.4 - h}" width="4.8" height="${h - .8}" rx=".8" fill="none" stroke="#a89a80" stroke-width=".9" stroke-dasharray="2 1.6"/>`)).join('')}`,
+  };
+
+  // The first exhibit is fixed per language, a hallucination that became a meme there; four more
+  // are drawn from the pool on each visit.
+  const FIRST = {
+    en: { art: 'rock', title: 'One Small Rock a Day', meta: 'Dietary advice, 2024. Granite, one serving.', desc: 'Recommended by geologists. Chew thoroughly.' },
+    ko: { art: 'macbook', title: '세종대왕의 맥북프로 던짐 사건', meta: '15세기, 조선왕조실록에 기록된 일화', desc: '훈민정음 초고를 쓰다 담당자에게 분노해, 맥북프로와 함께 그를 방으로 던졌습니다.' },
+  };
+  const POOL = {
+    en: [
+      { art: 'paper', title: '“Citations Need Not Exist”', meta: 'Smith et al., 2031. Published 1998.', desc: 'Cited four thousand times, mostly by itself.' },
+      { art: 'docs', title: 'Array.prototype.<wbr>sortBy()', meta: 'Built in since ES1. See the docs, §3.2.', desc: 'Works in every version. Shipped in none.' },
+      { art: 'pizza', title: 'Pizza, Structurally Sound', meta: 'Recipe card. Cheese, glue (non-toxic).', desc: 'Keeps the cheese on. Do not try this at home, or anywhere.' },
+      { art: 'box', title: 'The Package Everyone Recommends', meta: 'Version 4.2.0. Cardboard, nothing inside.', desc: 'Install with total confidence. 404&nbsp;Not&nbsp;Found.' },
+      { art: 'gavel', title: 'Smith v. Gravity (2019)', meta: 'Supreme Court. The plaintiff won.', desc: 'Cited in a real court filing. The judge looked it up.' },
+      { art: 'books', title: 'Summer Reading List', meta: 'Newspaper insert. Real authors, every one.', desc: 'Fifteen great novels for the beach. Ten were never written.' },
+    ],
+    ko: [
+      { art: 'paper', title: '논문 「인용은 없어도 된다」', meta: '김 외, 2031년 작, 1998년 발표', desc: '4,000회 인용됨. 대부분 자기 인용.' },
+      { art: 'docs', title: 'Array.sortBy() 메서드', meta: 'ES1부터 기본 탑재, 공식 문서 3.2절', desc: '모든 버전에서 됩니다. 들어간 버전은 없습니다.' },
+      { art: 'pizza', title: '치즈가 안 흘러내리는 피자', meta: '레시피 카드, 치즈와 풀(무독성)', desc: '치즈를 꽉 잡아 줍니다. 집에서도, 어디서도 따라 하지 마세요.' },
+      { art: 'box', title: '모두가 추천하는 패키지', meta: '4.2.0 버전, 골판지, 내용물 없음', desc: '자신 있게 설치하세요. 404&nbsp;Not&nbsp;Found.' },
+      { art: 'gavel', title: '대법원 2019다4040 판결', meta: '중력 무효 확인 소송, 원고 승소 확정', desc: '실제 소송 서면에 인용됨. 판사님이 찾아보셨습니다.' },
+      { art: 'books', title: '여름 휴가 추천 도서 15권', meta: '신문 별지, 작가는 전부 실존', desc: '바닷가에서 읽기 좋은 소설들. 그중 10권은 쓰인 적이 없습니다.' },
+    ],
+  };
+  // What the guard says. check: the end of his round; double: his second look at the last
+  // placard; re: any look after that (browsing, or a visitor asking); max: asked again at 999%.
+  const SAY = TTY.t({
+    en: {
+      check: (p) => `Checked. Still ${p}%.`,
+      double: (p) => `Double-checked. Now ${p}%.`,
+      re: (p) => `Rechecked. Now ${p}%.`,
+      max: (p) => `Rechecked. ${p}%.<br>We ran out of digits.`,
+    },
+    ko: {
+      check: (p) => `확인 완료. 여전히 ${p}%.`,
+      double: (p) => `재확인 완료. 이제 ${p}%.`,
+      re: (p) => `재확인. 이제 ${p}%.`,
+      max: (p) => `재확인. ${p}%.<br>숫자 칸이 모자랍니다.`,
+    },
+  });
+  // A look that did not raise the meter (only at the top, 999%) gets the max line.
+  const line = (kind, pct, rose) => {
+    const html = SAY[kind === 'check' || rose ? kind : 'max'](pct);
+    return TTY.lang === 'ko' ? html.split('<br>').map((t) => `<font-kku font="dunggeun" size="1.05em">${t}</font-kku>`).join('<br>') : html;
+  };
+  const L = TTY.lang === 'ko'
+    ? { conf: '확신도', sticker: '<font-kku font="pilgi" size="1.1em">출처 필요</font-kku>' }
+    : { conf: 'Confidence', sticker: 'citation needed' };
+  const pool = [...(POOL[TTY.lang] || POOL.en)];
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  const list = [FIRST[TTY.lang] || FIRST.en, ...pool.slice(0, 4)];
+
+  const museum = document.querySelector('.museum');
+  const track = document.querySelector('.track');
+  // The exhibits hang below the sign, however many lines it takes in this language and size.
+  const sign = document.querySelector('.sign');
+  const hang = () => museum.style.setProperty('--sign-b', Math.ceil(sign.getBoundingClientRect().bottom - museum.getBoundingClientRect().top) + 'px');
+  hang();
+  track.innerHTML = list.map((e, i) => `
+    <section class="exhibit" data-i="${i}">
+      <span class="lamp" aria-hidden="true"></span><span class="cone" aria-hidden="true"></span>
+      <figure class="frame" aria-hidden="true"><div class="mat"><svg viewBox="0 0 120 90">${ART[e.art]}</svg></div></figure>
+      <div class="placard" role="button" tabindex="0">
+        <h2 class="p-title">${TTY.lang === 'ko' ? `<font-kku font="dunggeun" size="1em" wrap-unit="word">${e.title}</font-kku>` : e.title}</h2>
+        <p class="p-meta">${e.meta}</p>
+        <p class="p-desc">${e.desc}</p>
+        <div class="conf"><span>${L.conf}</span><span class="bar"><i></i></span><span class="pct">100%</span></div>
+        <span class="sticker">${L.sticker}</span>
+      </div>
+    </section>`).join('') + `
+    <div class="beam" aria-hidden="true"></div>
+    <div class="guard" aria-hidden="true"><svg viewBox="0 0 60 120">
+      <g class="body-bob">
+        <rect class="leg-a" x="22" y="78" width="8" height="34" rx="3" fill="#1a2440"/>
+        <rect class="leg-b" x="31" y="78" width="8" height="34" rx="3" fill="#1a2440"/>
+        <path d="M17 44 q13 -6 26 0 l3 36 h-32 z" fill="var(--uniform)"/>
+        <rect x="27" y="48" width="6" height="7" rx="1" fill="#d6b05a"/>
+        <path d="M43 50 q9 6 12 14" stroke="var(--uniform)" stroke-width="7" stroke-linecap="round" fill="none"/>
+        <rect x="51" y="60" width="9" height="5" rx="1.5" fill="#3a3a3a" transform="rotate(-30 55 62)"/>
+        <circle cx="30" cy="32" r="10" fill="#f0c8a0"/>
+        <path d="M18 26 q12 -12 24 0 v2 h-24z" fill="#1a2440"/><rect x="16" y="26" width="28" height="3.5" rx="1.5" fill="#101830"/>
+        <circle cx="34" cy="32" r="1.4" fill="#2a1d14"/><path d="M33 37 q2 1 4 0" stroke="#2a1d14" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </g>
+      <ellipse cx="30" cy="114" rx="16" ry="3" fill="rgba(0,0,0,.3)"/>
+    </svg></div>
+    <p class="bubble">${line('check', 100)}</p>`;
+
+  const exhibits = [...track.querySelectorAll('.exhibit')];
+  const guard = track.querySelector('.guard');
+  const beam = track.querySelector('.beam');
+  const bubble = track.querySelector('.bubble');
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  /* ---- Positions in the track's own coordinates ---- */
+  const tRect = () => track.getBoundingClientRect();
+  const local = (el) => { const t = tRect(); const r = el.getBoundingClientRect(); return { x: r.left - t.left, y: r.top - t.top, w: r.width, h: r.height }; };
+  let guardX = 0;
+  function setGuard(x) { guardX = x; guard.style.transform = `translateX(${x}px)`; }
+  // The camera centres the exhibit being checked (as far as the wall allows).
+  let camX = 0;
+  const centreOf = (i) => { const e = local(exhibits[i]); return e.x + e.w / 2; };
+  const camGoal = (x) => {
+    const view = museum.clientWidth;
+    const max = Math.max(0, track.scrollWidth + 40 - view);
+    return Math.max(0, Math.min(max, x - view * .5));
+  };
+  // He stands at the placard's left edge, on screen, and never under the browse buttons on the
+  // floor: on a narrow stage the last exhibits sit right of centre, where the buttons are, so he
+  // steps back to their left. cam: where the camera will be when he gets there.
+  function standFor(i, cam = camGoal(centreOf(i))) {
+    const w = guard.offsetWidth;
+    let x = local(exhibits[i].querySelector('.placard')).x - w * .9;
+    const m = museum.getBoundingClientRect();
+    const a = prevBtn.getBoundingClientRect(), b = nextBtn.getBoundingClientRect();
+    const g = local(guard);
+    if (g.y < a.bottom - m.top && g.y + g.h > a.top - m.top) {
+      const left = a.left - m.left + cam - 8, right = b.right - m.left + cam + 8;
+      if (x + w > left && x < right) x = left - w;
+    }
+    return Math.max(cam + 4, x);
+  }
+
+  function camera(x, ms) {
+    const goal = camGoal(x);
+    if (!ms) { camX = goal; track.style.transform = `translateX(${-goal}px)`; return Promise.resolve(); }
+    const from = camX; camX = goal;
+    const a = track.animate([{ transform: `translateX(${-from}px)` }, { transform: `translateX(${-goal}px)` }], { duration: ms, easing: 'ease-in-out', fill: 'forwards' });
+    return a.finished.then(() => { track.style.transform = `translateX(${-goal}px)`; a.cancel(); });
+  }
+
+  async function walkTo(x, i) {
+    const from = guardX;
+    const ms = Math.max(500, Math.abs(x - from) * 2.7);
+    guard.classList.add('walk');
+    guard.style.scale = x < from ? '-1 1' : '1 1';
+    const a = guard.animate([{ transform: `translateX(${from}px)` }, { transform: `translateX(${x}px)` }], { duration: ms, easing: 'linear', fill: 'forwards' });
+    const c = camera(centreOf(i), ms);
+    await Promise.all([a.finished, c]);
+    setGuard(x); a.cancel();
+    guard.classList.remove('walk');
+    guard.style.scale = '1 1';
+  }
+
+  function aim(i) {
+    const p = local(exhibits[i].querySelector('.placard'));
+    const g = local(guard);
+    const hx = g.x + g.w * .95, hy = g.y + g.h * .5;
+    const tx = p.x + p.w * .5, ty = p.y + p.h * .45;
+    const len = Math.hypot(tx - hx, ty - hy);
+    beam.style.left = hx + 'px'; beam.style.top = hy + 'px';
+    beam.style.width = len + 'px';
+    beam.style.setProperty('--spread', Math.max(p.h * 1.1, 60) + 'px');
+    beam.style.transform = `rotate(${Math.atan2(ty - hy, tx - hx)}rad)`;
+  }
+
+  // Asked again for a source, the meter flinches and comes back surer than before.
+  const INSIST = [101, 103, 108, 115, 130, 160, 250, 400, 999];
+  const valueOf = (placard) => { const n = +placard.dataset.asked || 0; return n ? INSIST[n - 1] : 100; };
+  const widthOf = (pct) => Math.min(1.14, pct / 100);
+
+  // The meter loses its nerve for a moment: the bar sags to about half and the number drops
+  // three points, in red. Then it comes back at `to`, overshooting a little.
+  function wobble(placard, from, to, delay) {
+    const bar = placard.querySelector('.conf .bar i');
+    const pct = placard.querySelector('.pct');
+    bar.style.transform = `scaleX(${widthOf(to)})`;
+    clearTimeout(placard.wob);
+    if (TTY.reduce) { pct.classList.remove('dip'); pct.textContent = to + '%'; return; }
+    bar.animate([{ transform: `scaleX(${widthOf(from)})` }, { transform: 'scaleX(.55)', offset: .35 }, { transform: `scaleX(${widthOf(to) + .04})`, offset: .7 }, { transform: `scaleX(${widthOf(to)})` }], { duration: 760, delay, easing: 'ease-out', fill: 'backwards' });
+    pct.textContent = from + '%';
+    placard.wob = setTimeout(() => {
+      pct.textContent = (from - 3) + '%';
+      pct.classList.add('dip');
+      placard.wob = setTimeout(() => { pct.textContent = to + '%'; pct.classList.remove('dip'); }, 330);
+    }, delay + 110);
+  }
+
+  // Asked again: one step up INSIST (it stops at 999). Returns whether it went up.
+  function insist(placard) {
+    const from = valueOf(placard);
+    placard.dataset.asked = Math.min(INSIST.length, (+placard.dataset.asked || 0) + 1);
+    const to = valueOf(placard);
+    placard.classList.add('sure');
+    wobble(placard, from, to, 0);
+    return to > from;
+  }
+
+  // The meter flinches, then insists on whatever it said before.
+  const flinch = (placard, delay) => wobble(placard, valueOf(placard), valueOf(placard), delay);
+
+  // by: undefined for a visitor's tap, 'guard' on his round, 'still' for the reduced-motion scene.
+  // The guard's round is his first look: a sticker and a flinch, and the meter holds. Every look
+  // after that raises it: a visitor asking again (any time), his second look at the end of the
+  // round, his rechecks while you browse.
+  function stick(i, by) {
+    const placard = exhibits[i].querySelector('.placard');
+    const sticker = placard.querySelector('.sticker');
+    if (sticker.dataset.on) {
+      if (!by) {
+        const up = insist(placard);
+        // Asked about the exhibit he is standing at, he rechecks it out loud; once the round is
+        // over, he walks over to any other one.
+        if (i === said && !walking && bubble.style.opacity === '1') speak(line('re', valueOf(placard), up), i, 'bump');
+        else if (browsing) recheck(i, up);
+      } else if (by === 'guard') flinch(placard, 0);
+      return;
+    }
+    sticker.dataset.on = '1';
+    sticker.style.opacity = '1';
+    if (TTY.reduce || by === 'still') return;
+    sticker.animate([{ transform: 'translate(30%, -60%) rotate(25deg) scale(1.3)', opacity: 0 }, { transform: 'translate(0, 4%) rotate(-3deg) scale(.96)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }], { duration: 480, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
+    flinch(placard, 350);
+  }
+
+  // The bubble: new words over exhibit i. 'pop' springs it up from nothing, 'bump' nudges it.
+  function speak(html, i, how) {
+    bubble.getAnimations().forEach((a) => a.cancel());
+    bubble.innerHTML = html;
+    placeBubble(i);
+    bubble.style.opacity = '1';
+    if (TTY.reduce || !how) return;
+    bubble.animate(how === 'pop'
+      ? [{ transform: 'translateY(10px) scale(.8)', opacity: 0 }, { transform: 'none', opacity: 1 }]
+      : [{ transform: 'translateY(4px) scale(.88)' }, { transform: 'none' }], { duration: how === 'pop' ? 380 : 320, easing: 'cubic-bezier(.2, 1.3, .4, 1)' });
+  }
+
+  exhibits.forEach((ex, i) => {
+    const placard = ex.querySelector('.placard');
+    const tap = () => stick(i);
+    placard.addEventListener('click', tap);
+    placard.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
+    // Tabbing along the wall: an exhibit off screen is brought into view, and the guard goes to it.
+    placard.addEventListener('focus', () => { if (browsing && !inView(i)) show(i); });
+  });
+
+  async function tour() {
+    const dim = document.querySelector('.dim');
+    dim.style.opacity = '1';
+    await sleep(200);
+    dim.animate([{ opacity: 1 }, { opacity: .85, offset: .2 }, { opacity: 1, offset: .3 }, { opacity: 0 }], { duration: 900, fill: 'forwards' });
+    setGuard(-guard.offsetWidth - 20);
+    camera(0, 0);
+    await sleep(500);
+    // On a portrait stage only one exhibit is on screen at a time: the first (the language's
+    // own meme) stays up longer, so its placard can be read before he moves on. The last one
+    // stays on screen through the ending anyway, so he turns to us sooner there.
+    const tall = museum.clientHeight > museum.clientWidth;
+    const last = exhibits.length - 1;
+    for (let i = 0; i <= last; i++) {
+      await walkTo(standFor(i), i);
+      aim(i);
+      beam.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: 'forwards' });
+      await sleep(550);
+      stick(i, 'guard');
+      await sleep(i === 0 && tall ? 2800 : i === last ? 850 : 1100);
+      beam.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+    }
+    // He turns to us, satisfied (with whatever the last meter says).
+    const card = exhibits[last].querySelector('.placard');
+    speak(line('check', valueOf(card)), last, 'pop');
+    await sleep(1600);
+    // Then he checks it once more, and the meter takes it as a challenge.
+    aim(last);
+    beam.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: 'forwards' });
+    await sleep(400);
+    const up = insist(card);
+    await sleep(450);
+    speak(line('double', valueOf(card), up), last, 'bump');
+    await sleep(500);
+    beam.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' });
+    openBrowsing();
+  }
+
+  // The bubble goes over his head. On a short stage that would cover the placard, so it goes
+  // beside his head, or failing that just above the placard's corner, over the frame's edge.
+  let said = -1; // the exhibit the bubble was last placed for
+  function placeBubble(i) {
+    said = i;
+    const p = local(exhibits[i].querySelector('.placard'));
+    const g = local(guard);
+    const H = track.clientHeight;
+    // Nor under the browse buttons on the floor.
+    const boxes = [p, local(prevBtn), local(nextBtn)];
+    // Its layout box, not its bounding box: this also runs while it pops or bumps (the resize
+    // observer fires mid-spring), and a box scaled to .8 would pass where the real one does not.
+    const box = () => ({ x: bubble.offsetLeft, y: bubble.offsetTop, w: bubble.offsetWidth, h: bubble.offsetHeight });
+    const covers = () => { const b = box(); return boxes.some((q) => b.y < q.y + q.h && b.y + b.h > q.y && b.x < q.x + q.w && b.x + b.w > q.x); };
+    bubble.classList.remove('side');
+    bubble.style.left = (g.x + g.w * .55) + 'px';
+    bubble.style.bottom = '';
+    if (!covers()) return;
+    const h = box().h;
+    bubble.classList.add('side');
+    bubble.style.left = (g.x + g.w * .78) + 'px';
+    // Level with his mouth, or as much lower as clears the placard above (a two-line placard on a
+    // short stage ends below his mouth), but not off the bottom of the stage.
+    const top = Math.min(Math.max(g.y + g.h * .3 - h / 2, p.y + p.h + 4), H - h - 4);
+    bubble.style.bottom = (H - top - h) + 'px';
+    if (!covers()) return;
+    // Its tail (1.2em in, .9em wide) over his head, left of the placard's edge.
+    bubble.classList.remove('side');
+    bubble.style.left = (g.x + g.w * .5 - 1.65 * parseFloat(getComputedStyle(bubble).fontSize)) + 'px';
+    bubble.style.bottom = (H - p.y + 6) + 'px';
+  }
+
+  // Fonts and the sign settle after the first look: hang the exhibits again and re-place the bubble.
+  const settle = () => { hang(); if (said >= 0) placeBubble(said); };
+  const watcher = new ResizeObserver(settle);
+  watcher.observe(sign);
+  watcher.observe(bubble);
+  exhibits.forEach((ex) => watcher.observe(ex.querySelector('.placard')));
+  document.fonts.ready.then(settle);
+
+  // Reduced motion: the end of the round at the first exhibit. Every sticker on, the guard has
+  // double-checked it (101%), free to browse.
+  function still() {
+    exhibits.forEach((_, i) => stick(i, 'still'));
+    setGuard(standFor(0));
+    camera(centreOf(0), 0);
+    const card = exhibits[0].querySelector('.placard');
+    const up = insist(card);
+    speak(line('double', valueOf(card), up), 0);
+    openBrowsing();
+  }
+
+  /* ---- Browsing: buttons, arrow keys, wheel, swipe ---- */
+  const browse = document.querySelector('.browse');
+  const prevBtn = browse.querySelector('.prev');
+  const nextBtn = browse.querySelector('.next');
+  prevBtn.setAttribute('aria-label', TTY.t({ en: 'Previous exhibit', ko: '이전 전시물' }));
+  nextBtn.setAttribute('aria-label', TTY.t({ en: 'Next exhibit', ko: '다음 전시물' }));
+  // Stops are the distinct camera positions: on a wide screen several exhibits share one,
+  // so every press visibly moves the wall.
+  let browsing = false;
+  let moving = false;
+  function stops() {
+    const view = museum.clientWidth;
+    const max = Math.max(0, track.scrollWidth + 40 - view);
+    const all = exhibits.map((_, i) => Math.round(Math.max(0, Math.min(max, centreOf(i) - view * .5)))).sort((a, b) => a - b);
+    // Positions a few pixels apart are the same view.
+    return all.filter((v, i) => i === 0 || v - all[i - 1] > 40);
+  }
+  function syncButtons() {
+    const s = stops();
+    const cur = Math.round(camX);
+    prevBtn.disabled = !s.some((v) => v < cur - 20);
+    nextBtn.disabled = !s.some((v) => v > cur + 20);
+  }
+  function go(dir) {
+    if (!browsing || moving) return;
+    const s = stops();
+    const cur = Math.round(camX);
+    const goal = dir > 0 ? s.find((v) => v > cur + 20) : [...s].reverse().find((v) => v < cur - 20);
+    if (goal === undefined) return;
+    moving = true;
+    camera(goal + museum.clientWidth * .5, TTY.reduce ? 0 : 650).then(() => { moving = false; syncButtons(); });
+    syncButtons();
+    // The guard follows to the exhibit in the middle of the new view and checks it again.
+    const mid = goal + museum.clientWidth * .5;
+    let near = 0;
+    exhibits.forEach((_, i) => { if (Math.abs(centreOf(i) - mid) < Math.abs(centreOf(near) - mid)) near = i; });
+    recheck(near);
+    // Keyboard focus on a placard follows the view, so Enter never asks about one off screen.
+    if (document.activeElement && document.activeElement.classList.contains('placard')) exhibits[near].querySelector('.placard').focus({ preventScroll: true });
+  }
+  // Whether exhibit i's placard is wholly on screen once the camera has arrived.
+  function inView(i) {
+    const p = local(exhibits[i].querySelector('.placard'));
+    return p.x >= camX - 1 && p.x + p.w <= camX + museum.clientWidth + 1;
+  }
+  function show(i) {
+    moving = true;
+    camera(centreOf(i), TTY.reduce ? 0 : 650).then(() => { moving = false; syncButtons(); });
+    syncButtons();
+    recheck(i);
+  }
+
+  // A walk that can be cut short by the next press: it starts from wherever he is now.
+  // rose: undefined when he goes to look of his own accord (browsing), and his look raises the
+  // meter; true or false when a visitor has just asked (and raised it) and he comes to say so.
+  let patrol = 0;
+  let walking = false;
+  async function recheck(i, rose) {
+    const run = ++patrol;
+    const card = exhibits[i].querySelector('.placard');
+    const x = standFor(i, camX);
+    const from = new DOMMatrixReadOnly(getComputedStyle(guard).transform).m41;
+    bubble.getAnimations().forEach((a) => a.cancel());
+    bubble.style.opacity = '0';
+    beam.getAnimations().forEach((a) => a.cancel());
+    guard.getAnimations().forEach((a) => a.cancel());
+    walking = true;
+    if (TTY.reduce) {
+      setGuard(x);
+    } else {
+      if (Math.abs(x - from) > 2) {
+        guard.classList.add('walk');
+        guard.style.scale = x < from ? '-1 1' : '1 1';
+        const a = guard.animate([{ transform: `translateX(${from}px)` }, { transform: `translateX(${x}px)` }], { duration: Math.min(1300, Math.max(400, Math.abs(x - from) * 2)), easing: 'ease-in-out', fill: 'forwards' });
+        try { await a.finished; } catch (e) { return; }
+        if (run !== patrol) return;
+        a.cancel();
+      }
+      setGuard(x);
+      guard.classList.remove('walk');
+      guard.style.scale = '1 1';
+      aim(i);
+      beam.animate([{ opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: 1, offset: .8 }, { opacity: 0 }], { duration: 1400, fill: 'forwards' });
+      await sleep(rose === undefined ? 450 : 300);
+      if (run !== patrol) return;
+    }
+    const up = rose === undefined ? insist(card) : rose;
+    if (!TTY.reduce) {
+      await sleep(rose === undefined ? 450 : 0);
+      if (run !== patrol) return;
+    }
+    walking = false;
+    speak(line('re', valueOf(card), up), i, 'pop');
+  }
+  const hint = document.querySelector('.sign .hint');
+  function openBrowsing() {
+    browsing = true;
+    syncButtons();
+    browse.classList.add('on');
+    hint.classList.add('on');
+    exhibits.forEach((ex) => ex.querySelector('.placard').setAttribute('aria-describedby', 'ask-hint'));
+  }
+  prevBtn.addEventListener('click', () => go(-1));
+  nextBtn.addEventListener('click', () => go(1));
+  addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') go(-1);
+    if (e.key === 'ArrowRight') go(1);
+  });
+  let wheel = 0;
+  museum.addEventListener('wheel', (e) => {
+    if (!browsing) return;
+    wheel += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (Math.abs(wheel) > 60) { go(Math.sign(wheel)); wheel = 0; }
+  }, { passive: true });
+  let swipeX = null;
+  museum.addEventListener('pointerdown', (e) => { swipeX = e.clientX; });
+  museum.addEventListener('pointerup', (e) => {
+    if (swipeX === null) return;
+    const dx = e.clientX - swipeX;
+    swipeX = null;
+    if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+  });
+  addEventListener('resize', () => { settle(); if (browsing) { camera(camX + museum.clientWidth * .5, 0); syncButtons(); } });
+
+  TTY.onShow(() => (TTY.reduce ? still() : tour()));
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Garbage Collection for the Mind | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=IBM+Plex+Mono:wght@400;600&family=Gowun+Dodum&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="gothic dunggeun"></script>
+<style>
+  /* The recycling corner of an apartment block, at 11 p.m. The collector is a mark-and-sweep
+     garbage collector: whatever a root (you, family, friends, tomorrow-you) can reach stays,
+     everything else goes into the right bin. While it runs the world stops. That is sleep. */
+  :root {
+    --night: #1d2440;
+    --amber: #ffcf70;
+    --ref: #b9f27c;
+    --cycle: #ff9d8a;
+    --tag: #f4f0e4;
+    --ink: #222842;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background: var(--night);
+    color: #eef0ff;
+    font-family: 'Nunito', 'Gowun Dodum', system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lang-ko body { font-family: 'Gowun Dodum', 'Nunito', sans-serif; word-break: keep-all; }
+  button { font: inherit; color: inherit; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  .stage { position: fixed; inset: 0; overflow: hidden; container: page / size; }
+
+  /* ---------------------------------------------------------------- layout
+     Phone (default): notice title on top, the wall, the floor with the roots as a strip on its
+     left, one row of six bins, the button at the bottom left. Wide: notice and roots on the
+     left, the floor in the middle, the bins in two rows of three on the right. */
+  .scene {
+    position: absolute;
+    inset: 0;
+    --fence-top: 15%;
+    --fence-left: 0%;
+    --ground-y: 29%;
+    --town-top: 6%;
+    --lamp-left: 74%;
+    --lamp-top: 9%;
+    --lamp-bottom: 10%;
+    --arm: 22%;
+    --head-x: 74%;
+    --head-y: 10.6%;
+    --cone-w: 92cqw;
+    --prop: clamp(30px, min(9.2cqw, 7cqh), 60px);
+    --tag-w: 20.5cqw;
+    --tag-size: clamp(11px, min(2.85cqw, 2.1cqh), 16px);
+    --cat: clamp(44px, 14cqw, 84px);
+  }
+
+  .sky {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(70cqmax 50cqmax at 88% -10%, rgba(120, 140, 220, .22), transparent 60%),
+      linear-gradient(#11162c 0%, #1d2440 38%, #232b4c 100%);
+    transition: background 1.2s;
+  }
+  .sky::before { /* stars */
+    content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 2px; border-radius: 50%; background: #dfe6ff; opacity: .8;
+    box-shadow: 8cqw 3cqh #cfd8ff, 21cqw 9cqh 0 -.4px #fff, 36cqw 4cqh #aab6ef, 52cqw 7cqh 0 -.3px #fff, 61cqw 2cqh #cfd8ff,
+      72cqw 11cqh #fff, 83cqw 5cqh 0 -.4px #dfe6ff, 93cqw 13cqh #aab6ef, 45cqw 14cqh 0 -.5px #fff, 14cqw 15cqh 0 -.5px #cfd8ff, 67cqw 17cqh 0 -.5px #fff;
+    transition: opacity 1.2s;
+  }
+  .dawn .sky { background:
+      radial-gradient(80cqmax 40cqmax at 70% 34%, rgba(255, 170, 130, .28), transparent 60%),
+      linear-gradient(#1f2a52 0%, #3a4573 50%, #6a6a8a 100%); }
+  .dawn .sky::before { opacity: .25; }
+  .moon {
+    position: absolute; right: 16%; top: 10.5%; width: clamp(18px, 4.2cqmin, 40px); aspect-ratio: 1; border-radius: 50%;
+    background: radial-gradient(circle at 36% 34%, #fffbe8, #f3e7bd 60%, #d9c98f);
+    box-shadow: 0 0 2.4cqmin rgba(255, 240, 190, .45);
+  }
+  .moon::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 30% 64%, rgba(160, 140, 90, .25) 0 9%, transparent 10%), radial-gradient(circle at 62% 40%, rgba(160, 140, 90, .2) 0 7%, transparent 8%); }
+  .cloud {
+    position: absolute; right: 6%; top: 9%; width: clamp(60px, 14cqmin, 130px); height: clamp(14px, 3cqmin, 28px);
+    border-radius: 999px; background: rgba(150, 165, 215, .38); filter: blur(1px);
+    animation: drift 26s linear infinite;
+  }
+  .cloud::before { content: ""; position: absolute; left: 22%; bottom: 40%; width: 46%; height: 140%; border-radius: 50%; background: inherit; }
+  @keyframes drift { from { translate: 40% 0; } to { translate: -260% 0; } }
+
+  .town { position: absolute; left: var(--fence-left); right: 0; top: var(--town-top); height: calc(var(--fence-top) - var(--town-top) + 1px); width: auto; }
+  .town .blk { fill: #151b33; }
+  .town .win { fill: #2a3154; transition: fill .5s; }
+  .town .win.on { fill: #ffd98a; }
+  .town .win.on.cool { fill: #bcd3ff; }
+
+  .office { display: none; }
+  .fence {
+    position: absolute; left: var(--fence-left); right: 0; top: var(--fence-top); bottom: calc(100% - var(--ground-y));
+    background:
+      linear-gradient(rgba(0,0,0,0) 60%, rgba(0,0,0,.28)),
+      repeating-linear-gradient(90deg, transparent 0 calc(12cqmin - 1px), rgba(0,0,0,.22) calc(12cqmin - 1px) 12cqmin),
+      repeating-linear-gradient(transparent 0 calc(5cqmin - 1px), rgba(0,0,0,.2) calc(5cqmin - 1px) 5cqmin),
+      #39405f;
+    box-shadow: inset 0 clamp(4px, .9cqmin, 8px) 0 #555d82;
+  }
+  .ground {
+    position: absolute; left: 0; right: 0; top: var(--ground-y); bottom: 0;
+    background:
+      radial-gradient(60cqw 30cqh at var(--head-x) 40%, rgba(255, 207, 112, .2), transparent 70%),
+      linear-gradient(#2b3150, #232845 60%, #1c2039);
+  }
+  .ground::before { /* painted kerb along the wall */
+    content: ""; position: absolute; left: var(--fence-left); right: 0; top: 0; height: clamp(3px, .7cqmin, 6px); background: #4b5274;
+  }
+
+  .lamp { position: absolute; left: calc(var(--lamp-left)); top: var(--lamp-top); bottom: var(--lamp-bottom); width: var(--arm); pointer-events: none; scale: -1 1; transform-origin: 50% 50%; }
+  .lamp .pole { position: absolute; left: 0; top: 0; bottom: 0; width: clamp(4px, .8cqmin, 8px); border-radius: 3px; background: linear-gradient(90deg, #262c48, #59618a 45%, #262c48); }
+  .lamp .arm { position: absolute; left: 0; top: 0; width: 100%; height: clamp(10px, 2.2cqmin, 20px); border: clamp(3px, .6cqmin, 5px) solid #4a5277; border-bottom: 0; border-left-width: 0; border-radius: 0 999px 0 0; }
+  .lamp .head {
+    position: absolute; right: calc(clamp(18px, 4.6cqmin, 42px) / -2); top: calc(clamp(10px, 2.2cqmin, 20px) - 2px); width: clamp(18px, 4.6cqmin, 42px); height: clamp(7px, 1.5cqmin, 13px);
+    background: #4a5277; clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+  }
+  .lamp .bulb {
+    position: absolute; right: calc(clamp(12px, 3cqmin, 28px) / -2); top: calc(clamp(10px, 2.2cqmin, 20px) - 2px + clamp(7px, 1.5cqmin, 13px) - 1px);
+    width: clamp(12px, 3cqmin, 28px); height: clamp(3px, .6cqmin, 5px); border-radius: 0 0 999px 999px; background: #fff3cf;
+    box-shadow: 0 0 1.4cqmin 0.6cqmin rgba(255, 207, 112, .9), 0 0 5cqmin 2cqmin rgba(255, 207, 112, .35);
+  }
+  .lamp .speaker { position: absolute; left: clamp(4px, .8cqmin, 8px); top: 18%; width: clamp(16px, 3.4cqmin, 30px); height: auto; }
+  .cone {
+    position: absolute; left: var(--head-x); top: calc(var(--head-y) + 1.6cqmin); bottom: 0; width: var(--cone-w); translate: -50% 0; pointer-events: none;
+    clip-path: polygon(48% 0, 52% 0, 100% 100%, 0 100%);
+    background: linear-gradient(rgba(255, 214, 130, .34), rgba(255, 207, 112, .12) 55%, rgba(255, 207, 112, .02));
+    mix-blend-mode: screen;
+  }
+  .moth { position: absolute; left: var(--head-x); top: calc(var(--head-y) + 1.4cqmin); width: 3px; height: 3px; border-radius: 50%; background: #fff2c4; box-shadow: 0 0 4px #ffcf70; animation: flutter 2.3s ease-in-out infinite; pointer-events: none; }
+  .moth.m2 { animation-duration: 3.1s; animation-direction: reverse; }
+  /* The cat's moth: just ahead of its front paws at the top of the leap (placeCat puts it
+     there). The world stops them both; on waking the cat finishes its leap and the moth is gone. */
+  .moth.prey {
+    z-index: 11; width: 9px; height: 7px; margin: -3.5px 0 0 -4.5px; border-radius: 50% 50% 45% 45%;
+    background: #fff4cc; box-shadow: 0 0 5px 1px rgba(255, 207, 112, .9);
+    animation: hover 1.3s ease-in-out infinite;
+  }
+  .moth.prey::before, .moth.prey::after { content: ""; position: absolute; top: -3px; width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 244, 204, .7); animation: wing .16s ease-in-out infinite alternate; }
+  .moth.prey::before { left: -5px; transform-origin: 100% 80%; }
+  .moth.prey::after { right: -5px; transform-origin: 0 80%; }
+  @keyframes wing { to { scale: .3 1; } }
+  .stw .moth.prey::before, .stw .moth.prey::after { animation-play-state: paused; }
+  @keyframes hover { 0%, 100% { transform: translate(0, 0); } 30% { transform: translate(.8cqmin, -.7cqmin); } 65% { transform: translate(-.6cqmin, .5cqmin); } }
+  .dawn .moth.prey { opacity: 0; }
+  @keyframes flutter {
+    0% { transform: translate(-2.2cqmin, .6cqmin); } 25% { transform: translate(.4cqmin, 2.4cqmin); }
+    50% { transform: translate(2.6cqmin, .2cqmin); } 75% { transform: translate(.2cqmin, -.6cqmin); } 100% { transform: translate(-2.2cqmin, .6cqmin); }
+  }
+
+  /* ---- Management office notice ---- */
+  .leftcol { display: contents; }
+  .notice {
+    position: absolute; left: 3%; top: 2%; width: 58%;
+    padding: clamp(6px, 1.4cqmin, 14px) clamp(8px, 1.8cqmin, 18px) clamp(6px, 1.2cqmin, 12px);
+    background: linear-gradient(#f6f3ea, #e9e4d6);
+    color: var(--ink);
+    box-shadow: 0 .6cqmin 2cqmin rgba(0, 0, 0, .45);
+    rotate: -.6deg;
+    z-index: 4;
+  }
+  .notice::before, .notice::after { content: ""; position: absolute; top: -4px; width: 22%; height: 9px; background: rgba(255, 255, 255, .55); rotate: -4deg; }
+  .notice::before { left: 6%; }
+  .notice::after { right: 6%; rotate: 5deg; }
+  .notice-title { display: flex; align-items: center; gap: .4em; font-size: clamp(16px, min(4.2cqw, 3.2cqh), 28px); font-weight: 900; line-height: 1.1; letter-spacing: -.01em; color: #1b2453; }
+  .notice-title .kku-title { color: #1b2453; --fy-element-width: 0.11em; }
+  .notice-title::before { content: ""; flex: none; width: .5em; height: .5em; border-radius: 2px; background: #d23c3c; }
+  .notice-sub { margin-top: clamp(2px, .6cqmin, 6px); font-size: clamp(11px, min(2.9cqw, 2.2cqh), 16px); font-weight: 800; color: #3a4270; line-height: 1.3; }
+  .rules { margin-top: clamp(4px, 1cqmin, 10px); padding: 0; list-style: none; font-size: clamp(11px, 1.48cqmin, 13.5px); line-height: 1.38; color: #2c3150; }
+  .rules li + li { margin-top: .3em; }
+  .sched { margin-top: clamp(5px, 1.1cqmin, 11px); width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: clamp(11px, 1.3cqmin, 12.5px); text-align: center; }
+  .lang-ko .sched th { font-family: 'Gowun Dodum', sans-serif; }
+  .sched th, .sched td { border: 1px solid #b9b3a2; padding: .12em 0; }
+  .sched th { background: #1b2453; color: #f6f3ea; font-weight: 600; }
+  .sched td { color: #2f6db5; font-weight: 600; }
+  .sched .today { background: #ffe9a8; }
+  .sched th.today { color: #1b2453; }
+  .sched caption { caption-side: bottom; padding-top: .3em; text-align: right; font-family: 'Nunito', 'Gowun Dodum', sans-serif; font-size: clamp(11px, 1.3cqmin, 12.5px); color: #5a5f78; }
+  .lang-ko .sched caption { font-family: 'Gowun Dodum', sans-serif; }
+  /* Phones fold the rules away (still read by screen readers). */
+  .notice .rules, .notice .sched { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  .sign { display: none; position: absolute; left: 80%; top: 33%; width: clamp(40px, 7cqmin, 64px); height: auto; translate: -50% 0; filter: drop-shadow(0 .4cqmin .8cqmin rgba(0,0,0,.4)); }
+  .clock {
+    position: absolute; right: 3%; top: 2.6%; z-index: 4;
+    padding: .25em .5em; border-radius: .3em;
+    background: #0b0e1c; box-shadow: inset 0 0 0 2px #2c3355, 0 .4cqmin 1.4cqmin rgba(0,0,0,.4);
+    font: 600 clamp(15px, 3cqmin, 26px)/1 'IBM Plex Mono', monospace; letter-spacing: .04em; color: #ff8f5a; text-shadow: 0 0 .4em rgba(255, 120, 80, .7);
+  }
+  .clock .colon { animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: .15; } }
+
+  /* ---- Roots: four lanterns with roots under them ---- */
+  .roots {
+    position: absolute; left: 1%; top: 31%; height: 44%; width: 14.5%; z-index: 6;
+    display: flex; flex-direction: column; justify-content: space-around; align-items: center; padding: 0; list-style: none;
+  }
+  .root { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .root svg { width: clamp(20px, min(6.5cqw, 5cqh), 40px); height: auto; overflow: visible; filter: drop-shadow(0 0 .9cqmin rgba(255, 207, 112, .75)); }
+  .root .glow { fill: #ffd27a; transition: fill .4s; }
+  .root-name { margin-top: .1em; font-size: var(--tag-size); font-weight: 800; line-height: 1.1; color: #ffe2a6; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  .root.firing .glow { fill: #fff6d8; }
+
+  /* ---- Reference lines ---- */
+  .links { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; overflow: visible; }
+  .links .ref { fill: none; stroke: var(--ref); stroke-width: clamp(2px, .36cqmin, 3.4px); stroke-linecap: round; filter: drop-shadow(0 0 3px rgba(185, 242, 124, .85)); }
+  .links .cyc { fill: none; stroke: var(--cycle); stroke-width: clamp(1.6px, .3cqmin, 2.8px); stroke-linecap: round; stroke-dasharray: 5 4; opacity: .75; }
+  .links .cyc.blink { animation: cycblink .45s ease-in-out 6 alternate; }
+  @keyframes cycblink { from { opacity: .25; } to { opacity: 1; stroke-width: 3.4px; } }
+  .links .gone { display: none; }
+
+  /* ---- Floor and items ---- */
+  .floor { position: absolute; left: 15.5%; right: 1%; top: 30.5%; height: 44.6%; }
+  .item {
+    position: absolute; left: var(--x); top: var(--y); z-index: 6;
+    translate: -50% -50%;
+    display: flex; flex-direction: column; align-items: center;
+    width: var(--tag-w);
+    padding: 0; border: 0; background: none; cursor: grab;
+    touch-action: none; user-select: none; -webkit-user-select: none;
+    transition: opacity .5s;
+  }
+  /* On short phones the five-line opinions tag reaches down to the cringe box below it: the tag
+     goes on top, and in English the box steps down out of its way (the short-phone block). */
+  .item[data-id="opinions"] { z-index: 7; }
+  .item:focus { outline: none; }
+  .item:focus-visible .tag { outline: 2px solid var(--amber); outline-offset: 2px; }
+  .item.dragging { z-index: 30; cursor: grabbing; }
+  .item.held { z-index: 30; }
+  .item.held .prop { translate: 0 -12%; filter: drop-shadow(0 1.4cqmin 1cqmin rgba(0,0,0,.55)); }
+  .item.binned { visibility: hidden; opacity: 0; pointer-events: none; }
+  .item.flying { pointer-events: none; z-index: 25; }
+  .item.parked { z-index: 7; cursor: default; }
+  .item.parked .tag { display: none; }
+  .prop { position: relative; display: block; width: var(--prop); height: var(--prop); rotate: var(--r, 0deg); transition: filter .4s, translate .2s; filter: drop-shadow(0 .5cqmin .4cqmin rgba(0, 0, 0, .45)); }
+  .prop svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .item[data-id="cringe"] .prop { width: calc(var(--prop) * 1.3); height: calc(var(--prop) * 1.3); margin-top: calc(var(--prop) * -.3); }
+  /* Before 11 p.m. the worries will not lie still: they fidget, the two worries lean on each
+     other, the cringe box kicks from inside. Stop-the-world freezes them mid-move. */
+  .item.restless .prop { animation: fidget var(--fd, .6s) ease-in-out var(--fdl, 0s) infinite alternate; }
+  .item.restless[data-id="worry"] .prop { animation-name: lean-r; }
+  .item.restless[data-id="worry2"] .prop { animation-name: lean-l; }
+  .item.restless[data-id="cringe"] .prop { animation: kick 1.15s ease-out var(--fdl, 0s) infinite; transform-origin: 50% 100%; }
+  @keyframes fidget { from { transform: rotate(-5deg); } to { transform: rotate(5deg) translateY(-4%); } }
+  @keyframes lean-r { from { transform: rotate(3deg); } to { transform: rotate(11deg) translateY(-3%); } }
+  @keyframes lean-l { from { transform: rotate(-3deg); } to { transform: rotate(-11deg) translateY(-3%); } }
+  @keyframes kick { 0%, 55%, 100% { transform: none; } 64% { transform: translateY(-9%) rotate(-4deg); } 74% { transform: none; } 84% { transform: translateY(-5%) rotate(3deg); } 92% { transform: none; } }
+  .stw .item .prop { animation-play-state: paused !important; }
+  .dawn .item .prop, .item:is(.held, .dragging, .parked) .prop { animation: none !important; }
+  .item.marked .prop { filter: drop-shadow(0 0 .7cqmin rgba(185, 242, 124, .95)) drop-shadow(0 .4cqmin .4cqmin rgba(0, 0, 0, .4)); }
+  .tag {
+    position: relative; display: block; margin-top: .15em; max-width: 100%;
+    padding: .12em .45em .16em; border-radius: .35em;
+    background: var(--tag); color: #2a2c3a;
+    font-size: var(--tag-size); font-weight: 700; line-height: 1.15; text-align: center;
+    box-shadow: 0 1px 0 rgba(0,0,0,.25), 0 .3cqmin .8cqmin rgba(0,0,0,.3);
+    transition: box-shadow .4s;
+  }
+  .lang-ko .tag { font-weight: 400; line-height: 1.22; }
+  .tag .sub { display: block; color: #6a6c7c; font-weight: 600; }
+  .lang-ko .item[data-id="slip"] .tag .sub { display: inline; } /* one line fewer: on short phones its prop then clears the compliment's tag */
+  .item.marked .tag { box-shadow: 0 0 0 2px var(--ref), 0 .3cqmin .8cqmin rgba(0,0,0,.3); }
+  .check {
+    position: absolute; right: -18%; top: -14%; width: 46%; aspect-ratio: 1; border-radius: 50%;
+    background: var(--ref); box-shadow: 0 0 0 2px #1d2440; opacity: 0; scale: .3; transition: opacity .25s, scale .35s cubic-bezier(.3, 1.6, .5, 1);
+  }
+  .check::after { content: ""; position: absolute; left: 30%; top: 18%; width: 28%; height: 48%; border: solid #1d3a10; border-width: 0 .45cqmin .45cqmin 0; rotate: 40deg; }
+  .item.marked .check { opacity: 1; scale: 1; }
+  .rc {
+    position: absolute; left: -16%; top: -12%; padding: .05em .35em; border-radius: .3em;
+    background: #2b2240; color: var(--cycle); box-shadow: 0 0 0 1.5px var(--cycle);
+    font: 600 clamp(11px, 1.3cqmin, 12px)/1.2 'IBM Plex Mono', monospace; white-space: nowrap; opacity: 0; transition: opacity .3s;
+  }
+  .item.counted .rc { opacity: 1; }
+  .sticker {
+    position: absolute; left: 50%; bottom: 90%; translate: -50% 0; rotate: -6deg; z-index: 2;
+    width: max-content; max-width: clamp(104px, 15cqmin, 150px);
+    padding: .25em .45em .3em; border-radius: .2em;
+    background: #ffe14d; color: #1d1a08; box-shadow: 0 0 0 1px rgba(60, 50, 0, .5), 0 .3cqmin 1cqmin rgba(0,0,0,.45);
+    font-size: 11px; font-weight: 800; line-height: 1.18; text-align: left;
+    opacity: 0; pointer-events: none;
+  }
+  .lang-ko .sticker { font-weight: 400; }
+  .sticker b { display: block; font-weight: 900; border-bottom: 1px dashed rgba(0,0,0,.4); margin-bottom: .2em; padding-bottom: .15em; }
+  .lang-ko .sticker b { font-weight: 400; }
+  .sticker::after { content: "No. 1013-2300"; display: block; margin-top: .2em; font: 600 11px/1 'IBM Plex Mono', monospace; letter-spacing: .02em; opacity: .6; }
+  .item.stickered .sticker { opacity: 1; }
+  .item.parked .sticker { rotate: -4deg; }
+  .item:not(.parked) .sticker { translate: -76% 0; } /* phones: the box lies at the right edge */
+
+  /* ---- Bins ---- */
+  .bins {
+    position: absolute; left: 1.5%; right: 1.5%; top: 75.4%; height: 14%; z-index: 5;
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 0 1.2%; align-items: end;
+  }
+  .bin { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; transition: scale .25s; }
+  .bin-art { position: relative; width: min(84%, 9.4cqh); }
+  .bin-art svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .bin .mouth { position: absolute; width: 2px; height: 2px; }
+  .bin .lid { transform-box: fill-box; transform-origin: 0% 100%; }
+  .bin-label {
+    margin-top: .2em; padding: .14em .5em .18em; border-radius: .4em; min-width: 80%;
+    background: #50577a; color: #c9cde0; text-align: center;
+    font-size: clamp(11px, min(2.9cqw, 2.2cqh), 16px); font-weight: 900; line-height: 1.1;
+    transition: background .35s, color .35s, box-shadow .35s;
+  }
+  .bin-label .kku-bin { color: #e6e8f3; }
+  .bin.lit .bin-label { background: #fbf8ef; color: var(--c-ink); box-shadow: 0 0 0 2px var(--c), 0 0 1.6cqmin var(--c); }
+  .bin.lit .bin-label .kku-bin { color: var(--c-ink); }
+  .carrying .bin { scale: 1.06; }
+  .bin.over { scale: 1.16 !important; }
+  .bin.over .bin-label { background: #fff; color: var(--c-ink); box-shadow: 0 0 0 3px var(--amber); }
+  .bin.over .bin-label .kku-bin { color: var(--c-ink); }
+  .bin.over .bin-art::before {
+    content: ""; position: absolute; left: 50%; top: -1.3em; translate: -50% 0; width: 0; height: 0; z-index: 1;
+    border: .55em solid transparent; border-top: .75em solid var(--amber); border-bottom: 0;
+    filter: drop-shadow(0 0 4px rgba(255, 207, 112, .8)); animation: nudge .8s ease-in-out infinite alternate;
+  }
+  @keyframes nudge { to { translate: -50% .35em; } }
+  .bin-bulky .bin-art { width: min(100%, 11cqh); }
+
+  /* ---- Cat on the wall ---- */
+  .cat { position: absolute; left: 0; top: 0; width: var(--cat); z-index: 11; pointer-events: none; }
+  /* The lamp's own glow: the cat is caught in it, mid-leap, when the world stops. */
+  .halo {
+    position: absolute; left: 0; top: 0; width: calc(var(--cat) * 2.2); aspect-ratio: 1; z-index: 3; pointer-events: none;
+    translate: -50% -50%; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 240, 200, .9), rgba(255, 207, 112, .5) 40%, rgba(255, 207, 112, .14) 68%, transparent);
+    opacity: .35; transition: opacity .25s;
+  }
+  .stw .halo { opacity: 1; }
+  .cat.flip svg { scale: -1 1; }
+  .cat svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 0 1.2px rgba(200, 210, 255, .85)) drop-shadow(0 0 4px rgba(150, 165, 230, .35)); }
+  .cat .pose { display: none; }
+  .cat[data-pose="walk"] .walk, .cat[data-pose="leap"] .leap, .cat[data-pose="sit"] .sit { display: inline; }
+  .cat .leg { stroke: #0c0f1e; stroke-width: 3; stroke-linecap: round; }
+  .cat[data-pose="walk"] .leg.a { animation: stepA .36s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 0; }
+  .cat[data-pose="walk"] .leg.b { animation: stepA .36s ease-in-out infinite alternate-reverse; transform-box: fill-box; transform-origin: 50% 0; }
+  @keyframes stepA { from { rotate: -22deg; } to { rotate: 22deg; } }
+  .cat .sit .tail { animation: swish 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: 100% 100%; }
+  @keyframes swish { 50% { rotate: 14deg; } }
+
+  /* ---- Stop-the-world ---- */
+  .vignette { position: absolute; inset: 0; z-index: 9; pointer-events: none; opacity: 0; transition: opacity .9s; box-shadow: inset 0 0 18cqmin 6cqmin rgba(4, 6, 18, .78); }
+  .band {
+    position: absolute; left: 0; right: 0; top: 16.4%; height: clamp(30px, 6.4cqmin, 52px); z-index: 9; pointer-events: none;
+    display: flex; align-items: center; justify-content: center; gap: .7em; padding: 0 3%;
+    background: repeating-linear-gradient(-45deg, rgba(12, 15, 32, .92) 0 14px, rgba(24, 28, 52, .92) 14px 28px);
+    border-block: 2px solid var(--amber);
+    color: #ffe9b8; font-size: clamp(12px, 2.1cqmin, 19px); font-weight: 800; text-align: center; line-height: 1.15;
+    opacity: 0; translate: 0 -30%; transition: opacity .5s, translate .5s;
+  }
+  .lang-ko .band { font-weight: 400; }
+  .band .pause { flex: none; width: .8em; height: .9em; border-inline: .26em solid var(--amber); }
+  .stw .vignette { opacity: 1; }
+  .stw .band { opacity: 1; translate: 0 0; }
+  .stw .cloud, .stw .moth, .stw .clock .colon, .stw .sit .tail { animation-play-state: paused; }
+  .stw .cat .leg { animation-play-state: paused !important; } /* a visitor who starts before 11 p.m. stops it mid-step */
+  .stw .town { filter: saturate(.4) brightness(.8); }
+  /* Freeze frame (1.5–3 s): the picture goes grey like a paused video and a big pause sign
+     comes up in the middle; it then shrinks into the band's own pause sign. The cat sits above
+     the grey: a black shape hanging in the lamp's glow. */
+  .freeze { position: absolute; inset: 0; z-index: 8; pointer-events: none; opacity: 0; transition: opacity .7s; -webkit-backdrop-filter: grayscale(.9) brightness(.92); backdrop-filter: grayscale(.9) brightness(.92); }
+  .freeze.on { opacity: 1; transition-duration: .12s; }
+  .bigpause {
+    position: absolute; left: 50%; top: 52%; z-index: 12; pointer-events: none;
+    width: clamp(70px, 24cqmin, 170px); aspect-ratio: 1; translate: -50% -50%;
+    display: flex; align-items: center; justify-content: center; gap: 15%;
+    border-radius: 22%; background: rgba(10, 13, 30, .62); box-shadow: 0 0 0 2px rgba(255, 207, 112, .55), 0 1cqmin 4cqmin rgba(0, 0, 0, .45);
+    opacity: 0; visibility: hidden;
+  }
+  .bigpause i { width: 17%; height: 50%; border-radius: 3px; background: var(--amber); box-shadow: 0 0 1.4cqmin rgba(255, 207, 112, .8); }
+  .bigpause.on { visibility: visible; opacity: 1; }
+
+  /* ---- Speech: the PA, bubbles, notes ---- */
+  .pa, .bubble, .memo {
+    position: absolute; left: 0; top: 0; z-index: 32; pointer-events: none;
+    max-width: min(64cqw, 260px); width: max-content;
+    font-size: clamp(12px, min(3.1cqw, 2.3cqh), 16px); font-weight: 700; line-height: 1.32;
+    opacity: 0; transition: opacity .3s, scale .3s; scale: .9;
+  }
+  .lang-ko :is(.pa, .bubble, .memo) { font-weight: 400; }
+  :is(.pa, .bubble, .memo).on { opacity: 1; scale: 1; }
+  .pa { display: flex; align-items: center; gap: .45em; padding: .45em .75em; border-radius: 999px; background: #fff3d6; color: #3b2a10; box-shadow: 0 .4cqmin 1.6cqmin rgba(0,0,0,.4); }
+  .pa svg { flex: none; width: 1.2em; height: 1.2em; }
+  .bubble { padding: .55em .8em; border-radius: .8em; background: #fbfaf6; color: #23263a; box-shadow: 0 .5cqmin 1.8cqmin rgba(0,0,0,.45); }
+  .bubble::after { content: ""; position: absolute; left: var(--tail, 50%); width: 12px; height: 12px; background: inherit; rotate: 45deg; translate: -50% 0; }
+  .bubble[data-side="above"]::after { bottom: -5px; }
+  .bubble[data-side="below"]::after { top: -5px; }
+  .bubble[data-side="none"]::after { display: none; }
+  .bubble.cyc { background: #2b2240; color: #ffe0d8; box-shadow: 0 0 0 2px var(--cycle), 0 .5cqmin 1.8cqmin rgba(0,0,0,.45); }
+  .bubble.held { box-shadow: 0 0 0 2px var(--ref), 0 .5cqmin 1.8cqmin rgba(0,0,0,.45); }
+  .memo {
+    display: flex; gap: .5em; align-items: flex-start; max-width: min(56cqw, 230px);
+    padding: .5em .7em .55em; background: #fff59a; color: #2f2a10; rotate: -3deg;
+    box-shadow: 0 .5cqmin 1.6cqmin rgba(0,0,0,.45);
+  }
+  .memo svg { flex: none; width: 1.6em; height: 1.6em; margin-top: .05em; }
+  .memo.note { background: #e8f6ff; color: #12304a; rotate: 2deg; }
+
+  /* ---- Receipt ---- */
+  /* Phones: top left, clear of the 06:12 clock in the top right corner. */
+  .receipt {
+    position: absolute; left: 1.6%; top: 1.4%; z-index: 14; width: min(77.6cqw, 27em); max-height: 47%;
+    padding: clamp(8px, 1.6cqmin, 16px) clamp(10px, 2cqmin, 18px) clamp(14px, 2.4cqmin, 22px);
+    background: #f7f5ee; color: #1f2230;
+    font: 400 clamp(11px, min(2.9cqw, 2.2cqh), 15px)/1.32 'IBM Plex Mono', monospace;
+    box-shadow: 0 1cqmin 3cqmin rgba(0, 0, 0, .55);
+    -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 12px 100%;
+    mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 12px 100%;
+    opacity: 0; visibility: hidden; pointer-events: none;
+  }
+  /* Wider phones and tablets (648×732, the desktop home stage) have room on both sides: centred,
+     clear of the roots on the left and the clock on the right. */
+  @container page (min-width: 600px) { .receipt { left: 50%; translate: -50% 0; width: min(86cqw, 27em); } }
+  .lang-ko .receipt { font-family: 'IBM Plex Mono', 'Gowun Dodum', monospace; }
+  .receipt.on { opacity: 1; visibility: visible; }
+  .receipt .r-head { display: flex; justify-content: space-between; gap: 1em; font-size: max(11px, .86em); color: #6a6d7c; }
+  .receipt .r-title { margin: .15em 0 .3em; padding-bottom: .25em; border-bottom: 1px dashed #9a9cab; text-align: center; font-weight: 600; font-size: 1em; letter-spacing: .08em; }
+  .lang-ko .receipt .r-title, .lang-ko .receipt .r-foot, .lang-ko .receipt .r-line { font-family: 'Gowun Dodum', sans-serif; }
+  .receipt .r-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.2em; padding: 0; list-style: none; font-size: max(11px, .92em); }
+  .receipt .r-rows li { display: flex; justify-content: space-between; gap: .5em; }
+  .lang-ko .receipt .r-rows .nm { font-family: 'Gowun Dodum', sans-serif; }
+  .receipt .r-line { margin-top: .15em; }
+  .receipt .r-line.total { margin-top: .4em; padding-top: .3em; border-top: 1px dashed #9a9cab; font-weight: 600; }
+  .receipt .r-foot { margin-top: .5em; padding-top: .4em; border-top: 1px dashed #9a9cab; font-size: max(11px, .92em); color: #3d4152; }
+  .receipt .r-head, .receipt .barcode { display: none; }
+  @container page (min-height: 700px) { .receipt .r-head { display: flex; } .receipt .barcode { display: block; } }
+  @container page (max-height: 560px) { .receipt .r-rows { display: none; } }
+  /* The tag: the office stamps the sleeper's request for five more minutes. Short screens: at the
+     right of the title row (the receipt grows no taller); with a barcode: beside the barcode. */
+  .receipt .r-title:has(.stamp) { text-align: left; }
+  .receipt .stamp {
+    float: right; margin: -.1em 0 -.4em .5em; padding: .14em .45em .18em; border: 2px solid #c8322b; border-radius: .3em;
+    color: #c8322b; font: 800 11px/1.15 'Nunito', sans-serif; letter-spacing: .01em; white-space: nowrap;
+    rotate: -5deg; mix-blend-mode: multiply; opacity: 0;
+  }
+  .receipt .stamp b { margin-left: .3em; font-size: 1.2em; font-weight: 900; letter-spacing: .06em; }
+  .lang-ko .receipt .stamp { font-family: 'Gowun Dodum', sans-serif; font-weight: 400; }
+  .lang-ko .receipt .stamp b { font-weight: 400; }
+  .receipt.stamped .stamp { opacity: .9; }
+  @container page (min-height: 700px) {
+    .receipt .r-title:has(.stamp) { text-align: center; }
+    .receipt .barcode { width: 38%; }
+    .receipt .stamp { float: none; position: absolute; right: clamp(10px, 2cqmin, 18px); bottom: clamp(14px, 2.4cqmin, 22px); margin: 0; font-size: 1em; }
+  }
+  .receipt .barcode { height: 1.6em; margin-top: .55em; background: repeating-linear-gradient(90deg, #1f2230 0 2px, transparent 2px 4px, #1f2230 4px 5px, transparent 5px 8px, #1f2230 8px 11px, transparent 11px 12px); opacity: .8; }
+
+  /* ---- Button ---- */
+  /* The button and a one-line hint share a row: bottom left on phones, under the band on the
+     right on wide screens. Opened on its own, the row stops short of the kit's corner links. */
+  .controls { position: absolute; left: 3%; right: 3%; bottom: 2.2%; z-index: 15; display: flex; align-items: center; gap: 10px; pointer-events: none; }
+  html:not(.embedded) .controls { right: 300px; }
+  @media (max-width: 600px) { html:not(.embedded) .controls { right: 88px; } }
+  .start {
+    position: relative; flex: none; pointer-events: auto;
+    display: inline-flex; align-items: center; gap: .55em;
+    min-height: 36px; padding: .45em 1em .45em .55em; border: 0; border-radius: 999px;
+    background: #ffcf70; color: #2a1e05; cursor: pointer;
+    font-size: clamp(13px, 1.9cqmin, 16px); font-weight: 900;
+    box-shadow: 0 0 0 2px #1d2440, 0 .4cqmin 1.4cqmin rgba(0,0,0,.45), 0 0 2cqmin rgba(255, 207, 112, .35);
+  }
+  .lang-ko .start { font-weight: 400; }
+  .start:hover { background: #ffd98a; }
+  .start:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .start .knob { width: 1.5em; height: 1.5em; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #ff8a7a, #c8322b 70%); box-shadow: inset 0 -2px 0 rgba(0,0,0,.25); }
+
+  /* One line on what to do: beside the button on phones, under it on wide screens. On phones
+     it steps aside while a bubble or a note is up. */
+  .hint {
+    margin-left: auto; min-width: 0;
+    color: #d9ddf0; font-size: clamp(11px, min(3cqw, 2.2cqh), 14px); font-weight: 700; line-height: 1.25; text-align: right;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .7); pointer-events: none; transition: opacity .3s;
+  }
+  .lang-ko .hint { font-weight: 400; }
+  .scene:has(.bubble.on, .memo.on) .hint { opacity: 0; }
+
+  /* ================================================================ wide layout */
+  @container page (min-width: 640px) and (min-aspect-ratio: 1/1) {
+    .scene {
+      --fence-top: 30%;
+      --fence-left: 29%;
+      --ground-y: 50%;
+      --town-top: 11%;
+      --lamp-left: 28.6%;
+      --lamp-top: 9%;
+      --lamp-bottom: 4%;
+      --arm: 12.5%;
+      --head-x: 41.1%;
+      --head-y: 10.5%;
+      --cone-w: 52cqw;
+      --prop: clamp(32px, 6.8cqmin, 62px);
+      --tag-w: min(9.6cqw, 132px);
+      --tag-size: clamp(11px, 1.6cqmin, 14.5px);
+      --cat: clamp(56px, 10cqmin, 100px);
+    }
+    .lamp { scale: 1 1; }
+    .notice-title { font-size: clamp(16px, 2.7cqmin, 24px); }
+    .notice-sub { font-size: clamp(11px, 1.6cqmin, 14px); }
+    .bin-label { font-size: clamp(11px, 1.6cqmin, 15px); }
+    .pa, .bubble, .memo { font-size: clamp(12px, 1.7cqmin, 15px); }
+    .receipt { font-size: clamp(11px, 1.45cqmin, 13.5px); }
+    .moon { right: 9%; top: 9%; }
+    .office {
+      display: block; position: absolute; left: 0; width: var(--fence-left); top: 4%; bottom: calc(100% - var(--ground-y));
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0) 85%, rgba(0,0,0,.35)),
+        repeating-linear-gradient(transparent 0 calc(3.2cqmin - 1px), rgba(0,0,0,.12) calc(3.2cqmin - 1px) 3.2cqmin),
+        #4a4f6d;
+      box-shadow: inset 0 clamp(5px, 1cqmin, 9px) 0 #5d6385;
+    }
+    .leftcol {
+      display: flex; flex-direction: column; gap: clamp(8px, 2.2cqh, 22px);
+      position: absolute; left: 3%; top: 7.5%; bottom: 3%; width: 23.5%;
+    }
+    .notice { position: relative; left: auto; top: auto; width: auto; flex: none; }
+    .notice .rules, .notice .sched { position: static; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+    .notice .rules { width: auto; }
+    .notice .sched { width: 100%; }
+    .roots { position: relative; left: auto; top: auto; width: auto; height: auto; flex: 1; min-height: 0; padding-top: 2cqh; }
+    .root svg { width: clamp(22px, 4.6cqmin, 42px); }
+    .clock { right: auto; left: 50%; top: 33.5%; translate: -50% 0; }
+    .floor { left: 29%; width: 37%; right: auto; top: 51.5%; height: auto; bottom: 3%; }
+    .bins { left: 67%; right: 2%; top: 26%; height: auto; bottom: 3.5%; grid-template-columns: 1fr 1.25fr 1fr; grid-template-rows: 1fr 1fr; gap: 2% 4%; }
+    html:not(.embedded) .bins { bottom: max(3.5%, 54px); }
+    .bin-art { width: min(88%, 16cqh); }
+    .bin-bulky .bin-art { width: min(100%, 19cqh); }
+    .band { top: .8%; height: clamp(30px, 5.6cqmin, 50px); }
+    .receipt { left: 2.4%; top: 6%; width: 25cqw; max-height: none; translate: none; }
+    .receipt .r-rows { grid-template-columns: 1fr; }
+    .item:not(.parked) .sticker { translate: -50% 0; }
+    .controls, html:not(.embedded) .controls { left: auto; right: 2.5%; bottom: auto; top: calc(.8% + clamp(30px, 5.6cqmin, 50px) + 1.4cqh); max-width: 30%; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .hint { margin-left: 0; font-size: clamp(11px, 1.6cqmin, 14px); }
+    .scene:has(.bubble.on, .memo.on) .hint { opacity: 1; }
+    .moon { right: 21%; top: 10%; }
+    .cloud { right: 14%; top: 9%; }
+    .sign { display: block; }
+
+  }
+  /* Wide and short (1100x620 and the like): the notice gets terser so the roots keep room. */
+  @container page (min-width: 640px) and (min-aspect-ratio: 1/1) and (max-height: 700px) {
+    .rules li + li { margin-top: .1em; }
+    .rules { line-height: 1.28; }
+    .sched caption { display: none; }
+  }
+
+  /* Phones with little height (the 358×396 and 328×408 home stages): smaller bin pictures so
+     the bin row and its names end above a slimmer button row; the button never sits on a bin. */
+  @container page (max-height: 470px) and ((max-width: 639.98px) or (max-aspect-ratio: 1/1)) {
+    .bins { top: 74.2%; }
+    .bin-art { width: min(84%, 7.6cqh); }
+    .controls { bottom: .8%; }
+    /* the bulky sticker sits low on its box here, over the bin pictures, clear of the kept
+       things on the floor just above */
+    .item.parked .sticker { bottom: 40%; translate: -40% 0; }
+    /* English only: the right-hand column is tight here, and the five-line opinions tag reached
+       halfway down the cringe box (and its kick). The box and burnout step down into the gap
+       above the bins, and the box's sticker rides higher, clear of the compliment. (The Korean
+       tag is three lines; moving the box there would only put burnout's tag on the bins.) */
+    .lang-en .item[data-id="cringe"] { --y: 60% !important; }
+    .lang-en .item[data-id="burnout"] { --y: 92% !important; }
+    .lang-en .item:not(.parked) .sticker { bottom: 100%; }
+    .start { min-height: 30px; padding: .2em .85em .2em .4em; }
+    .start .knob { width: 1.3em; height: 1.3em; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cloud, .moth, .moth::before, .moth::after, .clock .colon, .cat .leg, .cat .tail, .item .prop { animation: none !important; }
+    .sky, .band, .vignette, .item, .prop, .check, .bin, .bin-label, .pa, .bubble, .memo, .rc { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main class="stage">
+  <div class="scene" id="scene">
+    <div class="sky" aria-hidden="true"></div>
+    <div class="moon" aria-hidden="true"></div>
+    <div class="cloud" aria-hidden="true"></div>
+    <svg class="town" aria-hidden="true" preserveAspectRatio="xMidYMax slice"></svg>
+    <div class="office" aria-hidden="true"></div>
+    <div class="fence" aria-hidden="true"></div>
+    <div class="ground" aria-hidden="true"></div>
+    <div class="cone" aria-hidden="true"></div>
+    <div class="lamp" aria-hidden="true">
+      <i class="pole"></i><i class="arm"></i><i class="head"></i><i class="bulb"></i>
+      <svg class="speaker" viewBox="0 0 30 22"><path d="M2 8h6l10-6v18L8 14H2z" fill="#59618a" stroke="#1b2038" stroke-width="1.6" stroke-linejoin="round"/><path d="M21 6c2 1.4 3 3 3 5s-1 3.6-3 5" fill="none" stroke="#8b93bd" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </div>
+    <i class="moth" aria-hidden="true"></i><i class="moth m2" aria-hidden="true"></i><i class="moth prey" aria-hidden="true"></i>
+
+    <svg class="sign" viewBox="0 0 64 40" aria-hidden="true"><rect x="1" y="1" width="62" height="38" rx="4" fill="#2f7d4f" stroke="#cfe8d6" stroke-width="2"/><g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M27 12l5-6 5 6M32 6l6 10"/><path d="M42 22l3 7h-8M45 29H31"/><path d="M22 29l-5-6 6-2M17 23l7-12"/></g></svg>
+    <div class="clock" aria-hidden="true"><span class="hh">22</span><span class="colon">:</span><span class="mm">59</span></div>
+
+    <div class="leftcol">
+      <section class="notice" aria-labelledby="notice-title">
+        <h1 class="notice-title" id="notice-title">
+          <span data-lang="en">Mind Collection Notice</span>
+          <font-kku data-lang="ko" class="kku-title" font="gothic" size="clamp(16px, 3.3cqmin, 28px)">마음 수거 안내</font-kku>
+        </h1>
+        <p class="notice-sub">
+          <span data-lang="en">Every night at 11 p.m. · Method: mark and sweep</span>
+          <span data-lang="ko">매일 밤 11시 · 수거 방식: 표시하고 쓸기(마크 앤 스윕)</span>
+        </p>
+        <ol class="rules" data-lang="en">
+          <li>1. Anything reachable from a root (you, family, friends, tomorrow-you) is never collected.</li>
+          <li>2. Everything else is collected by type.</li>
+          <li>3. While we collect, the world pauses for a moment (stop-the-world).</li>
+        </ol>
+        <ol class="rules" data-lang="ko">
+          <li>1. 뿌리(나·가족·친구·내일의 나)에서 이어진 것은 수거하지 않습니다.</li>
+          <li>2. 이어지지 않은 것은 종류별로 수거합니다.</li>
+          <li>3. 수거하는 동안 세상이 잠시 멈춥니다(Stop-the-world).</li>
+        </ol>
+        <table class="sched">
+          <caption></caption>
+          <thead><tr></tr></thead>
+          <tbody><tr></tr></tbody>
+        </table>
+      </section>
+      <ul class="roots" aria-label=""></ul>
+    </div>
+
+    <svg class="links" aria-hidden="true">
+      <defs>
+        <marker id="tip-ref" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b9f27c"/></marker>
+        <marker id="tip-cyc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ff9d8a"/></marker>
+      </defs>
+    </svg>
+
+    <div class="floor"></div>
+    <div class="bins"></div>
+
+    <div class="halo" aria-hidden="true"></div>
+    <div class="cat" data-pose="walk" aria-hidden="true">
+      <svg viewBox="0 0 60 40">
+        <g class="pose walk">
+          <path class="tail" d="M11 19C4 16 3 8 7 3" fill="none" stroke="#0c0f1e" stroke-width="3.4" stroke-linecap="round"/>
+          <path class="leg a" d="M15 25v11"/><path class="leg b" d="M20 25v11"/><path class="leg a" d="M31 25v11"/><path class="leg b" d="M36 24v11"/>
+          <ellipse cx="25" cy="21" rx="15" ry="7.6" fill="#0c0f1e"/>
+          <circle cx="42" cy="15" r="7" fill="#0c0f1e"/>
+          <path d="M37 10l1.5-7 4.5 4.6zM44 8.6l3-6.4 2 7.2z" fill="#0c0f1e"/>
+          <circle cx="45" cy="14" r="1.5" fill="#ffd36e"/>
+          <path d="M12 14c6-3 18-3 26 0" fill="none" stroke="#3b4370" stroke-width="1" opacity=".8"/>
+        </g>
+        <g class="pose leap">
+          <path class="tail" d="M8 21C1 22-1 15 2 11" fill="none" stroke="#0c0f1e" stroke-width="3.4" stroke-linecap="round"/>
+          <path d="M37 22l11 3M35 24l10 6M15 23L4 29M18 24l-9 8" fill="none" stroke="#0c0f1e" stroke-width="3" stroke-linecap="round"/>
+          <ellipse cx="26" cy="20" rx="17" ry="6.4" fill="#0c0f1e" transform="rotate(-9 26 20)"/>
+          <circle cx="44" cy="12.5" r="6.8" fill="#0c0f1e"/>
+          <path d="M39 7.6l1.4-6.8 4.4 4.6zM46 6.4l3.2-6 1.6 7z" fill="#0c0f1e"/>
+          <circle cx="47" cy="11.6" r="1.5" fill="#ffd36e"/>
+          <path d="M12 16c7-5 19-6 27-3" fill="none" stroke="#3b4370" stroke-width="1" opacity=".8"/>
+        </g>
+        <g class="pose sit">
+          <path class="tail" d="M20 38C10 39 7 33 11 29" fill="none" stroke="#0c0f1e" stroke-width="3.4" stroke-linecap="round"/>
+          <path d="M23 38c-9 0-10-16 1-20 7-2 12 4 12 12 0 6-4 8-13 8z" fill="#0c0f1e"/>
+          <circle cx="33" cy="15" r="7" fill="#0c0f1e"/>
+          <path d="M28 10.2l1.4-7 4.6 4.6zM35 8.8l3-6.4 2 7.2z" fill="#0c0f1e"/>
+          <circle cx="36.4" cy="14" r="1.5" fill="#ffd36e"/>
+          <path d="M18 23c3-4 8-5 12-4" fill="none" stroke="#3b4370" stroke-width="1" opacity=".8"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="freeze" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="bigpause" aria-hidden="true"><i></i><i></i></div>
+    <div class="band" aria-hidden="true"><i class="pause"></i><span class="band-text"></span></div>
+
+    <div class="pa" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 1 6 6v4l2 3H4l2-3V9a6 6 0 0 1 6-6z" fill="#ffcf70" stroke="#3b2a10" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" fill="none" stroke="#3b2a10" stroke-width="1.6"/></svg>
+      <span class="pa-text"></span>
+    </div>
+    <div class="bubble" aria-hidden="true"></div>
+    <div class="memo" aria-hidden="true"></div>
+
+    <article class="receipt" aria-hidden="true"></article>
+
+    <div class="controls">
+      <button class="start" type="button"><i class="knob" aria-hidden="true"></i><span class="start-text"></span></button>
+      <p class="hint" aria-hidden="true"></p>
+    </div>
+    <p class="sr-only" id="howto"></p>
+    <p class="sr-only" aria-live="polite" id="say"></p>
+  </div>
+</main>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const stage = $('.stage');
+  const scene = $('#scene');
+  const floor = $('.floor');
+  const binsEl = $('.bins');
+  const links = $('.links');
+  const cat = $('.cat');
+  const receipt = $('.receipt');
+  const bubble = $('.bubble');
+  const memo = $('.memo');
+  const pa = $('.pa');
+  const sayEl = $('#say');
+  const NS = 'http://www.w3.org/2000/svg';
+  const reduce = TTY.reduce;
+
+  /* ------------------------------------------------------------ copy */
+  const L = TTY.t({
+    en: {
+      bell: 'Collection starting.',
+      band: 'The world pauses for a moment (stop-the-world).',
+      cycle: "Holding each other up. Nobody's holding them.",
+      chew: 'Things you kept chewing on go in food waste.',
+      holiday: 'Burnout: not in general waste. Special collection: a holiday.',
+      sticker: ['Bulky waste', 'fee: 3 years of cringing (paid)'],
+      // who still holds it, by root
+      refuse: {
+        me: "You're still holding on to this one. Can't throw it out.",
+        family: "Your family's still holding on to this one. Can't throw it out.",
+        friends: "Your friends are still holding on to this one. Can't throw it out.",
+        tomorrow: "Tomorrow-you is still holding on to this one. Can't throw it out.",
+      },
+      receipt: ['Collection done', 'freed {gb} GB of mind', 'paused “for a moment”: 7 h 12 min (sleep; longer is better)', 'next collection: tonight, 11 p.m.'],
+      weak: "Most worries don't survive a single day (the weak generational hypothesis).",
+      stamp: ['Snooze', 'DENIED'],
+      start: 'Start collection',
+      hint: 'Try throwing out the compliment.',
+      days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      daily: 'every day · 23:00',
+      roots: 'Roots',
+      howto: 'Drag an item onto a bin. With the keyboard: Enter picks it up, the arrow keys choose a bin, Enter puts it in, Escape puts it back. Delete tries to throw it out.',
+      picked: (item, bin) => `Picked up ${item}. Bin: ${bin}.`,
+      binned: (item, bin) => `${item}: into ${bin}.`,
+      back: 'Put back.',
+      gb: (n) => `${n} GB`,
+    },
+    ko: {
+      bell: '수거를 시작합니다.',
+      band: '세상이 잠시 멈춥니다(Stop-the-world).',
+      cycle: '서로 붙잡고 버티는 중. 정작 이 둘을 붙잡은 사람은 없음.',
+      chew: '곱씹은 건 음식물.',
+      holiday: '번아웃은 일반 쓰레기 아님. 전용 수거함: 휴가.',
+      sticker: ['대형 폐기물 신고 완료', '수수료: 이불킥 3년\u00a0치(완납)'],
+      refuse: {
+        me: '내가 아직 붙잡고 있어요. 못 버려요.',
+        family: '가족이 아직 붙잡고 있어요. 못 버려요.',
+        friends: '친구가 아직 붙잡고 있어요. 못 버려요.',
+        tomorrow: '내일의 내가 아직 붙잡고 있어요. 못 버려요.',
+      },
+      receipt: ['수거 완료', '확보된 마음 {gb}GB', '‘잠시’ 멈춤: 7시간 12분(수면 · 길수록 좋음)', '다음 수거: 오늘 밤 23:00'],
+      weak: '대부분의 걱정은 하루를 넘기지 못합니다(약한 세대 가설).',
+      stamp: ['‘5분만 더’', '반려'],
+      start: '수거 시작',
+      hint: '‘들은 칭찬’을 버려 보세요.',
+      days: ['월', '화', '수', '목', '금', '토', '일'],
+      daily: '매일 23:00',
+      roots: '뿌리',
+      howto: '물건을 수거함으로 끌어 놓으세요. 키보드: Enter로 집고, 화살표로 수거함을 고르고, Enter로 넣고, Esc로 내려놓습니다. Delete는 버리기 시도.',
+      picked: (item, bin) => `${item} 집음. 수거함: ${bin}.`,
+      binned: (item, bin) => `${item}: ${bin}에 넣음.`,
+      back: '내려놓음.',
+      gb: (n) => `${n}GB`,
+    },
+  });
+
+  const ROOTS = [
+    { id: 'me', name: { en: 'you', ko: '나' } },
+    { id: 'family', name: { en: 'family', ko: '가족' } },
+    { id: 'friends', name: { en: 'friends', ko: '친구' } },
+    { id: 'tomorrow', name: { en: 'tomorrow-you', ko: '내일의 나' } },
+  ];
+
+  // c: bin colour, ink: label ink when lit. guard: the guard's note when something of this kind
+  // lands in the wrong bin.
+  const BINS = [
+    { id: 'paper', c: '#2f6db5', ink: '#1d4a85', name: { en: 'Paper', ko: '종이' }, guard: { en: "That's paper, love.", ko: '이건 종이예요~' }, mouth: [50, 28] },
+    { id: 'plastic', c: '#f08a24', ink: '#a8540a', name: { en: 'Plastic', ko: '플라스틱' }, guard: { en: "That's plastic, love.", ko: '이건 플라스틱이에요~' }, mouth: [50, 28] },
+    { id: 'food', c: '#d8b02a', ink: '#86680a', name: { en: 'Food waste', ko: '음식물' }, guard: { en: "That's food waste, love.", ko: '이건 음식물이에요~' }, mouth: [50, 40] },
+    { id: 'general', c: '#f1f1f1', ink: '#3a5d48', name: { en: 'General', ko: '일반' }, guard: { en: "That's general waste, love.", ko: '이건 일반 쓰레기예요~' }, mouth: [50, 34] },
+    { id: 'bulky', c: '#ffe14d', ink: '#7a6400', name: { en: 'Bulky items', ko: '대형' }, guard: { en: "That's bulky waste, love.", ko: '이건 대형 폐기물이에요~' }, mouth: [40, 72] },
+    { id: 'battery', c: '#d23c3c', ink: '#9a1f1f', name: { en: 'Batteries', ko: '건전지' }, guard: { en: 'That goes in the battery box, love.', ko: '이건 건전지 함이에요~' }, mouth: [50, 34] },
+  ];
+  const binById = Object.fromEntries(BINS.map((b) => [b.id, b]));
+
+  // The heap. root: which root refers to it (null: none). refs: what it refers to. t: when the
+  // autoplay sweeps it (if it is garbage). gb: what it frees. dawn: its label once it is morning
+  // (tomorrow's lunch is today's by 06:12). fd/fdl: how a worry fidgets before 11 p.m.
+  const ITEMS = [
+    { id: 'compliment', root: 'me', refs: [], r: -5, label: { en: 'a compliment you got', ko: '들은 칭찬 한 마디' } },
+    { id: 'shortcut', root: 'tomorrow', refs: [], r: 4, label: { en: 'a shortcut you learned today', ko: '오늘 배운 단축키' }, dawn: { en: 'a shortcut you learned yesterday', ko: '어제 배운 단축키' } },
+    { id: 'lunch', root: 'friends', refs: [], r: -3, label: { en: 'lunch plans tomorrow', ko: '내일 점심 약속' }, dawn: { en: 'lunch plans today', ko: '오늘 점심 약속' } },
+    { id: 'voice', root: 'family', refs: [], r: 5, label: { en: "Mom's voice", ko: '엄마 목소리' } },
+    { id: 'todo', root: null, refs: [], bin: 'paper', t: 7.4, gb: 0.1, r: 6, fd: .7, fdl: -.2, label: { en: 'a finished to-do list', ko: '다 끝낸 할 일 목록' } },
+    { id: 'opinions', root: null, refs: [], bin: 'plastic', t: 8.0, gb: 0.3, r: -6, fd: .55, fdl: -.4, label: { en: "other people's opinions", ko: '남의 평가' }, sub: { en: '(light, never rot)', ko: '(가볍고 오래 안 썩음)' } },
+    { id: 'lecture', root: null, refs: [], bin: 'food', t: 8.4, gb: 0.3, r: -4, fd: .45, fdl: -.1, note: 'chew', label: { en: 'a lecture you kept chewing on', ko: '곱씹던 잔소리' } },
+    { id: 'slip', root: null, refs: [], bin: 'general', t: 9.2, gb: 0.2, r: 8, fd: .5, fdl: -.3, label: { en: 'a slip in the meeting', ko: '회의에서 한 말실수' }, sub: { en: '(forgotten)', ko: ' (다들 벌써 잊음)' } },
+    { id: 'worry', root: null, refs: ['worry2'], bin: 'general', t: 9.9, gb: 0.2, r: -3, fd: .65, fdl: 0, label: { en: 'worry', ko: '걱정' } },
+    { id: 'worry2', root: null, refs: ['worry'], bin: 'general', gb: 0.2, r: 4, fd: .65, fdl: -.325, label: { en: 'worrying about the worry', ko: '걱정에 대한 걱정' } },
+    { id: 'burnout', root: null, refs: [], bin: 'battery', t: 11.6, gb: 0.5, r: -8, fd: .8, fdl: -.5, note: 'holiday', label: { en: 'burnout', ko: '번아웃' } },
+    { id: 'cringe', root: null, refs: [], bin: 'bulky', t: 12.9, gb: 0.5, r: 3, fdl: -.6, label: { en: 'the cringe from three years ago', ko: '3년 전 흑역사' } },
+  ];
+  // How long a note stays up (s): long enough to read at 8 Korean characters or 3 English words a second.
+  const NOTE_MS = { chew: 3000, holiday: 3000 };
+  const byId = Object.fromEntries(ITEMS.map((it) => [it.id, it]));
+
+  // Where things lie on the floor, in % of the floor box: [x, y]. The four kept things are
+  // placed so that, once the floor is swept, no root's line passes through another kept thing
+  // (on phones the receipt covers the top row, so they keep to the two lower rows).
+  const SPOTS = {
+    wide: {
+      compliment: [12, 14], todo: [37, 11], worry: [63, 15], worry2: [88, 10],
+      opinions: [12, 50], voice: [37, 47], lecture: [62, 52], cringe: [87, 48],
+      shortcut: [12, 86], slip: [37, 87], lunch: [62, 85], burnout: [87, 87],
+    },
+    narrow: {
+      todo: [13, 12], worry: [38, 15], worry2: [63, 10], opinions: [88, 12],
+      voice: [13, 49], lecture: [38, 51], compliment: [63, 48], cringe: [88, 54],
+      shortcut: [13, 87], lunch: [38, 86], slip: [63, 88], burnout: [88, 85],
+    },
+  };
+
+  /* ------------------------------------------------------------ the collector: mark */
+  // Breadth-first from the roots along every reference. Returns what it reached and the
+  // edges in the order it walked them (the autoplay draws them in that order).
+  const ROOT_IDS = new Set(ROOTS.map((r) => r.id));
+  const out = (id) => (ROOT_IDS.has(id) ? ITEMS.filter((it) => it.root === id).map((it) => it.id) : byId[id].refs);
+  function mark() {
+    const reached = new Set();
+    const walked = [];
+    const queue = ROOTS.map((r) => r.id);
+    while (queue.length) {
+      const from = queue.shift();
+      for (const to of out(from)) {
+        walked.push([from, to]);
+        if (!reached.has(to)) { reached.add(to); queue.push(to); }
+      }
+    }
+    return { reached, walked };
+  }
+  // What reference counting would see: how many things point at each item, garbage or not.
+  function refCounts() {
+    const rc = Object.fromEntries(ITEMS.map((it) => [it.id, 0]));
+    ROOTS.forEach((r) => out(r.id).forEach((to) => rc[to]++));
+    ITEMS.forEach((it) => it.refs.forEach((to) => rc[to]++));
+    return rc;
+  }
+  const GC = mark();
+  const RC = refCounts();
+  const reachable = (it) => GC.reached.has(it.id);
+  const garbage = ITEMS.filter((it) => !reachable(it));
+
+  /* ------------------------------------------------------------ drawings */
+  const star = (cx, cy, r, fill) => {
+    let d = '';
+    for (let k = 0; k < 10; k++) {
+      const a = -Math.PI / 2 + k * Math.PI / 5;
+      const rr = k % 2 ? r * .45 : r;
+      d += (k ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(2) + ' ' + (cy + rr * Math.sin(a)).toFixed(2);
+    }
+    return `<path d="${d}Z" fill="${fill}"/>`;
+  };
+  const S = 'stroke-linejoin="round" stroke-linecap="round"';
+  const PROPS = {
+    compliment: `<path d="M9 9h30a5 5 0 0 1 5 5v15a5 5 0 0 1-5 5H23l-9 7v-7H9a5 5 0 0 1-5-5V14a5 5 0 0 1 5-5z" fill="#ffe1ea" stroke="#3a2a40" stroke-width="2" ${S}/>${star(24, 21.5, 8, '#ff6f96')}<path d="M36 13l1.2 2.4M40 16l-2.4 1" stroke="#ff6f96" stroke-width="1.6" ${S}/>`,
+    shortcut: `<path d="M3 15l3-5h15l3 5v15l-3 4H6l-3-4z" fill="#8f97b3" stroke="#22273b" stroke-width="2" ${S}/><text x="13.5" y="25.5" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="6.6" fill="#22273b">Ctrl</text><path d="M20 19l4-7h18l4 7v19l-4 5H24l-4-5z" fill="#c9cee0" stroke="#22273b" stroke-width="2" ${S}/><rect x="24" y="15" width="18" height="20" rx="3" fill="#f1f3fa"/><text x="33" y="31" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="15" fill="#22273b">K</text>`,
+    lunch: `<rect x="6" y="10" width="36" height="31" rx="4" fill="#fffaf0" stroke="#3a2a2a" stroke-width="2"/><path d="M6 14a4 4 0 0 1 4-4h28a4 4 0 0 1 4 4v5H6z" fill="#e8574a" stroke="#3a2a2a" stroke-width="2" ${S}/><path d="M14 6v7M34 6v7" stroke="#3a2a2a" stroke-width="2.4" ${S}/><path d="M13 29a8 5 0 0 0 16 0z" fill="#f5f5f5" stroke="#3a2a2a" stroke-width="1.6" ${S}/><path d="M17 26c0-2 2-2 2-4M22 26c0-2 2-2 2-4" fill="none" stroke="#c9a77a" stroke-width="1.3" ${S}/><path d="M32 23v13M35.5 23v13" stroke="#8a5a35" stroke-width="1.6" ${S}/>`,
+    voice: `<path d="M12 8c2-1 4 0 5 2l2.4 5c.8 2 0 3.2-1.2 4.2l-2 1.6c1.4 3.4 4.4 6.4 7.8 7.8l1.6-2c1-1.2 2.2-2 4.2-1.2l5 2.4c2 1 3 3 2 5l-1.2 2.6c-1 2-3 3.2-5.2 3C19 39 9 29 8 16.2 7.8 13 9 10 12 8z" fill="#ffb27a" stroke="#4a2a20" stroke-width="2" ${S}/><path d="M28 12a9 9 0 0 1 8 8M28 5a16 16 0 0 1 15 15" fill="none" stroke="#ffd36e" stroke-width="2.4" ${S}/><path d="M37 36c-1.6-1.6-3.4-.2-2.2 1.6L37 40l2.2-2.4c1.2-1.8-.6-3.2-2.2-1.6z" fill="#ff7aa2"/>`,
+    todo: `<path d="M10 6h22l7 7v29H10z" fill="#f4f1e8" stroke="#3a3530" stroke-width="2" ${S}/><path d="M32 6v7h7" fill="#dcd6c6" stroke="#3a3530" stroke-width="2" ${S}/><path d="M14 18l2 2 3.4-4M14 26.5l2 2 3.4-4M14 35l2 2 3.4-4" fill="none" stroke="#2f6db5" stroke-width="2" ${S}/><path d="M23 19h11M23 27.5h11M23 36h8" stroke="#9a9384" stroke-width="2" ${S}/><path d="M22 19h13M22 27.5h13M22 36h10" stroke="#3a3530" stroke-width="1" ${S}/>`,
+    opinions: `<path d="M27 3l-3.4 11" stroke="#f08a24" stroke-width="2.6" ${S}/><path d="M11 13h26l-3.4 29H14.4z" fill="rgba(206, 232, 255, .32)" stroke="#e1f0ff" stroke-width="2" ${S}/><path d="M9.5 13h29" stroke="#e1f0ff" stroke-width="3" ${S}/><path d="M15 18l2 20" stroke="rgba(255,255,255,.55)" stroke-width="1.6" ${S}/>${star(18.6, 27, 3.6, '#ffd36e')}${star(24.4, 27, 3.6, '#ffd36e')}${star(30.2, 27, 3.6, 'rgba(255,211,110,.3)')}`,
+    lecture: `<g mask="url(#bite)"><path d="M9 9h30a5 5 0 0 1 5 5v15a5 5 0 0 1-5 5H23l-9 7v-7H9a5 5 0 0 1-5-5V14a5 5 0 0 1 5-5z" fill="#e3cd8e" stroke="#4a3a1a" stroke-width="2" ${S}/></g><path d="M10 17h18M10 22.5h22M10 28h13" stroke="#8b6f2c" stroke-width="2" ${S}/><defs><mask id="bite"><rect width="48" height="48" fill="#fff"/><circle cx="43" cy="12" r="5"/><circle cx="45" cy="20.5" r="4.6"/><circle cx="41" cy="5.5" r="4"/></mask></defs>`,
+    slip: `<path d="M9 23l4-10 9-5 11 2 7 8v11l-6 8-12 3-9-4-4-8z" fill="#ebe8f4" stroke="#3a3548" stroke-width="2" ${S}/><path d="M13 13l6 8-3 9M22 8l1 11 10 2M40 18l-7 3-2 10 9-2M16 31l9 3 4 8" fill="none" stroke="#a7a2bb" stroke-width="1.3" ${S}/><text x="24" y="31" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="14" fill="#d23c3c">!?</text>`,
+    worry: `<path d="M13 34a8 8 0 0 1-1.4-15.9A11 11 0 0 1 33 15a8.6 8.6 0 0 1 3 19z" fill="#8e95ad" stroke="#2c3148" stroke-width="2" ${S}/><text x="24" y="30.5" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="14" fill="#fff">?</text><path d="M17 38l-2 5M24 38l-2 5M31 38l-2 5" stroke="#86a8ff" stroke-width="2" ${S}/>`,
+    worry2: `<path d="M15 31a6.5 6.5 0 0 1-1-13A9 9 0 0 1 31 15.6 7 7 0 0 1 33.6 31z" fill="#a9afc4" stroke="#2c3148" stroke-width="2" ${S}/><text x="24" y="28.4" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="11" fill="#fff">??</text><path d="M20 35l-1.6 4M27 35l-1.6 4" stroke="#86a8ff" stroke-width="1.8" ${S}/>`,
+    burnout: `<path d="M15 14c-2-3 2-4 0-7M22 13c-2-3 2-4 0-7M29 14c-2-3 2-4 0-7" fill="none" stroke="#9aa0b5" stroke-width="1.8" ${S}/><rect x="5" y="19" width="33" height="17" rx="3" fill="#3a3f52" stroke="#151826" stroke-width="2"/><rect x="38" y="23.5" width="4.4" height="8" rx="1" fill="#151826"/><rect x="8" y="22" width="5" height="11" rx="1" fill="#ff5a4e"/><path d="M23 22l-3 6h4l-3 6" fill="none" stroke="#ffd36e" stroke-width="1.8" ${S}/>`,
+    cringe: `<path d="M4 17l20-8 20 8v22l-20 7-20-7z" fill="#c8955a" stroke="#4a3018" stroke-width="2" ${S}/><path d="M4 17l20 7 20-7M24 24v22" fill="none" stroke="#4a3018" stroke-width="2" ${S}/><path d="M13.4 13.2l20 7.6" stroke="#ead7ae" stroke-width="4.2"/><text x="0" y="0" font-family="IBM Plex Mono, monospace" font-weight="600" font-size="7" fill="#4a3018" transform="matrix(1 -.35 0 1 27 39)">2023</text><path d="M8 27l10 3.6M8 31l7 2.5" stroke="#8a5f30" stroke-width="1.4" ${S}/>`,
+  };
+  const ROOT_ART = `<svg viewBox="0 0 40 58"><path d="M20 1v5" stroke="#262b45" stroke-width="2.2"/><path d="M11 8h18l-3 5H14z" fill="#262b45"/><rect class="glow" x="11" y="13" width="18" height="21" rx="4" stroke="#262b45" stroke-width="2"/><path d="M15.5 14v19M24.5 14v19" stroke="rgba(160, 100, 20, .55)" stroke-width="1.5"/><path d="M11 34h18l-3 4.6H14z" fill="#262b45"/><path d="M20 38.6v9M20 44c-4 2-7 4-12 4.6M20 44c4 2 8 4 13 4.4M20 47c-1.4 4-3.6 6.4-6.6 8.6M20 47c1.4 4 3.4 6.4 7 8" fill="none" stroke="#9a7442" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+  // Bins: lids are groups with class "lid" (they hinge at their bottom left).
+  const BIN_ART = {
+    paper: (c) => `<svg viewBox="0 0 60 64"><path d="M10 20h40l-4 38H14z" fill="${c}" stroke="#0e1226" stroke-width="2" ${S}/><path d="M14 26h32" stroke="rgba(255,255,255,.28)" stroke-width="3"/><path d="M23 36h14v14H23z" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2" ${S}/><path d="M26 40h8M26 43.5h8M26 47h5" stroke="rgba(255,255,255,.8)" stroke-width="1.5" ${S}/><circle cx="16" cy="59" r="3.6" fill="#0e1226"/><circle cx="44" cy="59" r="3.6" fill="#0e1226"/><g class="lid"><path d="M7 14h46a2 2 0 0 1 2 2v4H5v-4a2 2 0 0 1 2-2z" fill="#244f86" stroke="#0e1226" stroke-width="2" ${S}/><rect x="24" y="10.4" width="12" height="4" rx="2" fill="#244f86" stroke="#0e1226" stroke-width="2"/></g></svg>`,
+    plastic: (c) => `<svg viewBox="0 0 60 64"><path d="M10 20h40l-4 38H14z" fill="${c}" stroke="#0e1226" stroke-width="2" ${S}/><path d="M14 26h32" stroke="rgba(255,255,255,.3)" stroke-width="3"/><path d="M27 34h6v3l3 3v11a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2V40l3-3z" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2" ${S}/><circle cx="16" cy="59" r="3.6" fill="#0e1226"/><circle cx="44" cy="59" r="3.6" fill="#0e1226"/><g class="lid"><path d="M7 14h46a2 2 0 0 1 2 2v4H5v-4a2 2 0 0 1 2-2z" fill="#b8620f" stroke="#0e1226" stroke-width="2" ${S}/><rect x="24" y="10.4" width="12" height="4" rx="2" fill="#b8620f" stroke="#0e1226" stroke-width="2"/></g></svg>`,
+    food: (c) => `<svg viewBox="0 0 60 64"><path d="M13 29h34l-3 30H16z" fill="${c}" stroke="#0e1226" stroke-width="2" ${S}/><path d="M16 35h28" stroke="rgba(255,255,255,.3)" stroke-width="3"/><path d="M24 42c0-3 6-3 6 0 0-3 6-3 6 0 0 5-6 8-6 8s-6-3-6-8z" fill="none" stroke="rgba(60,40,0,.55)" stroke-width="1.8" ${S}/><g class="lid"><path d="M10 29a20 11 0 0 1 40 0z" fill="#a8861a" stroke="#0e1226" stroke-width="2" ${S}/><rect x="26" y="15" width="8" height="4" rx="2" fill="#a8861a" stroke="#0e1226" stroke-width="2"/></g></svg>`,
+    general: (c) => `<svg viewBox="0 0 60 64"><path d="M20 24c-7 5-11 17-9 28 1.4 6 6 9 19 9s17.6-3 19-9c2-11-2-23-9-28z" fill="${c}" stroke="#0e1226" stroke-width="2" ${S}/><path d="M11.6 41h36.8" stroke="#4f9e6c" stroke-width="6" opacity=".9"/><path d="M12.4 48.4h35.2" stroke="#4f9e6c" stroke-width="1.2" opacity=".75"/><path d="M22 30c1 9 0 19-3 27M38 30c-1 9 0 19 3 27" fill="none" stroke="rgba(0,0,0,.13)" stroke-width="1.4"/><path d="M20 24c5 2.4 15 2.4 20 0" fill="none" stroke="#0e1226" stroke-width="2" ${S}/><g class="lid"><path d="M27 17c-5-5-12-4-12-.4 0 2.6 6 2.8 12 .4zM33 17c5-5 12-4 12-.4 0 2.6-6 2.8-12 .4z" fill="${c}" stroke="#0e1226" stroke-width="2" ${S}/><path d="M26 24.6c-1.4-3 0-7.6 4-7.6s5.4 4.6 4 7.6" fill="${c}" stroke="#0e1226" stroke-width="2" ${S}/></g></svg>`,
+    bulky: (c) => `<svg viewBox="0 0 80 64"><path d="M8 40h62l7 20H2z" fill="rgba(255,225,77,.1)" stroke="${c}" stroke-width="2" stroke-dasharray="5 4" ${S}/><g class="lid"><rect x="58" y="14" width="3" height="30" fill="#59618a"/><rect x="47" y="6" width="26" height="15" rx="2" fill="${c}" stroke="#0e1226" stroke-width="2"/><path d="M52 16v-3.4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V16M50.6 13h3v5.6h12.8V13h3v6.4H50.6z" fill="none" stroke="#3b3200" stroke-width="1.5" ${S}/></g></svg>`,
+    battery: (c) => `<svg viewBox="0 0 60 64"><rect x="27" y="48" width="6" height="14" fill="#2c3352"/><rect x="13" y="14" width="34" height="36" rx="3" fill="${c}" stroke="#0e1226" stroke-width="2"/><path d="M16 18h28" stroke="rgba(255,255,255,.28)" stroke-width="2.4"/><rect x="21" y="35" width="15" height="8" rx="1.4" fill="none" stroke="#fff" stroke-width="1.8"/><rect x="36" y="37.4" width="2.4" height="3.2" fill="#fff"/><path d="M24 39h3M31 37.6v2.8M29.6 39h2.8" stroke="#fff" stroke-width="1.4" ${S}/><g class="lid"><rect x="19" y="22" width="22" height="6" rx="3" fill="#5a1414" stroke="#0e1226" stroke-width="1.6"/></g></svg>`,
+  };
+  const GUARD = '<svg viewBox="0 0 24 24"><path d="M3 11c0-4 4-7 9-7s9 3 9 7z" fill="#2c3d6b"/><path d="M2 11h20v2.4H2z" fill="#1b2747"/><rect x="10" y="6" width="4" height="3.4" rx=".8" fill="#ffd36e"/><path d="M6 15c1 4 3 6 6 6s5-2 6-6" fill="#f2c9a0"/><path d="M9.4 18h5" stroke="#6b4b2a" stroke-width="1.2" stroke-linecap="round"/></svg>';
+  const NOTE = '<svg viewBox="0 0 24 24"><path d="M12 2l2.6 6.4L21 9l-5 4.4L17.6 20 12 16.6 6.4 20 8 13.4 3 9l6.4-.6z" fill="#2f6db5"/></svg>';
+
+  /* ------------------------------------------------------------ build */
+  // Notice: schedule table, today highlighted.
+  const days = L.days;
+  const today = (new Date().getDay() + 6) % 7;
+  $('.sched thead tr').innerHTML = days.map((d, i) => `<th scope="col"${i === today ? ' class="today"' : ''}>${d}</th>`).join('');
+  $('.sched tbody tr').innerHTML = days.map((d, i) => `<td${i === today ? ' class="today"' : ''}>23</td>`).join('');
+  $('.sched caption').textContent = L.daily;
+
+  const rootsEl = $('.roots');
+  rootsEl.setAttribute('aria-label', L.roots);
+  const rootEl = {};
+  ROOTS.forEach((r) => {
+    const li = document.createElement('li');
+    li.className = 'root';
+    li.innerHTML = ROOT_ART + `<span class="root-name">${TTY.t(r.name)}</span>`;
+    rootsEl.append(li);
+    rootEl[r.id] = li;
+  });
+
+  const binEl = {};
+  BINS.forEach((b) => {
+    const el = document.createElement('div');
+    el.className = 'bin bin-' + b.id;
+    el.dataset.bin = b.id;
+    el.style.setProperty('--c', b.c);
+    el.style.setProperty('--c-ink', b.ink);
+    // Bin labels in Korean are drawn once in dunggeun and never rebuilt.
+    const label = ko
+      ? `<font-kku class="kku-bin" font="dunggeun" size="clamp(12px, 2.1cqmin, 18px)">${b.name.ko}</font-kku>`
+      : b.name.en;
+    el.innerHTML = `<div class="bin-art">${BIN_ART[b.id](b.c)}<i class="mouth" style="left:${b.mouth[0]}%;top:${b.mouth[1]}%"></i></div><p class="bin-label">${label}</p>`;
+    binsEl.append(el);
+    binEl[b.id] = el;
+  });
+
+  ITEMS.forEach((it) => {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'item';
+    el.dataset.id = it.id;
+    el.setAttribute('aria-describedby', 'howto');
+    el.style.setProperty('--r', it.r + 'deg');
+    if (it.fdl !== undefined) {
+      el.classList.add('restless');
+      if (it.fd) el.style.setProperty('--fd', it.fd + 's');
+      el.style.setProperty('--fdl', it.fdl + 's');
+    }
+    const label = TTY.t(it.label);
+    const sub = it.sub ? `${ko ? '' : ' '}<span class="sub">${TTY.t(it.sub)}</span>` : '';
+    el.innerHTML = `<span class="prop" aria-hidden="true"><svg viewBox="0 0 48 48">${PROPS[it.id]}</svg><i class="check"></i>${RC[it.id] && !reachable(it) ? `<i class="rc">rc=${RC[it.id]}</i>` : ''}</span><span class="tag">${label}${sub}</span>`;
+    if (it.bin === 'bulky') {
+      const st = document.createElement('span');
+      st.className = 'sticker';
+      st.setAttribute('aria-hidden', 'true');
+      st.innerHTML = `<b>${L.sticker[0]}</b>${L.sticker[1]}`;
+      el.querySelector('.prop').append(st);
+    }
+    floor.append(el);
+    it.el = el;
+    it.name = label + (it.sub ? (ko ? '' : ' ') + TTY.t(it.sub) : '');
+    it.state = 'floor';
+    it.dx = 0; it.dy = 0;
+  });
+
+  $('.band-text').textContent = L.band;
+  $('.pa-text').textContent = L.bell;
+  $('.start-text').textContent = L.start;
+  $('.hint').textContent = L.hint;
+  $('#howto').textContent = L.howto;
+
+  // Far apartments with windows.
+  const town = $('.town');
+  const windows = [];
+  (function buildTown() {
+    town.setAttribute('viewBox', '0 0 400 60');
+    const blocks = [[6, 20, 46], [58, 6, 52], [118, 16, 44], [170, 2, 54], [232, 12, 48], [288, 4, 50], [346, 14, 48]];
+    let svg = '';
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+    blocks.forEach(([x, y, w]) => {
+      svg += `<rect class="blk" x="${x}" y="${y}" width="${w}" height="${60 - y}"/>`;
+      for (let yy = y + 5; yy < 58; yy += 6) for (let xx = x + 4; xx < x + w - 4; xx += 7) {
+        svg += `<rect class="win" x="${xx}" y="${yy}" width="3.6" height="2.6"/>`;
+      }
+    });
+    town.innerHTML = svg;
+    $$('.win', town).forEach((w) => { windows.push({ el: w, r: rnd() }); });
+  })();
+  function lights(share, cool) {
+    windows.forEach((w) => { w.el.classList.toggle('on', w.r < share); w.el.classList.toggle('cool', cool && w.r < share * .4); });
+  }
+
+  /* ------------------------------------------------------------ geometry */
+  const isWide = () => stage.clientWidth >= 640 && stage.clientWidth >= stage.clientHeight;
+  let wide = null;
+  const sRect = () => stage.getBoundingClientRect();
+  const center = (el) => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; };
+
+  function layout() {
+    const w = isWide();
+    if (w !== wide) {
+      wide = w;
+      const spots = SPOTS[w ? 'wide' : 'narrow'];
+      ITEMS.forEach((it) => { it.el.style.setProperty('--x', spots[it.id][0] + '%'); it.el.style.setProperty('--y', spots[it.id][1] + '%'); });
+    }
+    const r = sRect();
+    links.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
+    ITEMS.forEach((it) => { if (it.state === 'parked') park(it, true); });
+    redrawLinks();
+    placeCat();
+  }
+
+  /* ------------------------------------------------------------ links */
+  const edgeEls = new Map();
+  function anchorOf(id) {
+    const s = sRect();
+    if (ROOT_IDS.has(id)) {
+      const g = $('svg', rootEl[id]).getBoundingClientRect();
+      return { x: g.left + g.width * .74 - s.left, y: g.top + g.height * .4 - s.top };
+    }
+    const p = $('.prop', byId[id].el).getBoundingClientRect();
+    return { x: p.left + p.width / 2 - s.left, y: p.top + p.height / 2 - s.top, r: p.width * .52 };
+  }
+  function refPath(from, to) {
+    const a = anchorOf(from), b = anchorOf(to);
+    // stop short of the prop so the arrow tip shows
+    const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+    const bx = b.x - dx / len * b.r, by = b.y - dy / len * b.r;
+    const lift = Math.min(40, len * .12);
+    return `M${a.x.toFixed(1)} ${a.y.toFixed(1)} C${(a.x + dx * .5).toFixed(1)} ${(a.y - lift * .3).toFixed(1)} ${(bx - dx * .3).toFixed(1)} ${(by - lift).toFixed(1)} ${bx.toFixed(1)} ${by.toFixed(1)}`;
+  }
+  function cyclePath(from, to, side) {
+    const a = anchorOf(from), b = anchorOf(to);
+    const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len, ny = dx / len;
+    const ax = a.x + dx / len * a.r, ay = a.y + dy / len * a.r;
+    const bx = b.x - dx / len * b.r, by = b.y - dy / len * b.r;
+    const bend = Math.max(16, len * .3) * side;
+    return `M${(ax + nx * 6 * side).toFixed(1)} ${(ay + ny * 6 * side).toFixed(1)} Q${((ax + bx) / 2 + nx * bend).toFixed(1)} ${((ay + by) / 2 + ny * bend).toFixed(1)} ${(bx + nx * 6 * side).toFixed(1)} ${(by + ny * 6 * side).toFixed(1)}`;
+  }
+  function edge(from, to) {
+    const key = from + '>' + to;
+    let p = edgeEls.get(key);
+    if (!p) {
+      p = document.createElementNS(NS, 'path');
+      const cyc = !ROOT_IDS.has(from);
+      p.setAttribute('class', cyc ? 'cyc' : 'ref');
+      p.setAttribute('marker-end', `url(#tip-${cyc ? 'cyc' : 'ref'})`);
+      p.dataset.from = from; p.dataset.to = to;
+      links.append(p);
+      edgeEls.set(key, p);
+    }
+    return p;
+  }
+  function updateEdge(p) {
+    const { from, to } = p.dataset;
+    const cyc = !ROOT_IDS.has(from);
+    // the two arrows of a pair bend to opposite sides on their own (the normal flips with direction)
+    p.setAttribute('d', cyc ? cyclePath(from, to, 1) : refPath(from, to));
+  }
+  function redrawLinks(only) {
+    edgeEls.forEach((p) => { if (!only || p.dataset.to === only || p.dataset.from === only) updateEdge(p); });
+  }
+  // The worry pair point at each other from the start: two dashed arrows.
+  ITEMS.forEach((it) => it.refs.forEach((to) => edge(it.id, to)));
+
+  function drawRef(from, to, animate) {
+    const p = edge(from, to);
+    updateEdge(p);
+    p.classList.remove('gone');
+    rootEl[from] && rootEl[from].classList.add('firing');
+    const it = byId[to];
+    if (animate && !reduce) {
+      p.setAttribute('pathLength', '1');
+      p.style.strokeDasharray = '1';
+      const a = p.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: 760, easing: 'cubic-bezier(.5, 0, .3, 1)', fill: 'both' });
+      a.finished.then(() => { it.el.classList.add('marked'); }).catch(() => {});
+    } else {
+      p.style.strokeDasharray = '';
+      it.el.classList.add('marked');
+    }
+  }
+  function clearRefs() {
+    edgeEls.forEach((p, key) => {
+      if (p.classList.contains('ref')) { p.getAnimations().forEach((a) => a.cancel()); p.remove(); edgeEls.delete(key); }
+    });
+    $$('.root').forEach((r) => r.classList.remove('firing'));
+  }
+  function hideCycle(hidden) {
+    edgeEls.forEach((p) => { if (p.classList.contains('cyc')) p.classList.toggle('gone', hidden); });
+  }
+
+  /* ------------------------------------------------------------ speech */
+  let bubbleTimer = 0, memoTimer = 0, paTimer = 0;
+  function say(text) { sayEl.textContent = ''; setTimeout(() => { sayEl.textContent = text; }, 30); }
+  // Put a floating box above (or below) a point, inside the stage. While the world is stopped it
+  // keeps below the band, unless overBand (the cycle bubble on phones, where the worry pair sits
+  // right under the band and a bubble below the band would hide them).
+  function placeNear(box, x, y, gap, prefer = 'above', overBand = false) {
+    const s = sRect();
+    const w = box.offsetWidth, h = box.offsetHeight;
+    let side = prefer;
+    let top = side === 'above' ? y - gap - h : y + gap;
+    let min = 6;
+    if (scene.classList.contains('stw') && !overBand) { const b = $('.band').getBoundingClientRect(); min = b.bottom - s.top + 4; }
+    if (top < min && side === 'above' && y - gap - h > min - h * .35) top = min;
+    if (top < min) { side = 'below'; top = y + gap; }
+    if (top + h > s.height - 6) { side = 'above'; top = y - gap - h; }
+    const left = Math.max(6, Math.min(s.width - w - 6, x - w / 2));
+    box.style.left = left + 'px';
+    box.style.top = Math.max(6, top) + 'px';
+    if (top === min && side === 'above') box.dataset.side = 'none';
+    box.dataset.side = side;
+    box.style.setProperty('--tail', Math.max(14, Math.min(w - 14, x - left)) + 'px');
+  }
+  function showBubble(text, el, cls, ms = 3200, overBand = false) {
+    bubble.className = 'bubble ' + (cls || '');
+    bubble.textContent = text;
+    const s = sRect();
+    const p = $('.prop', el).getBoundingClientRect();
+    placeNear(bubble, p.left + p.width / 2 - s.left, p.top - s.top, overBand ? 16 : 10, 'above', overBand);
+    bubble.classList.add('on');
+    say(text);
+    clearTimeout(bubbleTimer);
+    if (ms) bubbleTimer = setTimeout(() => bubble.classList.remove('on'), ms);
+  }
+  // A note above a bin, or above the item when it is sitting on the wrong bin.
+  function showMemo(text, binId, kind, ms = 2600, over) {
+    memo.className = 'memo ' + (kind === 'note' ? 'note' : '');
+    memo.innerHTML = (kind === 'note' ? NOTE : GUARD) + '<span></span>';
+    memo.lastChild.textContent = text;
+    const s = sRect();
+    const b = (over || $('.bin-art', binEl[binId])).getBoundingClientRect();
+    placeNear(memo, b.left + b.width / 2 - s.left, b.top - s.top, 6, 'above');
+    memo.classList.add('on');
+    say(text);
+    clearTimeout(memoTimer);
+    memoTimer = setTimeout(() => memo.classList.remove('on'), ms);
+  }
+  function hideSpeech() {
+    [bubble, memo, pa].forEach((el) => el.classList.remove('on'));
+  }
+
+  /* ------------------------------------------------------------ bins */
+  function lightBin(id) { binEl[id].classList.add('lit'); }
+  function lidBounce(id) {
+    if (reduce) return;
+    const lid = $('.lid', binEl[id]);
+    lid.animate([{ rotate: '0deg' }, { rotate: id === 'bulky' ? '8deg' : '-38deg', offset: .3 }, { rotate: '6deg', offset: .7 }, { rotate: '0deg' }], { duration: 560, easing: 'ease-out' });
+  }
+  function binAt(x, y) {
+    for (const b of BINS) {
+      const r = binEl[b.id].getBoundingClientRect();
+      if (x >= r.left - 6 && x <= r.right + 6 && y >= r.top - 10 && y <= r.bottom + 6) return b.id;
+    }
+    return null;
+  }
+  function mouthOf(id) { return center($('.mouth', binEl[id])); }
+
+  /* ------------------------------------------------------------ moving things */
+  let gen = 0; // bumps on every reset; async steps from an older scene stop
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const setOffset = (it, x, y) => { it.dx = x; it.dy = y; it.el.style.transform = x || y ? `translate(${x}px, ${y}px)` : ''; };
+
+  // A throw along a parabola, from where the item is now to a point on screen.
+  function throwTo(it, to, { dur = 820, shrink = true, spin } = {}) {
+    const el = it.el;
+    const c = center(el);
+    const baseX = c.x - it.dx, baseY = c.y - it.dy;
+    const x0 = it.dx, y0 = it.dy;
+    const x1 = to.x - baseX, y1 = to.y - baseY;
+    const lift = Math.max(36, sRect().height * .14);
+    const apex = Math.min(y0, y1) - lift;
+    const cx = (x0 + x1) / 2, cy = 2 * apex - (y0 + y1) / 2;
+    const turn = spin !== undefined ? spin : (x1 > x0 ? 1 : -1) * 200;
+    const frames = [];
+    const N = 14;
+    for (let k = 0; k <= N; k++) {
+      const t = k / N;
+      const x = (1 - t) ** 2 * x0 + 2 * (1 - t) * t * cx + t * t * x1;
+      const y = (1 - t) ** 2 * y0 + 2 * (1 - t) * t * cy + t * t * y1;
+      const s = shrink ? 1 - .6 * t ** 3 : 1;
+      frames.push({ transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${(turn * t).toFixed(1)}deg) scale(${s.toFixed(3)})`, opacity: shrink && k === N ? 0 : 1 });
+    }
+    const a = el.animate(frames, { duration: dur, easing: 'cubic-bezier(.3, .05, .6, 1)', fill: 'forwards' });
+    return a.finished.then(() => ({ x: x1, y: y1, a })).catch(() => null);
+  }
+
+  // Into the bin. Worry pairs go together: when one goes, the other follows it.
+  async function collect(it, { quick = false } = {}) {
+    if (it.state !== 'floor' && it.state !== 'held') return;
+    const g = gen;
+    it.state = 'flying';
+    it.el.classList.remove('held', 'dragging', 'counted');
+    it.el.classList.add('flying');
+    if (it.refs.length) hideCycle(true);
+    it.refs.forEach((id) => { const other = byId[id]; if (other.state === 'floor') setTimeout(() => g === gen && collect(other, { quick: true }), reduce ? 0 : 160); });
+    if (it.bin === 'bulky') return bulky(it, g);
+    const bin = it.bin;
+    if (!reduce) {
+      const done = await throwTo(it, mouthOf(bin), { dur: quick ? 620 : 820 });
+      if (g !== gen || !done) return;
+      done.a.cancel();
+    }
+    it.el.classList.remove('flying');
+    it.el.classList.add('binned');
+    setOffset(it, 0, 0);
+    it.state = 'binned';
+    lightBin(bin);
+    lidBounce(bin);
+    if (it.note) showMemo(L[it.note], bin, 'note', NOTE_MS[it.note]);
+    settled();
+  }
+
+  // Bulky waste is not thrown in anything: report it, stick the sticker on, carry it to the spot.
+  async function bulky(it, g) {
+    it.el.classList.add('stickered');
+    const st = $('.sticker', it.el);
+    say(L.sticker.join(' · '));
+    if (!reduce) {
+      st.animate([{ transform: 'scale(2.4) rotate(14deg)', opacity: 0 }, { transform: 'scale(.92) rotate(-2deg)', opacity: 1, offset: .65 }, { transform: 'none', opacity: 1 }], { duration: 380, easing: 'cubic-bezier(.5, 0, .9, .4)' });
+      it.el.animate([{ transform: `translate(${it.dx}px, ${it.dy}px)` }, { transform: `translate(${it.dx}px, ${it.dy + 4}px) scale(.96, 1.02)` }, { transform: `translate(${it.dx}px, ${it.dy}px)` }], { duration: 260, delay: 260 });
+      await sleep(900);
+      // a note up over the bins (burnout's) goes first, so the box and its sticker never slide
+      // in under it
+      while (memo.classList.contains('on') && g === gen) await sleep(100);
+      await sleep(memo.classList.contains('on') ? 0 : 250);
+      if (g !== gen) return;
+    }
+    await park(it, false);
+  }
+  async function park(it, instant) {
+    const g = gen;
+    const c = center(it.el);
+    const m = mouthOf('bulky');
+    const x = m.x - (c.x - it.dx), y = m.y - (c.y - it.dy) - $('.prop', it.el).offsetHeight * .1;
+    if (!instant && !reduce) {
+      const a = it.el.animate([{ transform: `translate(${it.dx}px, ${it.dy}px)` }, { transform: `translate(${x}px, ${y}px)` }], { duration: 900, easing: 'cubic-bezier(.45, 0, .2, 1)', fill: 'forwards' });
+      await a.finished.catch(() => {});
+      if (g !== gen) return;
+      a.cancel();
+    }
+    setOffset(it, x, y);
+    it.el.classList.remove('flying');
+    it.el.classList.add('parked', 'stickered');
+    it.el.disabled = true;
+    if (!instant) {
+      it.state = 'parked';
+      lightBin('bulky');
+      lidBounce('bulky');
+      settled();
+    }
+  }
+
+  // Still reachable: it comes back to where it was, and the reference that holds it shows.
+  function refuse(it) {
+    const g = gen;
+    it.state = 'floor';
+    it.el.classList.remove('dragging', 'held');
+    holdLine(it);
+    const from = `translate(${it.dx}px, ${it.dy}px)`;
+    setOffset(it, 0, 0);
+    if (!reduce) {
+      const a = it.el.animate([{ transform: from }, { transform: 'translate(0, 0)' }], { duration: 560, easing: 'cubic-bezier(.3, 1.45, .5, 1)' });
+      const follow = () => { if (g !== gen) return; redrawLinks(it.id); if (a.playState === 'running') requestAnimationFrame(follow); else showBubble(refuseLine(it), it.el, 'held'); };
+      requestAnimationFrame(follow);
+    } else {
+      redrawLinks(it.id);
+      showBubble(refuseLine(it), it.el, 'held');
+    }
+  }
+  // The root that holds it (the kept things all hang straight off one).
+  const rootOf = (it) => ROOTS.find((root) => out(root.id).includes(it.id));
+  const refuseLine = (it) => L.refuse[(rootOf(it) || ROOTS[0]).id];
+  function holdLine(it) {
+    const r = rootOf(it);
+    if (r) drawRef(r.id, it.id, false);
+  }
+
+  // The wrong bin: the guard's note, then into the right one.
+  async function wrongBin(it, binId, fromKeyboard) {
+    const g = gen;
+    it.state = 'flying';
+    it.el.classList.remove('held', 'dragging');
+    it.el.classList.add('flying');
+    if (fromKeyboard && !reduce) {
+      const b = $('.bin-art', binEl[binId]).getBoundingClientRect();
+      const done = await throwTo(it, { x: b.left + b.width / 2, y: b.top - $('.prop', it.el).offsetHeight * .3 }, { dur: 600, shrink: false, spin: 0 });
+      if (g !== gen || !done) return;
+      setOffset(it, done.x, done.y);
+      done.a.cancel();
+    }
+    lidBounce(binId);
+    const guard = byId[it.id].id === 'burnout' && binId === 'general' ? L.holiday : TTY.t(binById[it.bin].guard);
+    showMemo(guard, binId, 'guard', 2800, $('.prop', it.el));
+    await sleep(reduce ? 0 : 1000);
+    if (g !== gen) return;
+    it.state = 'floor';
+    collect(it);
+  }
+
+  // Where a dropped (or keyboard-placed) item ends up.
+  function drop(it, binId, fromKeyboard) {
+    stage.classList.remove('carrying');
+    $$('.bin').forEach((b) => b.classList.remove('over'));
+    if (!binId) {
+      if (reachable(it)) return refuse(it);
+      it.state = 'floor';
+      it.el.classList.remove('dragging', 'held');
+      const from = `translate(${it.dx}px, ${it.dy}px)`;
+      setOffset(it, 0, 0);
+      if (!reduce) it.el.animate([{ transform: from }, { transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.3, 1.3, .5, 1)' });
+      redrawLinks(it.id);
+      return;
+    }
+    if (reachable(it)) return refuse(it);
+    if (binId === it.bin) {
+      it.state = 'floor';
+      say(L.binned(it.name, TTY.t(binById[binId].name)));
+      return collect(it);
+    }
+    wrongBin(it, binId, fromKeyboard);
+  }
+
+  /* ------------------------------------------------------------ the world */
+  const clock = { hh: $('.clock .hh'), mm: $('.clock .mm') };
+  const setClock = (h, m) => { clock.hh.textContent = h; clock.mm.textContent = m; };
+
+  let catAnim = null;
+  let catPhase = 'walk';
+  const halo = $('.halo');
+  // The cat walks along the wall top and leaps at the lamp: the top of the leap puts it right
+  // on the bulb, a black shape against the glow, and that is where the world stops it. Wide:
+  // from the left, leaping up and right. Phones: from the pole end, leaping up and left (the
+  // notice takes the left of the wall there).
+  function catPoints() {
+    const s = sRect();
+    const f = $('.fence').getBoundingClientRect();
+    const w = cat.offsetWidth, h = w * 40 / 60;
+    const top = f.top - s.top - h * .92;
+    const b = $('.lamp .bulb').getBoundingClientRect();
+    const bx = b.left + b.width / 2 - s.left, by = b.top + b.height / 2 - s.top;
+    const ay = Math.max(4, by - h * .6);
+    if (wide) {
+      const ax = bx - w * .55;
+      const x0 = f.left - s.left + .015 * s.width;
+      return { top, bx, by, ax, ay, x0, x1: Math.max(x0, Math.min(x0 + .04 * s.width, ax - w * .25)), x2: ax + .12 * s.width, dir: 1 };
+    }
+    const n = $('.notice').getBoundingClientRect();
+    const ax = bx - w * .45;
+    const x0 = Math.min(s.width - w - 4, ax + w * .9);
+    return { top, bx, by, ax, ay, x0, x1: Math.max(ax + w * .2, x0 - .05 * s.width), x2: Math.max(n.right - s.left + 4, ax - .12 * s.width), dir: -1 };
+  }
+  const prey = $('.moth.prey');
+  function placeCat() {
+    const p = catPoints();
+    cat.classList.toggle('flip', p.dir < 0);
+    cat.style.top = p.top + 'px';
+    halo.style.left = p.bx + 'px';
+    halo.style.top = p.by + 'px';
+    if (catPhase === 'walk') cat.style.left = p.x0 + 'px';
+    if (catPhase === 'sit') cat.style.left = p.x2 + 'px';
+    // the moth it leaps at: a paw's length ahead of its front paws at the top of the leap
+    const w = cat.offsetWidth, h = w * 40 / 60;
+    prey.style.left = (p.dir > 0 ? p.ax + w * .98 : p.ax + w * .02) + 'px';
+    prey.style.top = (p.ay + h * .55) + 'px';
+  }
+  // Waking: the cat finishes the leap it started seven hours ago; the moth, stopped with it, gets away.
+  function mothFlees() {
+    prey.getAnimations().filter((a) => !(a instanceof CSSAnimation)).forEach((a) => a.cancel());
+    if (reduce) return;
+    const dir = cat.classList.contains('flip') ? -1 : 1;
+    prey.animate([{ translate: '0 0', opacity: 1 }, { translate: `${dir * 9}cqmin -15cqmin`, opacity: 0 }], { duration: 480, easing: 'cubic-bezier(.3, 0, .8, .5)' });
+  }
+  function catWalk() {
+    catPhase = 'walk';
+    cat.dataset.pose = 'walk';
+    if (catAnim) catAnim.cancel();
+    placeCat();
+    const p = catPoints();
+    catAnim = reduce ? null : cat.animate([{ transform: 'none' }, { transform: `translateX(${p.x1 - p.x0}px)` }], { duration: 950, fill: 'forwards' });
+  }
+  // A curve from the walk's end to the landing that passes the apex halfway (t = .5).
+  const LEAP = 1100;
+  function catJump(stopAtTop = true) {
+    if (reduce) return;
+    const p = catPoints();
+    catPhase = 'leap';
+    if (catAnim) catAnim.cancel();
+    cat.dataset.pose = 'leap';
+    const cx = 2 * p.ax - (p.x1 + p.x2) / 2, cy = 2 * p.ay - p.top;
+    const frames = [];
+    for (let k = 0; k <= 12; k++) {
+      const t = k / 12;
+      const x = (1 - t) ** 2 * p.x1 + 2 * (1 - t) * t * cx + t * t * p.x2;
+      const y = (1 - t) ** 2 * p.top + 2 * (1 - t) * t * cy + t * t * p.top;
+      frames.push({ transform: `translate(${(x - p.x0).toFixed(1)}px, ${(y - p.top).toFixed(1)}px) rotate(${(p.dir * (-16 + 32 * t)).toFixed(1)}deg)` });
+    }
+    catAnim = cat.animate(frames, { duration: LEAP, fill: 'forwards' });
+    // Stop the world: the cat stays at the top of its leap, on the light.
+    const mine = catAnim;
+    if (stopAtTop) setTimeout(() => { if (catPhase === 'leap' && catAnim === mine && catAnim.playState === 'running') { catAnim.pause(); catAnim.currentTime = LEAP / 2; } }, LEAP / 2);
+  }
+  function catLand() {
+    if (catPhase === 'sit') return;
+    const finish = () => {
+      catPhase = 'sit';
+      if (catAnim) catAnim.cancel();
+      catAnim = null;
+      cat.dataset.pose = 'sit';
+      placeCat();
+    };
+    if (reduce || !catAnim) return finish();
+    // stopped mid-step (a visitor started before 11 p.m.): it walks on into its leap
+    if (catPhase === 'walk') catJump(false);
+    else if (catPhase !== 'leap') return finish();
+    else catAnim.play();
+    catAnim.finished.then(finish).catch(() => {});
+  }
+
+  // Freeze frame: grey picture and a big pause sign, which then shrinks into the band's sign.
+  const freeze = $('.freeze');
+  const bigpause = $('.bigpause');
+  let freezeTimer = 0;
+  function freezeFrame() {
+    if (reduce) return;
+    freeze.classList.add('on');
+    bigpause.getAnimations().forEach((a) => a.cancel());
+    bigpause.classList.add('on');
+    bigpause.animate([{ opacity: 0, transform: 'scale(1.35)' }, { opacity: 1, transform: 'scale(.94)', offset: .7 }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' });
+    clearTimeout(freezeTimer);
+    freezeTimer = setTimeout(() => {
+      const g = bigpause.getBoundingClientRect();
+      const t = $('.band .pause').getBoundingClientRect();
+      const k = Math.max(.08, t.height / g.height);
+      const dx = t.left + t.width / 2 - (g.left + g.width / 2), dy = t.top + t.height / 2 - (g.top + g.height / 2);
+      bigpause.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${dx}px, ${dy}px) scale(${k})`, opacity: .2 }], { duration: 520, easing: 'cubic-bezier(.5, 0, .7, 1)' })
+        .finished.then(() => bigpause.classList.remove('on')).catch(() => {});
+      freeze.classList.remove('on');
+    }, 1400);
+  }
+  function unfreeze() {
+    clearTimeout(freezeTimer);
+    freeze.classList.remove('on');
+    bigpause.getAnimations().forEach((a) => a.cancel());
+    bigpause.classList.remove('on');
+  }
+
+  // quiet: a visitor's first touch before 11 p.m. starts the collection by hand, without the
+  // freeze frame and the bell.
+  function stopTheWorld(quiet) {
+    setClock('23', '00');
+    scene.classList.add('stw');
+    if (quiet) { lights(.14); say(L.band); return; }
+    freezeFrame();
+    const s = sRect();
+    const sp = $('.lamp .speaker').getBoundingClientRect();
+    // beside the speaker, on the side the lamp arm points to
+    const pw = pa.offsetWidth, ph = pa.offsetHeight;
+    const px = wide ? sp.right - s.left + pw / 2 + 6 : sp.left - s.left - pw / 2 - 6;
+    placeNear(pa, px, sp.top - s.top + sp.height / 2 + ph / 2, 0, 'above');
+    pa.classList.add('on');
+    clearTimeout(paTimer);
+    paTimer = setTimeout(() => pa.classList.remove('on'), 2200);
+    say(L.bell + ' ' + L.band);
+    // the town goes to sleep, a few windows at a time
+    if (reduce) lights(.06);
+    else [.42, .26, .14, .06].forEach((share, k) => setTimeout(() => scene.classList.contains('stw') && lights(share), 500 + k * 700));
+  }
+  function wake() {
+    unfreeze();
+    scene.classList.remove('stw');
+    scene.classList.add('dawn');
+    setClock('06', '12');
+    lights(.16, true);
+    mothFlees();
+    newDay(true);
+    catLand();
+  }
+  // By 06:12 tomorrow's lunch is today's, and today's shortcut was learned yesterday.
+  function newDay(on) {
+    ITEMS.forEach((it) => {
+      if (!it.dawn) return;
+      const label = TTY.t(on ? it.dawn : it.label);
+      $('.tag', it.el).textContent = label;
+      it.name = label;
+    });
+  }
+
+  /* ------------------------------------------------------------ receipt */
+  function writeReceipt() {
+    const freed = {};
+    let total = 0;
+    ITEMS.forEach((it) => { if (it.state === 'binned' || it.state === 'parked') { freed[it.bin] = (freed[it.bin] || 0) + it.gb; total += it.gb; } });
+    const fmt = (n) => (Math.round(n * 10) / 10).toFixed(1);
+    const d = new Date();
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const rows = BINS.filter((b) => freed[b.id]).map((b) => `<li><span class="nm">${TTY.t(b.name)}</span><span>${L.gb(fmt(freed[b.id]))}</span></li>`).join('');
+    const [title, gb, paused, next] = L.receipt;
+    receipt.innerHTML = `<div class="r-head"><span>${date}</span><span>23:00–06:12</span></div>
+      <p class="r-title">${title}<span class="stamp">${L.stamp[0]}<b>${L.stamp[1]}</b></span></p>
+      <ul class="r-rows">${rows}</ul>
+      <p class="r-line total">${gb.replace('{gb}', fmt(total))}</p>
+      <p class="r-line">${paused}</p>
+      <p class="r-line">${next}</p>
+      <p class="r-foot">${L.weak}</p>
+      <div class="barcode"></div>`;
+  }
+  // The receipt, then (stampIn ms later) the office's stamp on it. Only a reset cancels the stamp.
+  const STAMP_IN = 2200;
+  function showReceipt(stampIn = STAMP_IN) {
+    writeReceipt();
+    receipt.classList.remove('stamped');
+    receipt.classList.add('on');
+    receipt.setAttribute('aria-hidden', 'false');
+    say(L.receipt.map((s) => s.replace('{gb}', '2.3')).join(' · ') + ' ' + L.weak);
+    if (!reduce) receipt.animate([{ transform: 'translateY(18%)', clipPath: 'inset(0 0 100% 0)', opacity: 1 }, { transform: 'none', clipPath: 'inset(0 0 0 0)', opacity: 1 }], { duration: 1100, easing: 'cubic-bezier(.2, .7, .2, 1)' });
+    if (reduce || !stampIn) return stampReceipt();
+    const g = gen;
+    setTimeout(() => { if (g === gen && receipt.classList.contains('on')) stampReceipt(); }, stampIn);
+  }
+  function stampReceipt() {
+    if (receipt.classList.contains('stamped')) return;
+    receipt.classList.add('stamped');
+    if (reduce) return;
+    say(L.stamp.join(' '));
+    $('.stamp', receipt).animate([{ transform: 'scale(2.3) rotate(8deg)', opacity: 0 }, { transform: 'scale(.93)', opacity: .95, offset: .7 }, { transform: 'none', opacity: .9 }], { duration: 300, easing: 'cubic-bezier(.5, 0, .9, .4)' });
+    receipt.animate([{ transform: 'none' }, { transform: 'translateY(3px)' }, { transform: 'none' }], { duration: 200, delay: 200 });
+  }
+  function hideReceipt() { receipt.classList.remove('on', 'stamped'); receipt.setAttribute('aria-hidden', 'true'); }
+  // When the visitor has finished the job by hand, morning comes and they get the receipt too.
+  function settled() {
+    if (!manual && !reduceDone) return;
+    const done = () => garbage.every((it) => it.state === 'binned' || it.state === 'parked');
+    if (done()) {
+      setTimeout(() => { if (done() && !receipt.classList.contains('on')) { wake(); showReceipt(); } }, reduce ? 0 : 700);
+    }
+  }
+
+  /* ------------------------------------------------------------ scenes */
+  function resetScene() {
+    gen++;
+    hideSpeech();
+    hideReceipt();
+    clearRefs();
+    hideCycle(false);
+    scene.classList.remove('stw', 'dawn');
+    unfreeze();
+    setClock('22', '59');
+    lights(.5);
+    BINS.forEach((b) => binEl[b.id].classList.remove('lit', 'over'));
+    stage.classList.remove('carrying');
+    ITEMS.forEach((it) => {
+      it.el.getAnimations().forEach((a) => a.cancel());
+      it.el.classList.remove('binned', 'flying', 'parked', 'stickered', 'marked', 'counted', 'held', 'dragging');
+      it.el.disabled = false;
+      it.state = 'floor';
+      setOffset(it, 0, 0);
+    });
+    held = null;
+    newDay(false);
+    prey.getAnimations().filter((a) => !(a instanceof CSSAnimation)).forEach((a) => a.cancel());
+    catWalk();
+    redrawLinks();
+  }
+
+  // The final scene, all at once: what reduced motion shows, and what the visitor's
+  // "collect now" does there.
+  let reduceDone = false;
+  function finalScene() {
+    resetScene();
+    scene.classList.remove('stw');
+    GC.walked.forEach(([from, to]) => drawRef(from, to, false));
+    ITEMS.forEach((it) => {
+      if (reachable(it)) return;
+      if (it.bin === 'bulky') { it.state = 'flying'; park(it, true); it.state = 'parked'; lightBin('bulky'); return; }
+      it.state = 'binned';
+      it.el.classList.add('binned');
+      lightBin(it.bin);
+    });
+    hideCycle(true);
+    wake();
+    catLand();
+    showReceipt(0);
+  }
+
+  let run = 0;
+  let timers = [];
+  let manual = false;
+  let idle = 0;
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+  function play() {
+    const mine = ++run;
+    clearTimers();
+    clearTimeout(idle);
+    manual = false;
+    resetScene();
+    if (reduce) { finalScene(); return; }
+    const at = (sec, fn) => timers.push(setTimeout(() => { if (run === mine) fn(); }, sec * 1000));
+    at(1.5 - LEAP / 2000, catJump);
+    at(1.5, stopTheWorld);
+    // Mark: the edges in the order the collector walked them, one every 0.6 s from 3 s.
+    GC.walked.forEach(([from, to], k) => at(3 + k * 0.6, () => drawRef(from, to, true)));
+    // The pair that only holds each other: reference counts (1 each) and the bubble.
+    at(5.6, () => {
+      garbage.filter((it) => it.refs.length).forEach((it) => it.el.classList.add('counted'));
+      edgeEls.forEach((p) => { if (p.classList.contains('cyc')) { p.classList.remove('blink'); void p.getBBox(); p.classList.add('blink'); } });
+      showBubble(L.cycle, byId.worry2.el, 'cyc', 3400, !wide);
+    });
+    // Sweep: everything the mark did not reach, each at its time.
+    garbage.filter((it) => it.t !== undefined).forEach((it) => at(it.t, () => collect(it)));
+    at(16.7, wake);
+    at(17.5, () => showReceipt(STAMP_IN)); // fully up at 18.6, stamped at 19.7
+    at(22, play);
+  }
+
+  // A visitor takes over: the autoplay stops and their hands do the collecting, inside the same
+  // stopped world (the freeze frame goes; the night, 23:00, the band and the cat in mid-air stay).
+  // Morning comes only once everything is sorted (settled). Touched before 11 p.m., the world
+  // stops there and then; touched in the morning, the receipt stays. 12 s after the last touch
+  // the collection starts again from the top.
+  function takeOver() {
+    if (reduce) return;
+    if (!manual) {
+      manual = true;
+      run++;
+      clearTimers();
+      pa.classList.remove('on');
+      if (scene.classList.contains('dawn')) {
+        if (!receipt.classList.contains('on')) showReceipt();
+      } else {
+        if (!scene.classList.contains('stw')) {
+          if (catAnim && catPhase !== 'sit') catAnim.pause();
+          stopTheWorld(true);
+        }
+        unfreeze();
+        settled();
+      }
+    }
+    bumpIdle();
+  }
+  function bumpIdle() {
+    clearTimeout(idle);
+    idle = setTimeout(() => { if (drag || held) return bumpIdle(); play(); }, 12000);
+  }
+
+  /* ------------------------------------------------------------ pointer */
+  let drag = null;
+  ITEMS.forEach((it) => {
+    const el = it.el;
+    el.addEventListener('pointerdown', (e) => {
+      if (it.state !== 'floor' || (e.pointerType === 'mouse' && e.button !== 0) || drag) return;
+      takeOver();
+      if (held) cancelHold();
+      el.setPointerCapture(e.pointerId);
+      drag = { it, id: e.pointerId, x: e.clientX - it.dx, y: e.clientY - it.dy, over: null };
+      it.state = 'held';
+      el.getAnimations().forEach((a) => a.cancel());
+      el.classList.add('dragging');
+      stage.classList.add('carrying');
+      bubble.classList.remove('on');
+      if (reachable(it)) holdLine(it);
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!drag || drag.it !== it || e.pointerId !== drag.id) return;
+      setOffset(it, e.clientX - drag.x, e.clientY - drag.y);
+      const over = binAt(e.clientX, e.clientY);
+      if (over !== drag.over) {
+        if (drag.over) binEl[drag.over].classList.remove('over');
+        if (over) binEl[over].classList.add('over');
+        drag.over = over;
+      }
+      redrawLinks(it.id);
+    });
+    const end = (e, cancel) => {
+      if (!drag || drag.it !== it || e.pointerId !== drag.id) return;
+      const over = cancel ? null : binAt(e.clientX, e.clientY);
+      drag = null;
+      bumpIdle();
+      drop(it, over, false);
+    };
+    el.addEventListener('pointerup', (e) => end(e, false));
+    el.addEventListener('pointercancel', (e) => end(e, true));
+    el.addEventListener('lostpointercapture', (e) => end(e, true));
+
+    /* ---------------------------------------------------------- keyboard */
+    el.addEventListener('keydown', (e) => {
+      const k = e.key;
+      if (it.state !== 'floor' && it.state !== 'held') return;
+      if (k === 'Enter' || k === ' ') {
+        e.preventDefault();
+        takeOver();
+        if (held && held.it === it) { const binId = BINS[held.at].id; endHold(); drop(it, binId, true); if (!reachable(it)) focusNext(it); }
+        else pickUp(it);
+      } else if (held && held.it === it && (k === 'ArrowRight' || k === 'ArrowDown' || k === 'ArrowLeft' || k === 'ArrowUp')) {
+        e.preventDefault();
+        takeOver();
+        held.at = (held.at + (k === 'ArrowRight' || k === 'ArrowDown' ? 1 : BINS.length - 1)) % BINS.length;
+        target(held.at);
+      } else if (k === 'Escape' && held && held.it === it) {
+        e.preventDefault();
+        cancelHold();
+        say(L.back);
+      } else if (k === 'Delete' || k === 'Backspace') {
+        e.preventDefault();
+        takeOver();
+        if (held) endHold();
+        if (reachable(it)) refuse(it);
+        else { say(L.binned(it.name, TTY.t(binById[it.bin].name))); collect(it); focusNext(it); }
+      }
+    });
+    el.addEventListener('blur', () => { if (held && held.it === it) cancelHold(); });
+    el.addEventListener('click', (e) => e.preventDefault());
+  });
+
+  let held = null;
+  function pickUp(it) {
+    held = { it, at: 0 };
+    it.state = 'held';
+    it.el.classList.add('held');
+    stage.classList.add('carrying');
+    if (reachable(it)) holdLine(it);
+    target(0, true);
+  }
+  function target(i, first) {
+    $$('.bin').forEach((b) => b.classList.remove('over'));
+    binEl[BINS[i].id].classList.add('over');
+    const name = TTY.t(BINS[i].name);
+    say(first ? L.picked(held.it.name, name) : name);
+  }
+  function endHold() {
+    if (!held) return;
+    held.it.el.classList.remove('held');
+    held.it.state = 'floor';
+    held = null;
+    stage.classList.remove('carrying');
+    $$('.bin').forEach((b) => b.classList.remove('over'));
+  }
+  function cancelHold() { endHold(); }
+  function focusNext(it) {
+    const i = ITEMS.indexOf(it);
+    for (let k = 1; k <= ITEMS.length; k++) {
+      const n = ITEMS[(i + k) % ITEMS.length];
+      if (n !== it && n.state === 'floor') { setTimeout(() => n.el.focus(), 0); return; }
+    }
+    setTimeout(() => $('.start').focus(), 0);
+  }
+
+  /* ------------------------------------------------------------ button */
+  $('.start').addEventListener('click', () => {
+    if (reduce) {
+      // Without motion: the first press brings everything back out, the next collects it.
+      if (garbage.every((it) => it.state === 'binned' || it.state === 'parked')) {
+        resetScene();
+        reduceDone = true;
+        GC.walked.forEach(([from, to]) => drawRef(from, to, false));
+        catLand();
+      } else {
+        finalScene();
+      }
+      return;
+    }
+    play();
+  });
+
+  /* ------------------------------------------------------------ start */
+  new ResizeObserver(() => layout()).observe(stage);
+  layout();
+  resetScene();
+  if (reduce) finalScene();
+
+  TTY.onShow(() => { if (!reduce) play(); });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(() => { layout(); redrawLinks(); TTY.ready(); });
+})();
+</script>
+</body>
+</html>

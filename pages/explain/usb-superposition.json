@@ -1,0 +1,150 @@
+{
+  "id": "usb-superposition",
+  "title": {
+    "en": "USB Superposition",
+    "ko": "USB 중첩 상태"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "USB를 꽂을 때마다 뒤집고 또 뒤집는 일상을, 양자역학 교과서처럼 진지한 얼굴로 '자연 법칙'이라고 설명한다.",
+    "points": [
+      "툭, 뒤집기, **툭?!** → 누구나 겪은 USB 꽂기. 거꾸로라 툭, 뒤집었더니 맞는 방향인데도 또 툭(그래서 **툭?!**), 다시 뒤집어 툭, 세 번째로 뒤집어서야 쏙 들어간다. 제목이 내건 이론값이 3번이니 판정은 \"이론과 일치.\" 두 번째 판부터 가끔 다섯 번 걸리면 \"오차 범위 이내.\"라고 우긴다.",
+      "플러그 뒤의 흐린 유령 플러그와 위아래 물결, 수식 |ψ⟩ → 관측하기 전에는 여러 상태가 겹쳐 있다는 양자역학의 '중첩'을 빌려, USB도 꽂아 보기 전까지는 앞뒤가 겹쳐 있다고 우긴다. 유령은 뒤집힌 자기 자신이다. 꽂히는 순간 물결이 납작하게 사라지고 식도 \"|ψ⟩ = |down⟩\" 하나로 줄어든다(관측하면 하나로 정해진다).",
+      "알림 반전 → 겨우 꽂았더니 \"USB 장치가 연결되었습니다\"가 2초 뒤 \"이 장치는 더 빠르게 작동할 수 있습니다 / USB 3.0 포트에 연결하세요.\"로 바뀐다. 그런데 그림 속 포트가 이미 USB 3.0이다. 안쪽이 USB 3.0의 파란색이고 아래에 SS 표시까지 찍혀 있다. 바로 옆 버튼은 \"뽑았다가 다시 꽂기\". 처음부터 다시 뒤집으라는 소리다. (휴대폰처럼 작은 화면에서는 그림 속 알림 대신 카운터 옆에 같은 문장이 뜬다.)",
+      "그림 1과 그림 2 → 교과서 그림 설명 말투. 그림 1은 몇 번 헛손질했는지 빼고 \"결국엔 꽂힘.\"이라고만 적는다. 그림 2는 앞뒤가 없는 USB-C인데도 \"그래도 습관처럼 두 번 뒤집는다\". 알림이 바뀌고 1초쯤 뒤에는 그 USB-C가 정말로 두 번 뒤집혀 처음과 똑같은 모습으로 돌아온다."
+    ],
+    "terms": [
+      {
+        "term": "양자 중첩",
+        "plain": "아주 작은 세계에서 하나의 대상이 여러 상태가 겹친 상태로 있다고 보는 양자역학의 원리. 측정하면 그중 하나로 정해진다."
+      },
+      {
+        "term": "슈뢰딩거의 고양이",
+        "plain": "상자를 열어 보기 전까지 고양이가 살아 있으면서 죽어 있다고 해야 하느냐는 사고 실험. 중첩을 일상의 물건에 그대로 적용하면 얼마나 이상한지 보이려고 만들었다."
+      },
+      {
+        "term": "|ψ⟩ = (|up⟩ + |down⟩)/√2",
+        "plain": "브라-켓 표기로 쓴 '반은 위, 반은 아래' 상태. √2로 나눠 두 경우의 확률을 반반으로 맞춘다. 관측한 뒤에는 |down⟩처럼 한 항만 남는다."
+      },
+      {
+        "term": "USB-A와 USB-C",
+        "plain": "납작한 직사각형 USB-A는 한 방향으로만 들어가고(규격이 플러그와 포트에 방향을 알아볼 표시를 하라고 정해 두었다), USB-C는 뒤집어도 들어가게 만든 단자다."
+      },
+      {
+        "term": "파란 USB 3.0과 SS 표시",
+        "plain": "빠른 USB 3.0(SuperSpeed) USB-A 단자는 안쪽 플라스틱을 파란색(팬톤 300 C)으로 하라고 규격이 권하고, 노트북은 포트 옆에 SS와 삼지창 표시를 찍기도 한다. 그래서 파랗거나 SS가 찍힌 포트는 빠른 포트다."
+      }
+    ],
+    "links": [
+      {
+        "title": "양자 중첩 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/양자_중첩",
+        "note": "여러 상태가 겹쳐 있다는 원리.",
+        "lang": "ko"
+      },
+      {
+        "title": "슈뢰딩거의 고양이 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/슈뢰딩거의_고양이",
+        "note": "관측하기 전까지 살아 있으면서 죽어 있는 고양이 사고 실험.",
+        "lang": "ko"
+      },
+      {
+        "title": "브라-켓 표기법 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/브라-켓_표기법",
+        "note": "|ψ⟩ 같은 기호의 뜻.",
+        "lang": "ko"
+      },
+      {
+        "title": "USB hardware - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/USB_hardware",
+        "note": "방향 표시 규정, 뒤집어 꽂는 USB-C, SuperSpeed 단자의 파란색.",
+        "lang": "en"
+      },
+      {
+        "title": "USB-C - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/USB-C",
+        "note": "앞뒤가 없는 24핀 단자.",
+        "lang": "ko"
+      }
+    ],
+    "deep": [
+      "세 번째로 뒤집은 방향은 첫 번째로 뒤집은 방향과 똑같다. 아까 **툭?!** 하고 막혔던 바로 그 방향으로 이번엔 쏙 들어간다.",
+      "들어간 모습을 보면 플러그의 파란 플라스틱은 아래, 포트의 파란 플라스틱은 위에 있다. 진짜 USB-A도 플러그의 플라스틱은 금속 껍데기 안 아래쪽 절반, 포트의 플라스틱은 위쪽에 있어서 둘이 엇갈려야 들어간다. 첫 시도에는 둘 다 위에 있어서 막혔다.",
+      "플러그 몸통에 흰 USB 삼지창 로고가 있다. USB 규격 단체는 이 로고를 플러그 윗면에 찍게 해서 위아래를 알아보게 했다. 그래도 세 번 뒤집는다.",
+      "그림 2의 USB-C는 180°씩 두 번, 모두 한 바퀴 돈다. 짝수 번 뒤집었으니 처음과 똑같은 모습이다. 애초에 뒤집을 이유가 없었다.",
+      "첫 판은 늘 세 번이다. 두 번째 판부터는 네 번에 한 번꼴로 다섯 번 뒤집는다(\"오차 범위 이내.\"). 어느 쪽이든 홀수 번이니 결국 같은 방향으로 꽂힌다.",
+      "알림이 아주 엉뚱한 소리는 아니다. USB 3.0 플러그를 천천히 꽂으면 빠른 접점이 늦게 닿아 컴퓨터가 USB 2.0 장치로 먼저 알아보기도 한다. 그때 해결책이 정말로 뽑았다가 빠르게 다시 꽂기다."
+    ]
+  },
+  "en": {
+    "line": "This page explains the everyday ritual of flipping a USB plug until it fits, with a perfectly straight face, as a law of quantum physics.",
+    "points": [
+      "Bonk, flip, \"bonk?!\" → everyone's USB experience: wrong way up, bonk; flip it, now it's the right way up and it still bonks (hence the **?!**); flip, bonk; flip a third time, and in it goes. The title is the theory, three flips, so the verdict reads \"Consistent with theory.\" From the second run on it sometimes takes five, and that is \"Within experimental error.\"",
+      "The faint ghost plug, the waves above and below, and |ψ⟩ → in quantum mechanics a system can be in a superposition of states until it is measured. So the plug is \"both ways up\" until observed: the ghost is the plug itself, upside down. The moment it goes in, the waves flatten and vanish and the equation shrinks to \"|ψ⟩ = |down⟩\" (measured, it settles on one state).",
+      "The notification twist → finally in, \"USB device connected\" turns two seconds later into \"This device can perform faster / Try a USB 3.0 port.\" But the port in the drawing already is USB 3.0: SuperSpeed blue inside, with the SS mark printed under it. The button right there says \"Unplug and try again\": back to flipping. (On a small screen such as a phone the same lines appear next to the counter instead of in the drawing.)",
+      "Fig. 1 and Fig. 2 → textbook captions. Fig. 1 leaves out how many tries it took: \"Insertion, eventually.\" Fig. 2 shows USB-C, which has no wrong way up: \"Flipped twice anyway, out of habit.\" About a second after the notification changes, that USB-C really does get flipped twice and ends up exactly as it was."
+    ],
+    "terms": [
+      {
+        "term": "Quantum superposition",
+        "plain": "the principle that a quantum system can be in a combination of states at once; measuring it gives one result."
+      },
+      {
+        "term": "Schrödinger's cat",
+        "plain": "a thought experiment about a cat in a closed box that would be both alive and dead until someone looks, meant to show how strange superposition becomes when applied to everyday things."
+      },
+      {
+        "term": "|ψ⟩ = (|up⟩ + |down⟩)/√2",
+        "plain": "Dirac's bra–ket notation for \"half up, half down\"; dividing by √2 makes the two chances 50/50. After a measurement only one term is left, like |down⟩."
+      },
+      {
+        "term": "USB-A vs USB-C",
+        "plain": "the flat rectangular USB-A plug fits only one way (the standard says plugs and ports must be marked so you can tell which), while USB-C is reversible."
+      },
+      {
+        "term": "Blue USB 3.0 and the SS mark",
+        "plain": "the USB standards recommend a blue insert (Pantone 300 C) for fast SuperSpeed USB-A ports and plugs, and laptops often print an SS trident next to the port, so a blue or SS-marked port is a fast one."
+      }
+    ],
+    "links": [
+      {
+        "title": "Quantum superposition - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Quantum_superposition",
+        "note": "the principle the page borrows.",
+        "lang": "en"
+      },
+      {
+        "title": "Schrödinger's cat - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Schr%C3%B6dinger%27s_cat",
+        "note": "the cat that is alive and dead until observed.",
+        "lang": "en"
+      },
+      {
+        "title": "Bra–ket notation - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation",
+        "note": "what |ψ⟩ means.",
+        "lang": "en"
+      },
+      {
+        "title": "USB hardware - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/USB_hardware",
+        "note": "orientation markings, the reversible USB-C, and SuperSpeed blue.",
+        "lang": "en"
+      },
+      {
+        "title": "USB-C - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/USB-C",
+        "note": "the 24-pin connector with no wrong way up.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The way up after the third flip is exactly the way up after the first flip. The orientation that went \"bonk?!\" a moment ago now slides straight in.",
+      "Look at it plugged in: the plug's blue plastic is at the bottom, the port's blue plastic at the top. Real USB-A works like that: the plug's insulator fills the lower half of its metal shell and the port's sits above, so the two have to pass each other. On the first try both were at the top, hence the bonk.",
+      "The plug carries the white USB trident logo. The USB standards body says it goes on the top of the plug, precisely so you can tell which way up it is. Three flips anyway.",
+      "Fig. 2's USB-C turns 180° twice, a full turn in all. An even number of flips leaves it exactly as it was; there was never a reason to flip it.",
+      "The first run always takes three flips. From the second run on, about one in four takes five (\"Within experimental error.\"). Either way it is an odd number of flips, so the plug goes in the same way up.",
+      "The notification is not entirely wrong. Push a USB 3.0 plug in slowly and its fast contacts touch last, so the computer may take it for a USB 2.0 device. The fix really is to unplug it and plug it in again, quickly."
+    ]
+  }
+}

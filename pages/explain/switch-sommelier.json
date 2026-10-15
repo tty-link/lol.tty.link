@@ -1,0 +1,139 @@
+{
+  "id": "switch-sommelier",
+  "title": {
+    "en": "Switch Sommelier",
+    "ko": "키보드 축 소믈리에"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "키보드 마니아들이 스위치(축)를 고르며 하는 진지한 비교를 와인 소믈리에의 시음 노트로 옮겼다. 마지막 병은 고장으로 유명했던 노트북 키보드다.",
+    "points": [
+      "잔을 흔들 때 키 스위치도 잔처럼 빙 돌리고 세 번 눌러 맛본다 → 와인 시음 순서(보기, 잔 흔들기, 향 맡기, 맛보기)를 키보드에 그대로, 정색하고 했다. 키를 흔든다고 향이 날 리 없다. 축마다 누르는 느낌과 소리가 달라서 파형 모양도 다르다.",
+      "청축 \"97점 / 내 귀엔. 옆자리 귀엔 41점\" → 청축은 누를 때마다 '딸깍' 소리가 크게 나는 축이다. 치는 사람 귀엔 즐겁고 옆자리 귀엔 괴롭다. 그래서 페어링도 \"혼자 일하는 날. 아주 멀리서.\"",
+      "저소음 \"팀장님이 노는 줄 압니다\" → 너무 조용하면 열심히 일하는 소리도 안 들린다.",
+      "버터플라이 2016 → 2016년 무렵 노트북의 아주 얕은 '버터플라이' 키보드는 글자가 두 번 찍히거나, 안 찍히거나, 키가 끈적하게 걸리는 고장으로 유명했다. 시음 노트부터 그렇다. \"찍찍히거나\"는 한 글자가 두 번 찍혔고, \"안 찍힙니\"는 '다'가 안 찍혔다. 세 번 눌러 보면 처음엔 파형이 두 번 튀고, 다음엔 아예 안 튀고, 세 번째로 누르자 키가 비뚤게 걸린 채 안 올라온다. 증거가 다 나온 뒤에야 점수 자리에 빨간 '돌려보냄' 도장이 찍힌다(식당에서 상한 와인을 돌려보내듯). 페어링은 실제로 있었던 '무상 수리 프로그램'. 조금 뒤 키가 두 번 일어나려다 다시 주저앉는다.",
+      "(직접 누를 때만) 걸린 키를 눌러 보면 → 첫 번째는 덜컥 떨기만 하고 아무것도 안 찍힌다. 두 번째에야 튀어 올라오는데, 두 번 찍힌다. 계속 누르면 또 안 찍히고, 또 걸린다."
+    ],
+    "terms": [
+      {
+        "term": "축(스위치)",
+        "plain": "기계식 키보드의 키 하나하나 밑에 있는 부품. 색 이름(적축, 갈축, 청축…)으로 누르는 느낌을 구분한다."
+      },
+      {
+        "term": "리니어·택타일·클리키",
+        "plain": "끝까지 매끄럽게 내려가는 축, 중간에 '톡' 걸림이 있는 축, 걸림과 함께 '딸깍' 소리까지 나는 축."
+      },
+      {
+        "term": "작동압",
+        "plain": "키가 입력되려면 눌러야 하는 힘. 흔히 g(그램)으로 적는다(제조사 표의 cN과 거의 같은 숫자). 흑축 60g이 적축 45g보다 무겁다."
+      },
+      {
+        "term": "버터플라이 키보드",
+        "plain": "키를 나비 날개 모양 경첩으로 받쳐 아주 얇게 만든 노트북 키보드. 키가 1mm도 안 내려간다."
+      }
+    ],
+    "links": [
+      {
+        "title": "기계식 키보드 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/기계식_키보드",
+        "note": "리니어·택타일·클리키 구분과 축별 키압 표",
+        "lang": "ko"
+      },
+      {
+        "title": "MacBook Pro (Intel-based) - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/MacBook_Pro_(Intel-based)",
+        "note": "2016년 모델의 얕은 '버터플라이' 키보드와 'Keyboard reliability' 절의 고장·무상 수리 이야기",
+        "lang": "en"
+      },
+      {
+        "title": "Apple introduces keyboard service program - Macworld",
+        "url": "https://www.macworld.com/article/231540/apple-introduces-keyboard-service-program-for-mac-laptops-with-butterfly-keyboards.html",
+        "note": "2018년 6월 무상 수리 프로그램. 증상이 \"글자가 예기치 않게 반복됨\", \"글자가 안 나타남\", \"키가 끈적하거나 일정하게 반응하지 않음\"",
+        "lang": "en"
+      },
+      {
+        "title": "Wine tasting - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Wine_tasting",
+        "note": "보기·흔들기·향 맡기·맛보기·음미하기, 시음의 '다섯 S'",
+        "lang": "en"
+      },
+      {
+        "title": "소믈리에 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/소믈리에",
+        "note": "와인을 골라 주고 설명하는 사람",
+        "lang": "ko"
+      }
+    ],
+    "deep": [
+      "사양 줄의 숫자 → 실제 축 제조사 사양표 그대로다. 적·갈·흑 입력 2.0 / 바닥 4.0mm, 청축만 2.2mm, 저소음 1.9 / 3.7mm, 작동압 45·55·60·45·60. 제조사 표의 cN(센티뉴턴)을 g로 옮겨 적었다.",
+      "적축 \"손가락만 얹어도 술술 넘어가고\" → 45g 리니어는 중간 걸림도 없고 가벼워서, 손가락을 올려놓기만 해도 눌릴 때가 있다. 그래서 뒷맛이 오타다.",
+      "키가 내려가는 거리 → 축끼리 비율을 맞췄다. 4mm 축은 15, 3.7mm 저소음은 13, 버터플라이는 2(그림 단위)라 거의 안 움직인다.",
+      "갈축 파형의 작은 턱, 갈축·청축 키가 내려가다 잠깐 멈칫하는 것 → 택타일 축의 '톡' 걸림이다. 청축은 거기에 뾰족한 스파이크(딸깍)가 더해진다.",
+      "버터플라이 파형 세 칸 → 실제 무상 수리 프로그램이 꼽은 증상 셋(글자 반복, 글자 안 나옴, 끈적한 키)을 누름마다 하나씩 맡겼다.",
+      "\"빵 부스러기 향\" → 버터플라이 키는 키 밑에 낀 작은 부스러기·먼지로 고장 나는 일이 많았다. 그래서 2018년 모델은 키 밑에 먼지 막는 막을 더했다.",
+      "도장이 '리콜'이 아니라 '돌려보냄' → 실제로 있었던 일은 리콜이 아니라 2018년 6월의 무상 수리 프로그램이었다. 그래서 페어링도 '무상 수리 프로그램'이다."
+    ]
+  },
+  "en": {
+    "line": "Keyboard fans compare switches as seriously as wine critics compare vintages, so this page writes their tasting notes. The last bottle is a laptop keyboard famous for breaking.",
+    "points": [
+      "The glass swirls, and so does the key, in a little circle beside it; then the key is pressed three times → the wine-tasting routine (see, swirl, sniff, sip) done on a keyboard switch with a straight face. Swirling a key releases no aroma. Each switch feels and sounds different, so each one draws its own wave.",
+      "Blue: \"97\" — \"to you. 41 to the next desk\" → blue switches click loudly on every key. Great for the typist, not for the next desk. Hence the pairing: \"Working alone. Far away.\"",
+      "Silent: \"So quiet your manager thinks you've gone idle.\" → with no clicking at all, nobody can hear you working.",
+      "Butterfly, vintage 2016 → the very thin \"butterfly\" laptop keyboards of around 2016 were known for keys that typed twice, didn't type at all, or stuck. The tasting note has both typos: \"twwice\" types a letter twice and \"at al\" drops one. Pressed three times, the wave jumps twice the first time and not at all the next; on the third press the key sticks, crooked, and stays down. Only after all that evidence does the red \"SENT BACK\" stamp land where the score should be, like a bad bottle in a restaurant. It pairs with \"a free repair program\" (a real one). A moment later the key tries twice to get up, and can't.",
+      "(Only if you press it yourself) Press the stuck key → the first press just jolts it and types nothing. The second frees it, and it types twice. Keep going and it types nothing, then sticks again."
+    ],
+    "terms": [
+      {
+        "term": "switch",
+        "plain": "the part under each key of a mechanical keyboard. Colour names (red, brown, blue…) tell you how it feels."
+      },
+      {
+        "term": "linear / tactile / clicky",
+        "plain": "smooth all the way down / a small bump on the way / a bump plus an audible click."
+      },
+      {
+        "term": "actuation force",
+        "plain": "how hard you must press before the key registers. People write it in grams; makers' spec sheets use centinewtons (cN), almost the same number. Black at 60 g is heavier than red at 45 g."
+      },
+      {
+        "term": "butterfly keyboard",
+        "plain": "a very thin laptop keyboard whose keys sit on a hinge shaped like butterfly wings. The keys move less than a millimetre."
+      }
+    ],
+    "links": [
+      {
+        "title": "MacBook Pro (Intel-based) – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/MacBook_Pro_(Intel-based)",
+        "note": "the 2016 model's shallow \"butterfly\" keyboard, and its \"Keyboard reliability\" section",
+        "lang": "en"
+      },
+      {
+        "title": "Apple introduces keyboard service program – Macworld",
+        "url": "https://www.macworld.com/article/231540/apple-introduces-keyboard-service-program-for-mac-laptops-with-butterfly-keyboards.html",
+        "note": "the June 2018 free-repair program; symptoms \"Letters or characters repeat unexpectedly\", \"do not appear\", keys \"sticky\""
+      },
+      {
+        "title": "기계식 키보드 – Korean Wikipedia",
+        "url": "https://ko.wikipedia.org/wiki/기계식_키보드",
+        "note": "linear, tactile and clicky, with a table of switch forces",
+        "lang": "ko"
+      },
+      {
+        "title": "Wine tasting – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Wine_tasting",
+        "note": "the \"five S\" routine (see, swirl, sniff, sip, savor) the page borrows",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The spec lines → copied from real switch makers' spec sheets: 2.0 mm to actuation and 4.0 mm total travel for red, brown and black, 2.2 mm for blue only, 1.9 / 3.7 mm for silent, and forces of 45, 55, 60, 45 and 60 (the sheets say cN; the card says g).",
+      "Red \"Goes down at a touch\" → a 45 g linear switch is light and has no bump to stop you, so a finger just resting on it can press it. Hence the hints of typos.",
+      "How far the key moves on screen → the switches are to scale with each other: 15 for 4 mm, 13 for the silent 3.7 mm, 2 for the butterfly (drawing units), so the butterfly barely moves.",
+      "The little step in brown's wave, and the way the brown and blue keys pause on the way down → that is the tactile bump. Blue adds a sharp spike on top: the click.",
+      "The butterfly's three cells on the wave → the three symptoms the real repair program listed (letters repeat, letters don't appear, keys feel sticky), one a press.",
+      "\"Notes of toast crumb\" → butterfly keys often failed because of tiny crumbs or dust stuck under them; the 2018 models added a membrane under the keys to keep dust out.",
+      "The stamp says \"sent back\", not recall → there was no recall; it was a free-repair program (June 2018), which is also what it pairs with."
+    ]
+  }
+}

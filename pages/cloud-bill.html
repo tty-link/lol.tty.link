@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>This Month's Cloud Bill | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@600;700&family=Nanum+Gothic:wght@400;700;800&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="gothic pilgi"></script>
+<style>
+  /* A cloud bill printed as an apartment maintenance-fee statement. This month's bar in the
+     usage chart does not fit on the paper. The line items are the usual cloud surprises in
+     apartment words, and the biggest one, printed last, is the fee for checking the bill. */
+  :root {
+    --bg: #cdd7d1;
+    --paper: #fbfcf7;
+    --tint: #e3f0e9;
+    --tint-2: #f1f7f3;
+    --rule: #9cc2b1;
+    --rule-soft: #cfe1d8;
+    --green: #2c6a52;
+    --ink: #1f2b27;
+    --soft: #5d6e67;
+    --red: #d8352a;
+    --blue: #2b62a3;
+    --gray-bar: #a7bcb2;
+    --pen: #d22d22;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    container: page / size;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(80cqmax 60cqmax at 30% 20%, #dbe3de, var(--bg) 70%);
+    color: var(--ink);
+    font-family: 'Barlow', 'Nanum Gothic', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'Nanum Gothic', 'Barlow', system-ui, sans-serif; word-break: keep-all; }
+  button, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid #f2b705; outline-offset: 2px; border-radius: 4px; }
+  .mono { font-family: 'IBM Plex Mono', 'Nanum Gothic', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .cond { font-family: 'Barlow Condensed', 'Nanum Gothic', sans-serif; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  /* ---------- Stage and paper (phone layout first; the wide layout is at the end) ---------- */
+  .stage {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    padding: max(18px, 5cqh) 8px 8px;
+  }
+  .paper {
+    --fs: clamp(11px, min(3.4cqw, 2.55cqh), 15px);
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "head chart" "items items" "band band";
+    gap: .6em .9em;
+    min-height: 0;
+    padding: .8em .8em .7em;
+    background: var(--paper);
+    box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 16px 40px rgba(25, 50, 40, .22);
+    font-size: var(--fs);
+    line-height: 1.3;
+  }
+  /* a thin printed frame, as on real statements */
+  .paper::before {
+    content: "";
+    position: absolute;
+    inset: .35em;
+    border: 1px solid var(--rule-soft);
+    pointer-events: none;
+  }
+
+  /* ---------- Header ---------- */
+  .head { grid-area: head; display: flex; flex-direction: column; gap: .3em; min-width: 0; }
+  .org { display: flex; align-items: center; gap: .4em; color: var(--green); font-weight: 700; font-size: max(11px, .8em); letter-spacing: .02em; }
+  .lang-en .org { text-transform: uppercase; letter-spacing: .08em; }
+  .logo { flex: none; width: 1.35em; height: 1.35em; }
+  .title { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1em .5em; color: var(--green); font-size: 1em; line-height: 1.05; }
+  .title .t-en { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.5em; letter-spacing: .01em; }
+  .title .kku-title { --kku-title: clamp(18px, 6cqw, 30px); color: var(--green); --fy-element-width: 0.11em; }
+  .period { font-weight: 700; font-size: 1.05em; color: var(--ink); }
+  .meta { display: grid; gap: .1em; font-size: max(11px, .84em); color: var(--soft); }
+  .meta div { display: flex; gap: .45em; }
+  .meta dt { flex: none; min-width: 4.4em; color: var(--green); }
+  .lang-en .meta dt { min-width: 3.6em; }
+  .meta dd { color: var(--ink); font-weight: 600; }
+  .meta small { font-weight: 400; color: var(--soft); }
+  .wide-only { display: none; }
+  .meta dt, .meta .m-span { display: none; }
+
+  /* ---------- Usage chart ---------- */
+  .chart { grid-area: chart; position: relative; display: flex; flex-direction: column; min-width: 0; padding: .1em .1em 0; }
+  .ch-title { font-size: max(11px, .8em); font-weight: 700; color: var(--green); }
+  .plot { position: relative; height: clamp(56px, 13cqh, 150px); margin-top: .25em; border-bottom: 1.5px solid var(--ink); }
+  .tick { position: absolute; left: 0; right: 0; height: 0; border-top: 1px dashed var(--rule-soft); }
+  .tick b { display: none; }
+  .bars, .mons { position: absolute; left: 0; right: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .bars { top: 0; bottom: 0; list-style: none; }
+  .bar { position: relative; }
+  .fill {
+    position: absolute;
+    left: 20%;
+    right: 20%;
+    bottom: 0;
+    height: calc(var(--v, 0) * 100%);
+    background: var(--gray-bar);
+    transform-origin: 50% 100%;
+    transform: scaleY(0);
+  }
+  .bar.now .fill { z-index: 3; background: var(--red); box-shadow: 0 0 0 1px rgba(120, 20, 10, .15); }
+  .mons { position: static; margin-top: .2em; font-size: max(11px, .76em); color: var(--soft); text-align: center; }
+  .mons .now { color: var(--red); font-weight: 700; }
+  .pct {
+    position: absolute;
+    left: 2%;
+    top: 4%;
+    z-index: 2;
+    color: var(--red);
+    font-family: 'Barlow Condensed', 'Nanum Gothic', sans-serif;
+    font-weight: 700;
+    font-size: 1.3em;
+    line-height: 1;
+    opacity: 0;
+  }
+  .pct small { display: none; font-family: 'Barlow', 'Nanum Gothic', sans-serif; font-weight: 600; font-size: max(11px, .42em); letter-spacing: .02em; }
+  .pct.on { opacity: 1; }
+
+  /* Where the bar broke through the top of the paper: two torn flaps. */
+  .tear { position: absolute; top: 0; z-index: 4; translate: -50% -88%; pointer-events: none; opacity: 0; }
+  .tear svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .tear.on { opacity: 1; }
+  .bit { position: absolute; z-index: 4; width: 7px; height: 5px; background: var(--paper); box-shadow: 0 0 0 1px var(--rule-soft); pointer-events: none; }
+  .cont {
+    position: absolute;
+    top: 6px;
+    z-index: 5;
+    padding: 2px 7px 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .9);
+    color: var(--red);
+    font: 700 12px/1.2 'Barlow', 'Nanum Gothic', sans-serif;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,.12);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .cont.on { opacity: 1; }
+
+  /* ---------- Line items ---------- */
+  .items { grid-area: items; display: flex; flex-direction: column; min-height: 0; }
+  .thead { border-top: 2px solid var(--green); }
+  .row, .thead {
+    display: grid;
+    grid-template-columns: var(--cols);
+    align-items: center;
+    column-gap: .55em;
+  }
+  .items { --cols: 1.55em minmax(0, 1fr) auto; }
+  .thead { padding: .3em .35em; background: var(--tint); color: var(--green); font-size: max(11px, .8em); font-weight: 700; }
+  .thead .c-prev, .thead .c-delta, .row .prev, .row .delta { display: none; }
+  .row.counting .delta { visibility: hidden; }
+  .thead .c-item { grid-column: 1 / 3; white-space: nowrap; }
+  .hint { margin: 0 0 .25em; color: var(--soft); font-size: max(11px, .8em); line-height: 1.25; text-align: right; }
+  .thead .c-amt { text-align: right; }
+  .rows { flex: 1; display: grid; grid-auto-rows: minmax(0, 1fr); list-style: none; min-height: 0; }
+  .rows > li { position: relative; display: grid; min-height: 0; border-bottom: 1px dashed var(--rule-soft); }
+  .rows > li:last-child { border-bottom: 1.5px solid var(--green); }
+  .row {
+    position: relative;
+    width: 100%;
+    padding: .15em .35em;
+    border: 0;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    visibility: hidden;
+  }
+  .row.on, .row.pending { visibility: visible; }
+  .row:hover.on { background: var(--tint-2); }
+  .row.sel { background: #fff6d8; }
+  .ico { width: 1.45em; height: 1.45em; color: var(--green); fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .lbl { display: flex; flex-direction: column; min-width: 0; }
+  .nm { font-weight: 700; font-size: 1em; line-height: 1.15; }
+  .sub { color: var(--soft); font-size: max(11px, .82em); line-height: 1.2; }
+  /* The cloud word for the line, shown beside the name only where the second line is hidden. */
+  .key { display: none; color: var(--soft); font-size: max(11px, .82em); font-weight: 400; white-space: nowrap; }
+  .key::before { content: "· "; }
+  .amt { display: flex; flex-direction: column; align-items: flex-end; font-weight: 600; white-space: nowrap; }
+  .amt .was { color: var(--soft); font-weight: 400; font-size: max(11px, .8em); }
+  /* Under line 8's amount. When the amount is the last column, it starts under the amount's left
+     edge, inside the pen loop (flush right, the loop's right end runs through it). */
+  .amt .more { align-self: flex-start; color: var(--pen); font: 700 max(11px, .78em)/1.2 'Barlow', 'Nanum Gothic', sans-serif; white-space: nowrap; }
+  @container page (min-width: 560px) { .amt .more { align-self: auto; } }
+  .prev { color: var(--soft); text-align: right; white-space: nowrap; }
+  .delta { text-align: right; white-space: nowrap; font-size: .92em; }
+  .delta.up { color: var(--red); }
+  .delta.down { color: var(--blue); }
+  .tag {
+    display: none;
+    align-self: flex-start;
+    margin-top: .15em;
+    padding: 0 .4em;
+    border: 1px solid var(--soft);
+    border-radius: 3px;
+    color: var(--soft);
+    font-size: max(11px, .74em);
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .row.same .tag { display: inline-block; }
+  .row.same .sub, .row.same .key { display: none; }
+  /* Row 8 before it prints: still looking itself up. */
+  .row .wait { display: none; color: var(--soft); font-weight: 700; }
+  .row.pending .wait { display: block; }
+  .row.pending .lbl > :not(.wait) { display: none; }
+  .row.pending .amt, .row.pending .prev, .row.pending .delta { visibility: hidden; }
+  .row.pending .ico { opacity: .35; }
+  .dots i { animation: dot 1.1s infinite; font-style: normal; }
+  .dots i:nth-child(2) { animation-delay: .18s; }
+  .dots i:nth-child(3) { animation-delay: .36s; }
+  @keyframes dot { 0%, 60%, 100% { opacity: .15; } 30% { opacity: 1; } }
+  .ring { position: absolute; left: -1%; top: -16%; width: 102.5%; height: 132%; overflow: visible; pointer-events: none; z-index: 2; opacity: 0; }
+  .ring path { fill: none; stroke: var(--pen); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .ring.on { opacity: .9; }
+  .ring.on path { stroke-dashoffset: 0; }
+  .plus {
+    position: absolute;
+    right: .4em;
+    top: -.2em;
+    z-index: 7;   /* above the phone card, which sits just over line 8 */
+    color: var(--pen);
+    font: 700 1.05em/1 'Caveat', 'Nanum Gothic', cursive;
+    pointer-events: none;
+  }
+  .lang-ko .plus { font: 700 max(11px, .9em)/1 'Nanum Gothic', sans-serif; }
+
+  /* ---------- Notices / memo (wide: a box on the bill; phone: a card next to the line) ---------- */
+  .panel {
+    grid-area: panel;
+    position: absolute;
+    z-index: 6;
+    display: none;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 0;
+    padding: .55em .7em .6em;
+    border: 1.5px solid var(--green);
+    border-radius: 4px;
+    background: #fffdf2;
+    box-shadow: 0 8px 22px rgba(25, 50, 40, .22);
+  }
+  .panel.open { display: flex; }
+  .panel::after {
+    content: "";
+    position: absolute;
+    left: var(--px, 30%);
+    width: 12px;
+    height: 12px;
+    background: #fffdf2;
+    rotate: 45deg;
+  }
+  .panel.below::after { top: -7.5px; border-left: 1.5px solid var(--green); border-top: 1.5px solid var(--green); }
+  .panel.above::after { bottom: -7.5px; border-right: 1.5px solid var(--green); border-bottom: 1.5px solid var(--green); }
+  .pn-title { display: none; }
+  .pn-notice { display: none; }
+  .pn-memo { display: grid; gap: .25em; }
+  .mh { color: var(--green); font-weight: 800; font-size: max(11px, .84em); letter-spacing: .02em; }
+  .mt { font-size: 1em; line-height: 1.4; }
+  /* The punchline and its tag line read bigger than the 11 px rows on a phone (_rules 5). */
+  .pn-memo.punch .mt { font-size: max(13px, 1.15em); }
+  .foot { color: var(--soft); font-size: max(11px, .9em); line-height: 1.35; }
+  .foot.tagline { color: var(--ink); font-size: 1em; font-weight: 700; }
+  .foot b { color: var(--pen); }
+  .pen { display: flex; align-items: center; gap: .3em; color: var(--pen); }
+  .pen .p-en { font: 700 1.6em/1 'Caveat', cursive; }
+  .pen font-kku { color: var(--pen); }
+  .parrow { display: none; width: 2.5em; height: 1.2em; overflow: visible; }
+  .parrow path { fill: none; stroke: var(--pen); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---------- Amount due, late fee, the request box ---------- */
+  .band {
+    grid-area: band;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "due late" "apply apply";
+    align-items: center;
+    gap: .35em .9em;
+    padding-top: .45em;
+    border-top: 2px solid var(--green);
+  }
+  .due { grid-area: due; display: flex; flex-direction: column; gap: 0; padding: .2em .55em .25em; background: var(--tint); border-radius: 3px; }
+  .due .lab { color: var(--green); font-weight: 700; font-size: max(11px, .8em); }
+  .total { font-family: 'Barlow Condensed', 'Nanum Gothic', sans-serif; font-weight: 700; font-size: 1.5em; line-height: 1.05; color: var(--ink); white-space: nowrap; }
+  .lang-ko .total .won { font-family: 'Nanum Gothic', sans-serif; font-size: .7em; font-weight: 800; }
+  .late { grid-area: late; display: grid; justify-items: end; text-align: right; font-size: max(11px, .8em); color: var(--soft); line-height: 1.25; }
+  .late b { color: var(--ink); font-weight: 600; }
+  .fine { font-size: max(11px, .92em); }
+  .apply { grid-area: apply; display: flex; align-items: center; gap: .5em; justify-self: start; font-weight: 700; font-size: max(11px, .9em); cursor: pointer; }
+  .apply small { font-weight: 400; color: var(--soft); font-size: max(11px, .86em); }
+  .apply input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .box { position: relative; flex: none; width: 1.25em; height: 1.25em; border: 1.5px solid var(--ink); background: #fff; }
+  .box svg { position: absolute; inset: -30% -20% -10% -10%; width: 140%; height: 140%; overflow: visible; }
+  .box path { fill: none; stroke: var(--pen); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .35s ease-out; }
+  .apply input:checked + .box path { stroke-dashoffset: 0; }
+  .apply input:focus-visible + .box { outline: 3px solid #f2b705; outline-offset: 2px; }
+
+  /* ---------- Wide layout ---------- */
+  @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
+    .stage { padding: 7cqh 3cqw 3cqh; }
+    html:not(.embedded) .stage { padding-bottom: max(3cqh, 48px); }
+    .paper {
+      --fs: clamp(11px, min(1.5cqw, 1.95cqh), 16px);
+      grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr) auto;
+      grid-template-areas: "head chart" "items chart" "items panel" "band band";
+      gap: .9em 1.7em;
+      padding: 1.3em 1.5em 1em;
+    }
+    .paper::before { inset: .5em; }
+    .head { gap: .45em; }
+    .title .kku-title { --kku-title: clamp(22px, 3.1cqw, 40px); }
+    .title .t-en { font-size: 2.3em; }
+    .period { font-size: 1.45em; }
+    .meta { grid-template-columns: auto auto auto; justify-content: start; column-gap: 1.6em; font-size: .9em; margin-top: .15em; }
+    .meta div { flex-direction: column; gap: 0; }
+    .meta dt { min-width: 0; font-size: .92em; }
+    .wide-only { display: inline; }
+    .ph-only { display: none; }
+    .meta dt { display: block; }
+    .meta .m-span { display: flex; }
+    .logo { width: 1.7em; height: 1.7em; }
+    .chart { padding: .25em 0 0; border: 1px solid var(--rule-soft); border-width: 0 0 0 1px; padding-left: 1.2em; }
+    .ch-title { font-size: .9em; }
+    .plot { flex: 1; height: auto; min-height: 0; margin: .5em 0 0 3.2em; }
+    .tick b { display: block; position: absolute; right: calc(100% + .5em); top: -.65em; color: var(--soft); font-size: max(11px, .74em); font-weight: 500; white-space: nowrap; }
+    .mons { margin-left: 3.2em; font-size: .82em; }
+    .pct { font-size: 2.6em; left: 4%; top: 5%; }
+    .pct small { display: block; margin-top: .2em; }
+    .cont { font-size: 13px; }
+    .items { --cols: 1.6em minmax(0, 1fr) 6.4em 5.4em 5.8em; }
+    .thead { padding: .4em .45em; font-size: .86em; }
+    .thead .c-prev, .thead .c-delta, .row .prev, .row .delta { display: block; }
+    .row .prev, .row .delta { font-size: .9em; }
+    .thead .c-prev, .thead .c-delta { text-align: right; }
+    .row { padding: .2em .45em; }
+    .ico { width: 1.55em; height: 1.55em; }
+    .nm { font-size: 1.04em; }
+    .sub { font-size: .84em; }
+    .tag { font-size: .76em; }
+    .panel {
+      position: relative;
+      display: flex;
+      box-shadow: none;
+      border-width: 1px;
+      background: #fffdf4;
+      padding: 0;
+      overflow: visible;
+    }
+    .panel::after { display: none; }
+    .pn-title { display: block; padding: .35em .7em; background: var(--tint); color: var(--green); font-weight: 800; font-size: .86em; letter-spacing: .02em; border-bottom: 1px solid var(--rule-soft); }
+    .pn-notice { display: block; flex: 1; padding: .55em .8em .2em 1.9em; font-size: .9em; line-height: 1.45; }
+    .pn-notice li { margin-bottom: .3em; }
+    .pn-notice li::marker { color: var(--green); }
+    .pn-memo { display: none; flex: 1; align-content: end; padding: .55em .8em .7em; }
+    .panel.memo .pn-notice { display: none; }
+    .panel.memo .pn-memo { display: grid; }
+    .mt { font-size: .98em; }
+    .pn-memo.punch .mt { font-size: .98em; }
+    .pn-memo.punch .tagline { font-size: 1em; }
+    .pen { margin-left: -2.7em; }
+    .parrow { display: block; }
+    .band {
+      grid-template-columns: auto auto minmax(0, 1fr);
+      grid-template-areas: "due late apply";
+      gap: .4em 1.6em;
+      padding-top: .7em;
+    }
+    .due { flex-direction: row; align-items: baseline; gap: .55em; padding: .35em .8em .4em; }
+    .due .lab { font-size: .9em; }
+    .total { font-size: 2.1em; }
+    .late { justify-items: start; text-align: left; font-size: .86em; }
+    .apply { justify-self: end; font-size: .95em; }
+  }
+
+  /* Tall phones and tablets have room for last month and the change. */
+  @container page (min-width: 560px) and ((max-width: 699px) or (max-aspect-ratio: 1/1)) {
+    .items { --cols: 1.55em minmax(0, 1fr) 6.4em 5.4em 5.8em; }
+    .thead .c-prev, .thead .c-delta, .row .prev, .row .delta { display: block; }
+    .thead .c-prev, .thead .c-delta { text-align: right; }
+    .row .prev, .row .delta { font-size: .9em; }
+  }
+
+  /* Short phone stages (the home page's stage on a phone is about 345×395): one line a row. */
+  @container page (max-height: 500px) and ((max-width: 699px) or (max-aspect-ratio: 1/1)) {
+    .stage { padding-top: max(16px, 4.5cqh); }
+    .paper { gap: .45em .8em; padding: .65em .7em .55em; }
+    .lbl { flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: .45em; }
+    .sub { display: none; }
+    .key { display: inline; }
+    .amt .more { display: none; }   /* no second lines here; the tag line under the punchline says it */
+    .plot { height: clamp(56px, 16cqh, 150px); }
+    .tag { margin-top: 0; }
+    .amt { flex-direction: row; align-items: baseline; gap: .4em; }
+    .hint { margin-bottom: .15em; }
+    .thead { padding: .2em .35em; }
+    .band { padding-top: .35em; gap: .25em .9em; }
+  }
+
+  /* Opened on its own at tablet width, the kit's two links sit at the bottom right. */
+  @container page (min-width: 601px) and ((max-width: 699px) or (max-aspect-ratio: 1/1)) {
+    html:not(.embedded) .stage { padding-bottom: 48px; }
+  }
+  /* Opened on its own on a phone, the kit's folded nav (about 84×50) takes the bottom right,
+     beside the request box. The late-fee lines go up to the top of the amount box to leave it
+     free, so the nav stays there instead of moving over the bar and its "continued" tag. */
+  @container page (max-width: 600px) {
+    html:not(.embedded) .late { align-self: start; }
+  }
+  /* Short phones: the one-line rows have room to spare, so the request row grows a little too. */
+  @container page (max-width: 600px) and (max-height: 500px) {
+    html:not(.embedded) .apply { min-height: 26px; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9.2 17.5h5.6M10 20.5h4M12 2.8a6.2 6.2 0 0 0-3.7 11.2c.7.5 1 1.3 1 2.1v.4h5.4v-.4c0-.8.3-1.6 1-2.1A6.2 6.2 0 0 0 12 2.8z"/><path d="M12 7.5v3.2l1.6 1.4"/></symbol>
+    <symbol id="i-room" viewBox="0 0 24 24"><path d="M4.5 21V3.5h15V21M2.5 21h19"/><path d="M8 21V7h8v14"/><path d="M13.6 14.2h.01"/></symbol>
+    <symbol id="i-truck" viewBox="0 0 24 24"><path d="M1.8 6.5h11.5v10H1.8zM13.3 9.5h4.2l3.3 3.4v3.6h-7.5z"/><circle cx="5.8" cy="17.6" r="1.9"/><circle cx="16.8" cy="17.6" r="1.9"/></symbol>
+    <symbol id="i-gate" viewBox="0 0 24 24"><path d="M3.5 21V10a8.5 8.5 0 0 1 17 0v11M2 21h20"/><path d="M8 21v-9.5M12 21V10.5M16 21v-9.5"/></symbol>
+    <symbol id="i-park" viewBox="0 0 24 24"><rect x="3.5" y="2.8" width="17" height="18.4" rx="3"/><path d="M9.8 16.5V7.5h3.2a2.7 2.7 0 0 1 0 5.4H9.8"/></symbol>
+    <symbol id="i-boxes" viewBox="0 0 24 24"><path d="M2.5 12.5h8.5v8.5H2.5zM13 12.5h8.5v8.5H13zM7.8 3.5h8.5V12H7.8z"/><path d="M5.3 12.5v2.4M15.8 12.5v2.4M10.6 3.5v2.4"/></symbol>
+    <symbol id="i-bin" viewBox="0 0 24 24"><path d="M5 8.5h14l-1.3 12.3H6.3zM3.5 8.5h17M9.5 5.3h5v3.2h-5z"/><path d="M10 12v5.5M14 12v5.5"/></symbol>
+    <symbol id="i-look" viewBox="0 0 24 24"><circle cx="10.3" cy="10.3" r="6.3"/><path d="M15 15l5.5 5.5"/><path d="M8.2 12.5V9.8M10.3 12.5V8.2M12.4 12.5v-1.6"/></symbol>
+  </defs>
+</svg>
+
+<main class="stage">
+  <article class="paper" aria-labelledby="bill-title">
+
+    <header class="head">
+      <p class="org">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M9 12.5a4.6 4.6 0 0 1 8.7-2 3.8 3.8 0 0 1 5.6 3.4H8.6A3.2 3.2 0 0 1 9 12.5z" fill="#cfe5da" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M7 29V16.5h18V29M4.5 29h23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M11 20h2.5M18.5 20H21M11 24h2.5M18.5 24H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span data-lang="en">Cloud Heights <span class="wide-only">· Owners' Association</span><span class="ph-only">HOA</span></span>
+        <span data-lang="ko">클라우드 아파트 관리사무소</span>
+      </p>
+      <h1 class="title" id="bill-title">
+        <span data-lang="en" class="t-en">Monthly Statement</span>
+        <font-kku data-lang="ko" class="kku-title" font="gothic" size="var(--kku-title, 22px)">관리비 고지서</font-kku>
+        <span class="period" data-period></span>
+      </h1>
+      <dl class="meta">
+        <div>
+          <dt data-lang="en">Unit</dt><dt data-lang="ko">동·호수</dt>
+          <dd><span data-lang="en">A-1203 <small class="wide-only">(Bldg A = availability zone a)</small></span><span data-lang="ko">A동 1203호 <small class="wide-only">(A동 = 가용 영역 a)</small></span></dd>
+        </div>
+        <div class="m-span"><dt data-lang="en">Period</dt><dt data-lang="ko">사용 기간</dt><dd data-span></dd></div>
+        <div><dt data-lang="en">Due</dt><dt data-lang="ko">납기일</dt><dd><span class="ph-only"><span data-lang="en">Due </span><span data-lang="ko">납기 </span></span><span data-due></span></dd></div>
+      </dl>
+    </header>
+
+    <section class="chart" aria-labelledby="ch-title">
+      <h2 class="ch-title" id="ch-title"><span data-lang="en">Usage history</span><span data-lang="ko">관리비 추이</span></h2>
+      <div class="plot">
+        <div class="ticks"></div>
+        <ol class="bars" aria-hidden="true"></ol>
+        <p class="pct"><span data-pct></span><small><span data-lang="en">vs. last month</span><span data-lang="ko">전월 대비</span></small></p>
+      </div>
+      <div class="mons" aria-hidden="true"></div>
+      <p class="sr" data-chart-sr></p>
+    </section>
+
+    <section class="items" aria-labelledby="items-title">
+      <p class="hint" id="hint"><span data-lang="en">Tap a line for a note from the office.</span><span data-lang="ko">항목을 누르면 관리사무소 메모가 나와요.</span></p>
+      <div class="thead" aria-hidden="true">
+        <span class="c-item" id="items-title"><span data-lang="en">Charges</span><span data-lang="ko">부과 내역</span></span>
+        <span class="c-amt"><span data-lang="en">This month</span><span data-lang="ko">당월</span></span>
+        <span class="c-prev"><span data-lang="en">Last</span><span data-lang="ko">전월</span></span>
+        <span class="c-delta"><span data-lang="en">Change</span><span data-lang="ko">증감</span></span>
+      </div>
+      <ol class="rows"></ol>
+    </section>
+
+    <aside class="panel" aria-live="polite">
+      <h2 class="pn-title"><span data-lang="en">Notices from the office</span><span data-lang="ko">관리사무소 알림</span></h2>
+      <ol class="pn-notice" data-lang="en">
+        <li>Please turn the lights off in empty units over the weekend.</li>
+        <li>Empty parking spaces are billed too.</li>
+        <li>Trash is billed by the bag. Please don't bag every little thing.</li>
+        <li>Check your balance in the app anytime, as often as you like.</li>
+      </ol>
+      <ol class="pn-notice" data-lang="ko">
+        <li>주말에는 빈집 소등을 부탁드립니다.</li>
+        <li>비어 있는 주차 자리도 자리값이 나옵니다.</li>
+        <li>음식물 쓰레기는 꼭 필요한 만큼만 내놓아 주세요.</li>
+        <li>관리비는 앱에서 언제든, 몇 번이든 조회하실 수 있습니다.</li>
+      </ol>
+      <div class="pn-memo"></div>
+    </aside>
+
+    <footer class="band">
+      <div class="due">
+        <span class="lab"><span data-lang="en">Amount due</span><span data-lang="ko">납부하실 금액</span></span>
+        <b class="total" data-total></b>
+      </div>
+      <p class="late">
+        <span><span data-lang="en">After due date</span><span data-lang="ko">납기 후</span> <b class="mono" data-late></b> <span data-lang="en">(2% late fee)</span><span data-lang="ko">(연체료 2%)</span></span>
+        <span class="fine"><span data-lang="en">※ Amounts are made up.</span><span data-lang="ko">※ 금액은 지어낸 것입니다.</span></span>
+      </p>
+      <label class="apply">
+        <input type="checkbox" id="weekend">
+        <span class="box" aria-hidden="true"><svg viewBox="0 0 20 20"><path pathLength="1" d="M3 10.5l4.5 5L18 1.5"/></svg></span>
+        <span data-lang="en">Lights-out weekends <small>(server off Sat–Sun)</small></span>
+        <span data-lang="ko">주말 소등 신청 <small>(주말엔 서버 끄기)</small></span>
+      </label>
+    </footer>
+
+    <div class="tear" aria-hidden="true">
+      <svg viewBox="0 0 100 34">
+        <path d="M2 34 L31 34 L29 22 L24 12 L27 7 L20 3 Z" fill="#fbfcf7" stroke="#9cc2b1" stroke-width="1" stroke-linejoin="round"/>
+        <path d="M98 34 L69 34 L71 24 L77 15 L73 9 L81 2 Z" fill="#fbfcf7" stroke="#9cc2b1" stroke-width="1" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </article>
+  <p class="cont" aria-hidden="true"><span data-lang="en">continued ↑</span><span data-lang="ko">↑ 위로 계속</span></p>
+</main>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const $ = (s, root = document) => root.querySelector(s);
+  const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+
+  const paper = $('.paper');
+  const rowsEl = $('.rows');
+  const panel = $('.panel');
+  const memoEl = $('.pn-memo');
+  const tear = $('.tear');
+  const cont = $('.cont');
+  const pctEl = $('.pct');
+  const weekend = $('#weekend');
+  const wideMQ = matchMedia('(min-width: 700px) and (min-aspect-ratio: 1/1)');
+
+  // ---------- The month on the bill: last month, due at the end of this one ----------
+  const today = new Date();
+  const bill = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const Y = bill.getFullYear();
+  const M = bill.getMonth();
+  const DAYS = new Date(Y, M + 1, 0).getDate();
+  let weekendDays = 0;
+  for (let d = 1; d <= DAYS; d++) { const w = new Date(Y, M, d).getDay(); if (w === 0 || w === 6) weekendDays++; }
+  const HOURS = DAYS * 24;
+  const WEEKEND_HOURS = weekendDays * 24;
+  const MINUTES = DAYS * 1440;
+  const due = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const monthName = (m, style) => new Date(2000, m, 1).toLocaleDateString('en-US', { month: style });
+  const dayKo = ['일', '월', '화', '수', '목', '금', '토'];
+
+  $('[data-period]').textContent = ko ? `${Y}년 ${M + 1}월분` : `${monthName(M, 'long')} ${Y}`;
+  $('[data-span]').textContent = ko ? `${M + 1}.1 ~ ${M + 1}.${DAYS}` : `${monthName(M, 'short')} 1–${DAYS}`;
+  $('[data-due]').textContent = ko
+    ? `${due.getMonth() + 1}월 ${due.getDate()}일(${dayKo[due.getDay()]})`
+    : `${monthName(due.getMonth(), 'short')} ${due.getDate()}`;
+
+  // ---------- Money. Everything is worked out in dollars at public list-price-like rates
+  // (per hour, per GB), then shown in won at a made-up 1,400 to the dollar. ----------
+  const KRW = 1400;
+  const won = (usd) => Math.round(usd * KRW / 10) * 10;
+  const money = (usd) => ko ? won(usd).toLocaleString('ko-KR') + '원'
+    : '$' + usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const bare = (usd) => ko ? won(Math.abs(usd)).toLocaleString('ko-KR')
+    : Math.abs(usd).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const count = (n) => n.toLocaleString(ko ? 'ko-KR' : 'en-US');
+
+  const OUT_GB = 1200, NAT_GB = 900, LOG_GB = 400, IPS = 6, DISK_GB = 500, SNAP_GB = 920;
+  let extraLookups = 0;
+  function amounts(off) {
+    const share = off ? (HOURS - WEEKEND_HOURS) / HOURS : 1;
+    const cents = (x) => Math.round(x * 100) / 100;
+    return [
+      (off ? HOURS - WEEKEND_HOURS : HOURS) * 0.10,     // the dev server, running
+      DISK_GB * 0.08,                                     // a stopped server's disk
+      Math.max(0, OUT_GB * share - 100) * 0.09,           // data out, after 100 GB free
+      HOURS * 0.045 + NAT_GB * share * 0.045,             // NAT gateway: hours + GB
+      IPS * HOURS * 0.005,                                // public IPv4, used or not
+      SNAP_GB * 0.05,                                     // snapshots
+      Math.max(0, LOG_GB * share - 5) * 0.50,             // log ingestion, after 5 GB free
+      (MINUTES + extraLookups) * 0.01,                    // cost API, once a minute
+    ].map(cents);
+  }
+  const PREV = [52.80, 40, 0, 0, 7.20, 43, 3, 0];
+  const HISTORY = [139.40, 151.20, 143.80, 148.60, 146.00];   // the last of these is PREV's sum
+  const AXIS = 450;                                           // the chart's top, in dollars
+
+  // ---------- The lines ----------
+  // Each line: the apartment word, the cloud one (second line; on short phones, where second lines
+  // are hidden, `key` stands beside the name instead), and the office's note.
+  const LINES = [
+    { icon: 'bulb',
+      en: ['Electricity', 'dev server, on all weekend'],
+      ko: ['세대 전기료', '개발 서버 · 주말 내내 켜 둠'],
+      key: { en: 'dev server', ko: '개발 서버' },
+      memo: { en: 'The server stayed on all weekend with nobody home. A running server is billed by the hour or the second. Lights on in an empty unit.',
+              ko: '아무도 없는 주말에도 서버가 켜져 있었어요. 켜져 있는 동안은 시간(또는 초) 단위로 요금이 쌓입니다. 빈집에 불 켜 두신 셈이에요.' } },
+    { icon: 'room',
+      en: ['Vacant room', "stopped server's 500 GB disk"],
+      ko: ['빈방 관리비', '꺼 둔 서버의 디스크 500GB'],
+      key: { en: 'idle disk', ko: '꺼 둔 디스크' },
+      memo: { en: 'A stopped server still pays for the disk attached to it. Still paying for the room you never use.',
+              ko: '서버를 꺼도 붙어 있는 디스크는 요금이 나와요. 안 쓰는 방도 관리비는 평수대로 나옵니다.' } },
+    { icon: 'truck',
+      en: ['Move-out fee', '1.2 TB out · moving in is free'],
+      ko: ['이사비', '나간 데이터 1.2TB · 들어온 건 무료'],
+      key: { en: 'egress', ko: '나간 데이터' },
+      memo: { en: 'Data coming in from the internet is generally free. Data going out is charged per GB. Moving in: free. Moving out: you pay the movers.',
+              ko: '인터넷에서 들어오는 데이터는 대개 무료, 나가는 데이터는 GB마다 요금이에요. 들어올 땐 공짜, 나갈 땐 이사비.' } },
+    { icon: 'gate',
+      en: ['Front gate toll', 'NAT gateway · per hour + per GB'],
+      ko: ['공동 현관 통행료', 'NAT 게이트웨이 · 시간당 + GB당'],
+      key: { en: 'NAT', ko: 'NAT' },
+      memo: { en: 'Private servers go out to the internet through a NAT gateway. It bills for every hour it is open, and again for every GB that passes.',
+              ko: '사설망 서버들이 밖으로 나갈 때 지나는 문(NAT 게이트웨이)은 열어 둔 시간만큼, 그리고 지나간 데이터만큼 따로 받습니다.' } },
+    { icon: 'park',
+      en: ['Parking', '6 public IPv4 spaces · 4 empty'],
+      ko: ['주차 자리', '공인 IPv4 6개 · 4개는 빈자리'],
+      key: { en: 'IPv4', ko: '공인 IPv4' },
+      memo: { en: 'Public IPv4 addresses are billed by the hour, in use or not. An empty space is still a space.',
+              ko: '공인 IPv4 주소는 쓰든 안 쓰든 시간당 요금이 붙어요. 비어 있는 주차 자리도 자리값입니다.' } },
+    { icon: 'boxes',
+      en: ['Storage locker', '212 snapshots · oldest from 2019'],
+      ko: ['지하 창고', '스냅숏 212개 · 2019년 것부터'],
+      key: { en: 'snapshots', ko: '스냅숏' },
+      memo: { en: 'Snapshots (disk backups) are billed by size every month until someone deletes them. Boxes from 2019, still down there.',
+              ko: '스냅숏(디스크 백업)은 누가 지울 때까지 용량만큼 매달 나가요. 2019년 짐이 아직 창고에 있어요.' } },
+    { icon: 'bin',
+      en: ['Trash pickup', '400 GB of logs · level DEBUG'],
+      ko: ['음식물 쓰레기', '로그 400GB · 레벨 DEBUG'],
+      key: { en: 'DEBUG logs', ko: 'DEBUG 로그' },
+      memo: { en: "Logs are billed per GB taken in. At DEBUG level every 'got here' line goes out with the trash.",
+              ko: "로그는 받아 쌓는 양(GB)만큼 요금이에요. 레벨이 DEBUG면 '여기1', '여기2' 같은 줄까지 전부 내놓게 됩니다." } },
+    { icon: 'look',
+      en: ['Balance inquiry fee', ''],
+      ko: ['관리비 조회 수수료', ''],
+      key: { en: 'bill-alert bot', ko: '요금 알림 봇' },
+      memo: { en: 'Looking at the bill on screen is free, but some providers charge for every cost-API request. The alert bot called it every minute.',
+              ko: '요금 화면은 무료지만, 비용 조회 API는 물을 때마다 요금을 받는 곳이 있어요. 알림 봇이 그 API를 1분마다 불렀습니다.' } },
+  ];
+  // Line 8's second line is the bot: one lookup for every minute of the month. The office notes
+  // read after line 8 printed are counted on their own, under the amount, so "every minute" stays true.
+  const lookupSub = () => TTY.t({
+    en: `bill-alert bot · every minute · ${count(MINUTES)}×`,
+    ko: `요금 알림 봇 · 1분마다 · ${count(MINUTES)}회`,
+  });
+  const notesMore = (x) => TTY.t({ en: `+${count(x)} note${x > 1 ? 's' : ''}`, ko: `메모 +${count(x)}회` });
+  const STAYS = { en: 'billed anyway', ko: '꺼도 그대로' };
+  const PUNCH = {
+    pen: { en: '#1 this month', ko: '이번 달 1위' },
+    text: { en: 'You checked your balance every minute to avoid bill shock. It changes a few times a day.',
+            ko: '요금 폭탄 막으시려고 1분마다 조회하셨습니다. 요금은 하루에 몇 번만 바뀝니다.' },
+  };
+  // The tag beat: reading the punchline note was one more lookup (n = that lookup's number).
+  const TAG = (n) => TTY.t({ en: `Reading this note just now was lookup <b>${n}</b>.`,
+                             ko: `방금 이 메모를 보신 것이 <b>${n}번째</b> 조회입니다.` });
+  // Under every note opened after line 8 printed: the notes come from the cost API too.
+  const FOOT = { en: '※ This note came from the cost API too. +1 lookup.', ko: '※ 이 메모도 비용 API로 불러왔습니다. 조회 +1회.' };
+  const WEEKEND_MEMO = {
+    on: { title: { en: 'Lights-out weekends: on', ko: '주말 소등 신청 완료' },
+          text: { en: 'The server now takes weekends off. The room, the parking and the locker bill you anyway.',
+                  ko: '서버는 이제 주말에 쉽니다. 빈방·주차 자리·창고는 꺼도 그대로 나옵니다.' } },
+    // Once line 8 is on the bill, the box can say what it could not before.
+    onLater: { title: { en: 'Lights-out weekends: on', ko: '주말 소등 신청 완료' },
+               text: { en: "The server now takes weekends off. The lookups don't.",
+                       ko: '서버는 이제 주말에 쉽니다. 조회는 주말에도 1분마다 합니다.' } },
+    off: { title: { en: 'Lights-out weekends: off', ko: '주말 소등 해지' },
+           text: { en: 'The server works weekends again.', ko: '서버가 다시 주말에도 출근합니다.' } },
+  };
+
+  // Build the rows.
+  const rows = LINES.map((line, i) => {
+    const [name, sub] = TTY.t(line);
+    const li = document.createElement('li');
+    li.innerHTML = `<button type="button" class="row" aria-describedby="hint">
+        <svg class="ico" aria-hidden="true"><use href="#i-${line.icon}"/></svg>
+        <span class="lbl"><b class="nm">${name}</b><small class="sub">${sub}</small><span class="key">${TTY.t(line.key)}</span><span class="tag">${TTY.t(STAYS)}</span>
+          ${i === 7 ? `<span class="wait">${TTY.t({ en: 'looking up', ko: '조회 중' })}<span class="dots"><i>.</i><i>.</i><i>.</i></span></span>` : ''}</span>
+        <span class="amt mono"><s class="was" hidden></s><span class="now"></span>${i === 7 ? '<small class="more" hidden></small>' : ''}</span>
+        <span class="prev mono"></span>
+        <span class="delta mono"></span>
+        ${i === 7 ? '<svg class="ring" aria-hidden="true"><path pathLength="1"/></svg>' : ''}
+      </button>`;
+    rowsEl.append(li);
+    const btn = li.firstElementChild;
+    return { btn, now: $('.amt .now', btn), was: $('.was', btn), prev: $('.prev', btn), delta: $('.delta', btn), sub: $('.sub', btn), more: $('.more', btn) };
+  });
+  rows[7].sub.textContent = lookupSub();
+
+  // The chart: five gray months and this one.
+  const bars = $('.bars');
+  const mons = $('.mons');
+  for (let k = 5; k >= 0; k--) {
+    const m = new Date(Y, M - k, 1).getMonth();
+    const bar = document.createElement('li');
+    bar.className = 'bar' + (k === 0 ? ' now' : '');
+    bar.innerHTML = '<i class="fill"></i>';
+    if (k > 0) bar.style.setProperty('--v', HISTORY[5 - k] / AXIS);
+    bars.append(bar);
+    const label = document.createElement('span');
+    label.textContent = ko ? `${m + 1}월` : monthName(m, 'short');
+    if (k === 0) label.className = 'now';
+    mons.append(label);
+  }
+  const grayFills = $$('.bar:not(.now) .fill');
+  const nowFill = $('.bar.now .fill');
+  // Gridlines every $100 (every 200,000 won in Korean).
+  const ticks = $('.ticks');
+  const step = ko ? 200000 / KRW : 100;
+  for (let v = step; v <= AXIS + .01; v += step) {
+    const t = document.createElement('i');
+    t.className = 'tick';
+    t.style.bottom = (v / AXIS * 100) + '%';
+    t.innerHTML = `<b>${ko ? (Math.round(v * KRW / 10000)) + '만' : '$' + Math.round(v)}</b>`;
+    ticks.append(t);
+  }
+
+  // ---------- Rendering the numbers ----------
+  const FULL = amounts(false);
+  let current = FULL.slice();
+  let total = 0;
+  function render() {
+    current = amounts(weekend.checked);
+    const full = amounts(false);
+    total = current.reduce((a, b) => a + b, 0);
+    rows.forEach((r, i) => {
+      if (!r.counting) r.now.textContent = money(current[i]);
+      const changed = Math.abs(current[i] - full[i]) > .001 && i !== 7;
+      r.was.hidden = !changed;
+      r.was.textContent = changed ? money(full[i]) : '';
+      r.btn.classList.toggle('same', weekend.checked && !changed);
+      r.prev.textContent = money(PREV[i]);
+      const d = current[i] - PREV[i];
+      r.delta.textContent = Math.abs(d) < .005 ? '–' : (d > 0 ? '▲ ' : '▼ ') + bare(d);
+      r.delta.className = 'delta mono' + (d > .005 ? ' up' : d < -.005 ? ' down' : '');
+    });
+    rows[7].sub.textContent = lookupSub();
+    rows[7].more.hidden = !extraLookups;
+    rows[7].more.textContent = extraLookups ? notesMore(extraLookups) : '';
+    const tot = $('[data-total]');
+    tot.innerHTML = ko ? `${won(total).toLocaleString('ko-KR')}<span class="won">원</span>` : money(total);
+    $('[data-late]').textContent = money(total * 1.02);
+    const prevTotal = HISTORY[4];
+    $('[data-pct]').textContent = `+${Math.round((total - prevTotal) / prevTotal * 100)}%`;
+    nowFill.style.setProperty('--v', total / AXIS);
+    $('[data-chart-sr]').textContent = TTY.t({
+      en: `This month ${money(total)}, last month ${money(prevTotal)}. The bar does not fit on the paper.`,
+      ko: `이번 달 ${money(total)}, 지난달 ${money(prevTotal)}. 막대가 종이에 다 들어가지 않습니다.`,
+    });
+  }
+
+  // Count a row's amount up from zero (a small printing-calculator feel).
+  function countUp(r, to, ms, ease = (t) => 1 - (1 - t) ** 3) {
+    if (TTY.reduce) { r.now.textContent = money(to); return; }
+    const t0 = performance.now();
+    r.counting = true;
+    r.btn.classList.add('counting');
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / ms);
+      r.now.textContent = money(Math.round(to * ease(k) * 100) / 100);
+      if (k < 1 && r.counting) requestAnimationFrame(step);
+      else { r.counting = false; r.btn.classList.remove('counting'); r.now.textContent = money(current[rows.indexOf(r)]); }
+    };
+    requestAnimationFrame(step);
+  }
+
+  // ---------- The bar, the tear and the "continued" tag ----------
+  let pierced = false;
+  let exited = false;
+  function placeTear() {
+    const pr = paper.getBoundingClientRect();
+    const br = nowFill.getBoundingClientRect();
+    const w = br.width * 2.6;
+    tear.style.left = (br.left + br.width / 2 - pr.left) + 'px';
+    tear.style.width = w + 'px';
+    const stage = $('.stage').getBoundingClientRect();
+    const cw = cont.offsetWidth;
+    // Beside the bar, on whichever side has room.
+    const right = br.right + 8 + cw < stage.width - 4;
+    cont.style.left = (right ? br.right + 8 : br.left - 8 - cw) + 'px';
+  }
+  function pierce(animate) {
+    if (pierced) return;
+    pierced = true;
+    placeTear();
+    tear.classList.add('on');
+    if (!animate || TTY.reduce) return;
+    tear.animate([{ transform: 'scale(.2, 0)', opacity: 0 }, { transform: 'scale(1.1, 1.15)', opacity: 1, offset: .6 }, { transform: 'none', opacity: 1 }],
+      { duration: 320, easing: 'cubic-bezier(.2, .9, .3, 1.3)' });
+    paper.animate([{ transform: 'none' }, { transform: 'translate(0, 3px) rotate(.25deg)' }, { transform: 'translate(0, -1px) rotate(-.15deg)' }, { transform: 'none' }],
+      { duration: 360, easing: 'ease-out' });
+    // A few scraps of paper.
+    const pr = paper.getBoundingClientRect();
+    const br = nowFill.getBoundingClientRect();
+    for (let k = 0; k < 6; k++) {
+      const bit = document.createElement('i');
+      bit.className = 'bit';
+      bit.style.left = (br.left + br.width / 2 - pr.left - 3) + 'px';
+      bit.style.top = '-3px';
+      paper.append(bit);
+      const dx = (k - 2.5) * 22 + (Math.random() - .5) * 14;
+      const dy = -40 - Math.random() * 50;
+      bit.animate([
+        { transform: 'translate(0, 0) rotate(0)', opacity: 1 },
+        { transform: `translate(${dx}px, ${dy}px) rotate(${(Math.random() - .5) * 400}deg)`, opacity: 1, offset: .55 },
+        { transform: `translate(${dx * 1.4}px, ${dy * .3}px) rotate(${(Math.random() - .5) * 700}deg)`, opacity: 0 },
+      ], { duration: 900 + Math.random() * 300, easing: 'cubic-bezier(.2, .7, .4, 1)' }).finished.then(() => bit.remove());
+    }
+  }
+  function showCont() {
+    if (exited) return;
+    exited = true;
+    placeTear();
+    cont.classList.add('on');
+  }
+  // After the bar has stopped (or without motion): tear and tag only if it really does leave.
+  function settleBar() {
+    const top = nowFill.getBoundingClientRect().top;
+    if (top <= paper.getBoundingClientRect().top + 1) pierce(false);
+    if (top <= 1) showCont();
+  }
+  let barAnim = null;
+  function shootBar(run) {
+    nowFill.style.transform = 'none';
+    const gray = Math.max(...HISTORY) / AXIS / (total / AXIS);   // where the gray months end, as a share of this bar
+    // Up to the gray months' height, a hair over and back (it has arrived), a long stop as if this
+    // were a normal month, then it goes.
+    barAnim = nowFill.animate([
+      { transform: 'scaleY(0)', easing: 'cubic-bezier(.2, .7, .3, 1)' },
+      { transform: `scaleY(${gray * 1.08})`, offset: .21, easing: 'ease-in-out' },
+      { transform: `scaleY(${gray * 1.04})`, offset: .27 },
+      { transform: `scaleY(${gray * 1.04})`, offset: .56, easing: 'cubic-bezier(.6, 0, 1, .5)' },
+      { transform: 'scaleY(1)' },
+    ], { duration: 2000 });
+    const tick = () => {
+      if (run !== runId || !barAnim) return;
+      const top = nowFill.getBoundingClientRect().top;
+      if (!pierced && top <= paper.getBoundingClientRect().top + 1) pierce(true);
+      if (!exited && top <= 1) showCont();
+      if (barAnim.playState === 'running') requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    barAnim.finished.then(() => { if (run === runId) { barAnim = null; settleBar(); } }).catch(() => {});
+  }
+
+  // ---------- Notes from the office ----------
+  // What the open note is: a line's index (0-7), the checkbox note (-2), nothing (-1), or the
+  // punchline note (PUNCH_NOTE). The punchline note sits over line 8 but is not line 8's note.
+  let memoFor = -1;
+  const PUNCH_NOTE = 8;
+  const isWide = () => wideMQ.matches;
+  function showMemo(html, anchor, where) {
+    memoEl.innerHTML = html;
+    panel.classList.add('memo');
+    if (isWide()) {
+      panel.classList.remove('open', 'above', 'below');
+      panel.style.cssText = '';
+    } else {
+      panel.classList.add('open');
+      placeCard(anchor, where);
+    }
+    if (!TTY.reduce) memoEl.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' });
+  }
+  function placeCard(anchor, where) {
+    const pr = paper.getBoundingClientRect();
+    const ir = $('.items').getBoundingClientRect();
+    const ar = anchor.getBoundingClientRect();
+    panel.style.left = (ir.left - pr.left) + 'px';
+    panel.style.width = ir.width + 'px';
+    panel.style.top = '0px';
+    const h = panel.offsetHeight;
+    let top = where === 'below' ? ar.bottom - pr.top + 8 : ar.top - pr.top - h - 8;
+    top = Math.max(4, Math.min(pr.height - h - 4, top));
+    panel.style.top = top + 'px';
+    panel.classList.toggle('below', where === 'below');
+    panel.classList.toggle('above', where !== 'below');
+    panel.style.setProperty('--px', Math.max(14, Math.min(ir.width - 26, ar.left + ar.width * .3 - ir.left)) + 'px');
+  }
+  function closeMemo() {
+    memoFor = -1;
+    memoEl.classList.remove('punch');
+    rows.forEach((r) => r.btn.classList.remove('sel'));
+    panel.classList.remove('memo', 'open', 'above', 'below');
+    panel.style.cssText = '';
+  }
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const tagHtml = (n) => `<p class="mt foot tagline">${TAG(count(n))}</p>`;
+  function memoHtml(title, text, pen, foot = '') {
+    const penHtml = !pen ? '' : `<p class="pen"><svg class="parrow" viewBox="0 0 60 24" aria-hidden="true"><path d="M58 9 C 44 4, 26 6, 5 15 M5 15 L 15 8.5 M5 15 L 16 18.5"/></svg>${
+      ko ? `<font-kku font="pilgi" size="clamp(22px, 2em, 30px)">${pen}</font-kku>` : `<span class="p-en">${pen}</span>`}</p>`;
+    return `${title ? `<p class="mh">${esc(title)}</p>` : ''}<p class="mt">${esc(text)}</p>${foot}${penHtml}`;
+  }
+  let memoFoot = false;      // the open line note was fetched (and counted) after line 8 printed
+  let memoAt = -Infinity;    // when the visitor last opened a note or ticked the box
+  let punchNote = 0;         // the lookup number that reading the punchline note became (0: not yet)
+  function rowMemo(i, foot = memoFoot) {
+    rows.forEach((r, k) => r.btn.classList.toggle('sel', k === i));
+    memoFor = i;
+    memoFoot = foot;
+    memoEl.classList.remove('punch');
+    const title = TTY.t({ en: 'Office note · ', ko: '관리사무소 메모 · ' }) + TTY.t(LINES[i])[0];
+    showMemo(memoHtml(title, TTY.t(LINES[i].memo), '', foot ? `<p class="foot">${TTY.t(FOOT)}</p>` : ''),
+      rows[i].btn, i <= 3 ? 'below' : 'above');
+  }
+  function punchMemo() {
+    rows.forEach((r) => r.btn.classList.remove('sel'));
+    memoFor = PUNCH_NOTE;
+    memoEl.classList.add('punch');
+    showMemo(memoHtml('', TTY.t(PUNCH.text), TTY.t(PUNCH.pen), punchNote ? tagHtml(punchNote) : ''), rows[7].btn, 'above');
+  }
+  // "+1" rising off line 8, and its amount ticking over.
+  function bumpLookup() {
+    if (TTY.reduce) return;
+    const plus = document.createElement('span');
+    plus.className = 'plus';
+    plus.textContent = TTY.t({ en: '+1', ko: '+1회' });
+    rows[7].btn.append(plus);
+    plus.animate([{ transform: 'translateY(4px)', opacity: 0 }, { transform: 'translateY(-6px)', opacity: 1, offset: .3 }, { transform: 'translateY(-14px)', opacity: 0 }],
+      { duration: 1100, easing: 'ease-out' }).finished.then(() => plus.remove());
+    rows[7].now.animate([{ color: 'var(--pen)' }, { color: 'var(--pen)', offset: .6 }, { color: 'inherit' }], { duration: 900 });
+  }
+
+  // ---------- Timeline ----------
+  // tag is counted from the moment the punchline note actually opens.
+  const T = { gray: 120, bar: 450, pct: 2600, rows: 3300, gap: 1000, wait: 10300, last: 11500, ring: 12600, punch: 13200, tag: 2800, loop: 21500 };
+  let runId = 0;
+  let timers = [];
+  let revealed = false;     // has line 8 printed?
+  const at = (ms, fn) => { const run = runId; timers.push(setTimeout(() => { if (run === runId) fn(); }, ms)); };
+  function stop() { runId++; timers.forEach(clearTimeout); timers = []; if (barAnim) { barAnim.cancel(); barAnim = null; } }
+
+  function printRow(i, animate = true) {
+    const r = rows[i];
+    r.btn.classList.remove('pending');
+    r.btn.classList.add('on');
+    if (!animate || TTY.reduce) { r.now.textContent = money(current[i]); return; }
+    r.btn.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 380, easing: 'cubic-bezier(.6, 0, .3, 1)' });
+    countUp(r, current[i], i === 7 ? 1100 : 480, i === 7 ? (t) => t * t * t : undefined);
+  }
+  // The pen loop around line 8, drawn in real pixels so the stroke stays even.
+  const RING = [[58, 2.2], [84, .8, 99.4, 4.4, 99.2, 10], [99, 16.4, 74, 19.4, 44, 19], [15, 18.6, .8, 15.6, .9, 10.2], [1, 4.2, 22, 1.4, 63, 3.4]];
+  function drawRing() {
+    const el = $('.ring');
+    const w = el.clientWidth || el.getBoundingClientRect().width;
+    const h = el.clientHeight || el.getBoundingClientRect().height;
+    if (!w || !h) return;
+    el.setAttribute('viewBox', `0 0 ${w.toFixed(1)} ${h.toFixed(1)}`);
+    const pt = (x, y) => `${(x / 100 * w).toFixed(1)} ${(y / 20 * h).toFixed(1)}`;
+    const [m, ...cs] = RING;
+    el.querySelector('path').setAttribute('d', `M${pt(...m)}` + cs.map((c) => ` C ${pt(c[0], c[1])}, ${pt(c[2], c[3])}, ${pt(c[4], c[5])}`).join(''));
+  }
+  function ring(animate) {
+    const el = $('.ring');
+    drawRing();
+    if (!animate || TTY.reduce) { el.classList.add('on'); el.querySelector('path').style.transition = 'none'; return; }
+    el.querySelector('path').style.transition = 'stroke-dashoffset .7s cubic-bezier(.5, 0, .3, 1)';
+    el.classList.add('on');
+  }
+
+  // The punchline note waits while the visitor is still reading a note they just opened.
+  const READ_MS = 3500;
+  function autoPunch() {
+    const since = performance.now() - memoAt;
+    if (memoFor !== -1 && memoFor !== PUNCH_NOTE && since < READ_MS) { at(READ_MS - since + 50, autoPunch); return; }
+    punchMemo();
+    at(T.tag, tagBeat);
+  }
+  // Tag: reading the punchline note was itself a lookup. Line 8 and the total go up by one.
+  function tagBeat() {
+    if (memoFor !== PUNCH_NOTE || punchNote) return;
+    extraLookups++;
+    punchNote = MINUTES + extraLookups;
+    render();
+    bumpLookup();
+    const tmp = document.createElement('div');
+    tmp.innerHTML = tagHtml(punchNote);
+    const line = tmp.firstElementChild;
+    memoEl.insertBefore(line, $('.pen', memoEl));
+    if (!TTY.reduce) line.animate([{ opacity: 0, transform: 'translateY(3px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'ease-out' });
+  }
+
+  function reset() {
+    stop();
+    closeMemo();
+    extraLookups = 0;
+    punchNote = 0;
+    memoFoot = false;
+    memoAt = -Infinity;
+    weekend.checked = false;
+    revealed = false;
+    pierced = exited = false;
+    render();
+    rows.forEach((r) => { r.counting = false; r.btn.classList.remove('on', 'pending', 'sel', 'counting'); });
+    $('.ring').classList.remove('on');
+    tear.classList.remove('on');
+    cont.classList.remove('on');
+    pctEl.classList.remove('on');
+    grayFills.forEach((f) => { f.style.transform = 'scaleY(0)'; });
+    nowFill.style.transform = 'scaleY(0)';
+  }
+
+  function finalScene() {
+    stop();
+    // The last scene includes the tag: the punchline note has been read once.
+    extraLookups = Math.max(extraLookups, 1);
+    punchNote = punchNote || MINUTES + extraLookups;
+    render();
+    grayFills.forEach((f) => { f.style.transform = 'none'; });
+    nowFill.style.transform = 'none';
+    pctEl.classList.add('on');
+    rows.forEach((r, i) => printRow(i, false));
+    revealed = true;
+    ring(false);
+    requestAnimationFrame(() => { settleBar(); placeTear(); punchMemo(); });
+  }
+
+  function play() {
+    if (TTY.reduce) { finalScene(); return; }
+    reset();
+    const run = runId;
+    at(T.gray, () => {
+      grayFills.forEach((f, k) => {
+        f.style.transform = 'none';
+        f.animate([{ transform: 'scaleY(0)' }, { transform: 'none' }], { duration: 380, delay: k * 70, easing: 'cubic-bezier(.2, .8, .3, 1)', fill: 'backwards' });
+      });
+    });
+    at(T.bar, () => shootBar(run));
+    at(T.pct, () => {
+      pctEl.classList.add('on');
+      pctEl.animate([{ transform: 'scale(.4)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: .65 }, { transform: 'none', opacity: 1 }],
+        { duration: 420, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
+    });
+    for (let i = 0; i < 7; i++) at(T.rows + i * T.gap, () => printRow(i));
+    at(T.wait, () => rows[7].btn.classList.add('pending'));
+    at(T.last, () => { revealed = true; printRow(7); });
+    at(T.ring, () => ring(true));
+    at(T.punch, autoPunch);
+    at(T.loop, maybeLoop);
+  }
+
+  // Loop on its own, but never while someone is reading or playing.
+  let lastTouch = -Infinity;
+  function maybeLoop() {
+    const idle = performance.now() - lastTouch;
+    if (idle < 12000) { at(12000 - idle + 50, maybeLoop); return; }
+    play();
+  }
+  addEventListener('pointerdown', () => { lastTouch = performance.now(); }, { capture: true });
+  addEventListener('keydown', () => { lastTouch = performance.now(); }, { capture: true });
+
+  // ---------- Interaction ----------
+  rows.forEach((r, i) => {
+    r.btn.addEventListener('click', () => {
+      if (!r.btn.classList.contains('on')) return;
+      if (memoFor === i && !isWide()) { closeMemo(); return; }
+      memoAt = performance.now();
+      // Once the lookup fee is on the bill, every note is fetched from the cost API: one more lookup.
+      if (revealed) {
+        extraLookups++;
+        render();
+        bumpLookup();
+      }
+      rowMemo(i, revealed);
+    });
+  });
+  weekend.addEventListener('change', () => {
+    const before = total;
+    render();
+    const m = !weekend.checked ? WEEKEND_MEMO.off : revealed ? WEEKEND_MEMO.onLater : WEEKEND_MEMO.on;
+    rows.forEach((r) => r.btn.classList.remove('sel'));
+    memoFor = -2;
+    memoAt = performance.now();
+    memoEl.classList.remove('punch');
+    showMemo(memoHtml(TTY.t(m.title), TTY.t(m.text)), $('.band'), 'above');
+    if (!TTY.reduce && nowFill.style.transform === 'none' && !barAnim) {
+      nowFill.animate([{ transform: `scaleY(${before / total})` }, { transform: 'none' }], { duration: 600, easing: 'cubic-bezier(.3, .8, .3, 1)' });
+    }
+    requestAnimationFrame(placeTear);
+  });
+  // Phone: a tap anywhere else puts the card away; Esc does it everywhere.
+  document.addEventListener('pointerdown', (e) => {
+    if (isWide() || !panel.classList.contains('open')) return;
+    if (e.target.closest('.panel, .row, .apply')) return;
+    closeMemo();
+  });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMemo(); });
+
+  // Keep the tear, the tag and the phone card in place when the size changes.
+  let wasWide = isWide();
+  // The tag is placed (still invisible) from the start, so the kit's nav sees that corner as taken.
+  const ro = new ResizeObserver(() => {
+    placeTear();
+    drawRing();
+    if (wasWide !== isWide()) {
+      wasWide = isWide();
+      if (memoFor === PUNCH_NOTE) punchMemo();
+      else if (memoFor >= 0) rowMemo(memoFor);
+      else if (memoFor === -2) closeMemo();
+    } else if (!isWide() && panel.classList.contains('open')) {
+      // rows[PUNCH_NOTE] does not exist: the punchline note is placed over line 8 by hand.
+      if (memoFor === PUNCH_NOTE) placeCard(rows[7].btn, 'above');
+      else if (memoFor >= 0) placeCard(rows[memoFor].btn, memoFor <= 3 ? 'below' : 'above');
+      else if (memoFor === -2) placeCard($('.band'), 'above');
+    }
+  });
+  ro.observe(document.body);
+  ro.observe(rowsEl);
+  // The card itself too: its pen line (font-kku, or the Caveat face) can arrive after the card was
+  // placed above line 8, and a taller card would then hang down over the line it points at.
+  ro.observe(panel);
+
+  render();
+  if (TTY.reduce) finalScene();
+  else reset();
+  TTY.onShow(play);
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(() => { placeTear(); TTY.ready(); });
+})();
+</script>
+</body>
+</html>

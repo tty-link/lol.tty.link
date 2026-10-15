@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en" data-tty-nav="top">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code Review Fortunes | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Mali:ital,wght@0,500;1,500&family=Gowun+Dodum&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="malang pilgi"></script>
+<style>
+  /* A fortune cookie for before you open a pull request. It sweats, shivers and cracks, its
+     crumbs land in a green check, and only then does the slip slide out. Leave it alone and the
+     next cookie arrives by itself. Now and then a cookie holds two slips, the second one for your
+     reviewer, and once in a while a fortune is still in review. */
+  :root {
+    --cloth: #0f4c5c;
+    --cloth-weave: rgba(255, 255, 255, .045);
+    --plate: #fbf4e6;
+    --plate-rim: #e3d6bd;
+    --gold: #eab04f;
+    --gold-deep: #c27f22;
+    --paper: #fffdf6;
+    --ink: #2a2622;
+    --red: #cf3e4f;
+    --light: #f3efe2;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container-type: size;
+    overflow: hidden;
+    color: var(--light);
+    font-family: 'Fredoka', system-ui, sans-serif;
+    background:
+      radial-gradient(70% 60% at 42% 52%, rgba(255, 236, 196, .16), transparent 70%),
+      repeating-linear-gradient(0deg, var(--cloth-weave) 0 2px, transparent 2px 6px),
+      repeating-linear-gradient(90deg, var(--cloth-weave) 0 2px, transparent 2px 6px),
+      var(--cloth);
+  }
+  .lang-ko body { font-family: 'Gowun Dodum', 'Fredoka', sans-serif; }
+
+  .room {
+    display: grid;
+    height: 100%;
+    padding: 5cqmin 6cqmin;
+    grid-template-rows: auto 1fr auto;
+    gap: 2cqmin;
+  }
+  /* The title only names the place; the jokes are on the slip, so the title is never bigger than
+     the fortune, the lucky numbers or the reviewer's slip. */
+  .head h1 { font-size: max(14px, 2.8cqmin); font-weight: 700; line-height: 1.1; letter-spacing: -.01em; }
+  .head h1 > font-kku { color: var(--light); }
+  .sub { margin-top: 1cqmin; font-size: max(13px, 2.3cqmin); opacity: .82; }
+  /* Opened on its own on a narrow phone, the subtitle wraps before the "?" and ":)" buttons
+     _kit.js pins top right (the short title no longer pushes it below them). */
+  @container (max-width: 359px) { html:not(.embedded) .sub { padding-right: 84px; } }
+
+  .scene {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    align-items: center;
+    gap: 4cqw;
+    min-height: 0;
+  }
+  /* Portrait keeps room under the slip for a double's second slip. */
+  @container (orientation: portrait) {
+    .scene { grid-template-columns: 1fr; grid-template-rows: auto auto; align-content: center; gap: 4cqh; padding-bottom: 64px; }
+  }
+
+  /* The plate is the button. */
+  .plate {
+    position: relative;
+    justify-self: center;
+    display: grid;
+    place-items: center;
+    width: min(46cqmin, 100%);
+    aspect-ratio: 1.45;
+    border: 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(closest-side, var(--plate) 72%, var(--plate-rim) 73%, var(--plate) 86%, #d9caad 100%);
+    box-shadow: 0 2.4cqmin 4cqmin rgba(0, 0, 0, .35);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .plate:focus-visible { outline: 3px solid var(--gold); outline-offset: 6px; }
+  .cookie { width: 78%; margin-top: -9%; overflow: visible; }
+  .half { transform-box: fill-box; }
+  .half.left { transform-origin: 100% 85%; }
+  .half.right { transform-origin: 0% 85%; }
+  .crease { transform-box: fill-box; transform-origin: 50% 100%; }
+  .sweat { opacity: 0; }
+  /* The crumbs that land as a check mark (or, for a fortune still in review, as three dots);
+     hidden until a cookie cracks. */
+  .check { opacity: 0; }
+  .check-glow { opacity: .72; stroke-dasharray: 1; }
+  .check-crumbs .cc { transform-box: fill-box; transform-origin: center; }
+  .dots-glow { display: none; fill: #f2b134; stroke: #d48a16; stroke-width: 1.2; }
+  .dots-glow circle { opacity: 0; }
+  .check.pending .dots-glow { display: inline; }
+  .check.pending .check-glow { display: none; }
+
+  .slip {
+    position: relative;
+    justify-self: center;
+    width: min(100%, 64cqmin);
+    padding: 4.2cqmin 4.6cqmin 3.6cqmin;
+    color: var(--ink);
+    background:
+      linear-gradient(transparent 0 calc(100% - 1px), rgba(0, 0, 0, .04) 0) 0 0 / 100% 1.6em,
+      var(--paper);
+    border-radius: 3px;
+    box-shadow: 0 1.6cqmin 3.6cqmin rgba(0, 0, 0, .28);
+    rotate: -1.5deg;
+    visibility: hidden;
+    z-index: 1;
+  }
+  @container (orientation: portrait) { .slip { width: min(100%, 84cqw); } }
+  .slip::before, .slip::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background: radial-gradient(circle at 0 50%, transparent 3px, var(--paper) 3.5px) 0 0 / 8px 9px;
+  }
+  .slip::before { left: -7px; transform: scaleX(-1); }
+  .slip::after { right: -7px; }
+  .fortune { min-height: 2.6em; font-family: 'Mali', cursive; font-size: max(17px, 4.2cqmin); font-weight: 500; line-height: 1.3; }
+  .fortune > font-kku { color: #2b2a6b; }
+  /* The lucky numbers are the tag joke, as big as the title and stamped on a beat after the
+     fortune; the stamp grows from the left. */
+  .lucky { margin-top: 1.8cqmin; font-size: max(14px, 2.8cqmin); line-height: 1.4; color: var(--red); font-weight: 600; letter-spacing: .02em; transform-origin: 0 50%; }
+  /* The word line is the small print on the back of the slip: it stays small, or a double's
+     second slip would run into the footer on a 358 × 396 stage. */
+  .learn { margin-top: .6cqmin; font-size: max(12px, 2.1cqmin); line-height: 1.4; color: #6b6253; }
+  .lang-ko .lucky, .lang-ko .learn { word-break: keep-all; }
+  .lang-ko .lucky { font-weight: 400; }
+  /* Short portrait stages (the home stage on a 390 × 600 phone is about 358 × 396, a small phone
+     opened on its own about 320 × 480): a smaller plate and fortune, stacked from the top, so the
+     plate stays clear of the title and a double's second slip still ends above the footer. */
+  @container (orientation: portrait) and (max-height: 500px) {
+    .room { padding: 3.6cqmin 4cqmin; gap: 1.6cqmin; }
+    .scene { gap: 2cqh; padding-bottom: 0; align-content: start; }
+    .plate { width: min(38cqmin, 100%); }
+    .slip { width: calc(100% - 4px); padding: 3cqmin 4cqmin 2.6cqmin; }
+    .fortune { min-height: 0; font-size: 16px; }
+    .lucky { margin-top: 1.2cqmin; }
+  }
+  /* A phone held sideways (the home stage on an 844 × 390 phone is about 508 × 339): a wider slip
+     column, the slip at the top of it, so a double's second slip ends above the footer. */
+  @container (orientation: landscape) and (max-height: 470px) {
+    .room { padding: 3.6cqmin 4cqmin; gap: 1.6cqmin; }
+    .scene { grid-template-columns: .8fr 1.2fr; gap: 3cqw; align-items: start; }
+    .plate { align-self: center; }
+    .slip { width: 100%; padding: 3cqmin 4cqmin 2.6cqmin; }
+    .fortune { min-height: 0; font-size: 16px; }
+    .lucky { margin-top: 1.2cqmin; }
+  }
+
+  /* The second slip of a double: it hangs out from under the first. JS places it. */
+  .twin {
+    position: absolute;
+    z-index: 0;
+    /* its top 12px is tucked under the first slip */
+    padding: calc(14px + 1.4cqmin) 3cqmin 1.8cqmin;
+    color: var(--ink);
+    background: var(--paper);
+    border-radius: 3px;
+    box-shadow: 0 1.2cqmin 2.8cqmin rgba(0, 0, 0, .26);
+    rotate: 1.4deg;
+    font: 500 max(15px, 3.4cqmin)/1.3 'Mali', cursive;
+    visibility: hidden;
+  }
+  .twin b { display: block; margin-bottom: .25em; font: 600 max(11px, 2cqmin)/1.2 'Fredoka', sans-serif; letter-spacing: .06em; text-transform: uppercase; color: var(--red); }
+  /* The English head is a spaced capital label and can stay small; the Korean one has neither,
+     so it is as big as the title. */
+  .lang-ko .twin b { font-family: 'Gowun Dodum', sans-serif; font-size: max(14px, 2.8cqmin); font-weight: 400; letter-spacing: 0; }
+  .twin span > font-kku { color: #2b2a6b; }
+
+  /* Opened on its own, _kit.js's "?" and ":)" buttons are pinned top right (data-tty-nav="top"),
+     where the title leaves room, so the footer can use the full width. */
+  .foot { display: flex; justify-content: space-between; gap: 2cqmin; font-size: max(12px, 2cqmin); opacity: .78; }
+  .lang-ko .foot { word-break: keep-all; }
+  .hint { text-align: right; }
+
+  .crumbs { position: fixed; inset: 0; pointer-events: none; }
+  .crumb { position: absolute; width: var(--s); height: calc(var(--s) * .8); border-radius: 40% 55% 45% 50%; background: var(--gold); box-shadow: inset -1px -1px 0 var(--gold-deep); }
+</style>
+</head>
+<body>
+<main class="room">
+  <header class="head">
+    <h1 data-lang="en">Code Review Fortunes</h1>
+    <h1 data-lang="ko"><font-kku font="malang" size="1em">코드 리뷰 포춘쿠키</font-kku></h1>
+    <p class="sub" data-lang="en">Crack one before you open a pull request.</p>
+    <p class="sub" data-lang="ko">PR 올리기 전에 하나 깨 보세요.</p>
+  </header>
+
+  <div class="scene">
+    <button class="plate" type="button">
+      <svg class="cookie" viewBox="0 0 200 140" aria-hidden="true">
+        <defs>
+          <radialGradient id="bake" cx="45%" cy="35%" r="75%">
+            <stop offset="0" stop-color="#f7d18a"/>
+            <stop offset=".55" stop-color="#eab04f"/>
+            <stop offset="1" stop-color="#c27f22"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="100" cy="126" rx="70" ry="9" fill="rgba(0,0,0,.12)"/>
+        <g class="half left">
+          <path d="M100 34 L93 44 L101 55 L93 66 L100 77 L95 88 C 90 104, 76 115, 58 114 C 32 112, 16 94, 19 68 C 22 42, 50 22, 76 24 C 88 25, 96 29, 100 34 Z" fill="url(#bake)" stroke="#b9761d" stroke-width="2.4" stroke-linejoin="round"/>
+          <path d="M46 62 C 52 52, 62 46, 74 44" stroke="#fff3cf" stroke-width="4" stroke-linecap="round" fill="none" opacity=".55"/>
+          <path d="M26 86 C 40 101, 66 106, 90 96" stroke="#b9761d" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".7"/>
+          <circle cx="54" cy="88" r="1.8" fill="#c27f22"/><circle cx="66" cy="98" r="1.4" fill="#c27f22"/><circle cx="44" cy="76" r="1.3" fill="#c27f22"/>
+        </g>
+        <g class="half right">
+          <path d="M100 34 L93 44 L101 55 L93 66 L100 77 L95 88 C 102 104, 120 115, 142 114 C 168 112, 184 94, 181 68 C 178 42, 150 22, 124 24 C 112 25, 104 29, 100 34 Z" fill="url(#bake)" stroke="#b9761d" stroke-width="2.4" stroke-linejoin="round"/>
+          <path d="M174 86 C 160 101, 134 106, 108 98" stroke="#b9761d" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".7"/>
+          <circle cx="146" cy="80" r="1.8" fill="#c27f22"/><circle cx="134" cy="99" r="1.4" fill="#c27f22"/><circle cx="158" cy="74" r="1.3" fill="#c27f22"/>
+        </g>
+        <rect class="tail" x="94" y="84" width="38" height="9" rx="1.5" fill="#fffdf6" stroke="#d9cfbb" stroke-width="1" transform="rotate(24 94 88)"/>
+        <path class="crease" d="M100 34 L93 44 L101 55 L93 66 L100 77 L95 88" stroke="#a8661a" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- A nervous cookie sweats before the review. -->
+        <g transform="translate(170 18) scale(1.4)"><g class="sweat">
+          <path d="M0 -11 C 4 -5, 8 0, 8 4 A 8 8 0 0 1 -8 4 C -8 0, -4 -5, 0 -11 Z" fill="#bfe6ff" stroke="#4f9bc9" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M-3.5 1.5 C -3.5 -1, -2 -3, -.6 -4.6" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </g></g>
+        <!-- Where the crumbs land: a check mark that lights up green, or three dots in the gap
+             while a fortune is still in review. -->
+        <g class="check" aria-hidden="true">
+          <path class="check-glow" pathLength="1" d="M74 94 L94 117 L131 72" fill="none" stroke="#3fd57f" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+          <g class="dots-glow"><circle cx="78" cy="58" r="9"/><circle cx="100" cy="58" r="9"/><circle cx="122" cy="58" r="9"/></g>
+          <g class="check-crumbs"></g>
+        </g>
+      </svg>
+    </button>
+
+    <article class="slip" aria-live="polite">
+      <p class="fortune"></p>
+      <p class="lucky"></p>
+      <p class="learn"></p>
+    </article>
+    <p class="twin" aria-live="polite"><b></b><span></span></p>
+  </div>
+
+  <footer class="foot">
+    <p class="count"></p>
+    <p class="hint" data-lang="en">Tap the cookie for another.</p>
+    <p class="hint" data-lang="ko">쿠키를 누르면 하나 더 나와요.</p>
+  </footer>
+</main>
+<div class="crumbs" aria-hidden="true"></div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const plate = $('.plate');
+  const cookie = $('.cookie');
+  const left = $('.half.left');
+  const right = $('.half.right');
+  const crease = $('.crease');
+  const tail = $('.tail');
+  const slip = $('.slip');
+  const scene = $('.scene');
+  const fortune = $('.fortune');
+  const lucky = $('.lucky');
+  const learn = $('.learn');
+  const count = $('.count');
+  const crumbs = $('.crumbs');
+
+  // Every fortune is a small developer wish, and most carry a tail that admits how rare it is.
+  const FORTUNES = TTY.t({
+    en: [
+      'Your PR gets approved on the first try. By someone who read it.',
+      'A senior will say “nice” and mean it.',
+      'The bug you fear is a typo. A small one.',
+      'No merge conflicts today. Not even in the lockfile.',
+      'Your tests will pass, and you will know why.',
+      'Someone will read your README. All of it.',
+      'A reviewer will leave one comment, and it will be a compliment.',
+      'You will delete more code than you write, and it will feel great.',
+      'The flaky test is taking the day off.',
+      'That meeting could have been an email. Today, it will be.',
+      'Your variable names will make a stranger smile. In a good way.',
+      'Production will be boring today. Enjoy it.',
+      'CI goes green on the first run. No “re-run, just in case.”',
+      'Your diff: +12 −340. Someone will frame it.',
+      'The rebase will go clean. All fourteen commits.',
+      'Six months from now, this commit message will still make sense.',
+      'The answer you need is the top result, and it is not from 2011.',
+      'Your “quick fix” will, for once, be quick.',
+      'The dependency update will change nothing. Nothing at all.',
+      'The regex works the first time. Do not ask it why.',
+      'Your reviewer will run the code before commenting.',
+      'The docs will match the code. Read them while it lasts.',
+      'Staging will behave exactly like production.',
+      'The bug reproduces on the first try. And on the second.',
+      'Every nitpick today will come labeled “nit:”.',
+      'Forty tabs open, and the laptop fan stays quiet.',
+      'Someone will read your PR description before the diff.',
+      'No off-by-one errors today. Not even one.',
+      'The code you wrote on Friday will still make sense on Monday.',
+    ],
+    ko: [
+      '다음 PR은 한 번에 승인됩니다. 리뷰어가 다 읽고 나서.',
+      '리뷰어가 LGTM 대신 “와, 깔끔하네요”라고 씁니다.',
+      '걱정하던 버그는 오타입니다. 아주 작은 오타.',
+      '오늘은 머지 충돌이 비켜 갑니다. lock 파일까지.',
+      '테스트가 통과하고, 왜 통과했는지도 압니다.',
+      '누군가 README를 읽습니다. 끝까지 다.',
+      '리뷰 댓글이 딱 하나 달리는데, 칭찬입니다.',
+      '쓴 코드보다 지운 코드가 많은 날입니다. 기분 최고.',
+      '잊을 만하면 깨지던 테스트가 오늘은 쉽니다.',
+      '그 회의, 오늘은 정말 메일로 끝납니다.',
+      '처음 보는 사람이 내 변수 이름을 보고 웃습니다. 비웃는 거 아니고요.',
+      '오늘 운영 서버는 심심할 만큼 조용합니다. 마음껏 즐기세요.',
+      'CI가 한 번에 초록불입니다. ‘혹시 몰라’ 재실행은 없습니다.',
+      '오늘의 diff는 +12 −340. 누가 캡처해서 자랑합니다.',
+      '리베이스가 한 번에 깔끔하게 끝납니다. 커밋 14개 전부.',
+      '여섯 달 뒤에 봐도 이 커밋 메시지가 이해됩니다.',
+      '찾던 답이 검색 첫 줄에 있습니다. 2011년 글도 아닙니다.',
+      '‘금방 고칠게요’가 오늘은 정말 금방입니다.',
+      '의존성 버전을 올렸는데 아무 일도 없습니다. 정말 아무 일도.',
+      '정규식이 한 번에 맞습니다. 왜 맞는지는 묻지 마세요.',
+      '리뷰어가 댓글 달기 전에 직접 돌려 봅니다.',
+      '문서와 코드가 일치합니다. 오래 안 가니 지금 읽어 두세요.',
+      '스테이징이 운영이랑 똑같이 돌아갑니다.',
+      '버그가 한 번에 재현됩니다. 두 번째에도.',
+      '오늘 받는 사소한 지적에는 전부 ‘nit:’이 붙어 있습니다.',
+      '탭을 마흔 개 열어도 노트북 팬이 조용합니다.',
+      '누군가 diff보다 PR 설명을 먼저 읽습니다.',
+      '오늘 off-by-one 버그는 0개. 1개 아니고 진짜 0개.',
+      '금요일에 짠 코드가 월요일에도 이해됩니다.',
+    ],
+  });
+  // The first cookie of a visit opens one of these, so the home stage never starts on a weak
+  // fortune: the typo, the CI re-run, 2011, the quick fix, the regex and off-by-one.
+  const OPENERS = [2, 12, 16, 17, 19, 27];
+  // Lines that must not share a slip, because their numbers would disagree.
+  const BIG_DIFF = 13; // +12 −340 is not “under 200 lines” (FOR_REVIEWER[UNDER_200])
+  const ONE_COMMENT = 6; // one comment is not twelve nits (the Korean nit word)
+  // The back of the slip teaches a word, as fortune slips do (shuffled on its own).
+  const WORDS = TTY.t({
+    en: [
+      'Learn Korean: 칼퇴 (kaltoe), leaving right on time.',
+      'Learn Korean: 반영했습니다 (banyeonghaetseumnida), “done, as you suggested.”',
+      'Learn Korean: 배포 (baepo), deploy.',
+      'Learn Korean: 수고하셨습니다 (sugohasyeotseumnida), thanks for your hard work.',
+      'Learn Korean: 커밋 (keomit), commit. Easy one.',
+      'Learn Korean: 빨리빨리 (ppallippalli), hurry, hurry. Also the sprint plan.',
+      'Learn Korean: 퇴근 (toegeun), going home. The best command.',
+      'Learn Korean: 회식 (hoesik), team dinner. “Optional.”',
+      'Learn Korean: 화이팅 (hwaiting), you’ve got this.',
+      'Learn Korean: 점심 뭐 먹지 (jeomsim mwo meokji), what’s for lunch? Asked daily at 11:50.',
+    ],
+    ko: [
+      '오늘의 영어: LGTM, 좋아 보여요.',
+      '오늘의 영어: WIP, 아직 만드는 중. 3주째.',
+      '오늘의 영어: nit, 아주 사소한 의견. 그게 열두 개.',
+      '오늘의 영어: PTAL, 한 번 더 봐 주세요.',
+      '오늘의 영어: TL;DR, 세 줄 요약.',
+      '오늘의 영어: SGTM, 그렇게 하죠.',
+      '오늘의 영어: ship it, 배포 가시죠.',
+      '오늘의 영어: bikeshedding, 사소한 걸로 끝없이 토론하기.',
+      '오늘의 영어: yak shaving, 본론 전에 딴 일만 하기.',
+      '오늘의 영어: EOD, 오늘 중. 몇 시까지인지는 아무도 모름.',
+      '오늘의 영어: FYI, 알고만 계세요. 답장하면 내 일이 됨.',
+    ],
+  });
+  const NIT = TTY.lang === 'ko' ? 2 : -1;
+  // A double cookie's second slip.
+  const FOR_REVIEWER = TTY.t({
+    en: ['This diff is under 200 lines.', 'The tests are already green.', 'Done before the coffee cools.', 'No “quick question” today.'],
+    ko: ['이번 diff는 200줄이 안 됩니다.', '테스트는 이미 초록불입니다.', '커피 식기 전에 리뷰 끝.', '오늘은 ‘잠깐 시간 되세요?’가 없습니다.'],
+  });
+  const UNDER_200 = 0;
+  // The third cookie of a visit holds a fortune that is still in review; the next one brings
+  // the verdict on its second slip.
+  const IN_REVIEW = TTY.t({
+    en: ['This fortune is still in review.', 'Lucky numbers: pending.'],
+    ko: ['이 운세는 아직 리뷰 중입니다.', '행운의 숫자: 확인 중.'],
+  });
+  const HEADS = TTY.t({ en: ['For your reviewer', 'Review’s in'], ko: ['리뷰어 몫', '리뷰 결과'] });
+  const APPROVED = TTY.t({ en: 'Approved. Both of them.', ko: '승인. 둘 다요.' });
+  const CODES = [200, 201, 202, 204, 304];
+  const luckyLabel = TTY.t({ en: 'Lucky numbers: ', ko: '행운의 숫자: ' });
+  const countText = (n) => TTY.t({ en: `Cookies opened: ${n}. Calories: 0.`, ko: `깨 본 쿠키 ${n}개. 칼로리 0.` });
+  plate.setAttribute('aria-label', TTY.t({ en: 'Crack a fortune cookie', ko: '포춘쿠키 깨기' }));
+
+  const shuffle = (a) => {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+  // Shuffled bags: every item comes out once before any repeats. `skip` sits out the first round.
+  const bag = (n, skip = -1) => {
+    let order = [];
+    return () => {
+      if (!order.length) {
+        order = shuffle(Array.from({ length: n }, (_, i) => i).filter((i) => i !== skip));
+        skip = -1;
+      }
+      return order.pop();
+    };
+  };
+  const opener = OPENERS[Math.floor(Math.random() * OPENERS.length)];
+  const nextIndex = bag(FORTUNES.length, opener), nextWord = bag(WORDS.length), nextKind = bag(FOR_REVIEWER.length);
+  let opened = 0;
+  let verdictDue = false;
+
+  // What the next cookie holds. The second cookie of a visit is always a double, so the home
+  // stage ends on one; the third is still in review and the fourth approves it. After that, a
+  // fortune in review about one in fifteen, a double about one in six.
+  function plan() {
+    const n = opened + 1;
+    if (verdictDue) return 'approved';
+    if (n === 3 || (n > 4 && Math.random() < 1 / 15)) return 'review';
+    if (n === 2 || (n > 2 && Math.random() < 1 / 6)) return 'double';
+    return 'single';
+  }
+
+  // Korean handwriting is a fresh font-kku element each time (its textContent holds jamo).
+  const pilgi = (text, size) => {
+    const el = document.createElement('font-kku');
+    el.setAttribute('font', 'pilgi');
+    el.setAttribute('size', size);
+    el.setAttribute('wrap-unit', 'word');
+    el.textContent = text;
+    return el;
+  };
+  // The short stages above: portrait up to 500px high, sideways up to 470px.
+  const short = matchMedia('(orientation: portrait) and (max-height: 500px), (max-height: 470px)');
+  function write(kind) {
+    const review = kind === 'review';
+    const i = review ? -1 : opened === 0 ? opener : nextIndex();
+    const text = review ? IN_REVIEW[0] : FORTUNES[i];
+    if (TTY.lang === 'ko') fortune.replaceChildren(pilgi(text, short.matches ? '17px' : 'max(19px, 4.6cqmin)'));
+    else fortune.textContent = text;
+    lucky.getAnimations().forEach((a) => a.cancel());
+    lucky.textContent = review ? IN_REVIEW[1] : luckyLabel + shuffle(CODES.slice()).slice(0, 3).sort((a, b) => a - b).join(', ');
+    let w = nextWord();
+    while (i === ONE_COMMENT && w === NIT) w = nextWord();
+    learn.textContent = WORDS[w];
+    opened += 1;
+    count.textContent = countText(opened);
+    return i;
+  }
+
+  const twin = $('.twin');
+  const twinHead = twin.querySelector('b');
+  const twinText = twin.querySelector('span');
+  function placeTwin() {
+    const box = scene.getBoundingClientRect(), r = slip.getBoundingClientRect();
+    const narrow = box.height > box.width;
+    twin.style.left = `${r.left - box.left + r.width * (narrow ? .12 : .2)}px`;
+    twin.style.width = `${r.width * (narrow ? .84 : .74)}px`;
+    twin.style.top = `${r.bottom - box.top - 12}px`;
+  }
+  function showTwin(kind, i) {
+    let text = APPROVED;
+    if (kind !== 'approved') {
+      let k = nextKind();
+      while (i === BIG_DIFF && k === UNDER_200) k = nextKind();
+      text = FOR_REVIEWER[k];
+    }
+    twinHead.textContent = HEADS[kind === 'approved' ? 1 : 0];
+    if (TTY.lang === 'ko') twinText.replaceChildren(pilgi(text, 'max(16px, 3.6cqmin)'));
+    else twinText.textContent = text;
+    placeTwin();
+    twin.style.visibility = 'visible';
+    if (!TTY.reduce) return twin.animate([{ transform: 'translateY(-70%)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 520, easing: 'cubic-bezier(.25, .8, .3, 1.15)' }).finished;
+  }
+  addEventListener('resize', () => { if (twin.style.visibility === 'visible') placeTwin(); });
+
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  // Before the snap the cookie breaks into a sweat, like anyone about to open a pull request:
+  // the drop wells up, hangs on for most of the time, then runs down the cookie.
+  const sweatDrop = $('.sweat');
+  function sweat(ms, delay = 0) {
+    if (TTY.reduce) return;
+    sweatDrop.animate([
+      { transform: 'translate(0, 0) scale(.3)', opacity: 0 },
+      { transform: 'translate(0, 0) scale(1.12)', opacity: 1, offset: .08 },
+      { transform: 'translate(0, 0) scale(1)', opacity: 1, offset: .12 },
+      { transform: 'translate(1px, 2px) scale(1)', opacity: 1, offset: .7, easing: 'ease-in' },
+      { transform: 'translate(7px, 24px) scale(.8)', opacity: 0 },
+    ], { duration: ms, delay, easing: 'linear', fill: 'backwards' });
+  }
+
+  // Some of the crumbs land in a check mark, and it lights up green: even the crumbs approve.
+  // For a fortune still in review they land as three dots instead, glowing yellow in turn.
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const check = $('.check');
+  const checkGlow = $('.check-glow');
+  const dotGlows = [...document.querySelectorAll('.dots-glow circle')];
+  const CRUMBS = 14;
+  const CHECK_SPOTS = (() => {
+    const pts = [[74, 94], [94, 117], [131, 72]];
+    const segs = [[pts[0], pts[1]], [pts[1], pts[2]]];
+    const total = segs.reduce((n, [a, b]) => n + Math.hypot(b[0] - a[0], b[1] - a[1]), 0);
+    const out = [];
+    for (let k = 0; k < CRUMBS; k++) {
+      let d = (total * k) / (CRUMBS - 1);
+      for (const [a, b] of segs) {
+        const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        if (d <= len + .001) { out.push([a[0] + ((b[0] - a[0]) * d) / len, a[1] + ((b[1] - a[1]) * d) / len]); break; }
+        d -= len;
+      }
+    }
+    return out;
+  })();
+  // Three crumbs on each dot, left dot first, high in the gap the two halves leave (the other
+  // five sit this one out).
+  const PILE = 3;
+  const DOT_SPOTS = dotGlows.flatMap((c) => {
+    const cx = +c.getAttribute('cx'), cy = +c.getAttribute('cy');
+    return [[-3, 2], [3, 2], [0, -3]].map(([dx, dy]) => [cx + dx, cy + dy]);
+  });
+  const checkCrumbs = CHECK_SPOTS.map(() => {
+    const spot = document.createElementNS(SVGNS, 'g');
+    const cc = document.createElementNS(SVGNS, 'g');
+    cc.setAttribute('class', 'cc');
+    const e = document.createElementNS(SVGNS, 'ellipse');
+    e.setAttribute('rx', rand(5.2, 6.2).toFixed(1));
+    e.setAttribute('ry', rand(4, 4.8).toFixed(1));
+    e.setAttribute('transform', `rotate(${Math.round(rand(-40, 40))})`);
+    e.setAttribute('fill', '#eab04f');
+    e.setAttribute('stroke', '#b9761d');
+    e.setAttribute('stroke-width', '1.4');
+    cc.append(e);
+    spot.append(cc);
+    $('.check-crumbs').append(spot);
+    return { spot, cc };
+  });
+  // Crumb k leaves the crack at HOP_START + k × HOP_GAP and takes HOP_MS; the green line is drawn
+  // once the last one is down, and the slip waits until it is (SLIP_AFTER_CRACK).
+  const HOP_START = 120, HOP_GAP = 35, HOP_MS = 520;
+  const GLOW_AT = HOP_START + (CRUMBS - 1) * HOP_GAP + HOP_MS * .85, GLOW_MS = 520;
+  const SLIP_AFTER_CRACK = Math.round(GLOW_AT + GLOW_MS * .55 + 60);
+  function hideCheck() {
+    check.style.opacity = '0';
+    [checkGlow, ...dotGlows, ...checkCrumbs.map((c) => c.cc)].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
+    dotGlows.forEach((c) => { c.style.opacity = ''; });
+  }
+  function landCheck(pending = false) {
+    check.classList.toggle('pending', pending);
+    const spots = pending ? DOT_SPOTS : CHECK_SPOTS;
+    checkCrumbs.forEach(({ spot }, k) => {
+      spot.style.display = k < spots.length ? '' : 'none';
+      if (k < spots.length) spot.setAttribute('transform', `translate(${spots[k][0].toFixed(1)} ${spots[k][1].toFixed(1)})`);
+    });
+    check.style.opacity = '1';
+    if (TTY.reduce) {
+      if (pending) dotGlows.forEach((c) => { c.style.opacity = '.95'; });
+      return;
+    }
+    // They hop out of the crack one after another and line up, short arm (or left dot) first.
+    const from = { x: 100, y: 60 };
+    checkCrumbs.slice(0, spots.length).forEach(({ cc }, k) => {
+      const dx = from.x - spots[k][0], dy = from.y - spots[k][1];
+      cc.animate([
+        { transform: `translate(${dx}px, ${dy}px) scale(.5)`, opacity: 0 },
+        { transform: `translate(${dx * .5}px, ${dy * .5 - 34}px) scale(1)`, opacity: 1, offset: .45 },
+        { transform: 'translate(0, 0) scale(1.15, .8)', opacity: 1, offset: .85 },
+        { transform: 'none', opacity: 1 },
+      ], { duration: HOP_MS, delay: HOP_START + k * HOP_GAP, easing: 'cubic-bezier(.3, .6, .4, 1)', fill: 'backwards' });
+    });
+    if (!pending) {
+      checkGlow.animate([{ strokeDashoffset: 1, opacity: 0 }, { strokeDashoffset: 1, opacity: .95, offset: .01 }, { strokeDashoffset: 0, opacity: .95, offset: .55 }, { strokeDashoffset: 0, opacity: .72 }],
+        { duration: GLOW_MS, delay: GLOW_AT, easing: 'ease-out', fill: 'backwards' });
+      return;
+    }
+    // Pending: each dot lights up as its pile lands, then the three blink in turn, like a status
+    // that has not made up its mind.
+    dotGlows.forEach((c, d) => {
+      const landed = HOP_START + (d * PILE + PILE - 1) * HOP_GAP + HOP_MS * .85;
+      c.animate([{ opacity: 0 }, { opacity: .95 }], { duration: 180, delay: landed, fill: 'forwards' }).finished
+        .then(() => c.animate([{ opacity: .95 }, { opacity: .35, offset: .45 }, { opacity: .95 }],
+          { duration: 1500, delay: d * 250 + 400, iterations: Infinity, easing: 'ease-in-out' }), () => {});
+    });
+  }
+
+  function burst() {
+    const box = cookie.getBoundingClientRect();
+    const x = box.left + box.width * .5;
+    const y = box.top + box.height * .45;
+    const floor = box.top + box.height * .95;
+    for (let n = 0; n < 12; n++) {
+      const c = document.createElement('i');
+      c.className = 'crumb';
+      c.style.setProperty('--s', `${rand(4, 10)}px`);
+      c.style.left = `${x}px`;
+      c.style.top = `${y}px`;
+      crumbs.append(c);
+      const dx = rand(-1, 1) * box.width * .55;
+      const up = rand(.15, .5) * box.height;
+      const r = rand(-360, 360);
+      c.animate([
+        { transform: 'translate(0, 0) rotate(0)', opacity: 1 },
+        { transform: `translate(${dx * .5}px, ${-up}px) rotate(${r / 2}deg)`, opacity: 1, offset: .35 },
+        { transform: `translate(${dx}px, ${floor - y}px) rotate(${r}deg)`, opacity: 1, offset: .8 },
+        { transform: `translate(${dx * 1.06}px, ${floor - y - 3}px) rotate(${r}deg)`, opacity: 0 },
+      ], { duration: rand(850, 1250), easing: 'cubic-bezier(.25, .6, .45, 1)' }).finished.then(() => c.remove());
+    }
+  }
+
+  const ease = 'cubic-bezier(.2, .9, .3, 1.2)';
+  const SLIP_MS = 820;
+  const STAMP_AFTER = 1200; // the lucky numbers are stamped this long after the slip has landed
+  let busy = false;
+  let cracked = false;
+  let auto = null;
+  let lastTouch = 0;
+
+  function settleCracked() {
+    left.style.transform = 'translate(-17%, 4%) rotate(-17deg)';
+    right.style.transform = 'translate(17%, 4%) rotate(17deg)';
+    crease.style.opacity = '0';
+    tail.style.opacity = '0';
+  }
+
+  async function crack() {
+    if (busy) return;
+    busy = true;
+    clearTimeout(auto);
+    const kind = plan();
+    verdictDue = kind === 'review';
+    const double = kind === 'double' || kind === 'approved';
+
+    if (TTY.reduce) {
+      const i = write(kind);
+      settleCracked();
+      landCheck(kind === 'review');
+      slip.style.visibility = 'visible';
+      twin.style.visibility = 'hidden';
+      if (double) showTwin(kind, i);
+      busy = false;
+      return;
+    }
+
+    // Clear the table: the old slips are tucked away as the cracked cookie sinks into the plate,
+    // then a fresh cookie drops on it.
+    if (cracked) {
+      if (twin.style.visibility === 'visible') {
+        twin.animate([{ opacity: 1 }, { transform: 'translate(10%, -30%) rotate(8deg) scale(.8)', opacity: 0 }], { duration: 300, easing: 'ease-in', fill: 'forwards' })
+          .finished.then(() => { twin.style.visibility = 'hidden'; twin.getAnimations().forEach((a) => a.cancel()); });
+      }
+      await Promise.all([
+        slip.animate([{ transform: 'none', opacity: 1 }, { transform: 'translate(14%, -22%) rotate(10deg) scale(.8)', opacity: 0 }],
+          { duration: 340, easing: 'cubic-bezier(.5, 0, .8, .4)', fill: 'forwards' }).finished,
+        cookie.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(12%) scale(.92)', opacity: 0 }],
+          { duration: 300, delay: 40, easing: 'ease-in', fill: 'forwards' }).finished,
+      ]);
+      slip.style.visibility = 'hidden';
+      slip.getAnimations().forEach((a) => a.cancel());
+      // Forward-filled animations would win over anything newer once that ends; clear them.
+      [cookie, left, right, crease, tail].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
+      hideCheck();
+      sweat(1000, 250); // it starts sweating on the way down and is still sweating as it shivers
+      await cookie.animate([
+        { transform: 'translateY(-140%) rotate(-8deg)', opacity: 1, easing: 'cubic-bezier(.55, 0, 1, .45)' },
+        { transform: 'translateY(0) rotate(0)', opacity: 1, offset: .55, easing: 'cubic-bezier(0, .55, .45, 1)' },
+        { transform: 'translateY(-12%) rotate(2deg)', opacity: 1, offset: .75, easing: 'cubic-bezier(.55, 0, 1, .45)' },
+        { transform: 'translateY(0) rotate(0)', opacity: 1 },
+      ], { duration: 720, fill: 'forwards' }).finished;
+    }
+    const i = write(kind);
+
+    // A nervous shiver, big enough to see on a phone, then the snap.
+    await cookie.animate([
+      { transform: 'none' },
+      { transform: 'translateX(-3%) rotate(-5deg)' }, { transform: 'translateX(3%) rotate(5deg)' },
+      { transform: 'translateX(-3%) rotate(-4deg)' }, { transform: 'translateX(3%) rotate(4deg)' },
+      { transform: 'none' },
+    ], { duration: 560, easing: 'ease-in-out' }).finished;
+    cookie.animate([{ transform: 'scale(1)' }, { transform: 'scale(.96, 1.04)' }, { transform: 'scale(1)' }], { duration: 180 });
+    crease.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, fill: 'forwards' });
+    tail.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: 'forwards' });
+    left.animate([{ transform: 'none' }, { transform: 'translate(-17%, 4%) rotate(-17deg)' }], { duration: 520, easing: ease, fill: 'forwards' });
+    right.animate([{ transform: 'none' }, { transform: 'translate(17%, 4%) rotate(17deg)' }], { duration: 520, easing: ease, fill: 'forwards' });
+    burst();
+    landCheck(kind === 'review');
+
+    // The crumbs have their say first; then the slip is pulled out of the crease and lands on
+    // the table, and a beat later its lucky numbers are stamped.
+    await wait(SLIP_AFTER_CRACK);
+    slip.style.visibility = 'visible';
+    const from = cookie.getBoundingClientRect();
+    const to = slip.getBoundingClientRect();
+    const dx = from.left + from.width / 2 - (to.left + to.width / 2);
+    const dy = from.top + from.height * .45 - (to.top + to.height / 2);
+    lucky.animate([
+      { transform: 'scale(1.35) rotate(-3deg)', opacity: 0 },
+      { transform: 'scale(.94) rotate(0)', opacity: 1, offset: .6 },
+      { transform: 'none', opacity: 1 },
+    ], { duration: 300, delay: SLIP_MS + STAMP_AFTER, easing: 'cubic-bezier(.3, .7, .4, 1)', fill: 'backwards' });
+    await slip.animate([
+      { transform: `translate(${dx}px, ${dy}px) scale(.12, .08) rotate(-20deg)`, clipPath: 'inset(0 86% 0 0)' },
+      { transform: `translate(${dx * .4}px, ${dy * .4 - to.height * .25}px) scale(.55, .4) rotate(-8deg)`, clipPath: 'inset(0 40% 0 0)', offset: .45 },
+      { transform: 'none', clipPath: 'inset(0 0 0 0)' },
+    ], { duration: SLIP_MS, easing: 'cubic-bezier(.25, .8, .3, 1.08)' }).finished;
+    // A double: the second slip follows the first out of the cookie.
+    if (double) await showTwin(kind, i);
+
+    cracked = true;
+    busy = false;
+    scheduleAuto(double);
+  }
+
+  // The next cookie comes by itself: 5.2 s after a single, 9 s after a double (two slips to read;
+  // on the home stage the visit then ends on the double). A cookie the visitor cracked stays 15 s,
+  // longer than the home stage keeps the page after a tap, so autoplay never takes it away.
+  function scheduleAuto(double = false) {
+    clearTimeout(auto);
+    const theirs = Date.now() - lastTouch < 8000;
+    auto = setTimeout(crack, theirs ? 15000 : double ? 9000 : 5200);
+  }
+  plate.addEventListener('click', () => { lastTouch = Date.now(); crack(); });
+
+  count.textContent = countText(0);
+  TTY.onShow(() => {
+    if (TTY.reduce) { crack(); return; }
+    // The first cookie sweats longest: it has been waiting for this review.
+    setTimeout(() => sweat(1500), 100);
+    setTimeout(crack, 900);
+  });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

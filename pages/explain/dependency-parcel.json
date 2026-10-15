@@ -1,0 +1,149 @@
+{
+  "id": "dependency-parcel",
+  "title": {
+    "en": "Track Your Dependencies",
+    "ko": "의존성 택배 조회"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "아주 작은 기능 하나를 내려받았는데 그 기능이 기대는 다른 패키지들이 줄줄이 딸려 오는 자바스크립트 생태계(npm)를 택배로 놀린다.",
+    "points": [
+      "앱에는 '수량 1개', 문 앞에는 덤프트럭과 상자 다섯 개 → 프로그래머가 `npm install is-even` 한 줄을 치면 정말 이렇게 된다. 상자 수는 실제로 설치해서 센 숫자다.",
+      "'동봉 내역'의 계단 → 짝수 확인(is-even)이 홀수 확인(is-odd)을, 홀수 확인이 숫자 확인(is-number)을, 숫자 확인이 종류 확인(kind-of)을, 종류 확인이 버퍼 확인(is-buffer)을 부른다. 숫자가 짝수인지 보려고 다섯 칸을 내려간다.",
+      "주문한 상자 속 `return !isOdd(i);` → 짝수 판별기가 하는 일은 옆 상자에 홀수냐고 물어보고 그 대답을 뒤집는(`!`) 것뿐이다. 파란 선이 그 옆 상자를 가리킨다. 정작 계산은 옆 상자가 한다.",
+      "카드에 찍히는 '원재료명: is-odd 99%, ! 1%' → 식품 포장의 성분 표시처럼 읽으면, 주문한 상품은 거의 다 다른 상품이고 직접 보탠 것은 느낌표 하나다.",
+      "(누를 때만) '한 번 더 주문' → 트럭이 다시 와서 빈 짐칸만 털고 가고, 앱은 '새로 온 상품 0건'이라고 한다(배송 기사 메모가 보이는 화면에서는 메모도 'up to date, audited 6 packages in 1s'). 이미 다 받았으니 npm도 더 줄 게 없다. 그래도 트럭은 온다.",
+      "(누를 때만) 문에 붙은 left-pad 회수 안내문 → 2016년, 문자열 앞에 빈칸을 채우는 11줄짜리 패키지를 작성자가 내리자, 코드를 한 줄도 안 바꾼 프로젝트 수천 곳의 빌드가 한꺼번에 깨졌다. 그 사고를 동네 공지문 말투('판매자가 직접 내린 상품입니다', '이용에 불편을 드려 죄송합니다')로 적었다. 작은 상자 하나가 빠져도 큰일이 난다."
+    ],
+    "terms": [
+      {
+        "term": "npm",
+        "plain": "자바스크립트 프로그램 조각(패키지)을 내려받는 도구이자 그 창고. `npm install 이름`이 '주문'이다. 이 페이지의 배송 기사이기도 하다."
+      },
+      {
+        "term": "의존성",
+        "plain": "어떤 패키지가 돌아가려면 꼭 함께 있어야 하는 다른 패키지. 주문하면 자동으로 같이 배송된다."
+      },
+      {
+        "term": "node_modules",
+        "plain": "내려받은 패키지가 모두 들어가는 폴더. 이 페이지의 '문 앞'이다."
+      },
+      {
+        "term": "is-even / is-odd",
+        "plain": "숫자가 짝수인지·홀수인지 알려 주는 아주 작은 패키지. 보통은 `n % 2 === 0` 한 줄로 직접 쓴다."
+      },
+      {
+        "term": "left-pad",
+        "plain": "문자열 왼쪽을 빈칸 등으로 채워 길이를 맞추는 11줄짜리 패키지. 2016년에 작성자가 직접 내려서 소동이 났다."
+      }
+    ],
+    "links": [
+      {
+        "title": "is-even 1.0.0의 index.js 전체 (jsDelivr)",
+        "url": "https://cdn.jsdelivr.net/npm/is-even@1.0.0/index.js",
+        "note": "함수 몸통이 `return !isOdd(i);` 한 줄뿐인 실제 파일.",
+        "lang": "en"
+      },
+      {
+        "title": "의존성 지옥 (위키백과)",
+        "url": "https://ko.wikipedia.org/wiki/의존성_지옥",
+        "note": "라이브러리가 라이브러리를 부르고 또 부르는 '긴 사슬 의존'.",
+        "lang": "ko"
+      },
+      {
+        "title": "npm left-pad incident (위키백과)",
+        "url": "https://en.wikipedia.org/wiki/Npm_left-pad_incident",
+        "note": "2016년 3월 22일 무슨 일이 있었는지, 11줄 코드 전체.",
+        "lang": "en"
+      },
+      {
+        "title": "kik, left-pad, and npm (npm 블로그)",
+        "url": "https://blog.npmjs.org/post/141577284765/kik-left-pad-and-npm",
+        "note": "npm이 직접 쓴 경위. \"혼란은 2시간 반 이어졌다\".",
+        "lang": "en"
+      },
+      {
+        "title": "xkcd 2347: Dependency",
+        "url": "https://xkcd.com/2347/",
+        "note": "현대 디지털 인프라 전체가 누군가 혼자 관리하는 작은 블록 하나에 기대고 있는 그림.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "앱의 운송장번호 `sha512-LEhnkAdJ…` → npm 레지스트리에 적힌 is-even 1.0.0의 진짜 무결성 해시(파일 지문)다. 내려받은 상자가 바꿔치기되지 않았는지 이 값으로 확인한다.",
+      "넓은 화면의 상세 배송 정보에 적힌 '배송 기사 npm'과 배송 기사 메모 → 기사가 npm이라서 메모도 npm이 설치 끝에 실제로 찍는 두 줄이다. `added 5 packages, and audited 6 packages` → 받은 상자는 다섯 개인데 검사한 것은 여섯 개다. 여섯 번째는 주문한 사람의 프로젝트 자신이다(npm은 설치된 패키지에 프로젝트 자신까지 더해 센다).",
+      "원재료명의 99%와 1% → 함량은 농담이지만, is-even의 index.js 14줄 가운데 일을 하는 줄은 정말 그 한 줄이다. 나머지는 저작권 주석, 엄격 모드 선언(`use strict`), is-odd 불러오기, 빈 줄, 함수 껍데기다.",
+      "맨 아래 is-buffer 카드의 `// … Remove this eventually.`(언젠가 지울 것) → 실제 is-buffer 1.1.6에는 이 주석이 두 번 있다. 게다가 숫자를 넣으면 kind-of가 먼저 답을 내서 is-buffer는 한 번도 불리지 않는다. 안 쓰이는 상자까지 꼬박꼬박 배달된다.",
+      "회수 안내문의 'left-pad 0.0.3' → npm이 백업에서 되살린 바로 그 버전이다. 다른 사람이 같은 이름으로 1.0.0을 새로 올렸지만, Babel 같은 프로젝트가 중간 패키지를 거쳐 정확히 0.0.3을 찾는 바람에 오류가 이어졌다."
+    ]
+  },
+  "en": {
+    "line": "This page pokes fun at npm, where installing one tiny package brings a whole chain of other packages along with it.",
+    "points": [
+      "The app says \"Qty 1\"; a dump truck tips five boxes onto the doorstep → that is really what one `npm install is-even` does. The box count comes from an actual install.",
+      "The packing list is a staircase → is-even needs is-odd, which needs is-number, which needs kind-of, which needs is-buffer. Five steps down to tell whether a number is even.",
+      "Inside the box you ordered: `return !isOdd(i);` → the even-checker asks its neighbour whether the number is odd and flips the answer (`!`). The blue line points at that neighbour, which does the actual math.",
+      "The label stamped on the card, \"Ingredients: is-odd 99%, ! 1%\" → read it like a food label: what you ordered is almost entirely another package, plus one exclamation mark.",
+      "(only if you tap it) Order again → the truck comes back, shakes an empty bed and drives off, and the app says \"0 new items\" (where the driver's note is on screen, it now reads \"up to date, audited 6 packages in 1s\"). npm has nothing left to send you. The truck comes anyway.",
+      "(only if you tap it) The left-pad recall notice on the door → in 2016 the author of an 11-line package that pads strings pulled it, and builds broke at thousands of projects that hadn't changed a line. The notice tells it in the voice of a building notice, down to \"Sorry for the inconvenience.\" One tiny box missing is a big deal."
+    ],
+    "terms": [
+      {
+        "term": "npm",
+        "plain": "the tool (and warehouse) that hands out JavaScript packages. `npm install name` is placing an order. Here it is also the delivery driver."
+      },
+      {
+        "term": "dependency",
+        "plain": "another package a package can't run without. It ships with your order automatically."
+      },
+      {
+        "term": "node_modules",
+        "plain": "the folder where every installed package lands. The doorstep in this picture."
+      },
+      {
+        "term": "is-even / is-odd",
+        "plain": "tiny packages that tell you if a number is even or odd. Most people just write `n % 2 === 0`."
+      },
+      {
+        "term": "left-pad",
+        "plain": "an 11-line package that pads the left side of a string. Its author unpublished it in 2016."
+      }
+    ],
+    "links": [
+      {
+        "title": "The whole index.js of is-even 1.0.0 (jsDelivr)",
+        "url": "https://cdn.jsdelivr.net/npm/is-even@1.0.0/index.js",
+        "note": "the real file; the function's whole body is `return !isOdd(i);`."
+      },
+      {
+        "title": "npm left-pad incident (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Npm_left-pad_incident",
+        "note": "what happened on March 22, 2016, with the 11 lines in full.",
+        "lang": "en"
+      },
+      {
+        "title": "kik, left-pad, and npm (npm blog)",
+        "url": "https://blog.npmjs.org/post/141577284765/kik-left-pad-and-npm",
+        "note": "npm's own account; \"the duration of the disruption was 2.5 hours\"."
+      },
+      {
+        "title": "Dependency hell (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Dependency_hell",
+        "note": "\"long chains of dependencies\", among others.",
+        "lang": "en"
+      },
+      {
+        "title": "xkcd 2347: Dependency",
+        "url": "https://xkcd.com/2347/",
+        "note": "all of modern digital infrastructure resting on one small block somebody maintains alone."
+      }
+    ],
+    "deep": [
+      "The tracking number `sha512-LEhnkAdJ…` → the real integrity hash of is-even 1.0.0 in the npm registry, a fingerprint of the file that proves the box wasn't swapped on the way.",
+      "\"Driver: npm\" in the tracking history (on wide screens) → so the driver's note is npm's own sign-off. `added 5 packages, and audited 6 packages` → five boxes arrived but six were checked. The sixth is your own project: npm counts it along with everything it installed.",
+      "The 99% and 1% → the proportions are a joke, but of the 14 lines in is-even's index.js only that one does any work. The rest is a copyright comment, the `use strict` line, the require of is-odd, blank lines and the function's wrapper.",
+      "The is-buffer card's `// … Remove this eventually.` → the real is-buffer 1.1.6 says \"Remove this eventually\" twice. And when you pass a number, kind-of answers before it ever calls is-buffer, so that box is delivered and never opened.",
+      "\"left-pad 0.0.3\" on the recall notice → the exact version npm restored from a backup. Someone had already republished the name as 1.0.0, but projects like Babel pulled it in through a package that asked for exactly 0.0.3, so the errors kept coming."
+    ]
+  }
+}

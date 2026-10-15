@@ -1,0 +1,150 @@
+{
+  "id": "smoke-test",
+  "title": {
+    "en": "The Smoke Test",
+    "ko": "스모크 테스트"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "새 회로 기판에 처음 전원을 넣고 \"연기가 안 나면 통과\"라고 보는 하드웨어의 오래된 시험을, 연기가 났는데도 통과시키는 장면으로 놀린다.",
+    "points": [
+      "처음 몇 초, C7에서 눈 달린 연기가 빼꼼 나와 두리번거리다 쏙 들어간다 → 전자 부품은 안에 갇힌 '마법의 연기'로 움직이고 연기가 빠져나가면 죽는다는 엔지니어들의 오래된 농담(매직 스모크). 나가도 되나 엿본 것이다. 계기의 연기 칸은 그동안 태연하게 \"없음\"이고, 4.5초에 그 연기가 눈을 동그랗게 뜨고 결국 달아난다.",
+      "\"통과 / 연기는 장식이었습니다\" 도장 → 연기가 나면 떨어지는 시험인데, 연기가 아직 공중에 떠 있는데도 뻔뻔하게 통과다. 머리말이 \"아직 무패예요\"라고 자랑한 이유다. 2초쯤 뒤에는 달아났던 그 연기가 도장 뒤에서 빼꼼 나와 판정을 읽고, 흐뭇하게 눈을 가늘게 뜨고는 다시 숨는다. 제대로 빠져나갔다.",
+      "부품 옆 흰 글씨(실크 인쇄) → 원래 R2, C7 같은 부품 번호를 적는 자리에 성격이 적혀 있다. \"감성 콘덴서\"(진짜 부품 이름인 전해 콘덴서를 비튼 말), \"어깨에 힘 들어간 칩\", 영화 '백 투 더 퓨처'에서 타임머신을 움직이는 부품 \"플럭스 콘덴서 1.21기가와트\", \"만지지 마시오 (만짐)\". 휴대폰처럼 작은 화면에서는 기판에 부품 번호와 C7의 \"감성 콘덴서\"만 남는다(세로 화면에서는 글귀가 기판 아래 목록으로 내려간다).",
+      "연기 난 부품이 하필 \"감성 콘덴서\"인 C7 → 누르면 \"C7이 잠깐 울컥함\"(누를 때만). 자세히 보면 기판에 찍힌 + 표시 쪽에 C7 몸통의 음극(−) 띠가 와 있다. 거꾸로 꽂힌 것이다. 극성이 있는 콘덴서를 거꾸로 꽂으면 실제로 뜨거워져 망가질 수 있다."
+    ],
+    "terms": [
+      {
+        "term": "스모크 테스트",
+        "plain": "새 기판에 처음 전원을 넣고 연기가 나는지 보는 시험. 소프트웨어에서는 '일단 켜지기는 하는지' 보는 첫 간단한 시험을 이렇게 부른다."
+      },
+      {
+        "term": "매직 스모크",
+        "plain": "전자 부품은 안에 갇힌 '마법의 연기'로 움직이고, 연기가 빠져나가면 멈춘다는 농담."
+      },
+      {
+        "term": "전해 콘덴서의 극성",
+        "plain": "+와 −가 정해진 콘덴서. 거꾸로 전압을 걸면 과열되고 속 압력이 올라 망가질 수 있어서 몸통에 음극 쪽을 띠로 표시한다."
+      },
+      {
+        "term": "0Ω 저항",
+        "plain": "저항이 0인 부품. 저항처럼 생긴 연결선이라 검은 띠 하나로 표시한다. 그래서 \"인내 저항 0Ω\"은 인내심이 0이다."
+      },
+      {
+        "term": "CV·CC",
+        "plain": "실험용 전원 공급기의 두 상태. 평소엔 전압을 일정하게(CV) 주다가, 전류가 정해 둔 한계에 닿으면 전류를 그 값에 묶고(CC) 전압을 낮춘다."
+      }
+    ],
+    "links": [
+      {
+        "title": "Smoke testing (electrical) - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Smoke_testing_(electrical)",
+        "note": "회로에 처음 전원을 넣는 시험과 그 이름의 유래(원래는 배관에 연기를 넣어 새는 곳을 찾던 시험).",
+        "lang": "en"
+      },
+      {
+        "title": "Magic smoke - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Magic_smoke",
+        "note": "\"연기를 빼 먹었다\"는 전자공학 농담.",
+        "lang": "en"
+      },
+      {
+        "title": "전해 축전기 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/전해_축전기",
+        "note": "극성이 있는 콘덴서와 역전압의 위험.",
+        "lang": "ko"
+      },
+      {
+        "title": "Zero-ohm link - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Zero-ohm_link",
+        "note": "검은 띠 하나짜리 0Ω 저항.",
+        "lang": "en"
+      },
+      {
+        "title": "백 투 더 퓨처 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/백_투_더_퓨처",
+        "note": "타임머신에 1.21기가와트가 필요했던 영화.",
+        "lang": "ko"
+      }
+    ],
+    "deep": [
+      "계기판 → 연기 나는 순간 전원 공급기가 0.50 A 전류 한계에 걸려 빨간 CC로 넘어가고 전압이 3.30 V에서 2.71 V로 처졌다가, 0.8초 뒤 아무 일 없었다는 듯 CV 3.30 V로 돌아온다. C7을 누를 때도 같은 숫자로 잠깐 처진다. C7 둘레 기판에는 그을음이 남고, 스위치로 꺼도 지워지지 않는다. 도장은 그래도 통과다.",
+      "전원을 넣으면 밝은 점이 배선을 따라 전원 단자 → R2 → 칩(U1) → C7·LED·FC1 순서로 달린다. 전류가 C7에 닿는 순간 연기가 빼꼼 나온다.",
+      "빼꼼 연기가 빨려 들어갈 때 C7이 꿀꺽 삼키듯 한 번 부풀고, 연기 칸이 \"없음\"에서 \"눈치 보는 중\"으로 바뀐다. 1초 뒤 진짜 연기가 난다. 망가져 가는 전해 콘덴서도 실제로 윗면이 부풀어 오르곤 한다.",
+      "연기 칸은 \"없음\", \"눈치 보는 중\", \"한 모금\" 순서로 바뀌고, 스위치로 끈 채 2.6초 두면 \"금연 중\"이 된다. 끊었다면서 C7 둘레 그을음은 그대로다.",
+      "LED 네 개(D1–D4)의 실크 인쇄는 \"사기 충천\"이다. 연기 나는 순간 네 개가 함께 반쯤 어두워졌다가 0.8초 뒤 다시 밝아진다. 사기가 꺾였다가 금방 회복한다.",
+      "기판 왼쪽 위 이름은 \"사랑과 플럭스로 납땜함\"(큰 화면에서만). 플럭스는 납땜할 때 실제로 쓰는 약품(땜납이 잘 붙게 금속 표면의 산화막을 벗겨 준다)이고, 아래 \"플럭스 콘덴서\"와 말장난이 된다."
+    ]
+  },
+  "en": {
+    "line": "A new circuit board passes hardware's old \"smoke test\" (power it up; if nothing burns, it passes) even though something clearly burned.",
+    "points": [
+      "In the first seconds a little cloud of smoke with eyes peeks out of C7, looks left and right, and gets sucked back in → the old engineers' joke that every part runs on \"magic smoke\" sealed inside, and dies once the smoke gets out. This smoke was checking whether the coast was clear. Meanwhile the meter calmly says \"none\", and at 4.5 s the same smoke pops out wide-eyed and makes its escape.",
+      "The stamp \"Test passed. / The smoke was decorative.\" → smoke means fail. It smoked, the smoke is still in the air, and it passed anyway. That is why the heading calls this test \"still undefeated\". Two seconds later the smoke that got away leans out from behind the stamp, reads the verdict, squints with satisfaction and ducks back. It got away with it.",
+      "The white silkscreen → where boards print part labels like R2 and C7, this one prints personalities: \"capacitor (emotional)\", \"chip on its shoulder\", \"flux capacitor, 1.21 GW\" (the part that makes the time machine work in the film Back to the Future, and the power it needs), \"do not touch (touched)\". On a small screen such as a phone, the board keeps only the part labels and C7's \"capacitor (emotional)\" (on a tall screen the jokes move to a parts list under the board).",
+      "The part that smoked is the emotional capacitor → tap it (only if you tap): \"C7 needed a moment\". Look closer: the minus stripe on C7's can sits on the side the board marks \"+\". It went in backwards, and a reversed electrolytic capacitor really can overheat and fail."
+    ],
+    "terms": [
+      {
+        "term": "Smoke test",
+        "plain": "powering a new board for the first time and watching for smoke. In software, the first quick check that the thing runs at all."
+      },
+      {
+        "term": "Magic smoke",
+        "plain": "the joke that electronics run on smoke sealed inside them, and stop working once it escapes."
+      },
+      {
+        "term": "Electrolytic capacitor polarity",
+        "plain": "these capacitors have a + and a − side; reverse voltage can overheat and damage them, so the can marks its minus side with a stripe."
+      },
+      {
+        "term": "Zero-ohm resistor",
+        "plain": "a resistor-shaped jumper with no resistance, marked with a single black band. A \"resistor of patience, 0 Ω\" has zero patience."
+      },
+      {
+        "term": "CV / CC",
+        "plain": "a bench power supply holds the voltage constant (CV) until the current reaches the set limit, then holds the current there (CC) and lets the voltage drop."
+      }
+    ],
+    "links": [
+      {
+        "title": "Smoke testing (electrical) - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Smoke_testing_(electrical)",
+        "note": "the power-on test and where the name comes from (plumbers first blew smoke through pipes to find leaks).",
+        "lang": "en"
+      },
+      {
+        "title": "Magic smoke - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Magic_smoke",
+        "note": "\"you let the smoke out\".",
+        "lang": "en"
+      },
+      {
+        "title": "Electrolytic capacitor - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Electrolytic_capacitor",
+        "note": "polarized capacitors and what reverse voltage does to them.",
+        "lang": "en"
+      },
+      {
+        "title": "Zero-ohm link - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Zero-ohm_link",
+        "note": "the single-black-band zero-ohm resistor.",
+        "lang": "en"
+      },
+      {
+        "title": "DeLorean time machine - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/DeLorean_time_machine",
+        "note": "the flux capacitor and its 1.21 gigawatts.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The meters: at the puff the bench supply hits its 0.50 A current limit (red CC) and the voltage sags from 3.30 V to 2.71 V, then 0.8 s later it is back to CV 3.30 V as if nothing happened. Tapping C7 sags it to the same numbers for a moment. A scorch mark stays on the board around C7, even after you switch it off. The stamp still says passed.",
+      "At power-on a bright dot runs along the traces in the order the current would arrive: power header, R2, the chip (U1), then C7, the LEDs and FC1. The moment it reaches C7, the smoke peeks out.",
+      "As the peeking smoke is sucked back in, C7 swells once, as if gulping, and the smoke reading changes from \"none\" to \"watching…\". A second later the real puff comes. A failing electrolytic capacitor really does tend to bulge at the top.",
+      "The smoke reading goes \"none\", \"watching…\", \"1 small puff\"; switch it off and leave it for 2.6 s and it becomes \"trying to quit\". The scorch mark around C7 stays.",
+      "The four LEDs, D1–D4, are labelled \"morale\". At the puff all four dim to half and come back 0.8 s later: morale dips, then recovers.",
+      "The board's name, top left, is \"soldered with love and flux\" (larger screens only). Flux is the real chemical used in soldering to strip oxide off the metal so the solder sticks, and it puns on the \"flux capacitor\" below."
+    ]
+  }
+}

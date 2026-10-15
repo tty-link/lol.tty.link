@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prove You Are a Robot | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;800&family=Fragment+Mono&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="pixel sticker dunggeun"></script>
+<style>
+  /* A security check for the other side: a verification widget whose questions are easy
+     for machines. A human cursor tries every one and fails kindly; a robot arm then does
+     the lot in a few seconds and is welcomed in. */
+  :root {
+    --bg: #dbe4ec;
+    --dot: rgba(29, 36, 51, .1);
+    --card: #ffffff;
+    --ink: #1d2433;
+    --soft: #5d6879;
+    --line: #d4dbe4;
+    --head: #3b5bdb;
+    --pick: #ffe066;
+    --bad: #e8590c;
+    --ok: #0c9f7a;
+    --robot: #ff7a1a;
+    --steel: #8f99a8;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container-type: size;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle, var(--dot) 1.2px, transparent 1.6px) 0 0 / 22px 22px,
+      var(--bg);
+    color: var(--ink);
+    font-family: 'Geologica', 'IBM Plex Sans KR', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', 'Geologica', sans-serif; word-break: keep-all; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--head); outline-offset: 2px; }
+
+  .scene {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    justify-items: center;
+    align-items: start;
+    gap: 2.2cqh;
+    padding: 4cqh 4cqw;
+  }
+  .intro { justify-self: start; max-width: 100%; }
+  .title { font-size: clamp(22px, 6.4cqmin, 52px); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
+  .sub { margin-top: 1cqh; font-size: clamp(13px, 2.4cqmin, 18px); color: var(--soft); }
+  .lang-ko .sub { margin-top: 1.6cqh; }
+  /* Under the title, the widget stands in the rest of the stage and sizes itself to it, so a
+     taller title (the Korean one, or a wrapped one) and the line under the widget always fit. */
+  .stand { align-self: stretch; justify-self: stretch; container: stand / size; display: flex; flex-direction: column; align-items: center; }
+  @container (min-width: 760px) and (min-aspect-ratio: 1/1) {
+    .scene { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 1fr; align-items: center; gap: 5cqw; padding: 4cqh 7cqw; }
+    .intro { align-self: center; }
+    .title { font-size: clamp(30px, 6cqw, 62px); }
+    .stand { container-type: normal; align-self: center; justify-self: auto; display: block; }
+  }
+  /* On a short phone stage (358×396) the subtitle stays, as one small line close under the title. */
+  @container (max-width: 759px) and (max-height: 460px) {
+    .sub, .lang-ko .sub { margin-top: 3px; font-size: 11px; line-height: 1.2; white-space: nowrap; }
+  }
+
+  /* ---- The widget ---- */
+  /* It is about 1.4 times as tall as it is wide; 44px is kept for the line under it (two lines on a phone). */
+  .widget {
+    container-type: inline-size;
+    width: min(100cqw, 440px, calc((100cqh - 44px) / 1.4));
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    box-shadow: 0 2px 0 rgba(29,36,51,.05), 0 18px 44px rgba(29, 52, 92, .18);
+    overflow: hidden;
+  }
+  @container (min-width: 760px) and (min-aspect-ratio: 1/1) {
+    .widget { width: min(46cqw, 440px, calc((100cqh - 100px) / 1.4)); }
+  }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 3.4cqi;
+    padding: 3.6cqi 4.4cqi;
+    border-bottom: 1px solid var(--line);
+  }
+  .box {
+    position: relative;
+    flex: none;
+    width: 7.4cqi;
+    height: 7.4cqi;
+    border: .7cqi solid #a5b0bf;
+    border-radius: 1.4cqi;
+    background: #fff;
+    cursor: pointer;
+  }
+  .box svg { position: absolute; inset: -12%; width: 124%; height: 124%; }
+  .box .tick { fill: none; stroke: var(--ok); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; }
+  .box.on { border-color: var(--ok); }
+  .box.on .tick { stroke-dashoffset: 0; transition: stroke-dashoffset .35s ease-out; }
+  .box.spin { border-color: #a5b0bf; border-top-color: var(--head); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { rotate: 360deg; } }
+  .check-label { flex: 1; font-size: 5cqi; font-weight: 600; }
+  .gear { width: 8cqi; height: 8cqi; color: var(--steel); }
+
+  .head { padding: 4cqi 4.4cqi; background: var(--head); color: #fff; min-height: 21cqi; transition: background .4s; }
+  .head-small { font-size: 3.4cqi; opacity: .85; }
+  .head-q { margin-top: .8cqi; font-size: 5cqi; font-weight: 800; line-height: 1.2; }
+  .lang-ko .head-q { font-weight: 600; }
+  .head.done { background: var(--ok); }
+
+  .body { position: relative; height: 70cqi; padding: 3.6cqi 4.4cqi; }
+  .panel { position: absolute; inset: 3.6cqi 4.4cqi; display: none; }
+  .panel.on { display: block; }
+
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr; gap: 1.6cqi; height: 100%; }
+  .cell {
+    position: relative;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 1.6cqi;
+    background: #eef2f7;
+    font-size: 7.4cqi;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    cursor: pointer;
+    transition: background .15s, transform .15s;
+  }
+  .cell.sel { background: var(--pick); transform: scale(.92); }
+  .cell.good { background: #c6f1e2; transform: scale(.92); }
+  .cell.wrong { background: #ffd8c2; }
+
+  .hash { display: grid; height: 100%; grid-template-rows: auto 1fr auto; gap: 2.4cqi; }
+  .hash-label { font-size: 3.8cqi; color: var(--soft); }
+  .hash-field {
+    padding: 3cqi 3.4cqi;
+    border: .5cqi solid var(--line);
+    border-radius: 1.6cqi;
+    background: #f6f8fb;
+    font-family: 'Fragment Mono', ui-monospace, monospace;
+    font-size: 5.2cqi;
+    line-height: 1.5;
+    letter-spacing: .02em;
+    word-break: break-all;
+  }
+  .hash-field.typing { border-color: var(--head); }
+  .timer { height: 2.4cqi; border-radius: 2cqi; background: #e3e8ef; overflow: hidden; }
+  .timer span { display: block; height: 100%; background: var(--bad); transform-origin: 0 50%; }
+
+  .pixels { display: grid; grid-template-columns: 1fr; place-items: center; height: 100%; gap: 2cqi; }
+  .pixels canvas { display: block; width: 46cqi; height: 46cqi; image-rendering: pixelated; border-radius: 1cqi; box-shadow: 0 0 0 .5cqi var(--line); }
+  .pic { position: relative; }
+  /* Marks one pixel for the colour question (pixel 37, 29 of 64). */
+  .ring { position: absolute; left: calc(37.5 / 64 * 100%); top: calc(29.5 / 64 * 100%); width: 4.4cqi; height: 4.4cqi; translate: -50% -50%; border: .7cqi solid var(--ink); border-radius: 50%; box-shadow: 0 0 0 .4cqi #fff; display: none; }
+  .ring.on { display: block; }
+  .answer { min-width: 40cqi; padding: 2.2cqi 3.4cqi; border: .5cqi solid var(--line); border-radius: 1.6cqi; font-size: 5cqi; font-weight: 600; text-align: center; background: #f6f8fb; }
+
+  .chart { display: grid; place-items: center; align-content: center; height: 100%; gap: 1.6cqi; font-family: 'Geologica', sans-serif; font-weight: 800; color: var(--ink); }
+  .chart p:nth-child(1) { font-size: 14cqi; line-height: 1; }
+  .chart p:nth-child(2) { font-size: 8cqi; letter-spacing: .3em; }
+  .chart p:nth-child(3) { font-size: 4.6cqi; letter-spacing: .3em; }
+  .chart p:nth-child(4) { font-size: 2.4cqi; letter-spacing: .2em; }
+  .chart p.tiny { font-size: .9cqi; font-weight: 600; letter-spacing: 0; }
+  .lens {
+    position: absolute;
+    left: 50%;
+    bottom: 3cqi;
+    width: 62cqi;
+    padding: 3cqi;
+    border: 1.1cqi solid #3a4252;
+    border-radius: 999px;
+    background: rgba(255,255,255,.96);
+    font-size: 5.4cqi;
+    font-weight: 600;
+    text-align: center;
+    translate: -50% 0;
+    opacity: 0;
+  }
+
+  .status { display: flex; align-items: center; min-height: 13cqi; padding: .8cqi 4.4cqi; font-size: 4.2cqi; line-height: 1.35; color: var(--soft); border-top: 1px solid var(--line); }
+  .status.bad { color: var(--bad); }
+  .status.ok { color: var(--ok); }
+  /* One line of verdict (.said); a second sentence can follow it in the same flow (.more). */
+  .said { display: block; }
+  .said font-kku { color: inherit; }
+  .status.bad .said font-kku { color: var(--bad); }
+  .status.ok .said font-kku { color: var(--ok); }
+
+  .foot { display: flex; align-items: center; gap: 2.4cqi; padding: 3cqi 4.4cqi; border-top: 1px solid var(--line); }
+  .foot svg { width: 6.4cqi; height: 6.4cqi; color: var(--steel); }
+  .foot .icon { display: grid; padding: 0; border: 0; background: none; cursor: pointer; }
+  .foot .icon:hover svg { color: var(--head); }
+  .foot .grow { flex: 1; }
+  .btn { padding: 2.2cqi 4.4cqi; border: 0; border-radius: 1.4cqi; background: #eef2f7; font-size: 4cqi; font-weight: 600; cursor: pointer; }
+  .btn.main { background: var(--head); color: #fff; }
+
+  .welcome { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 3cqi; padding: 4cqi; background: #fff; text-align: center; opacity: 0; pointer-events: none; }
+  .welcome.on { opacity: 1; pointer-events: auto; }
+  /* Once the welcome is fully in, the check under it is gone for readers and screen readers too. */
+  .body.covered .panel { visibility: hidden; }
+  .welcome .big { font-size: 9cqi; font-weight: 800; line-height: 1.1; color: var(--ok); }
+  .welcome .small { font-size: 4.6cqi; color: var(--soft); }
+  .welcome .badge { width: 26cqi; height: 26cqi; }
+
+  /* One quiet line under the widget: the hint while the checks run, the welcome for humans at the end. */
+  .aside { max-width: 100%; margin-top: 8px; font-size: clamp(12px, 2.4cqw, 15px); line-height: 1.3; color: var(--soft); text-align: center; opacity: 0; transition: opacity .6s; }
+  .aside.on { opacity: 1; }
+  @container (min-width: 760px) and (min-aspect-ratio: 1/1) { .aside { margin-top: 12px; font-size: clamp(12px, 1.6cqw, 15px); } }
+
+  /* On a short phone stage (358×396, or 360×520 on its own) the widget at its usual proportions
+     would be 180–270px wide with 6–9px text. Here it is drawn squatter (about 0.95 times as tall
+     as wide: shorter rows, a lower grid, the picture beside its answer) so it can take the whole
+     width. Taller stands, and wide ones with height to spare (648×732), keep the usual shape. */
+  @container stand (max-height: 460px) and (min-aspect-ratio: 3/4) {
+    .widget { width: min(100cqw, 440px, calc((100cqh - 48px) / .95)); }
+    .check { gap: 3cqi; padding: 2.2cqi 4cqi; }
+    .box { width: 6.4cqi; height: 6.4cqi; }
+    .check-label { font-size: max(12px, 4.6cqi); }
+    .lang-ko .check-label { padding-top: 1.2cqi; }
+    .gear { width: 7cqi; height: 7cqi; }
+    .head { min-height: 0; padding: 2.4cqi 4cqi; }
+    .head-small { font-size: max(10px, 3.2cqi); }
+    .head-q { margin-top: .3cqi; font-size: max(12px, 4.6cqi); line-height: 1.15; }
+    /* (the grid grows into whatever height is left: cqh here is the stand's, cqi the widget's) */
+    .body { height: clamp(40cqi, calc(100cqh - 52cqi - 48px), 64cqi); padding: 2.4cqi 4cqi; }
+    .panel { inset: 2.4cqi 4cqi; }
+    .grid { gap: 1.2cqi; }
+    .cell { font-size: 5.8cqi; }
+    .hash { gap: 1.6cqi; }
+    .hash-label { font-size: max(10px, 3.4cqi); }
+    .hash-field { padding: 2cqi 3cqi; font-size: 4.2cqi; line-height: 1.35; }
+    .pixels { grid-template-columns: auto auto; justify-content: center; gap: 5cqi; }
+    .pixels canvas { width: 33cqi; height: 33cqi; }
+    .answer { min-width: 30cqi; font-size: max(12px, 4.6cqi); }
+    .chart { gap: 1cqi; }
+    .chart p:nth-child(1) { font-size: 10cqi; }
+    .chart p:nth-child(2) { font-size: 6cqi; }
+    .chart p:nth-child(3) { font-size: 3.6cqi; }
+    .chart p:nth-child(4) { font-size: 2cqi; }
+    .lens { bottom: 1cqi; width: 58cqi; padding: 1.8cqi; font-size: max(12px, 4.6cqi); }
+    .status { min-height: 10cqi; padding: .6cqi 4cqi; font-size: max(11px, 4cqi); line-height: 1.25; }
+    .foot { padding: 1.8cqi 4cqi; }
+    .foot svg { width: 6cqi; height: 6cqi; }
+    .btn { padding: 1.6cqi 4cqi; font-size: max(11px, 3.8cqi); }
+    .welcome { gap: 1.4cqi; padding: 2cqi; }
+    .welcome .badge { width: 15cqi; height: 15cqi; }
+    .welcome .big { font-size: 7.4cqi; }
+    .welcome .small { font-size: max(11px, 4.2cqi); }
+  }
+
+  /* ---- The visitors ---- */
+  /* The cursor, the dropped costume and the robot arm move over the whole stage and come in
+     from beyond its edges; this layer keeps them from widening the page. */
+  .fx { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
+  /* (scaled from the arrow's tip, so a tap or a lean towards the screen stays on target) */
+  .cursor { position: absolute; left: 0; top: 0; width: clamp(26px, 4.4cqmin, 38px); overflow: visible; z-index: 2; transform-origin: 8% 7%; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
+  /* The human comes dressed as a robot: a cardboard box with marker eyes and a wire
+     antenna, the arrow's tip poking out of the corner. It falls off at the first wrong answer,
+     lies on the floor under the widget (.loose, a copy drawn at the same scale) and goes back on,
+     upside down, for the "I'm a robot" box. */
+  .costume { transform-box: fill-box; transform-origin: 50% 60%; }
+  .loose { position: absolute; left: 0; top: 0; width: calc(clamp(26px, 4.4cqmin, 38px) * 40 / 24); overflow: visible; z-index: 1; opacity: 0; transform-origin: 50% 64%; filter: drop-shadow(0 2px 2px rgba(0,0,0,.2)); }
+  .arm { position: absolute; right: 0; top: 0; z-index: 3; height: clamp(14px, 2.4cqmin, 22px); width: 0; translate: 0 -50%; pointer-events: none; visibility: hidden; }
+  .arm.out { visibility: visible; }
+  .rod {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px 0 0 999px;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 46px, rgba(0,0,0,.18) 46px 48px),
+      linear-gradient(#c7cfd9, #7f8a9a);
+  }
+  .claw { position: absolute; left: 0; top: 50%; width: clamp(48px, 8.4cqmin, 76px); translate: -80% -50%; }
+  .claw .jaw { transform-box: fill-box; transition: rotate .18s; }
+  .claw .jaw.top { transform-origin: 100% 100%; }
+  .claw .jaw.bottom { transform-origin: 100% 0; }
+  .arm.grip .jaw.top { rotate: 14deg; }
+  .arm.grip .jaw.bottom { rotate: -14deg; }
+  /* For the checkbox the arm comes in from the left, so the rod never lies across its label. */
+  .arm.from-left { right: auto; left: 0; }
+  .arm.from-left .rod { border-radius: 0 999px 999px 0; }
+  .arm.from-left .claw { left: auto; right: 0; translate: 80% -50%; scale: -1 1; }
+
+  .lang-ko .title > font-kku { color: var(--ink); }
+  .lang-ko .check-label { padding-top: 1.8cqi; }
+  .check-label > font-kku, .welcome .big > font-kku { color: inherit; }
+
+  /* (the title keeps clear of that nav) */
+  @media (max-width: 600px) { html:not(.embedded) .intro { max-width: calc(100% - 84px); } }
+
+  @media (prefers-reduced-motion: reduce) { .box.on .tick { transition: none; } }
+</style>
+</head>
+<body>
+<div class="scene">
+  <header class="intro">
+    <h1 class="title">
+      <span data-lang="en">Prove you are a robot.</span>
+      <span data-lang="ko"><font-kku font="pixel" size="clamp(22px, 6.2cqmin, 54px)">로봇임을 증명하세요</font-kku></span>
+    </h1>
+    <p class="sub">
+      <span data-lang="en">A security check for the other side.</span>
+      <span data-lang="ko">자동입력 방지 말고, 수동입력 방지입니다.</span>
+    </p>
+  </header>
+
+  <div class="stand">
+    <section class="widget" aria-live="polite">
+      <div class="check">
+        <span class="box" role="checkbox" aria-checked="false" tabindex="0">
+          <svg viewBox="0 0 40 40" aria-hidden="true"><path class="tick" d="M9 21 L17 29 L32 11"/></svg>
+        </span>
+        <span class="check-label">
+          <span data-lang="en">I’m a robot</span>
+          <span data-lang="ko"><font-kku font="dunggeun" size="5.2cqi">로봇입니다</font-kku></span>
+        </span>
+        <svg class="gear" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10.3 2h3.4l.5 2.6a7.6 7.6 0 0 1 1.9 1.1l2.5-.9 1.7 2.9-2 1.7a7.6 7.6 0 0 1 0 2.2l2 1.7-1.7 2.9-2.5-.9a7.6 7.6 0 0 1-1.9 1.1l-.5 2.6h-3.4l-.5-2.6a7.6 7.6 0 0 1-1.9-1.1l-2.5.9-1.7-2.9 2-1.7a7.6 7.6 0 0 1 0-2.2l-2-1.7 1.7-2.9 2.5.9a7.6 7.6 0 0 1 1.9-1.1zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+      </div>
+
+      <div class="head">
+        <p class="head-small"></p>
+        <p class="head-q"></p>
+      </div>
+
+      <div class="body">
+        <div class="panel on" data-panel="primes"><div class="grid"></div></div>
+        <div class="panel" data-panel="hash">
+          <div class="hash">
+            <p class="hash-label"></p>
+            <p class="hash-field"></p>
+            <div class="timer"><span></span></div>
+          </div>
+        </div>
+        <div class="panel" data-panel="pixels">
+          <div class="pixels"><span class="pic"><canvas width="64" height="64"></canvas><i class="ring"></i></span><p class="answer">&nbsp;</p></div>
+        </div>
+        <div class="panel" data-panel="chart">
+          <div class="chart"><p>E</p><p>FP</p><p>TOZ</p><p>LPED</p><p class="tiny"></p></div>
+          <p class="lens"></p>
+        </div>
+        <div class="welcome">
+          <svg class="badge" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="44" fill="#c6f1e2"/>
+            <rect x="28" y="34" width="44" height="34" rx="8" fill="#0c9f7a"/>
+            <circle cx="41" cy="50" r="5" fill="#fff"/><circle cx="59" cy="50" r="5" fill="#fff"/>
+            <path d="M42 60 q8 5 16 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M50 34 V24" stroke="#0c9f7a" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="22" r="4" fill="#ff7a1a"/>
+          </svg>
+          <p class="big"></p>
+          <p class="small"></p>
+        </div>
+      </div>
+
+      <p class="status"></p>
+
+      <div class="foot">
+        <button class="icon reload" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M19 12a7 7 0 1 1-2.1-5M19 4v4h-4"/></svg></button>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M4 15v-3a8 8 0 0 1 16 0v3M4 15a2 2 0 0 0 2 2h1v-5H6a2 2 0 0 0-2 2zm16 0a2 2 0 0 1-2 2h-1v-5h1a2 2 0 0 1 2 2z"/></svg>
+        <span class="grow"></span>
+        <button class="btn skip" type="button"></button>
+        <button class="btn main verify" type="button"></button>
+      </div>
+    </section>
+    <p class="aside"></p>
+  </div>
+</div>
+
+<div class="fx" aria-hidden="true">
+<svg class="cursor" viewBox="0 0 24 30">
+  <path d="M2 2 L2 24 L8 18.5 L12 28 L16 26.3 L12.2 17 L20.5 17 Z" fill="#fff" stroke="#1d2433" stroke-width="2" stroke-linejoin="round"/>
+  <g class="costume"><g transform="scale(1.3)">
+    <path d="M17 8.5 C 16 5, 19 3.5, 18.5 0.5" fill="none" stroke="#5d6879" stroke-width="1.4" stroke-linecap="round"/>
+    <circle cx="18.6" cy="-0.6" r="2.4" fill="#ff7a1a" stroke="#b8500c" stroke-width=".8"/>
+    <path d="M0.5 8 L28.5 7 L29 33.5 L1 34.5 Z" fill="#c99a5e" stroke="#8a6232" stroke-width="1.3" stroke-linejoin="round"/>
+    <path d="M0.8 11 L28.6 10" stroke="#8a6232" stroke-width=".9" opacity=".6"/>
+    <circle cx="9.5" cy="18" r="3.6" fill="#fff" stroke="#1d2433" stroke-width="1.2"/><circle cx="10.2" cy="18.4" r="1.5" fill="#1d2433"/>
+    <circle cx="20" cy="17.6" r="3.6" fill="#fff" stroke="#1d2433" stroke-width="1.2"/><circle cx="20.6" cy="18" r="1.5" fill="#1d2433"/>
+    <rect x="8.5" y="25" width="13" height="4.6" rx="1" fill="#8a6232"/>
+    <path d="M11.6 25 V29.6 M14.8 25 V29.6 M18 25 V29.6" stroke="#c99a5e" stroke-width="1"/>
+  </g></g>
+</svg>
+<svg class="loose" viewBox="-1 -5 40 51"></svg>
+<div class="arm">
+  <div class="rod"></div>
+  <svg class="claw" viewBox="0 0 60 40">
+    <g class="jaw top"><path d="M60 18 H26 L8 6 L4 10 L20 20 Z" fill="#ff7a1a"/></g>
+    <g class="jaw bottom"><path d="M60 22 H26 L8 34 L4 30 L20 20 Z" fill="#e8590c"/></g>
+    <circle cx="44" cy="20" r="9" fill="#5b6575"/><circle cx="44" cy="20" r="4" fill="#ffd43b"/>
+  </svg>
+</div>
+</div>
+
+<script>
+(() => {
+  // Opened on its own on a phone, the tty.link nav goes top right, beside the title: at the
+  // bottom right it stood where the cardboard costume falls off the cursor (from Verify).
+  // Wider screens keep the kit's own choice of corner (a top-right nav would lie on the widget
+  // on a laptop's short stage). The kit reads this when it builds the nav, after this script.
+  if (!TTY.embedded && innerWidth <= 600) document.documentElement.setAttribute('data-tty-nav', 'top');
+  const ko = TTY.lang === 'ko';
+  const $ = (s) => document.querySelector(s);
+  const box = $('.box');
+  const headSmall = $('.head-small');
+  const headQ = $('.head-q');
+  const head = $('.head');
+  const grid = $('.grid');
+  const status = $('.status');
+  const hashLabel = $('.hash-label');
+  const hashField = $('.hash-field');
+  const timer = $('.timer span');
+  const canvas = $('.pixels canvas');
+  const answer = $('.answer');
+  const tiny = $('.chart .tiny');
+  const lens = $('.lens');
+  const welcome = $('.welcome');
+  const aside = $('.aside');
+  const cursor = $('.cursor');
+  const arm = $('.arm');
+  const skipBtn = $('.skip');
+  const reloadBtn = $('.reload');
+  const ring = $('.ring');
+  const verifyBtn = $('.verify');
+  const costume = $('.costume');
+  const loose = $('.loose');
+  const widget = $('.widget');
+
+  const HASH = '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'; // SHA-256 of "hello"
+  const NUMBERS = [91, 97, 51, 2, 57, 89, 1, 113, 87, 127, 119, 9, 221, 7, 133, 39];
+  const isPrime = (n) => { if (n < 2) return false; for (let d = 2; d * d <= n; d++) if (n % d === 0) return false; return true; };
+  const factor = (n) => { for (let d = 2; d * d <= n; d++) if (n % d === 0) return `${d} × ${n / d}`; return null; };
+  const thousands = (n) => n.toLocaleString('en-US');
+
+  // Korean particles after a number follow how it is read aloud: 일, 삼, 육, 칠, 팔, 십, 백
+  // end in a consonant (91은, 13이에요); 이, 사, 오, 구 do not (2는, 119는).
+  const josa = (n, withFinal, without) => (n % 10 === 0 || [1, 3, 6, 7, 8].includes(n % 10) ? withFinal : without);
+  const T = TTY.t({
+    en: {
+      step: (i) => `Check ${i} of 4`,
+      primes: 'Select all squares with a prime number.',
+      hash: 'Type the SHA-256 of “hello”. You have 2 seconds.',
+      hashLabel: 'SHA-256 (64 characters)',
+      unix: 'Type the current Unix time in milliseconds. You have 2 seconds.',
+      unixLabel: 'Unix time (ms)',
+      pixels: 'How many pixels are in this square?',
+      colour: 'What colour is the pixel at the centre of the circle? In hex, please.',
+      chart: 'Read the bottom line from 3 metres away.',
+      tinyText: 'you are doing great',
+      skip: 'Skip', verify: 'Verify',
+      fail91: '91 is 7 × 13. Everyone falls for 91.',
+      hashTyped: 'hell',
+      hashFail: 'Time’s up. You got as far as “hell”. Relatable.',
+      unixFail: 'Time’s up. It changed 2,000 times while you typed.',
+      counting: '1, 2, 3…',
+      lostCount: '1, 2… wait, where was I?',
+      humanGuess: 'a lot?',
+      pixelFail: '“A lot” is technically correct. It is 4,096.',
+      colourGuess: 'blue?',
+      colourFail: '“Blue” is fair. It is #4dabf7.',
+      squint: 'Squinting detected. Very human.',
+      boxFail: 'Hmm. Your cursor moved like a human.',
+      upsideDown: 'Also, the box is upside down.',
+      nextInLine: 'Next in line: an actual robot.',
+      assist: 'Robot assistance engaged.',
+      // A visitor who ticks the box themselves is judged by how they did it.
+      yours: {
+        mouse: 'Hmm. Your cursor moved like a human. Yes, yours.',
+        touch: 'Hmm. That finger felt warm. Very human.',
+        keys: 'No cursor movement at all. Suspiciously robotic. Sending a colleague.',
+      },
+      primesDone: '97, 2, 89, 113, 127 and 7. Done.',
+      hashDone: 'Typed 64 of 64. Done.',
+      unixDone: 'Correct to the millisecond. Done.',
+      pixelDone: '64 × 64 = 4,096. Done.',
+      colourDone: 'Read it off the pixel: #4dabf7. Done.',
+      chartDone: 'It says: you are doing great. Done.',
+      big: 'Verified: robot.',
+      small: 'Welcome, friend.',
+      passed: 'All 4 checks passed',
+      granted: 'Access granted. Beep boop, politely.',
+      aside: '(Humans welcome too. Bottom line: you are doing great.)',
+      hint: 'Try it yourself, or tick “I’m a robot”.',
+      mineGood: 'Suspiciously accurate. Are you a robot?',
+      mineGranted: 'We’ll take that as a yes. Beep boop.',
+      minePassed: '1 of 4 checks passed. Close enough.',
+      hashIdle: (up) => `${up ? 'Time’s up. ' : ''}0 of 64 characters. Honest, at least.`,
+      unixIdle: (n, up) => `${up ? 'Time’s up. ' : ''}It changed ${n} times while you thought about it.`,
+      pixelIdle: 'Still counting? It is 4,096.',
+      colourIdle: 'Lost for words? It is #4dabf7.',
+      reload: 'New challenge',
+      mineWrong: (n, f) => (f ? `${n} is ${f}. So close.` : `${n} is not prime. Easy to miss.`),
+      mineMissed: (n) => `You missed ${n}. It is prime and a little lonely.`,
+    },
+    ko: {
+      step: (i) => `확인 ${i} / 4`,
+      primes: '소수가 적힌 칸을 모두 고르세요.',
+      hash: '“hello”의 SHA-256 값을 입력하세요. 2초 드립니다.',
+      hashLabel: 'SHA-256 (64자)',
+      unix: '지금 유닉스 시간을 밀리초로 입력하세요. 2초 드립니다.',
+      unixLabel: '유닉스 시간(밀리초)',
+      pixels: '이 정사각형에 픽셀이 몇 개 있을까요?',
+      colour: '동그라미 한가운데 픽셀은 무슨 색일까요? 16진수로요.',
+      chart: '3미터 떨어져서 맨 아랫줄을 읽으세요.',
+      tinyText: '잘하고 있어요',
+      skip: '건너뛰기', verify: '확인',
+      fail91: '91은 7 × 13이에요. 다들 91에 한 번씩 낚여요.',
+      hashTyped: 'hell',
+      hashFail: '시간 종료. “hell”까지 쳤네요. 그 심정 알아요.',
+      unixFail: '시간 종료. 입력하는 동안 2,000번 바뀌었어요.',
+      counting: '1, 2, 3…',
+      lostCount: '1, 2… 어디까지 셌더라?',
+      humanGuess: '많이요?',
+      pixelFail: '“많이요”도 틀린 말은 아니에요. 4,096개예요.',
+      colourGuess: '파란색?',
+      colourFail: '“파란색”도 맞긴 해요. #4dabf7이에요.',
+      squint: '눈 찡그림 감지. 아주 사람다워요.',
+      boxFail: '음. 커서가 너무 사람처럼 움직였어요.',
+      upsideDown: '그리고 상자가 거꾸로예요.',
+      nextInLine: '다음 차례: 진짜 로봇.',
+      assist: '로봇 지원을 시작합니다.',
+      yours: {
+        mouse: '음. 커서가 너무 사람처럼 움직였어요. 네, 방금 그 커서요.',
+        touch: '음. 손가락이 따뜻하네요. 아주 사람다워요.',
+        keys: '커서가 하나도 안 움직였네요. 수상할 만큼 로봇 같아요. 동료를 보낼게요.',
+      },
+      primesDone: '97, 2, 89, 113, 127, 7. 끝.',
+      hashDone: '64자 중 64자. 끝.',
+      unixDone: '밀리초까지 정확. 끝.',
+      pixelDone: '64 × 64 = 4,096. 끝.',
+      colourDone: '픽셀에서 바로 읽었어요. #4dabf7. 끝.',
+      chartDone: '“잘하고 있어요”라고 적혀 있네요. 끝.',
+      big: '확인 완료: 로봇',
+      small: '어서 오세요, 친구.',
+      passed: '4개 모두 통과',
+      granted: '접근을 허가합니다. 삐빅(공손).',
+      aside: '(사람도 환영해요. 맨 아랫줄에 적힌 대로, 잘하고 있어요.)',
+      hint: '직접 풀어 보거나 “로봇입니다”를 눌러 보세요.',
+      mineGood: '수상할 만큼 정확해요. 혹시 로봇이세요?',
+      mineGranted: '그런 걸로 할게요. 삐빅.',
+      minePassed: '4개 중 1개 통과. 그 정도면 충분해요.',
+      hashIdle: (up) => `${up ? '시간 종료. ' : ''}64자 중 0자. 솔직해서 좋네요.`,
+      unixIdle: (n, up) => `${up ? '시간 종료. ' : ''}고민하는 동안 ${n}번 바뀌었어요.`,
+      pixelIdle: '아직 세는 중이죠? 4,096개예요.',
+      colourIdle: '말문이 막혔죠? #4dabf7이에요.',
+      reload: '새 문제',
+      mineWrong: (n, f) => (f ? `${n}${josa(n, '은', '는')} ${f}${josa(+f.split(' ').pop(), '이에요', '예요')}. 아깝다.` : `${n}${josa(n, '은', '는')} 소수가 아니에요. 헷갈릴 만해요.`),
+      mineMissed: (n) => `${n}${josa(n, '을', '를')} 놓쳤어요. 소수라서 원래 좀 외로워요.`,
+    },
+  });
+
+  /* ---- Building the widget ---- */
+  skipBtn.textContent = T.skip;
+  verifyBtn.textContent = T.verify;
+  hashLabel.textContent = T.hashLabel;
+  tiny.textContent = T.tinyText;
+  lens.textContent = T.tinyText;
+  const cells = NUMBERS.map((n) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cell';
+    b.textContent = n;
+    b.dataset.n = n;
+    grid.append(b);
+    return b;
+  });
+  const cellOf = (n) => cells[NUMBERS.indexOf(n)];
+  (() => {
+    const ctx = canvas.getContext('2d');
+    const palette = ['#74c0fc', '#a5d8ff', '#ffd43b', '#ffa94d', '#b2f2bb', '#eebefa', '#e9ecef', '#4dabf7'];
+    for (let y = 0; y < 64; y++) for (let x = 0; x < 64; x++) {
+      ctx.fillStyle = palette[(x * 7 + y * 13 + ((x * y) % 5)) % palette.length];
+      ctx.fillRect(x, y, 1, 1);
+    }
+  })();
+  // The costume that lies on the floor is a copy of the one on the cursor, drawn at the same scale.
+  loose.append(costume.firstElementChild.cloneNode(true));
+
+  // The status line holds the last verdict until the next one. Korean is drawn in font-kku,
+  // so the text shown is remembered here (the element's own text includes generated glyphs).
+  let shownStatus = '';
+  const words = (text) => {
+    if (!ko) return document.createTextNode(text);
+    const el = document.createElement('font-kku');
+    el.setAttribute('font', 'dunggeun');
+    el.setAttribute('size', '4.4cqi');
+    el.setAttribute('wrap-unit', 'word');
+    el.textContent = text;
+    return el;
+  };
+  function say(text, mood) {
+    status.className = 'status' + (mood ? ' ' + mood : '');
+    if (text === shownStatus) return;
+    shownStatus = text;
+    const line = document.createElement('span');
+    line.className = 'said';
+    if (text) line.append(words(text));
+    status.replaceChildren(line);
+    if (text && !TTY.reduce) line.animate([{ opacity: 0, transform: 'translateY(30%)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' });
+  }
+  // A second sentence after the verdict, in the same line of text.
+  function sayMore(text) {
+    const line = status.querySelector('.said');
+    if (!line || !shownStatus) return;
+    shownStatus += ' ' + text;
+    const more = document.createElement('span');
+    more.className = 'more';
+    if (ko) more.append(' ', words(text)); else more.textContent = ' ' + text;
+    line.append(more);
+    if (!TTY.reduce) more.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+  }
+  function shake(el) { if (!TTY.reduce) el.animate([{ transform: 'none' }, { transform: 'translateX(-2%)' }, { transform: 'translateX(2%)' }, { transform: 'translateX(-1%)' }, { transform: 'none' }], { duration: 380 }); }
+
+  const PANELS = ['primes', 'hash', 'pixels', 'chart'];
+  // Two of the panels ask one of two questions; each round picks afresh, so a second
+  // round (or the reload button) shows a different pair.
+  // The first round always asks the SHA-256 and the pixel count; later rounds pick at random.
+  const ask = { hash: 'hash', pixels: 'pixels' };
+  let rounds = 0;
+  function shuffleQuestions() {
+    if (rounds++ === 0) return;
+    ask.hash = Math.random() < .5 ? 'hash' : 'unix';
+    ask.pixels = Math.random() < .5 ? 'pixels' : 'colour';
+  }
+  const panelOn = () => PANELS.find((p) => document.querySelector(`.panel[data-panel="${p}"]`).classList.contains('on'));
+  function showPanel(name) {
+    document.querySelectorAll('.panel').forEach((p) => p.classList.toggle('on', p.dataset.panel === name));
+    const i = PANELS.indexOf(name);
+    headSmall.textContent = T.step(i + 1);
+    headQ.textContent = T[ask[name] || name];
+    hashLabel.textContent = ask.hash === 'unix' ? T.unixLabel : T.hashLabel;
+    ring.classList.toggle('on', ask.pixels === 'colour');
+    head.classList.remove('done');
+  }
+  let asideTurn = 0;
+  function reset() {
+    cells.forEach((c) => c.classList.remove('sel', 'good', 'wrong'));
+    stopClock();
+    hashField.textContent = '';
+    hashField.classList.remove('typing');
+    answer.innerHTML = '&nbsp;';
+    lens.getAnimations().forEach((a) => a.cancel());
+    lens.style.opacity = 0;
+    welcome.classList.remove('on');
+    $('.body').classList.remove('covered');
+    // Under the widget, while the checks run: you may try it, or tick the box.
+    asideTurn++;
+    aside.textContent = T.hint;
+    aside.classList.add('on');
+    box.classList.remove('on', 'spin');
+    box.setAttribute('aria-checked', 'false');
+    say('');
+    showPanel('primes');
+  }
+
+  /* ---- Moving the two visitors ---- */
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  let run = 0;
+  let cur = [innerWidth * .2, innerHeight * 1.1];
+  const centre = (el, dx = 0, dy = 0) => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2 + dx, r.top + r.height / 2 + dy]; };
+  // (position in `translate`, so the `scale` of a tap or a lean never scales the position too)
+  function placeCursor(x, y) { cur = [x, y]; cursor.style.translate = `${x}px ${y}px`; }
+  // To an element (or a point), by a slightly curved, slightly unsure path.
+  async function glide(to, ms = 650, wobble = 1) {
+    const jitter = () => (Math.random() - .3) * 8 * Math.min(1, wobble);
+    const [x, y] = Array.isArray(to) ? [to[0] + jitter(), to[1] + jitter()] : centre(to, jitter(), jitter());
+    const mid = [(cur[0] + x) / 2 + (Math.random() - .5) * 60 * wobble, (cur[1] + y) / 2 + (Math.random() - .5) * 40 * wobble];
+    cursor.animate([
+      { translate: `${cur[0]}px ${cur[1]}px` },
+      { translate: `${mid[0]}px ${mid[1]}px`, offset: .55 },
+      { translate: `${x}px ${y}px` },
+    ], { duration: ms, easing: 'ease-in-out', fill: 'forwards' });
+    cur = [x, y];
+    await wait(ms);
+  }
+  function tap(el) {
+    cursor.animate([{ scale: 1 }, { scale: .82 }, { scale: 1 }], { duration: 180 });
+    if (el) el.animate([{ filter: 'brightness(1)' }, { filter: 'brightness(.9)' }, { filter: 'brightness(1)' }], { duration: 180 });
+  }
+
+  // The disguise comes off: it slips, then drops to the floor under the widget and stays there.
+  // The cursor's own costume is hidden and a copy at the same place does the falling.
+  let looseAt = null;
+  function dropCostume() {
+    const s = parseFloat(getComputedStyle(cursor).width) / 24; // screen px per unit of the cursor's drawing
+    const w = 40 * s, h = 51 * s; // the copy's box (viewBox -1 -5 40 51)
+    const x0 = cur[0] - s, y0 = cur[1] - 5 * s;
+    // Lying on its side it is about h wide and w tall. It lands on the floor just below the line
+    // under the widget; on a short stage it may sink a little past the bottom edge rather than
+    // lie on that line.
+    const below = aside.getBoundingClientRect().bottom + 4 + w;
+    const floor = below <= innerHeight - 2 ? below : Math.min(below, innerHeight + .3 * w);
+    // It stays clear of the words of that line, to their right.
+    const hint = document.createRange();
+    hint.selectNodeContents(aside);
+    let cx = Math.max(h / 2 + 4, Math.min(innerWidth - h / 2 - 4, Math.max(cur[0] + 12 * s, hint.getBoundingClientRect().right + 6 + h / 2)));
+    // Opened on its own, the tty.link nav may sit in that corner: then it lies just left of it.
+    const nav = document.querySelector('.tty-nav');
+    const n = nav && nav.getBoundingClientRect();
+    if (n && n.width && cx + h / 2 > n.left - 6 && floor > n.top - 6 && floor - w < n.bottom + 6) cx = Math.max(h / 2 + 4, n.left - 8 - h / 2);
+    // (it turns about 50% 64% of its box, so the lying box's middle is that far off the box's)
+    const x1 = cx - w / 2 + .14 * h, y1 = floor - w / 2 - .64 * h;
+    looseAt = [cx, floor - w / 2];
+    costume.style.opacity = 0;
+    loose.getAnimations().forEach((a) => a.cancel());
+    loose.style.opacity = 1;
+    loose.animate([
+      { transform: `translate(${x0}px, ${y0}px)` },
+      { transform: `translate(${x0 - 3}px, ${y0 + 4}px) rotate(-14deg)`, offset: .22 },
+      { transform: `translate(${x1}px, ${y1}px) rotate(-90deg)`, offset: .85 },
+      { transform: `translate(${x1}px, ${y1}px) rotate(-84deg)` },
+    ], { duration: 1000, easing: 'cubic-bezier(.5, 0, .85, .5)', fill: 'forwards' });
+  }
+  // Picked up again and put on in a hurry: upside down, antenna hanging.
+  function wearUpsideDown() {
+    loose.getAnimations().forEach((a) => a.cancel());
+    loose.style.opacity = 0;
+    looseAt = null;
+    costume.style.transform = 'rotate(180deg)';
+    costume.style.opacity = 1;
+    if (!TTY.reduce) costume.animate([{ transform: 'rotate(150deg) scale(.7)', opacity: 0 }, { transform: 'rotate(180deg)', opacity: 1 }], { duration: 220, easing: 'ease-out' });
+  }
+  function dressCursor() {
+    costume.getAnimations().forEach((a) => a.cancel());
+    costume.style.transform = '';
+    costume.style.opacity = '';
+    loose.getAnimations().forEach((a) => a.cancel());
+    loose.style.opacity = 0;
+    looseAt = null;
+  }
+
+  let armAt = null;
+  let armSide = 'right';
+  const armWidth = (x, side) => Math.max(0, side === 'left' ? x : innerWidth - x);
+  // To an element's middle, or to a point [x, y] for the claw's tip. `live` says whether the run
+  // that sent the arm is still on: a visitor who takes over while it changes sides keeps it home.
+  async function reach(el, ms = 260, live = () => true) {
+    const [x, y] = Array.isArray(el) ? el : centre(el);
+    // The checkbox shares its row with the "I'm a robot" label; from the right the rod would
+    // cover the words, so that one is reached from the left. Everything else from the right.
+    const side = el === box ? 'left' : 'right';
+    if (armAt && side !== armSide) { retract(160); await wait(170); if (!live()) return; }
+    if (!armAt) { armSide = side; arm.classList.toggle('from-left', side === 'left'); }
+    const from = armAt || [side === 'left' ? -40 : innerWidth + 40, y];
+    arm.classList.add('out');
+    arm.animate([
+      { top: from[1] + 'px', width: armWidth(from[0], side) + 'px' },
+      { top: y + 'px', width: armWidth(x, side) + 'px' },
+    ], { duration: ms, easing: 'cubic-bezier(.3, .8, .3, 1)', fill: 'forwards' });
+    armAt = [x, y];
+    await wait(ms);
+  }
+  async function pinch() { arm.classList.add('grip'); await wait(90); arm.classList.remove('grip'); }
+  function retract(ms = 500) {
+    if (!armAt) return;
+    arm.animate([
+      { top: armAt[1] + 'px', width: armWidth(armAt[0], armSide) + 'px' },
+      { top: armAt[1] + 'px', width: '0px' },
+    ], { duration: ms, easing: 'ease-in', fill: 'forwards' });
+    armAt = null;
+    setTimeout(() => { if (!armAt) arm.classList.remove('out'); }, ms);
+  }
+
+  /* ---- The human tries ---- */
+  async function humanTries(mine) {
+    const live = () => run === mine;
+    if (!live()) return false;
+    showPanel('primes');
+    // 97 and 2 without a doubt; then 91, which looks prime. Almost leaves it, comes back, takes it.
+    for (const [n, ms] of [[97, 650], [2, 330]]) {
+      const c = cellOf(n);
+      await glide(c, ms); if (!live()) return false;
+      tap(c); c.classList.add('sel');
+      await wait(110); if (!live()) return false;
+    }
+    const c91 = cellOf(91);
+    await glide(c91, 380); if (!live()) return false;
+    const at = cur.slice();
+    await glide([at[0] + 20, at[1] + 14], 170, .1); if (!live()) return false;
+    await glide(at, 190, .1); if (!live()) return false;
+    await wait(60); if (!live()) return false;
+    tap(c91); c91.classList.add('sel');
+    await wait(140); if (!live()) return false;
+    await glide(verifyBtn, 450); if (!live()) return false;
+    tap(verifyBtn);
+    c91.classList.add('wrong');
+    say(T.fail91, 'bad'); shake(widget);
+    setTimeout(() => { if (live()) dropCostume(); }, 140);
+    await wait(1200); if (!live()) return false;
+
+    // The verdict stays up until the human starts on the next question.
+    showPanel('hash');
+    await glide(hashField, 500); if (!live()) return false;
+    tap(hashField); hashField.classList.add('typing');
+    const t0 = performance.now();
+    timer.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: 2000, fill: 'forwards' });
+    // A moment to wonder what a SHA-256 is, then the word itself, which runs out at "hell".
+    // The clock question gets the first digits of the real clock, which will not wait.
+    const typed = ask.hash === 'unix' ? String(Date.now()).slice(0, 4) : T.hashTyped;
+    await wait(560); if (!live()) return false;
+    say('');
+    for (const ch of typed) { await wait(240 + Math.random() * 80); if (!live()) return false; hashField.textContent += ch; }
+    // "Time's up" when the bar is empty, two seconds after the field was taken.
+    await wait(Math.max(0, 2000 - (performance.now() - t0))); if (!live()) return false;
+    hashField.classList.remove('typing');
+    say(ask.hash === 'unix' ? T.unixFail : T.hashFail, 'bad');
+    await wait(1250); if (!live()) return false;
+
+    showPanel('pixels');
+    if (ask.pixels === 'colour') {
+      await glide(ring, 550, 1.2); if (!live()) return false;
+      await glide(ring, 220, .25); if (!live()) return false;
+      say('');
+      await glide(ring, 200, .25); if (!live()) return false;
+    } else {
+      await glide(canvas, 450, 1.4); if (!live()) return false;
+      await glide(canvas, 330, .3); if (!live()) return false;
+      say(T.counting);
+      for (let i = 0; i < 2; i++) { await glide(canvas, 270, .3); if (!live()) return false; }
+      say(T.lostCount);
+      for (let i = 0; i < 2; i++) { await glide(canvas, 280, .3); if (!live()) return false; }
+    }
+    await glide(answer, 380); if (!live()) return false;
+    tap(answer); answer.textContent = ask.pixels === 'colour' ? T.colourGuess : T.humanGuess;
+    await wait(300); if (!live()) return false;
+    say(ask.pixels === 'colour' ? T.colourFail : T.pixelFail, 'bad');
+    await wait(1200); if (!live()) return false;
+
+    // The bottom line: up close, closer, nose to the screen, then back with a jolt.
+    showPanel('chart');
+    await glide(tiny, 500); if (!live()) return false;
+    if (!TTY.reduce) cursor.animate([{ scale: 1 }, { scale: 1.9 }], { duration: 450, easing: 'ease-in', fill: 'forwards' });
+    for (let i = 0; i < 3; i++) { await glide(tiny, 150, .2); if (!live()) return false; }
+    await wait(200); if (!live()) return false;
+    cursor.animate([{ scale: 1.9 }, { scale: .9, offset: .6 }, { scale: 1 }], { duration: 260, easing: 'ease-out', fill: 'forwards' });
+    say(T.squint, 'bad');
+    await wait(900); if (!live()) return false;
+
+    // Back into the costume, in a hurry, and on to the box.
+    if (looseAt) {
+      await glide(looseAt, 450); if (!live()) return false;
+      tap(); wearUpsideDown();
+      await wait(200); if (!live()) return false;
+    }
+    await glide(box, 500); if (!live()) return false;
+    tap(box); box.classList.add('spin'); say('');
+    await wait(600); if (!live()) return false;
+    box.classList.remove('spin');
+    say(T.boxFail, 'bad'); shake(box);
+    await wait(800); if (!live()) return false;
+    sayMore(T.upsideDown);
+    await wait(2200);
+    return live();
+  }
+
+  /* ---- The robot does it all ---- */
+  async function robotSolves(mine, opening) {
+    const live = () => run === mine;
+    stopClock();
+    if (TTY.reduce) {
+      // No arm with reduced motion: the checks are simply done.
+      if (opening) say(opening, 'ok');
+      cells.forEach((c) => { c.classList.remove('sel', 'wrong'); c.classList.toggle('good', isPrime(+c.dataset.n)); });
+      finish();
+      return;
+    }
+    // The human's cursor, if it is still on stage, leaves first, off to the left (straight down it
+    // would pass over the robot's first line). A visitor's own takeover has already hidden it:
+    // animating it from opacity 1 would bring it back at its old spot.
+    if (cursor.style.opacity !== '0') cursor.animate([{ translate: `${cur[0]}px ${cur[1]}px`, opacity: 1 }, { translate: `-90px ${cur[1] + 140}px`, opacity: 0 }], { duration: 600, fill: 'forwards', easing: 'ease-in' });
+    if (opening) say(opening, 'ok');
+    await wait(600); if (!live()) return;
+    await reach(box, 280, live); if (!live()) return;
+    await pinch(); if (!live()) return;
+    box.classList.remove('spin');
+    box.classList.add('on'); box.setAttribute('aria-checked', 'true');
+    await wait(100); if (!live()) return;
+
+    // It keeps the right picks it finds, takes back the wrong ones and adds the rest.
+    showPanel('primes');
+    for (const c of cells) {
+      const prime = isPrime(+c.dataset.n), picked = c.classList.contains('sel') || c.classList.contains('good');
+      if (prime === picked) { c.classList.remove('sel', 'wrong'); c.classList.toggle('good', prime); continue; }
+      await reach(c, 60, live); if (!live()) return;
+      await pinch(); if (!live()) return;
+      c.classList.remove('sel', 'wrong'); c.classList.toggle('good', prime);
+    }
+    say(T.primesDone, 'ok');
+    await wait(220); if (!live()) return;
+
+    showPanel('hash');
+    await reach(hashField, 150, live); if (!live()) return;
+    hashField.textContent = '';
+    timer.getAnimations().forEach((a) => a.cancel());
+    timer.style.transform = 'scaleX(1)';
+    const exact = ask.hash === 'unix' ? String(Date.now()) : HASH;
+    for (let i = 0; i < exact.length; i += 4) { hashField.textContent = exact.slice(0, i + 4); await wait(16); if (!live()) return; }
+    say(ask.hash === 'unix' ? T.unixDone : T.hashDone, 'ok');
+    await wait(220); if (!live()) return;
+
+    showPanel('pixels');
+    await reach(answer, 150, live); if (!live()) return;
+    await pinch(); if (!live()) return;
+    answer.textContent = ask.pixels === 'colour' ? '#4dabf7' : '4,096';
+    say(ask.pixels === 'colour' ? T.colourDone : T.pixelDone, 'ok');
+    await wait(220); if (!live()) return;
+
+    // The robot reads the line the human could not, holding the magnifier by its right edge
+    // (on the line itself the rod would lie across the words it reads).
+    showPanel('chart');
+    const held = lens.getBoundingClientRect();
+    const clawW = parseFloat(getComputedStyle(arm.querySelector('.claw')).width);
+    await reach([held.right + .7 * clawW - 3, held.top + held.height / 2], 150, live); if (!live()) return;
+    lens.animate([{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'none' }], { duration: 260, fill: 'forwards', easing: 'cubic-bezier(.2,.9,.3,1.2)' });
+    say(T.chartDone, 'ok');
+    await wait(1500); if (!live()) return;
+
+    // The arm is out of the way before the welcome lands.
+    retract(350);
+    await wait(250); if (!live()) return;
+    finish();
+  }
+
+  // The welcome, and a beat later the line under the widget turns to the humans.
+  function finish(granted = T.granted, passed = T.passed) {
+    head.classList.add('done');
+    headSmall.textContent = passed;
+    headQ.textContent = T.small;
+    box.classList.add('on'); box.setAttribute('aria-checked', 'true');
+    if (ko) {
+      const el = document.createElement('font-kku');
+      el.setAttribute('font', 'sticker');
+      el.setAttribute('size', '8.6cqi');
+      el.textContent = T.big;
+      $('.welcome .big').replaceChildren(el);
+    } else {
+      $('.welcome .big').textContent = T.big;
+    }
+    $('.welcome .small').textContent = granted;
+    welcome.classList.add('on');
+    if (!TTY.reduce) welcome.animate([{ opacity: 0, transform: 'scale(.94)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1.1)' });
+    say('');
+    const turn = ++asideTurn;
+    setTimeout(() => { if (turn === asideTurn) $('.body').classList.add('covered'); }, TTY.reduce ? 0 : 450);
+    const turnToHumans = () => {
+      if (turn !== asideTurn) return;
+      aside.textContent = T.aside;
+      aside.classList.add('on');
+    };
+    if (TTY.reduce) { turnToHumans(); return; }
+    aside.classList.remove('on');
+    setTimeout(turnToHumans, 800);
+  }
+
+  async function play() {
+    const mine = ++run;
+    mineMode = false;
+    byVisitor = false;
+    clearTimeout(idle);
+    while (run === mine) {
+      shuffleQuestions();
+      reset();
+      armAt = null;
+      arm.getAnimations().forEach((a) => a.cancel());
+      arm.classList.remove('out');
+      cursor.getAnimations().forEach((a) => a.cancel());
+      dressCursor();
+      cursor.style.opacity = 1;
+      placeCursor(innerWidth * .15, innerHeight + 30);
+      await wait(200); if (run !== mine) return;
+      if (!(await humanTries(mine))) return;
+      await robotSolves(mine, T.nextInLine);
+      await wait(4800);
+    }
+  }
+
+  /* ---- A visitor takes over ---- */
+  // A click stops the show and hands over the widget. Left alone for a while (and not yet let
+  // in), the visitor gets the robot's help, which keeps their right picks.
+  // byVisitor: this run is the visitor's (their own solve, the box they ticked, or the help that
+  // came when they stopped), so the welcome it ends in is theirs and stays until a new challenge.
+  let mineMode = false;
+  let byVisitor = false;
+  let letIn = -1; // the run in which the visitor's own primes were accepted
+  let idle = 0;
+  function takeOver() {
+    byVisitor = true;
+    if (mineMode) return;
+    mineMode = true;
+    run++;
+    cursor.getAnimations().forEach((a) => a.cancel());
+    cursor.style.opacity = 0;
+    dressCursor();
+    retract(200);
+    reset();
+  }
+  function stillThere() {
+    clearTimeout(idle);
+    if (TTY.reduce) return;
+    const mine = run;
+    idle = setTimeout(() => {
+      if (!mineMode || run !== mine || welcome.classList.contains('on')) return;
+      mineMode = false;
+      byVisitor = true;
+      TTY.hold(9000);
+      robotSolves(++run, T.assist);
+    }, 8000);
+  }
+
+  // The 2-second question, when a visitor skips to it: the bar runs out on its own.
+  let clock = null;
+  function stopClock() {
+    if (clock) clearTimeout(clock.timeout);
+    clock = null;
+    timer.getAnimations().forEach((a) => a.cancel());
+    timer.style.transform = 'scaleX(1)';
+  }
+  function startClock() {
+    stopClock();
+    timer.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: TTY.reduce ? 0 : 2000, fill: 'forwards' });
+    const mine = run;
+    clock = { t0: performance.now(), timeout: setTimeout(() => { if (run === mine && clock) timeUp(); }, TTY.reduce ? 0 : 2000) };
+  }
+  // On the 2-second question nothing was typed: honest, at least. The clock question counts
+  // how many times the clock changed while the visitor thought about it.
+  function timeUp() {
+    const ms = clock ? Math.min(2000, Math.round(performance.now() - clock.t0)) : 2000;
+    const up = ms >= 2000;
+    if (clock) { clearTimeout(clock.timeout); clock = null; }
+    timer.getAnimations().forEach((a) => a.finish());
+    timer.style.transform = 'scaleX(0)';
+    say(ask.hash === 'unix' ? T.unixIdle(thousands(ms), up) : T.hashIdle(up), 'bad');
+    shake(widget);
+  }
+
+  cells.forEach((c) => c.addEventListener('click', (e) => {
+    if (!e.isTrusted) return;
+    takeOver();
+    stillThere();
+    c.classList.remove('wrong', 'good');
+    c.classList.toggle('sel');
+  }));
+  verifyBtn.addEventListener('click', (e) => {
+    if (!e.isTrusted) return;
+    // Once the visitor is let in, the welcome stays until a new challenge.
+    if (byVisitor && welcome.classList.contains('on')) return;
+    // (a second Verify while that welcome is on its way changes nothing)
+    if (mineMode && letIn === run) return;
+    takeOver();
+    stillThere();
+    // Each check fails in its own way; only the primes can be solved by hand.
+    const on = panelOn();
+    if (on === 'hash') { timeUp(); return; }
+    if (on === 'pixels') { say(ask.pixels === 'colour' ? T.colourIdle : T.pixelIdle, 'bad'); shake(widget); return; }
+    if (on === 'chart') { say(T.squint, 'bad'); shake(widget); return; }
+    const picked = cells.filter((c) => c.classList.contains('sel'));
+    const wrong = picked.find((c) => !isPrime(+c.dataset.n));
+    const missed = cells.find((c) => isPrime(+c.dataset.n) && !c.classList.contains('sel'));
+    if (wrong) {
+      const n = +wrong.dataset.n;
+      wrong.classList.add('wrong');
+      say(n === 91 ? T.fail91 : T.mineWrong(n, factor(n)), 'bad'); shake(widget);
+      return;
+    }
+    if (missed) { say(T.mineMissed(+missed.dataset.n), 'bad'); shake(widget); return; }
+    picked.forEach((c) => { c.classList.remove('sel'); c.classList.add('good'); });
+    say(T.mineGood, 'ok');
+    letIn = run;
+    clearTimeout(idle);
+    // A human who gets every prime is let in as a robot (one check of four will do).
+    const mine = run;
+    setTimeout(() => {
+      if (run !== mine || !mineMode) return;
+      box.classList.add('on'); box.setAttribute('aria-checked', 'true');
+      setTimeout(() => { if (run === mine && mineMode) finish(T.mineGranted, T.minePassed); }, TTY.reduce ? 0 : 500);
+    }, TTY.reduce ? 0 : 1300);
+  });
+  // A new challenge, as on the real widgets: fresh questions and the whole scene again.
+  reloadBtn.setAttribute('aria-label', T.reload);
+  reloadBtn.title = T.reload;
+  reloadBtn.addEventListener('click', (e) => {
+    if (!e.isTrusted) return;
+    clearTimeout(idle);
+    mineMode = false;
+    retract(150);
+    if (TTY.reduce) { run++; byVisitor = false; shuffleQuestions(); reset(); return; }
+    play();
+  });
+  skipBtn.addEventListener('click', (e) => {
+    if (!e.isTrusted) return;
+    if (byVisitor && welcome.classList.contains('on')) return;
+    if (mineMode && letIn === run) return;
+    takeOver();
+    stillThere();
+    stopClock();
+    const next = PANELS[(PANELS.indexOf(panelOn()) + 1) % PANELS.length];
+    showPanel(next);
+    say('');
+    if (next === 'hash') startClock();
+  });
+  // Ticking "I'm a robot" yourself: the box thinks, judges how you did it, and the robot comes.
+  let pointerKind = '';
+  box.addEventListener('pointerdown', (e) => { pointerKind = e.pointerType; });
+  const robotTakesIt = async (e) => {
+    if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+    if (!e.isTrusted) return;
+    if (e.type === 'keydown') e.preventDefault();
+    // A visitor already let in stays let in (the box is ticked, the welcome is theirs).
+    if (byVisitor && welcome.classList.contains('on')) return;
+    // (and so is one whose primes were just accepted: the box ticks itself in a moment)
+    if (mineMode && letIn === run) return;
+    const how = e.type === 'keydown' || e.detail === 0 || !pointerKind ? 'keys' : pointerKind === 'touch' ? 'touch' : 'mouse';
+    pointerKind = '';
+    clearTimeout(idle);
+    takeOver();
+    mineMode = false;
+    const mine = ++run;
+    if (!TTY.reduce) { box.classList.add('spin'); await wait(800); if (run !== mine) return; box.classList.remove('spin'); }
+    say(T.yours[how], how === 'keys' ? 'ok' : 'bad'); shake(box);
+    await wait(3000); if (run !== mine) return;
+    byVisitor = true;
+    robotSolves(mine, how === 'keys' ? null : T.assist);
+  };
+  box.addEventListener('click', robotTakesIt);
+  box.addEventListener('keydown', robotTakesIt);
+
+  /* ---- Start ---- */
+  if (TTY.reduce) {
+    reset();
+    cells.forEach((c) => { if (isPrime(+c.dataset.n)) c.classList.add('good'); });
+    cursor.style.opacity = 0;
+    finish();
+  } else {
+    reset();
+    placeCursor(innerWidth * .15, innerHeight + 30);
+  }
+  TTY.onShow(() => { if (!TTY.reduce) play(); });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

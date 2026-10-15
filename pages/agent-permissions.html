@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Agent Would Like To… | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="sebul dunggeun pilgi"></script>
+<style>
+  /* A very polite agent asks before every little thing. The dialogs pile up until
+     someone clicks "Always allow" — and it turns out all it wanted was to be nice. */
+  :root {
+    --wall-1: #d3e0c8;
+    --wall-2: #b7cbab;
+    --sun: rgba(255, 236, 170, .55);
+    --ink: #22302a;
+    --soft: #5c6c63;
+    --card: #fffffb;
+    --line: #e2e6dd;
+    --accent: #1f6f63;
+    --agent: #ff6b4a;
+    --note: #fff1a8;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container-type: size;
+    position: relative;
+    /* (clip, not hidden: with size containment the body does not hand its overflow to the
+       viewport, and a hidden one is still a scroll box that a scrollIntoView can move; the
+       cursor waits below the stage at the start of each round) */
+    overflow: clip;
+    background:
+      radial-gradient(38cqmax 38cqmax at 72% 30%, var(--sun), transparent 70%),
+      linear-gradient(160deg, var(--wall-1), var(--wall-2));
+    color: var(--ink);
+    font-family: 'Instrument Sans', 'IBM Plex Sans KR', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', 'Instrument Sans', sans-serif; word-break: keep-all; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .bar {
+    position: absolute;
+    inset: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1.6cqmin;
+    height: clamp(26px, 4.4cqmin, 36px);
+    padding: 0 2.4cqmin;
+    background: rgba(255, 255, 255, .55);
+    backdrop-filter: blur(6px);
+    font-size: clamp(11px, 1.8cqmin, 14px);
+    font-weight: 600;
+  }
+  .bar .dot { width: 1.4em; height: 1.4em; border-radius: 50%; background: var(--ink); }
+  .bar .grow { flex: 1; }
+  .bar .count { padding: .15em .7em; border-radius: 999px; background: var(--agent); color: #fff; font-variant-numeric: tabular-nums; }
+  .bar .count:empty { display: none; }
+
+  .headline { position: absolute; left: 4cqw; top: calc(clamp(26px, 4.4cqmin, 36px) + 3cqmin); max-width: 60cqw; }
+  .headline h1 { font-size: clamp(20px, 5.4cqmin, 46px); font-weight: 700; line-height: 1.05; letter-spacing: -.02em; }
+  .headline p { margin-top: .8cqmin; font-size: clamp(12px, 2cqmin, 16px); color: var(--soft); }
+  /* the one-line hint: the dialogs are real buttons */
+  .headline p.hint { margin-top: .4em; font-size: clamp(11px, 1.7cqmin, 14px); font-style: italic; opacity: .85; }
+  .lang-ko .headline p.hint { font-style: normal; }
+  .headline h1 > font-kku { color: var(--ink); }
+
+  /* ---- Desktop things ---- */
+  /* (the icons' boxes are wider than their pictures; at the edge of a phone they must not widen the page) */
+  .desk { position: absolute; inset: 0; overflow: clip; }
+  .icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    /* One column exactly as wide as the icon: a longer label is centred on it and overflows both
+       sides evenly (an auto column grew to the label's width and pushed it, and the picture, right
+       of where place() puts the icon). */
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: .6cqmin;
+    width: clamp(54px, 11cqmin, 96px);
+    translate: -50% -50%;
+    transition: left .9s cubic-bezier(.3, 1.3, .5, 1), top .9s cubic-bezier(.3, 1.3, .5, 1);
+  }
+  .icon svg { width: clamp(30px, 6.6cqmin, 58px); height: clamp(30px, 6.6cqmin, 58px); filter: drop-shadow(0 2px 2px rgba(0,0,0,.15)); }
+  /* Labels never go below 11px and wrap within the spacing of the smile, so neighbours
+     never touch: 8% of the width apart on wide stages (the cap is 7.8%), about 14% on tall ones. */
+  .icon span {
+    justify-self: center;
+    width: max-content;
+    max-width: 7.8cqw;
+    min-width: min-content;
+    padding: .1em .4em;
+    border-radius: 4px;
+    font-size: clamp(11px, 1.55cqmin, 12.5px);
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: normal;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,.45);
+  }
+  .icon.lit span { background: var(--accent); text-shadow: none; }
+  .icon span { transition: opacity .3s; }
+  /* (on a short stage the finale's smile is drawn without labels: see arrange()) */
+  .icon.bare span { position: absolute; top: 100%; opacity: 0; }
+
+  .plant { position: absolute; left: 3cqw; bottom: 3cqh; width: clamp(56px, 12cqmin, 110px); }
+  .plant .stem { transform-box: fill-box; transform-origin: 50% 100%; }
+  .plant .bloom { transform-box: fill-box; transform-origin: center; scale: 0; }
+  .can { position: absolute; left: calc(3cqw + clamp(40px, 9cqmin, 84px)); bottom: calc(3cqh + clamp(70px, 15cqmin, 136px)); width: clamp(44px, 9cqmin, 80px); opacity: 0; transform-origin: 30% 70%; }
+  .drop { position: absolute; width: .9cqmin; height: 1.4cqmin; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #5fa8ff; opacity: 0; }
+
+  .mug { position: absolute; right: calc(4cqw + clamp(70px, 14cqmin, 120px)); bottom: 4cqh; width: clamp(34px, 7cqmin, 60px); opacity: 0; }
+  /* (on a wider stage it stands clear of what the agent says at the end, 'Trying not to blink…') */
+  @media (min-width: 600px) { .mug { right: calc(4cqw + clamp(70px, 21cqmin, 180px)); } }
+  .mug .steam path { fill: none; stroke: rgba(255,255,255,.9); stroke-width: 3; stroke-linecap: round; }
+
+  /* (above the note, so what it says and asks at the end is never under it; the dialogs stay on top) */
+  .agent { position: absolute; z-index: 2; right: 4cqw; bottom: 3.6cqh; display: grid; justify-items: center; gap: .8cqmin; }
+  .agent svg { width: clamp(44px, 9cqmin, 80px); height: clamp(44px, 9cqmin, 80px); }
+  .agent .say {
+    padding: .35em .8em;
+    border-radius: 999px;
+    background: #fff;
+    font-size: clamp(10px, 1.7cqmin, 13.5px);
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+  }
+  .agent .eye { transform-box: fill-box; transform-origin: center; transition: scale .15s; }
+  .agent { transition: translate 1.2s cubic-bezier(.4, 0, .3, 1), scale 1.2s cubic-bezier(.4, 0, .3, 1); }
+  /* "Always allow" has just been clicked: for a moment, anything could happen. */
+  .agent.squint .eye { scale: 1.15 .38; }
+  /* Told not to blink, it holds on until its eye waters. */
+  .agent .tear { transform-box: fill-box; opacity: 0; }
+  /* Before anything else it asks to blink: a tiny prompt over its head (its own face, blinking,
+     a question mark, deny and allow), and it holds its eyes wide open until allowed. Its two
+     answers are real buttons; they take clicks only while the prompt is up. */
+  .beg {
+    position: absolute;
+    right: 50%;
+    bottom: calc(100% + .9cqmin);
+    display: flex;
+    align-items: center;
+    gap: .35em;
+    padding: .35em .4em .35em .55em;
+    border-radius: .8em .8em .25em .8em;
+    background: var(--card);
+    box-shadow: 0 6px 18px rgba(18, 40, 30, .25);
+    font-size: clamp(14px, 2.8cqmin, 24px);
+    opacity: 0;
+    scale: .6;
+    transform-origin: 100% 100%;
+    transition: opacity .18s, scale .22s cubic-bezier(.2, .9, .3, 1.3);
+    pointer-events: none;
+  }
+  .beg.on { opacity: 1; scale: 1; }
+  .beg svg { display: block; width: 3.6em; height: 1.8em; }
+  .beg button { display: grid; place-items: center; width: 1.7em; height: 1.7em; padding: 0; border: 0; border-radius: .5em; background: #eef1ea; cursor: pointer; }
+  .beg button.yes { background: var(--accent); }
+  .beg button svg { width: .9em; height: .9em; }
+  .beg.on button { pointer-events: auto; }
+  /* the face in the prompt shows what it wants to do: blink */
+  .beg .wink { transform-box: fill-box; transform-origin: center; animation: wink .8s infinite; }
+  @keyframes wink { 0%, 55%, 85%, 100% { scale: 1 1; } 65%, 75% { scale: 1 .12; } }
+  .agent.holding .eye { animation: hold .09s steps(2, jump-none) infinite alternate; }
+  @keyframes hold { from { scale: 1.3 1.4; translate: -.5px 0; } to { scale: 1.3 1.4; translate: .5px 0; } }
+
+  .toast {
+    position: absolute;
+    right: 2.4cqw;
+    top: calc(clamp(26px, 4.4cqmin, 36px) + 2cqmin);
+    width: min(80cqw, 340px);
+    padding: 1.2em 1.3em;
+    border-radius: 14px;
+    background: rgba(255,255,255,.94);
+    box-shadow: 0 10px 30px rgba(20, 40, 30, .18);
+    font-size: clamp(11px, 1.9cqmin, 14.5px);
+    line-height: 1.4;
+    opacity: 0;
+    translate: 0 -12px;
+    pointer-events: none;
+  }
+  .toast b { display: block; margin-bottom: .2em; font-size: max(10.5px, .9em); color: var(--soft); }
+
+  .note {
+    position: absolute;
+    left: 50%;
+    top: 79%;
+    width: clamp(150px, 28cqmin, 250px);
+    padding: 1.1em 1.1em 1.5em;
+    background: var(--note);
+    color: #3a3418;
+    font-size: clamp(14px, 2.7cqmin, 22px);
+    font-weight: 500;
+    line-height: 1.25;
+    box-shadow: 0 8px 18px rgba(0,0,0,.18);
+    rotate: -4deg;
+    translate: -50% -50%;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .note > font-kku { color: #3a3418; }
+
+  /* ---- Dialogs ---- */
+  .stack { position: absolute; z-index: 3; inset: 0; overflow: clip; pointer-events: none; }
+  .dialog {
+    position: absolute;
+    left: 50%;
+    top: 54%;
+    container-type: inline-size;
+    width: min(84cqw, 460px);
+    padding: clamp(16px, 3.4cqmin, 26px) clamp(16px, 3.4cqmin, 26px) clamp(14px, 2.8cqmin, 22px);
+    border-radius: 16px;
+    background: var(--card);
+    box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 20px 50px rgba(18, 40, 30, .28);
+    translate: calc(-50% + var(--dx, 0px)) calc(-50% + var(--dy, 0px));
+    rotate: var(--r, 0deg);
+    pointer-events: auto;
+  }
+  .dialog.gone { pointer-events: none; }
+  .dialog .top { display: flex; gap: 3.6cqi; align-items: flex-start; }
+  .dialog .who { flex: none; width: 11cqi; height: 11cqi; }
+  .dialog .q { font-size: 5.2cqi; font-weight: 700; line-height: 1.25; }
+  .lang-ko .dialog .q { font-weight: 600; }
+  .dialog .q > font-kku { color: var(--ink); }
+  /* (the reason and the scope carry the jokes: never smaller than 11px, and darker than the soft grey) */
+  .dialog .why { margin-top: 1.6cqi; font-size: max(11px, 4.1cqi); color: #4b5b52; line-height: 1.4; }
+  .dialog code { font-family: inherit; padding: 0 .3em; border-radius: 4px; background: #eef1ea; }
+  /* The call it would make, and its scope, as permission prompts show them. */
+  .dialog .tool { display: grid; gap: .6cqi; margin: 3.6cqi 0 0 14.6cqi; padding: 2.2cqi 3cqi; border-radius: 8px; background: #f2f4ee; box-shadow: inset 0 0 0 1px var(--line); }
+  .dialog .tool code { padding: 0; background: none; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: max(10.5px, 3.3cqi); line-height: 1.35; color: #31443b; overflow-wrap: anywhere; }
+  .dialog .tool span { font-size: max(11px, 3.4cqi); color: #4b5b52; }
+  .dialog .acts { display: flex; flex-wrap: wrap; gap: 2cqi; justify-content: flex-end; margin-top: 4cqi; }
+  .dialog button {
+    padding: 2.4cqi 4cqi;
+    border: 0;
+    border-radius: 10px;
+    background: #eef1ea;
+    font-size: 3.9cqi;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dialog button.always { background: var(--accent); color: #fff; }
+  .dialog button.deny { background: transparent; color: var(--soft); }
+  .dialog button:hover { filter: brightness(.95); }
+
+  .cursor { position: absolute; left: 0; top: 0; z-index: 20; width: clamp(18px, 3.2cqmin, 28px); pointer-events: none; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
+
+  /* On a phone, and on any portrait stage (the home's 648×732, where the card covered the
+     title), the message to Mom is a one-line banner over the status bar, like a real
+     notification, so it never covers the title. */
+  @media (max-aspect-ratio: 9/10) { .icon span { max-width: 13.5cqw; } }
+  /* On a short stage there is room for wider labels but not for three-line ones. */
+  @media (max-height: 560px) { .icon span { max-width: min(18cqw, 80px); } }
+  @media (max-width: 700px), (max-aspect-ratio: 1/1) {
+    .toast { top: 3px; left: 6px; right: 6px; width: auto; padding: .5em .8em; border-radius: 12px; font-size: clamp(11px, 1.9cqmin, 14px); line-height: 1.3; }
+    .toast b { display: inline; margin: 0 .6em 0 0; }
+  }
+
+  /* Opened on its own, _kit.js puts its small nav in the bottom-right corner; the agent and the
+     mug stand a little higher there so it covers neither the agent nor what it says. */
+  html:not(.embedded) .agent { bottom: calc(3.6cqh + 46px); }
+  html:not(.embedded) .mug { bottom: calc(4cqh + 46px); }
+  /* (on a phone the nav is a small button, so the mug just steps left, clear of the note above it) */
+  @media (max-width: 600px) { html:not(.embedded) .mug { bottom: 4cqh; right: calc(4cqw + 100px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .icon, .agent, .agent .eye { transition: none; }
+    /* (held eyes stay wide without trembling; the face in the prompt shows its eyes shut) */
+    .agent.holding .eye { animation: none; scale: 1.3 1.4; }
+    .beg .wink { animation: none; scale: 1 .12; }
+  }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="dot"></span>
+  <span data-lang="en">Agent</span><span data-lang="ko">에이전트</span>
+  <span class="grow"></span>
+  <span class="count"></span>
+  <span class="clock">10:24</span>
+</div>
+
+<header class="headline">
+  <h1>
+    <span data-lang="en">Your agent would like to…</span>
+    <span data-lang="ko"><font-kku font="sebul" size="clamp(22px, 5.6cqmin, 48px)">에이전트가 묻습니다</font-kku></span>
+  </h1>
+  <p>
+    <span data-lang="en">It just wants to help. Carefully. Very carefully.</span>
+    <span data-lang="ko">도와드리고 싶을 뿐이에요. 조심스럽게요. 아주 조심스럽게.</span>
+  </p>
+  <p class="hint">
+    <span data-lang="en">Answer them yourself if you like.</span>
+    <span data-lang="ko">직접 답해 봐도 돼요.</span>
+  </p>
+</header>
+
+<div class="desk" aria-hidden="true"></div>
+
+<svg class="plant" viewBox="0 0 100 130" aria-hidden="true">
+  <g class="stem">
+    <path d="M50 96 C 48 70, 52 52, 50 30" stroke="#2f7d4f" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M50 70 C 36 64, 28 54, 26 44 C 38 46, 46 54, 50 66 Z" fill="#46a36c"/>
+    <path d="M50 58 C 62 50, 72 44, 76 34 C 64 34, 54 42, 50 54 Z" fill="#3c9460"/>
+    <g class="bloom"><circle cx="50" cy="28" r="9" fill="#ff8fab"/><circle cx="50" cy="28" r="4" fill="#ffd43b"/></g>
+  </g>
+  <path d="M26 92 H74 L68 128 H32 Z" fill="#c8693f"/><rect x="22" y="88" width="56" height="10" rx="3" fill="#a5532f"/>
+</svg>
+<svg class="can" viewBox="0 0 80 60" aria-hidden="true">
+  <path d="M18 22 H52 V50 a4 4 0 0 1 -4 4 H22 a4 4 0 0 1 -4 -4 Z" fill="#7aa7c7"/>
+  <path d="M52 30 L74 16 L76 20 L54 36 Z" fill="#5f8fb2"/>
+  <path d="M22 22 C 24 8, 46 8, 48 22" stroke="#5f8fb2" stroke-width="4" fill="none"/>
+</svg>
+<svg class="mug" viewBox="0 0 60 70" aria-hidden="true">
+  <g class="steam"><path d="M22 18 c -4 -6, 4 -8, 0 -14"/><path d="M32 18 c -4 -6, 4 -8, 0 -14"/></g>
+  <path d="M10 24 H44 V58 a6 6 0 0 1 -6 6 H16 a6 6 0 0 1 -6 -6 Z" fill="#fff"/>
+  <path d="M44 32 h4 a8 8 0 0 1 0 16 h-4" stroke="#fff" stroke-width="5" fill="none"/>
+  <rect x="10" y="24" width="34" height="8" fill="#6b4226"/>
+</svg>
+
+<div class="agent">
+  <span class="beg" role="group" inert>
+    <svg viewBox="0 0 72 36" aria-hidden="true"><rect x="1" y="2" width="36" height="32" rx="12" fill="#ff6b4a"/><ellipse class="wink" cx="13" cy="17" rx="4" ry="6" fill="#fff"/><ellipse class="wink" cx="25" cy="17" rx="4" ry="6" fill="#fff"/><path d="M46 12 q0 -7 7.5 -7 q7.5 0 7.5 6.5 q0 4.5 -6 7 v4" stroke="#22302a" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="55" cy="30" r="2.6" fill="#22302a"/></svg>
+    <button type="button" class="no"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 2 L8 8 M8 2 L2 8" stroke="#5c6c63" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    <button type="button" class="yes"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.6 5.4 L4 7.8 L8.6 2.4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </span>
+  <svg class="me" viewBox="0 0 80 80" aria-hidden="true">
+    <rect x="8" y="12" width="64" height="58" rx="22" fill="#ff6b4a"/>
+    <ellipse class="eye" cx="30" cy="40" rx="5" ry="7" fill="#fff"/><ellipse class="eye" cx="50" cy="40" rx="5" ry="7" fill="#fff"/>
+    <path class="tear" d="M26 48 C 22 54, 22 58.5, 26 58.5 C 30 58.5, 30 54, 26 48 Z" fill="#8fd0ff"/>
+    <path class="mouth" d="M32 54 q8 5 16 0" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  </svg>
+  <span class="say" aria-hidden="true"></span>
+</div>
+
+<div class="toast" role="status"><b></b><span></span></div>
+<p class="note"></p>
+<div class="stack"></div>
+<svg class="cursor" viewBox="0 0 24 30" aria-hidden="true"><path d="M2 2 L2 24 L8 18.5 L12 28 L16 26.3 L12.2 17 L20.5 17 Z" fill="#fff" stroke="#22302a" stroke-width="2" stroke-linejoin="round"/></svg>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const $ = (s) => document.querySelector(s);
+  const desk = $('.desk');
+  const stack = $('.stack');
+  const count = $('.count');
+  const say = $('.agent .say');
+  const toast = $('.toast');
+  const note = $('.note');
+  const cursor = $('.cursor');
+  const plantStem = $('.plant .stem');
+  const bloom = $('.plant .bloom');
+  const can = $('.can');
+  const mug = $('.mug');
+  const agent = $('.agent');
+  const me = $('.agent .me');
+  const eyes = [...me.querySelectorAll('.eye')];
+  const tear = me.querySelector('.tear');
+  const beg = $('.beg');
+
+  // Each ask reads like a real permission prompt: the question, why, the tool call it would
+  // make and its scope. The calls are plain function calls, not any one product's format.
+  // `act` is what it does once allowed, by the autoplay or by hand (see grant()).
+  const now = new Date();
+  const hhmm = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const sigan = now.getMinutes() ? `${now.getHours()}시 ${now.getMinutes()}분이에요` : `${now.getHours()}시예요`;
+  const T = TTY.t({
+    en: {
+      deny: 'Deny', once: 'Allow once', always: 'Always allow', scope: 'Scope', allow: 'Allow', blinkAsk: 'Allow the agent to blink?',
+      asks: [
+        { q: 'Allow the agent to read <code>README.md</code>?', why: 'It wants to understand you better.', tool: 'read_file("README.md")', scope: 'this project', act: 'read' },
+        { q: 'Allow the agent to install what <code>package.json</code> asks for?', why: "It's a big one. 1,204 packages.", tool: 'shell("npm install")', scope: 'node_modules (all of it)', act: 'pkg' },
+        { q: 'Allow the agent to rename <code>temp2_final_REAL</code>?', why: 'Suggested name: final_FINAL_v2.', rename: 'final_FINAL_v2', tool: 'rename("temp2_final_REAL", "final_FINAL_v2")', scope: '~/Desktop', act: 'rename' },
+        { q: 'Allow the agent to make you a coffee?', why: "You've been staring at that bug for 40 minutes.", tool: 'brew_coffee(strength="strong")', scope: 'the office kitchen', act: 'brew' },
+        { q: 'Allow the agent to tell your mom you are eating well?', why: 'She asked. Twice.', tool: 'send_message(to="Mom", text="I am eating well.")', scope: 'family group chat', act: 'mom' },
+      ],
+      // Asked one by one when someone answers "Allow once" by hand; in the autoplay they are the
+      // bottom of the heap, gone by before anyone can read them.
+      more: [
+        { q: 'Allow the agent to read <code>.env</code>?', why: 'It will not look at the secrets. Promise.', tool: 'read_file(".env")', scope: 'secrets (eyes closed)', act: 'env' },
+        { q: 'Allow the agent to close 47 of your 50 browser tabs?', why: 'It bookmarked them first. All 47.', tool: 'close_tabs(keep=3)', scope: '50 tabs', act: 'tabs' },
+        { q: 'Allow the agent to remind you to stretch?', why: 'Your shoulders are up by your ears.', tool: 'remind("stretch", when="now")', scope: 'your shoulders', act: 'stretch' },
+        { q: 'Allow the agent to hold your notifications for 25 minutes?', why: 'Except Mom.', tool: 'do_not_disturb(minutes=25, except=["Mom"])', scope: 'everything but Mom', act: 'dnd' },
+      ],
+      // The top of the heap. The last one lands square on top, so its call is the one you can
+      // read: a hint of the ending.
+      burst: [
+        { q: 'Allow the agent to water the plant?', why: 'It looks thirsty. So do you.', tool: 'water_plant(ml=150)', scope: 'one plant', act: 'water' },
+        { q: 'Allow the agent to say “good job” out loud?', why: 'It is true, though.', tool: 'speak("good job", volume="soft")', scope: 'out loud', act: 'good' },
+        { q: 'Allow the agent to leave you a note?', why: 'A short one.', tool: 'write_note(length="short")', scope: 'one sticky note', act: 'note' },
+        { q: 'Allow the agent to tidy the desktop?', why: 'It has an idea.', tool: 'arrange_icons(shape="smile")', scope: '~/Desktop', act: 'tidy' },
+      ],
+      // By hand, once README.md has been allowed: the same file again.
+      again: { q: 'Allow the agent to read <code>./README.md</code>?', why: 'Same file you allowed a minute ago. With ./ in front.', tool: 'read_file("./README.md")', scope: 'this project (again)', act: 'reread' },
+      night: { q: 'Allow the agent to send you to bed?', why: `It's ${hhmm}. The bug will still be here tomorrow.`, tool: 'suggest("sleep")', scope: 'tonight', act: 'night' },
+      // Each "Deny" gets a smaller ask; the third time it goes and sits by the plant.
+      denied: [
+        { q: 'Allow the agent to ask again later?', why: 'Okay. It will wait right here.', tool: 'ask_again(after="5m")', scope: 'right here', act: 'wait' },
+        { q: 'Allow the agent to just sit here quietly?', why: 'It will not touch anything.', tool: 'sit(quietly=true)', scope: 'this corner', act: 'quiet' },
+        { q: 'Allow the agent to keep the plant company?', why: 'It is already there.', tool: 'keep_company("plant")', scope: 'one plant', act: 'plant' },
+      ],
+      status: {
+        idle: 'Thinking…', blink: 'Trying not to blink…', blinked: 'Thank you!', eyesOpen: 'Okay. No blinking.', ask: 'Asking…',
+        read: 'Reading README.md…', pkg: 'Installing 1,204 packages…', rename: 'Renaming…', brew: 'Brewing…', mom: 'Writing to Mom…',
+        env: 'Reading with eyes closed…', tabs: 'Closing 47 tabs…', stretch: 'Shoulders down.', dnd: 'Holding everything but Mom…',
+        water: 'Watering the plant…', note: 'Writing a short one…', tidy: 'Tidying up…',
+        night: 'Good night.', reread: 'Reading ./README.md…', wait: 'Waiting politely…', quiet: 'Sitting quietly.', plant: 'Sitting with the plant.',
+        squint: 'Now then…', good: 'Good job.', done: 'All done :)',
+      },
+      momTitle: 'Message sent to Mom',
+      momBody: '“I am eating well. Promise.”',
+      note: 'Thanks for trusting me. I only used it for nice things.',
+      requests: (n) => `${n} ${n === 1 ? 'request' : 'requests'}`,
+    },
+    ko: {
+      deny: '거부', once: '이번만 허용', always: '항상 허용', scope: '범위', allow: '허용', blinkAsk: '눈을 깜빡여도 될까요?',
+      asks: [
+        { q: '<code>README.md</code>를 읽어도 될까요?', why: '어떤 분인지 더 알고 싶어요.', tool: 'read_file("README.md")', scope: '이 프로젝트', act: 'read' },
+        { q: '<code>package.json</code>에 적힌 패키지를 설치해도 될까요?', why: '좀 무거워요. 패키지가 1,204개예요.', tool: 'shell("npm install")', scope: 'node_modules 전체', act: 'pkg' },
+        { q: '<code>temp2_final_REAL</code>의 이름을 바꿔도 될까요?', why: '추천 이름: 진짜_최종_마지막', rename: '진짜_최종_마지막', tool: 'rename("temp2_final_REAL", "진짜_최종_마지막")', scope: '~/바탕화면', act: 'rename' },
+        { q: '커피 한 잔 타 드려도 될까요?', why: '그 버그를 40분째 보고 계세요.', tool: 'brew_coffee(strength="진하게")', scope: '탕비실', act: 'brew' },
+        { q: '어머니께 밥 잘 먹고 있다고 전해 드려도 될까요?', why: '“밥은 먹고 다니니?” 오늘만 두 번째예요.', tool: 'send_message(to="엄마", text="밥 잘 먹고 다녀요")', scope: '가족 단톡방', act: 'mom' },
+      ],
+      more: [
+        { q: '<code>.env</code>를 읽어도 될까요?', why: '비밀값은 안 볼게요. 진짜로요.', tool: 'read_file(".env")', scope: '비밀값 (눈 감고)', act: 'env' },
+        { q: '브라우저 탭 50개 중 47개를 닫아도 될까요?', why: '먼저 다 북마크해 뒀어요. 47개 전부.', tool: 'close_tabs(keep=3)', scope: '탭 50개', act: 'tabs' },
+        { q: '스트레칭하라고 말씀드려도 될까요?', why: '목이 점점 화면 쪽으로 나오고 있어요.', tool: 'remind("stretch", when="now")', scope: '거북목', act: 'stretch' },
+        { q: '25분만 알림을 꺼 둬도 될까요?', why: '엄마 빼고요.', tool: 'do_not_disturb(minutes=25, except=["엄마"])', scope: '엄마 빼고 전부', act: 'dnd' },
+      ],
+      burst: [
+        { q: '화분에 물을 줘도 될까요?', why: '흙이 바싹 말랐어요. 입술도요.', tool: 'water_plant(ml=150)', scope: '화분 1개', act: 'water' },
+        { q: '“잘했어요”라고 소리 내서 말해도 될까요?', why: '사실이니까요.', tool: 'speak("잘했어요", volume="soft")', scope: '육성으로', act: 'good' },
+        { q: '쪽지를 남겨도 될까요?', why: '짧게요.', tool: 'write_note(length="short")', scope: '쪽지 1장', act: 'note' },
+        { q: '바탕화면을 정리해도 될까요?', why: '좋은 생각이 있어요.', tool: 'arrange_icons(shape="smile")', scope: '~/바탕화면', act: 'tidy' },
+      ],
+      again: { q: '<code>./README.md</code>를 읽어도 될까요?', why: '아까 그 파일이에요. 앞에 ./만 붙었어요.', tool: 'read_file("./README.md")', scope: '이 프로젝트 (또)', act: 'reread' },
+      night: { q: '이제 그만 주무시라고 해도 될까요?', why: `지금 ${sigan}. 버그는 내일도 있어요.`, tool: 'suggest("sleep")', scope: '오늘 밤', act: 'night' },
+      denied: [
+        { q: '나중에 다시 물어봐도 될까요?', why: '알겠어요. 여기서 얌전히 기다릴게요.', tool: 'ask_again(after="5m")', scope: '바로 여기', act: 'wait' },
+        { q: '그냥 조용히 앉아 있어도 될까요?', why: '아무것도 안 만질게요.', tool: 'sit(quietly=true)', scope: '이 구석', act: 'quiet' },
+        { q: '화분 곁에 있어 줘도 될까요?', why: '이미 와 있어요.', tool: 'keep_company("plant")', scope: '화분 1개', act: 'plant' },
+      ],
+      status: {
+        idle: '생각 중…', blink: '눈 깜빡임 참는 중…', blinked: '감사합니다!', eyesOpen: '알겠어요. 안 깜빡일게요.', ask: '물어보는 중…',
+        read: 'README.md 읽는 중…', pkg: '패키지 1,204개 설치하는 중…', rename: '이름 바꾸는 중…', brew: '커피 내리는 중…', mom: '엄마한테 쓰는 중…',
+        env: '눈 감고 읽는 중…', tabs: '탭 47개 닫는 중…', stretch: '턱 당기세요.', dnd: '엄마 빼고 다 막는 중…',
+        water: '화분에 물 주는 중…', note: '짧게 쓰는 중…', tidy: '정리하는 중…',
+        night: '안녕히 주무세요.', reread: './README.md 읽는 중…', wait: '얌전히 기다리는 중…', quiet: '조용히 앉아 있어요.', plant: '화분 옆에 앉아 있어요.',
+        squint: '그럼 이제…', good: '잘했어요.', done: '다 했어요 :)',
+      },
+      momTitle: '엄마에게 보냄',
+      momBody: '“밥 잘 먹고 다녀요. 진짜로요.”',
+      note: '믿어 줘서 고마워요. 좋은 일에만 썼어요.',
+      requests: (n) => `요청 ${n}건`,
+    },
+  });
+  // The menu bar shows the visitor's own time.
+  const clock = document.querySelector('.clock');
+  const tickClock = () => { const d = new Date(); clock.textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  tickClock(); setInterval(tickClock, 20000);
+
+  /* ---- Desktop icons: a mess at first, a smile at the end ---- */
+  const ICONS = [
+    { name: 'README.md', kind: 'doc', at: [9, 34], smile: [40, 27] },
+    { name: 'package.json', kind: 'box', at: [21, 30], smile: [60, 27] },
+    { name: 'temp2_final_REAL', kind: 'folder', at: [13, 52], smile: [29, 46], id: 'temp' },
+    { name: TTY.t({ en: 'photo_0001.png', ko: '사진_0001.png' }), kind: 'image', at: [86, 24], smile: [37, 56] },
+    { name: TTY.t({ en: 'New Folder (7)', ko: '새 폴더 (7)' }), kind: 'folder', at: [91, 42], smile: [46, 61] },
+    { name: TTY.t({ en: 'budget.xlsx', ko: '예산.xlsx' }), kind: 'sheet', at: [79, 54], smile: [54, 61] },
+    { name: TTY.t({ en: 'todo.txt', ko: '할일.txt' }), kind: 'doc', at: [28, 63], smile: [63, 56] },
+    { name: TTY.t({ en: 'screenshot.png', ko: '스크린샷.png' }), kind: 'image', at: [90, 66], smile: [71, 46] },
+  ];
+  const SHAPES = {
+    doc: '<path d="M14 6 H38 L50 18 V58 H14 Z" fill="#fff"/><path d="M38 6 V18 H50" fill="#dfe6ee"/><path d="M20 28 H44 M20 36 H44 M20 44 H36" stroke="#9aa8b6" stroke-width="3"/>',
+    box: '<path d="M32 6 L56 18 V46 L32 58 L8 46 V18 Z" fill="#f2c27b"/><path d="M8 18 L32 30 L56 18 M32 30 V58" stroke="#c9944a" stroke-width="3" fill="none"/>',
+    folder: '<path d="M6 14 H26 L32 20 H58 V54 H6 Z" fill="#7cb8f2"/><path d="M6 24 H58 V54 H6 Z" fill="#9fcbf6"/>',
+    image: '<rect x="8" y="10" width="48" height="44" rx="4" fill="#fff"/><path d="M12 48 L26 30 L36 42 L42 34 L52 48 Z" fill="#7cc48f"/><circle cx="42" cy="22" r="5" fill="#ffd43b"/>',
+    sheet: '<rect x="12" y="6" width="40" height="52" rx="3" fill="#fff"/><path d="M12 20 H52 M12 32 H52 M12 44 H52 M26 6 V58 M40 6 V58" stroke="#5fb37f" stroke-width="2.4"/>',
+  };
+  // Long file names wrap after a dot or underscore rather than mid-word (every time a name is
+  // set: the renamed folder too, or its label stays one long line).
+  const setName = (icon, name) => { icon.el.querySelector('span').textContent = name.replace(/([._])/g, '$1\u200b'); };
+  const icons = ICONS.map((d) => {
+    const el = document.createElement('div');
+    el.className = 'icon';
+    el.innerHTML = `<svg viewBox="0 0 64 64">${SHAPES[d.kind]}</svg><span></span>`;
+    desk.append(el);
+    const icon = Object.assign(d, { el });
+    setName(icon, d.name);
+    return icon;
+  });
+  const temp = icons.find((i) => i.id === 'temp');
+
+  // Where the icons go. The designed spots (% of the screen; the smile drawn wider on tall
+  // screens) are kept wherever they leave the icons apart, which on a roomy stage is always.
+  // On a short one (a phone's 358×396) they are fitted into the band between the headline and
+  // the plant and agent (in the finale, the note), and pushed apart until no two touch; the
+  // smile there drops its labels, which is what kept it from fitting.
+  const headline = $('.headline');
+  const plantEl = $('.plant');
+  let arranged = 'at';
+  function arrange(kind, stagger = 0) {
+    arranged = kind;
+    const W = innerWidth, H = innerHeight, pad = 6, gap = 4;
+    const smile = kind === 'smile';
+    const spots = icons.map((icon) => {
+      let [x, y] = smile ? icon.smile : icon.at;
+      if (smile && W < H * .9) { x = 50 + (x - 50) * 1.75; y = 29 + (y - 30) * .95; }
+      return [x / 100 * W, y / 100 * H];
+    });
+    const top = headline.getBoundingClientRect().bottom + gap;
+    const floor = (smile ? note.getBoundingClientRect().top : Math.min(plantEl.getBoundingClientRect().top, agent.offsetTop)) - gap;
+    // An icon is two boxes: its picture on top, its label (wider or narrower) under it.
+    const size = () => icons.map((icon) => {
+      const span = icon.el.querySelector('span'), svg = icon.el.querySelector('svg');
+      const bare = icon.el.classList.contains('bare');
+      const h = bare ? svg.offsetHeight || svg.getBoundingClientRect().height : icon.el.offsetHeight;
+      const sw = svg.getBoundingClientRect().width, sh = svg.getBoundingClientRect().height;
+      const parts = [[sw, -h / 2, -h / 2 + sh]];
+      if (!bare) parts.push([span.offsetWidth, h / 2 - span.offsetHeight, h / 2]);
+      return { w: Math.max(sw, bare ? 0 : span.offsetWidth), h, parts };
+    });
+    let box = size();
+    const inside = () => spots.forEach((p, i) => {
+      p[0] = Math.min(Math.max(p[0], box[i].w / 2 + pad), W - box[i].w / 2 - pad);
+      p[1] = Math.min(Math.max(p[1], top + box[i].h / 2), Math.max(top + box[i].h / 2, floor - box[i].h / 2));
+    });
+    // How far two icons would have to move apart, across and up/down, to stop touching (0 if apart).
+    const clash = (i, j) => {
+      let ox = 0, oy = 0;
+      const p = spots[i], q = spots[j];
+      box[i].parts.forEach(([wa, ta, ba]) => box[j].parts.forEach(([wb, tb, bb]) => {
+        const x = (wa + wb) / 2 + gap - Math.abs(p[0] - q[0]);
+        const y = Math.min(p[1] + ba, q[1] + bb) - Math.max(p[1] + ta, q[1] + tb) + gap;
+        if (x > 0 && y > 0) { ox = Math.max(ox, x); oy = Math.max(oy, y); }
+      }));
+      return [ox, oy];
+    };
+    const touching = () => spots.some((p, i) => spots.some((q, j) => j > i && clash(i, j)[0] > 0));
+    const outside = () => spots.some((p, i) => p[1] - box[i].h / 2 < top || p[1] + box[i].h / 2 > floor);
+    icons.forEach((icon) => icon.el.classList.remove('bare'));
+    box = size();
+    const design = spots.map((p) => [...p]);
+    // Fit the spread of the spots into the band (shrinking only), the smile across the width,
+    // then push apart whatever still touches, a little at a time, staying in the band: along
+    // the shorter overlap, unless the band has no room for that (then sideways).
+    const solve = () => {
+      spots.forEach((p, i) => { p[0] = design[i][0]; p[1] = design[i][1]; });
+      const fit = (axis, lo, hi) => {
+        const v = spots.map((p) => p[axis]);
+        const min = Math.min(...v), max = Math.max(...v);
+        const k = max > min ? Math.min(1, (hi - lo) / (max - min)) : 1;
+        const shift = Math.min(Math.max(lo, (lo + hi) / 2 - (max - min) * k / 2), hi - (max - min) * k);
+        spots.forEach((p) => { p[axis] = shift + (p[axis] - min) * k; });
+      };
+      const hMax = Math.max(...box.map((b) => b.h)), wMax = Math.max(...box.map((b) => b.w));
+      fit(1, top + hMax / 2, floor - hMax / 2);
+      if (smile) {
+        const v = spots.map((p) => Math.abs(p[0] - W / 2));
+        const k = (W / 2 - wMax / 2 - pad) / Math.max(...v);
+        if (k > 1) spots.forEach((p) => { p[0] = W / 2 + (p[0] - W / 2) * k; });
+      }
+      const fits = (y, h) => y - h / 2 >= top - .5 && y + h / 2 <= floor + .5;
+      for (let n = 0; n < 160 && touching(); n++) {
+        spots.forEach((p, i) => spots.forEach((q, j) => {
+          if (j <= i) return;
+          const [ox, oy] = clash(i, j);
+          if (!ox) return;
+          const dy = (p[1] < q[1] || (p[1] === q[1] && i < j) ? -1 : 1) * oy / 2;
+          const upDown = oy <= ox && fits(p[1] + dy, box[i].h) && fits(q[1] - dy, box[j].h);
+          if (upDown) { p[1] += dy; q[1] -= dy; }
+          else { const d = (p[0] < q[0] || (p[0] === q[0] && i < j) ? -1 : 1) * Math.min(ox, oy * 3) / 2; p[0] += d; q[0] -= d; }
+        }));
+        inside();
+      }
+      return !touching() && !outside();
+    };
+    // (the smile tries with its labels first, and drops them only if they cannot fit)
+    if ((outside() || touching()) && !solve() && smile) {
+      icons.forEach((icon) => icon.el.classList.add('bare'));
+      box = size();
+      solve();
+    }
+    inside();
+    icons.forEach((icon, i) => {
+      const go = () => { icon.el.style.left = spots[i][0] / W * 100 + '%'; icon.el.style.top = spots[i][1] / H * 100 + '%'; };
+      if (stagger && !TTY.reduce) setTimeout(go, i * stagger); else go();
+    });
+  }
+
+  /* ---- Small pieces of motion ---- */
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const anim = (el, frames, opts) => (TTY.reduce ? null : el.animate(frames, opts));
+  function status(text) { say.textContent = text; }
+  function blink() { eyes.forEach((e) => anim(e, [{ scale: '1 1' }, { scale: '1 .1' }, { scale: '1 1' }], { duration: 220 })); }
+  function hop() { anim(me, [{ transform: 'none' }, { transform: 'translateY(-18%) rotate(-6deg)' }, { transform: 'none' }], { duration: 480, easing: 'cubic-bezier(.3,1.4,.5,1)' }); }
+  const flash = (el) => anim(el, [{ filter: 'brightness(1)' }, { filter: 'brightness(1.5)' }, { filter: 'brightness(1)' }], { duration: 160 });
+  // The opening beat is a close-up: the agent stands in the middle of the desk, bigger, under its
+  // little prompt, and goes back to its corner once it has blinked. (Its spot is worked out from
+  // its untransformed box, so a move still under way does not throw it off.)
+  function spotlight(on, instant = false) {
+    if (instant) agent.style.transition = 'none';
+    beg.style.translate = '';
+    if (!on) { agent.style.translate = ''; agent.style.scale = ''; }
+    else {
+      const svg = parseFloat(getComputedStyle(me).width);
+      const m = Math.min(innerWidth, innerHeight) / 100;
+      const k = Math.min(Math.max(72, 17 * m), 130) / svg;
+      const pw = beg.offsetWidth, ph = beg.offsetHeight, aw = agent.offsetWidth, ah = agent.offsetHeight;
+      const top = $('.headline').getBoundingClientRect().bottom;
+      const bottom = innerHeight - Math.max(8, innerHeight - agent.offsetTop - ah);
+      // centre the agent and its prompt (which opens to its left, above its head) on the desk
+      const cx = innerWidth / 2 + (pw * k) / 2 - (aw * k) / 4;
+      const cy = (top + bottom) / 2 + (ph * k) / 2;
+      agent.style.translate = `${cx - (agent.offsetLeft + aw / 2)}px ${cy - (agent.offsetTop + ah / 2)}px`;
+      agent.style.scale = k.toFixed(3);
+    }
+    if (instant) { void agent.offsetWidth; agent.style.transition = ''; }
+  }
+  let requests = 0;
+  let denies = 0;
+  function bump() { requests += 1; count.textContent = T.requests(requests); anim(count, [{ scale: 1.25 }, { scale: 1 }], { duration: 260 }); }
+
+  /* ---- The blink prompt ---- */
+  // It opens each round, and it comes back once everything has been allowed: "Always allow" or
+  // not, the agent still asks before it blinks. The autoplay waits on it (begWaits) until ✓ is
+  // clicked, by its own cursor or by a visitor. A visitor's ✕ stops the autoplay instead, so its
+  // cursor never clicks ✓ over that answer, and the agent holds its eyes open until they water.
+  let begWaits = null;
+  let begAt = 'start';
+  beg.setAttribute('aria-label', T.blinkAsk);
+  beg.querySelector('.no').setAttribute('aria-label', T.deny);
+  beg.querySelector('.yes').setAttribute('aria-label', T.allow);
+  function openBeg(at) {
+    begAt = at; begWaits = null;
+    agent.classList.add('holding'); status(T.status.blink);
+    beg.style.translate = '';
+    // Out of the close-up, the prompt stays on the stage (beside the plant it is near the left
+    // edge) and, at the end, off the note's words: it rises above them where they meet. (Worked
+    // out from the layout boxes: the prompt is still growing in when this runs.)
+    if (!agent.style.scale) {
+      const a = agent.getBoundingClientRect();
+      let left = a.left + beg.offsetLeft, dx = 0, dy = 0;
+      if (left < 6) { dx = 6 - left; left = 6; }
+      if (note.style.opacity === '1') {
+        const n = note.getBoundingClientRect(), pad = parseFloat(getComputedStyle(note).fontSize);
+        const bottom = a.top + beg.offsetTop + beg.offsetHeight;
+        if (left + beg.offsetWidth > n.left + pad && left < n.right - pad && bottom > n.top + pad - 4) dy = -Math.min(60, bottom - (n.top + pad) + 4);
+      }
+      if (dx || dy) beg.style.translate = `${dx}px ${dy}px`;
+    }
+    beg.classList.add('on'); beg.inert = false; bump();
+  }
+  const begAnswered = () => new Promise((r) => { begWaits = r; });
+  function shutBeg() {
+    beg.classList.remove('on'); beg.inert = true; begWaits = null;
+    agent.classList.remove('holding');
+    tear.getAnimations().forEach((a) => a.cancel()); tear.style.opacity = '';
+  }
+  // Allowed: the prompt goes, and it blinks three times in a row.
+  async function blinkNow() {
+    shutBeg(); status(T.status.blinked);
+    for (let k = 0; k < 3; k++) { blink(); await wait(TTY.reduce ? 0 : 200); }
+  }
+  function cry() {
+    tear.style.opacity = 1;
+    anim(tear, [{ opacity: 0, translate: '0 -3px' }, { opacity: 1, translate: '0 0', offset: .35 }, { opacity: 1, translate: '0 7px' }], { duration: 1600, delay: 600, easing: 'ease-in', fill: 'both' });
+  }
+
+  // Piled dialogs are scattered around the centre and tilted, but kept on the stage: the heap's
+  // spots, in steps of 6% of the stage's shorter side, and degrees.
+  const HEAP = [[-1.5, -1.2, -4], [1.4, -.9, 3], [-1.1, 1, 2.5], [1.3, 1.3, -3], [-.4, -1.6, 1.5], [.8, .5, -2], [-1.3, .3, -1]];
+  function dialog(ask, place = null) {
+    const d = document.createElement('section');
+    d.className = 'dialog';
+    d.setAttribute('role', 'dialog');
+    d.innerHTML = `
+      <div class="top">
+        <svg class="who" viewBox="0 0 80 80" aria-hidden="true"><rect x="8" y="12" width="64" height="58" rx="22" fill="#ff6b4a"/><ellipse cx="30" cy="40" rx="5" ry="7" fill="#fff"/><ellipse cx="50" cy="40" rx="5" ry="7" fill="#fff"/></svg>
+        <div><p class="q"></p><p class="why"></p></div>
+      </div>
+      <p class="tool"><code></code><span></span></p>
+      <div class="acts">
+        <button type="button" class="deny"></button>
+        <button type="button" class="once"></button>
+        <button type="button" class="always"></button>
+      </div>`;
+    d.querySelector('.q').innerHTML = ask.q;
+    d.querySelector('.why').textContent = ask.why;
+    d.querySelector('.tool code').textContent = ask.tool;
+    d.querySelector('.tool span').textContent = `${T.scope}: ${ask.scope}`;
+    d.querySelector('.deny').textContent = T.deny;
+    d.querySelector('.once').textContent = T.once;
+    d.querySelector('.always').textContent = T.always;
+    d.ask = ask;
+    stack.append(d);
+    if (place) {
+      const W = innerWidth, H = innerHeight, step = Math.min(W, H) * .06, c = H * .54;
+      const roomX = Math.max(0, (W - d.offsetWidth) / 2 - 12);
+      const roomY = Math.max(0, Math.min(c, H - c) - d.offsetHeight / 2 - 12);
+      const within = (v, room) => Math.max(-room, Math.min(room, v));
+      d.style.setProperty('--dx', `${within(place[0] * step, roomX)}px`);
+      d.style.setProperty('--dy', `${within(place[1] * step, roomY)}px`);
+      d.style.setProperty('--r', `${place[2]}deg`);
+    }
+    anim(d, [{ opacity: 0, scale: .9 }, { opacity: 1, scale: 1 }], { duration: 260, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
+    bump();
+    return d;
+  }
+  async function close(d, how = 'away') {
+    d.classList.add('gone');
+    const a = anim(d, how === 'away'
+      ? [{ opacity: 1, scale: 1 }, { opacity: 0, scale: .92 }]
+      : [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translate(${(Math.random() - .5) * 60}px, -120%) rotate(${(Math.random() - .5) * 20}deg)` }],
+    { duration: how === 'away' ? 200 : 520, easing: 'ease-in', fill: 'forwards' });
+    if (a) await a.finished.catch(() => {});
+    d.remove();
+  }
+
+  // What an allowed ask does, in the autoplay and by hand alike: a lit label, a new name, a status.
+  // (Coffee and Mom only start here: the mug and the "sent" notice come with the ending. So do the
+  // top of the heap's water, note and smile: allowed by hand, they only say they have started.)
+  const allowed = new Set();
+  function grant(ask) {
+    allowed.add(ask);
+    if (ask.act === 'read' || ask.act === 'reread') icons[0].el.classList.add('lit');
+    if (ask.act === 'pkg') icons[1].el.classList.add('lit');
+    if (ask.act === 'rename') { setName(temp, ask.rename); temp.el.classList.add('lit'); }
+    if (T.status[ask.act]) status(T.status[ask.act]);
+    return !!T.status[ask.act];
+  }
+
+  /* ---- Cursor ---- */
+  let cur = [innerWidth * .5, innerHeight + 30];
+  const centre = (el) => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+  async function glide(el, ms = 600) {
+    const [x, y] = centre(el);
+    cursor.animate([{ transform: `translate(${cur[0]}px, ${cur[1]}px)` }, { transform: `translate(${x}px, ${y}px)` }], { duration: ms, easing: 'cubic-bezier(.45,.05,.35,1)', fill: 'forwards' });
+    cur = [x, y];
+    await wait(ms);
+  }
+  function click() { cursor.animate([{ scale: 1 }, { scale: .8 }, { scale: 1 }], { duration: 170 }); }
+  // (a visitor got there first: the cursor stops where it is, mid-move)
+  function freezeCursor() {
+    const m = new DOMMatrixReadOnly(getComputedStyle(cursor).transform);
+    cursor.getAnimations().forEach((a) => a.cancel());
+    cur = [m.m41, m.m42];
+    cursor.style.transform = `translate(${cur[0]}px, ${cur[1]}px)`;
+  }
+
+  /* ---- The nice things ---- */
+  // (the same test as the stylesheet's: the notice to Mom is a one-line banner over the menu bar)
+  const banner = matchMedia('(max-width: 700px), (max-aspect-ratio: 1/1)');
+  async function niceThings(live = () => true) {
+    // (sitting with the plant, it stays there: that is what it was last allowed to do)
+    if (denies < T.denied.length) agent.style.translate = '';
+    // The note is written now (it shows later), so the smile knows where the note will be.
+    if (ko) {
+      const el = document.createElement('font-kku');
+      el.setAttribute('font', 'pilgi');
+      el.setAttribute('size', 'clamp(16px, 3cqmin, 25px)');
+      el.setAttribute('wrap-unit', 'word');
+      el.textContent = T.note;
+      note.replaceChildren(el);
+    } else {
+      note.textContent = T.note;
+    }
+    // (sitting by the plant, its last ask will open over there: the note moves over to clear it)
+    note.style.left = '';
+    if (denies >= T.denied.length) {
+      const begRight = Math.max(6, agent.getBoundingClientRect().left + beg.offsetLeft) + beg.offsetWidth;
+      const half = note.offsetWidth / 2;
+      note.style.left = `${Math.min(Math.max(innerWidth / 2, begRight + 10 + half), innerWidth - half - 8)}px`;
+    }
+    // "Always allow": for a moment, anything could happen.
+    agent.classList.add('squint'); status(T.status.squint);
+    await wait(TTY.reduce ? 0 : 650); if (!live()) return;
+    agent.classList.remove('squint');
+
+    // It says "good job" out loud (it was allowed to), and the desktop icons make a smile.
+    status(T.status.good); hop();
+    arrange('smile', 70);
+    await wait(TTY.reduce ? 0 : 500); if (!live()) return;
+
+    // Water the plant.
+    if (!TTY.reduce) {
+      can.animate([{ opacity: 0, transform: 'translateY(-20px)' }, { opacity: 1, transform: 'rotate(0deg)', offset: .3 }, { opacity: 1, transform: 'rotate(-28deg)', offset: .5 }, { opacity: 1, transform: 'rotate(-28deg)', offset: .85 }, { opacity: 0, transform: 'rotate(0deg)' }], { duration: 1500, easing: 'ease-in-out' });
+      const r = can.getBoundingClientRect();
+      for (let i = 0; i < 8; i++) {
+        const drop = document.createElement('i');
+        drop.className = 'drop';
+        drop.style.left = r.left + r.width * .05 + Math.random() * 10 + 'px';
+        drop.style.top = r.top + r.height * .45 + 'px';
+        document.body.append(drop);
+        drop.animate([{ opacity: 0, transform: 'none' }, { opacity: 1, offset: .2 }, { opacity: 0, transform: `translate(${-6 - Math.random() * 10}px, ${50 + Math.random() * 30}px)` }], { duration: 700, delay: 500 + i * 70, easing: 'ease-in' }).finished.then(() => drop.remove());
+      }
+      await wait(700); if (!live()) return;
+    }
+    anim(plantStem, [{ scale: '1 1' }, { scale: '1 1.18' }], { duration: 700, fill: 'forwards', easing: 'cubic-bezier(.3,1.4,.5,1)' });
+    if (TTY.reduce) plantStem.style.scale = '1 1.18';
+    bloom.style.scale = 1;
+    anim(bloom, [{ scale: 0 }, { scale: 1.2 }, { scale: 1 }], { duration: 600, delay: 300 });
+    await wait(TTY.reduce ? 0 : 450); if (!live()) return;
+
+    // The coffee it was brewing.
+    mug.style.opacity = 1;
+    anim(mug, [{ opacity: 0, transform: 'translateY(16px)' }, { opacity: 1, transform: 'none' }], { duration: 400 });
+    if (!TTY.reduce) mug.querySelectorAll('.steam path').forEach((p, i) => p.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1 }, { opacity: 0, transform: 'translateY(-8px)' }], { duration: 1600, delay: i * 400, iterations: Infinity }));
+    await wait(TTY.reduce ? 0 : 450); if (!live()) return;
+
+    // The message to Mom it was writing.
+    toast.querySelector('b').textContent = T.momTitle;
+    toast.querySelector('span').textContent = T.momBody;
+    toast.style.opacity = 1; toast.style.translate = '0 0';
+    anim(toast, [{ opacity: 0, translate: '0 -16px' }, { opacity: 1, translate: '0 0' }], { duration: 380, easing: 'cubic-bezier(.2,.9,.3,1.1)' });
+    await wait(TTY.reduce ? 0 : 500); if (!live()) return;
+
+    // A note, and that is everything.
+    note.style.opacity = 1;
+    anim(note, [{ opacity: 0, transform: 'scale(1.4) rotate(8deg)' }, { opacity: 1, transform: 'none' }], { duration: 480, easing: 'cubic-bezier(.2,.9,.3,1.1)' });
+    status(T.status.done); blink();
+    await wait(TTY.reduce ? 0 : 1500); if (!live()) return;
+
+    // Except one thing it never takes for granted.
+    openBeg('end');
+    // (Where the notice to Mom is a banner over the menu bar, it goes up a little later, as a real
+    // one would: long enough to read "Promise.", and the request count shows again with a bump.
+    // Not awaited, so the round is no longer for it. It goes up even if a visitor has just answered
+    // the prompt and stopped the autoplay; only a new round, which takes it down itself, cancels it.)
+    if (banner.matches && !TTY.reduce) wait(1600).then(() => {
+      if (toast.style.opacity !== '1') return;
+      anim(toast, [{ opacity: 1, translate: '0 0' }, { opacity: 0, translate: '0 -16px' }], { duration: 300, easing: 'ease-in' });
+      toast.style.opacity = 0; toast.style.translate = '0 -12px';
+      anim(count, [{ scale: 1.25 }, { scale: 1 }], { duration: 260 });
+    });
+  }
+
+  function resetScene(keepAsk = false) {
+    stack.replaceChildren();
+    setName(temp, temp.name);
+    icons.forEach((i) => i.el.classList.remove('lit'));
+    arrange('at');
+    requests = 0; count.textContent = '';
+    toast.style.opacity = 0; toast.style.translate = '0 -12px';
+    note.style.opacity = 0; note.style.left = ''; note.replaceChildren();
+    mug.style.opacity = 0; mug.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+    plantStem.getAnimations().forEach((a) => a.cancel()); plantStem.style.scale = '';
+    bloom.style.scale = 0;
+    agent.style.translate = ''; agent.style.scale = '';
+    agent.classList.remove('squint');
+    // (a new round keeps the prompt the last one ended on: it is the very same ask)
+    if (!keepAsk) shutBeg();
+    denies = 0; allowed.clear(); lastAsk = null;
+    status(keepAsk ? T.status.blink : T.status.idle);
+  }
+
+  /* ---- The autoplay: once, once, once… always ---- */
+  // Like the other pages, the autoplay comes back 12 s after the visitor's last answer
+  // (from the start: the desktop is tidied back into its mess).
+  let resume = 0;
+  const resumeLater = () => { clearTimeout(resume); if (!TTY.reduce) resume = setTimeout(play, 12000); };
+  // A visitor's answer: the autoplay stops here and its cursor goes.
+  function takeOver() {
+    run++; begWaits = null;
+    cursor.style.opacity = 0; cursor.getAnimations().forEach((a) => a.cancel());
+    resumeLater();
+  }
+  // How long each of the five asks stays before the cursor moves, how long the cursor takes, and
+  // the pause after: the first three faster and faster (nobody reads those), then the coffee and
+  // Mom, where the cursor wavers over Deny first.
+  const PACE = [[400, 450, 450], [300, 400, 300], [250, 300, 300], [1500, 300, 400], [800, 400, 400]];
+  let run = 0;
+  let played = false;
+  async function play() {
+    clearTimeout(resume);
+    const mine = ++run;
+    const live = () => run === mine;
+    let round = 0;
+    while (live()) {
+      resetScene(round > 0);
+      // (the first round starts with the agent already in the middle, as the page was drawn)
+      spotlight(true, round++ === 0 && !played);
+      played = true;
+      // The cursor starts below the screen. (Its last round left a fade-out holding it at
+      // opacity 0, and a visitor's click cancels its moves, which put it at the top left.)
+      cursor.getAnimations().forEach((a) => a.cancel());
+      cur = [innerWidth * .5, innerHeight + 30];
+      cursor.style.transform = `translate(${cur[0]}px, ${cur[1]}px)`;
+      cursor.style.opacity = 1;
+      await wait(250); if (!live()) return;
+      // First the smallest ask of all: may it blink? It holds its eyes wide open, trembling,
+      // while the cursor takes its time (over ✕ first), and only blinks once allowed.
+      openBeg('start');
+      const allowedToBlink = begAnswered();
+      (async () => {
+        const asking = () => live() && begWaits;
+        await wait(800); if (!asking()) return;
+        await glide(beg.querySelector('.no'), 700); if (!asking()) return;
+        await wait(250); if (!asking()) return;
+        await glide(beg.querySelector('.yes'), 260); if (!asking()) return;
+        click(); flash(beg.querySelector('.yes'));
+        await wait(150); if (!asking()) return;
+        const go = begWaits; begWaits = null; go();
+      })();
+      await allowedToBlink; if (!live()) return;
+      await blinkNow(); if (!live()) return;
+      spotlight(false);
+      await wait(320); if (!live()) return;
+      for (let i = 0; i < T.asks.length; i++) {
+        const [read, move, rest] = PACE[i];
+        status(T.status.ask); blink();
+        const d = dialog(T.asks[i]);
+        await wait(read); if (!live()) return;
+        if (i === 4) { await glide(d.querySelector('.deny'), 400); if (!live()) return; await wait(600); if (!live()) return; }
+        await glide(d.querySelector('.once'), move); if (!live()) return;
+        click(); await wait(160);
+        await close(d); if (!live()) return;
+        grant(T.asks[i]);
+        await wait(rest); if (!live()) return;
+      }
+      // Then they come faster than anyone can read: a heap of eight, the last one square on top.
+      status(T.status.ask);
+      const heap = [...T.more, ...T.burst];
+      const pile = [];
+      for (let i = 0; i < heap.length; i++) {
+        pile.push(dialog(heap[i], HEAP[i] || null));
+        await wait(80); if (!live()) return;
+      }
+      await wait(320); if (!live()) return;
+      const top = pile[pile.length - 1];
+      await glide(top.querySelector('.once'), 400); if (!live()) return;
+      await wait(500); if (!live()) return;
+      await glide(top.querySelector('.always'), 350); if (!live()) return;
+      click(); await wait(180); if (!live()) return;
+      cursor.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards', delay: 300 });
+      // (the agent's moment comes as the last of them fly off)
+      pile.reverse().forEach((d, i) => wait(i * 45).then(() => close(d, 'fly')));
+      await wait(450); if (!live()) return;
+      await niceThings(live); if (!live()) return;
+      // (the next round starts from this very ask, once the home page has moved on)
+      await wait(3600);
+    }
+  }
+
+  /* ---- A visitor answers ---- */
+  stack.addEventListener('click', async (e) => {
+    const b = e.target.closest('button');
+    const d = b && b.closest('.dialog');
+    if (!d || !e.isTrusted || d.classList.contains('gone')) return;
+    takeOver();
+    // (a later answer takes over from this one: an "Allow once" still waiting to ask its next thing
+    // must not bring a new dialog in over the ending that an "Always allow" has just started)
+    const mine = run, latest = () => run === mine;
+    shutBeg();
+    if (agent.style.scale) spotlight(false);
+    if (b.classList.contains('always')) {
+      const all = [...stack.querySelectorAll('.dialog:not(.gone)')];
+      await Promise.all(all.reverse().map((x, i) => wait(i * 45).then(() => close(x, 'fly'))));
+      if (latest()) niceThings();
+      return;
+    }
+    await close(d);
+    // "Allow once" does what it asked (always: it was the visitor's answer), takes a moment to show
+    // it, then the next ask comes.
+    if (b.classList.contains('once') && grant(d.ask)) {
+      await wait(TTY.reduce ? 0 : 900);
+      if (!latest() || stack.querySelector('.dialog') || beg.classList.contains('on')) return;
+    }
+    if (!latest() || stack.querySelector('.dialog')) return;
+    if (b.classList.contains('deny')) {
+      const ask = T.denied[Math.min(denies, T.denied.length - 1)];
+      denies += 1;
+      // Third time: it walks over to the plant, sits down, and asks if it may stay.
+      if (denies === T.denied.length) {
+        status(T.status.plant);
+        const p = $('.plant').getBoundingClientRect();
+        const a = agent.getBoundingClientRect();
+        agent.style.translate = `${p.right + 8 - a.left}px ${p.bottom - a.bottom}px`;
+        await wait(TTY.reduce ? 0 : 1300);
+        if (!latest() || stack.querySelector('.dialog')) return;
+        blink();
+      } else {
+        status(T.status.ask); blink();
+      }
+      dialog(ask);
+      return;
+    }
+    // Another ask: never one already allowed this round, nor the same one twice in a row. Late at
+    // night, bed first. Once README.md is allowed, it may ask for ./README.md (and, when nothing
+    // is left to ask, keeps asking for that).
+    const late = now.getHours() >= 23 || now.getHours() < 5;
+    let ask = late && !askedNight ? T.night : null;
+    askedNight = askedNight || !!ask;
+    if (!ask) {
+      const open = [...T.asks, ...T.more, ...(allowed.has(T.asks[0]) ? [T.again] : [])].filter((x) => !allowed.has(x) && x !== lastAsk);
+      ask = open.length ? open[Math.floor(Math.random() * open.length)] : T.again;
+    }
+    lastAsk = ask;
+    status(T.status.ask); blink();
+    dialog(ask);
+  });
+  beg.addEventListener('click', async (e) => {
+    const b = e.target.closest('button');
+    if (!b || !e.isTrusted || !beg.classList.contains('on')) return;
+    if (b.classList.contains('yes')) {
+      flash(b);
+      // (the autoplay was waiting for this very click: it carries on as if its own cursor had made it)
+      if (begWaits) { const go = begWaits; begWaits = null; freezeCursor(); go(); return; }
+      // Otherwise the visitor is in charge: it blinks, and at the start of a round asks its next thing.
+      takeOver();
+      const at = begAt, mine = run;
+      await blinkNow();
+      if (at !== 'start') return;
+      spotlight(false);
+      await wait(TTY.reduce ? 0 : 500);
+      if (run !== mine || stack.querySelector('.dialog') || beg.classList.contains('on')) return;
+      status(T.status.ask); blink();
+      dialog(T.asks[0]);
+      return;
+    }
+    // ✕: it will not blink, then.
+    takeOver();
+    anim(beg, [{ translate: '0 0' }, { translate: '-6px 0' }, { translate: '6px 0' }, { translate: '-3px 0' }, { translate: '0 0' }], { duration: 320 });
+    status(T.status.eyesOpen);
+    if (tear.style.opacity !== '1') cry();
+  });
+  let lastAsk = null;
+  let askedNight = false;
+
+  /* ---- Start ---- */
+  resetScene();
+  cursor.style.opacity = 0;
+  if (TTY.reduce) {
+    // The last scene: every ask allowed (the blink, five asks, a heap of eight), then the blink asked again.
+    T.asks.forEach(grant);
+    requests = 1 + T.asks.length + T.more.length + T.burst.length;
+    count.textContent = T.requests(requests);
+    niceThings();
+  } else {
+    spotlight(true, true);
+  }
+  TTY.onShow(() => { if (!TTY.reduce) play(); });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  // (labels and the headline take their real size once the fonts are in; a new size, a new fit)
+  Promise.all([loaded, document.fonts.ready]).then(() => { arrange(arranged); TTY.ready(); });
+  addEventListener('resize', () => { arrange(arranged); if (agent.style.scale) spotlight(true, true); });
+})();
+</script>
+</body>
+</html>

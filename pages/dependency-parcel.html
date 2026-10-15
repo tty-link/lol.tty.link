@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Track Your Dependencies | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Stardos+Stencil:wght@700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="dunggeun jasu gothic"></script>
+<style>
+  /* A parcel-tracking app for `npm install is-even`. One tiny parcel is ordered; a dump truck
+     backs up and tips five boxes onto the doorstep (is-even and the four packages it needs).
+     Then the box you actually ordered is opened: `return !isOdd(i);`. All of it is the real
+     dependency tree and the real source, checked on 2026-10-13. */
+  :root {
+    --page: #e7e2d9;
+    --app: #ffffff;
+    --soft: #f4f2ee;
+    --rule: #e6e2da;
+    --ink: #20242a;
+    --muted: #6d737b;
+    --courier: #e4543b;
+    --courier-dark: #b63e28;
+    --courier-tint: #fdece8;
+    --wall: #f1e5cf;
+    --trim: #e0cfae;
+    --door: #2f6b67;
+    --door-dark: #234f4c;
+    --walk: #d5d2ca;
+    --curb: #aeb0aa;
+    --road: #61676c;
+    --kraft: #cf9f5f;
+    --kraft-dark: #a9783c;
+    --kraft-deep: #7b5427;
+    --tape: rgba(246, 226, 178, .85);
+    --label: #fffdf6;
+    --code-blue: #2557d6;
+    --memo: #fff6c8;
+    --glow: #ffd23f;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background: var(--page);
+    color: var(--ink);
+    font-family: 'Inter', 'IBM Plex Sans KR', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', 'Inter', system-ui, sans-serif; word-break: keep-all; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid #f2b705; outline-offset: 2px; border-radius: 6px; }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; }
+
+  .layout {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: minmax(270px, 34%) minmax(0, 1fr);
+    gap: clamp(10px, 1.8vmin, 20px);
+    padding: clamp(10px, 2vmin, 22px);
+  }
+  /* Opened on its own, the kit puts two links at the bottom right; keep them off the page. */
+  html:not(.embedded) .layout { padding-bottom: 48px; }
+
+  /* ---------------- The tracking app ---------------- */
+  .app {
+    container: app / size;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 18px;
+    background: var(--app);
+    box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 14px 34px rgba(60, 45, 20, .16);
+  }
+  .appbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px 11px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .appbar h1 { font-size: 16px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; }
+  .appbar .back { font-size: 20px; line-height: 1; color: var(--muted); margin-top: -2px; }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+    color: var(--courier);
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: -.01em;
+    white-space: nowrap;
+  }
+  .logo svg { width: 18px; height: 18px; flex: none; }
+  /* In the narrowest app (the 328px phone stage, English) the courier's name gives way first,
+     so "Track again" is never cut off. */
+  .logo { min-width: 0; }
+  .logo > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .again {
+    flex: none;
+    padding: 5px 10px;
+    border: 1px solid var(--courier);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--courier);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .again:hover { background: var(--courier-tint); }
+  .again.reorder { background: var(--courier); color: #fff; }
+  .again.reorder:hover { background: var(--courier-dark); border-color: var(--courier-dark); }
+  .appbar .again { display: none; }
+  /* Wide screens: both buttons under the app. Narrow ones have one button in the app bar:
+     "Track again" until the show is over, then "Order again". */
+  .actions { display: flex; gap: 8px; margin-top: auto; }
+  .actions .again { flex: 1; padding: 9px 12px; border-radius: 10px; font-size: 13.5px; }
+  @container app (max-width: 330px) { .pdesc { display: none; } }
+
+  .appbody {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px 16px 14px;
+  }
+
+  .product {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    grid-template-areas: "thumb info qty" "thumb order order";
+    column-gap: 12px;
+    row-gap: 4px;
+    align-items: center;
+  }
+  .thumb { grid-area: thumb; }
+  .pinfo { grid-area: info; }
+  .qty { grid-area: qty; }
+  .order { grid-area: order; }
+  .thumb {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: var(--soft);
+  }
+  .thumb svg { width: 16px; height: 16px; translate: 0 4px; }
+  .pinfo { display: grid; gap: 2px; min-width: 0; }
+  .pname { font-size: 15.5px; font-weight: 700; }
+  .pdesc { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .order {
+    justify-self: start;
+    max-width: 100%;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: var(--soft);
+    font-size: 11.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .qty { display: grid; justify-items: end; gap: 5px; font-size: 12.5px; white-space: nowrap; }
+  .qty .q1 { color: var(--muted); }
+  .qty .q2 {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--courier);
+    color: #fff;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .qty .q2.on { opacity: 1; }
+
+  .waybill { display: flex; gap: 10px; align-items: baseline; padding: 9px 12px; border-radius: 10px; background: var(--soft); font-size: 12px; min-width: 0; }
+  .waybill > span { color: var(--muted); white-space: nowrap; }
+  .waybill code { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+  .status { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; row-gap: 2px; min-height: 30px; }
+  .st-live { font-size: 21px; font-weight: 800; letter-spacing: -.02em; }
+  .st-done { display: none; font-size: 21px; font-weight: 800; letter-spacing: -.02em; color: var(--courier); }
+  .st-done font-kku { color: var(--courier); }
+  .app.done .st-live { display: none; }
+  .app.done .st-done { display: inline-block; }
+  .st-sub { font-size: 13px; color: var(--muted); }
+  .app.done .st-sub { color: var(--ink); font-weight: 600; }
+
+  .steps { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0; list-style: none; }
+  .steps li { position: relative; display: grid; justify-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); text-align: center; line-height: 1.2; }
+  .steps li::before {
+    content: "";
+    position: relative;
+    z-index: 1;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: inset 0 0 0 2px #cfcac0;
+  }
+  .steps li::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: -50%;
+    width: 100%;
+    height: 2px;
+    background: #e2ddd3;
+  }
+  .steps li:first-child::after { display: none; }
+  .steps li.done { color: var(--ink); }
+  .steps li.done::before { background: var(--courier); box-shadow: none; }
+  .steps li.done::after { background: var(--courier); }
+  .steps li.now { font-weight: 700; color: var(--courier); }
+  .steps li.now::before { box-shadow: 0 0 0 4px rgba(228, 84, 59, .22); }
+
+  .history h2, .memo h2 { margin-bottom: 7px; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .rows { display: grid; gap: 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
+  .rows li {
+    display: grid;
+    grid-template-columns: 62px minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 12px;
+    visibility: hidden;
+  }
+  .rows li.on { visibility: visible; }
+  .rows time { font-size: 11.5px; color: var(--muted); }
+  .rows .loc { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rows .what { font-weight: 700; white-space: nowrap; }
+  .rows li.last .what { color: var(--courier); }
+
+  .memo { visibility: hidden; }
+  .memo.on { visibility: visible; }
+  /* The driver's note is a cream memo slip taped into the app; what the driver wrote on it
+     is npm's own output, word for word. */
+  .dnote {
+    position: relative;
+    margin: 0 2px;
+    padding: 10px 12px 9px;
+    border-radius: 2px;
+    background: var(--memo);
+    color: var(--ink);
+    font: 500 11.5px/1.5 'IBM Plex Mono', ui-monospace, monospace;
+    overflow-wrap: anywhere;
+    rotate: -1deg;
+    box-shadow: 0 1px 1px rgba(60, 45, 20, .1), 0 5px 10px -4px rgba(80, 60, 20, .35);
+  }
+  .dnote::before {
+    content: ""; position: absolute; left: 50%; top: -6px; width: 56px; height: 13px;
+    translate: -50% 0; rotate: 2deg;
+    background: rgba(226, 216, 190, .72);
+    box-shadow: 0 0 0 .5px rgba(120, 100, 60, .12);
+  }
+  .dnote > span { display: block; }
+  .dnote .zero { color: var(--courier); font-weight: 700; }
+  .dnote .line { opacity: 0; }
+  .dnote .line.on { opacity: 1; }
+
+  /* Short app columns (landscape phones, small windows) drop the history list first. */
+  @container app (max-height: 640px) { .history { display: none; } }
+  @container app (max-height: 470px) { .waybill { display: none; } .appbody { gap: 11px; } }
+
+  /* ---------------- The doorstep ---------------- */
+  .scene {
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 18px;
+    background: var(--wall);
+    box-shadow: 0 14px 34px rgba(60, 45, 20, .16);
+  }
+  .stage {
+    position: absolute;
+    inset: 0;
+    container: stage / size;
+    display: grid;
+    place-items: end center;
+  }
+  .world {
+    position: relative;
+    container: world / inline-size;
+    width: min(100cqw, 125cqh);
+    aspect-ratio: 1.25;
+  }
+  @container stage (aspect-ratio < 1.1) {
+    .world { width: min(100cqw, 100cqh); aspect-ratio: 1; }
+  }
+  /* Wide, short stages (phones): a wider world, cut just above the door plate. */
+  @container stage (aspect-ratio > 1.4) {
+    .world { width: min(100cqw, 145cqh); aspect-ratio: 1.45; }
+  }
+  .world > * { position: absolute; }
+
+  /* Wall, sidewalk and street run past the edges of the world; the scene clips them. */
+  .bg-wall {
+    left: -200cqw; right: -200cqw; top: -200cqw; bottom: 20cqw;
+    background:
+      linear-gradient(to top, #d9c6a3 0 1.1cqw, transparent 1.1cqw),
+      repeating-linear-gradient(to top, transparent 0 2.9cqw, rgba(150, 110, 55, .09) 2.9cqw 3.1cqw),
+      var(--wall);
+  }
+  .bg-walk {
+    left: -200cqw; right: -200cqw; bottom: 8.4cqw; height: 11.6cqw;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 7.8cqw, rgba(0,0,0,.07) 7.8cqw 8cqw),
+      linear-gradient(to bottom, rgba(0,0,0,.08), transparent 1.2cqw),
+      var(--walk);
+  }
+  .bg-curb { left: -200cqw; right: -200cqw; bottom: 6.8cqw; height: 1.6cqw; background: var(--curb); box-shadow: inset 0 -.3cqw 0 rgba(0,0,0,.12); }
+  .bg-road { left: -200cqw; right: -200cqw; bottom: -200cqw; height: 206.8cqw; background: var(--road); }
+  .bg-road::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 203cqw; height: .45cqw;
+    background: repeating-linear-gradient(90deg, rgba(255,255,255,.6) 0 5cqw, transparent 5cqw 10cqw);
+  }
+
+  .door { left: 11cqw; bottom: 20cqw; width: 26cqw; height: 43cqw; }
+  .door svg { display: block; width: 100%; height: 100%; }
+  .plate {
+    left: 24cqw; bottom: 64cqw; height: 3.6cqw;
+    translate: -50% 0;
+    display: grid; place-items: center;
+    padding: 0 1.2cqw;
+    border-radius: .6cqw;
+    background: #343a40;
+    color: #f2efe7;
+    font: 600 max(8px, 1.65cqw)/1 'IBM Plex Mono', monospace;
+    white-space: nowrap;
+  }
+  .lamp { left: 38.5cqw; bottom: 52cqw; width: 3cqw; height: 6cqw; }
+  .lamp svg { display: block; width: 100%; height: 100%; }
+
+  .notice {
+    left: 14.5cqw; bottom: 51.2cqw; width: 15cqw; height: 10.4cqw;
+    padding: 1.3cqw .9cqw .8cqw;
+    border: 0;
+    border-radius: .3cqw;
+    background: linear-gradient(160deg, #fbf3d4, #efe0a9);
+    box-shadow: 0 .3cqw .8cqw rgba(0,0,0,.18);
+    rotate: -3deg;
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: .35cqw;
+    color: #5a4a22;
+    text-align: center;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .notice::before {
+    content: ""; position: absolute; left: 32%; top: -.9cqw; width: 36%; height: 1.8cqw;
+    background: rgba(255,255,255,.6); rotate: 3deg;
+  }
+  .notice .nt-title { font: 700 max(7px, 1.45cqw)/1 'Stardos Stencil', 'Inter', sans-serif; letter-spacing: .04em; color: var(--courier-dark); }
+  .notice .nt-name { font: 700 max(8px, 1.9cqw)/1 'IBM Plex Mono', monospace; color: #3c3216; }
+  .notice .nt-date { font: 500 max(7px, 1.25cqw)/1 'IBM Plex Mono', monospace; }
+  .notice.hot { box-shadow: 0 0 0 .6cqw var(--glow), 0 .3cqw .8cqw rgba(0,0,0,.18); }
+  /* Once, after the show: there is something on the door you can read. */
+  .notice.ping { animation: ping 1.2s ease-in-out; }
+  @keyframes ping {
+    0%, 100% { box-shadow: 0 .3cqw .8cqw rgba(0,0,0,.18); }
+    25%, 70% { box-shadow: 0 0 0 .6cqw var(--glow), 0 .3cqw .8cqw rgba(0,0,0,.18); }
+    48% { box-shadow: 0 0 0 .25cqw var(--glow), 0 .3cqw .8cqw rgba(0,0,0,.18); }
+  }
+
+  .mat {
+    left: 11cqw; bottom: 13.4cqw; width: 26cqw; height: 6.2cqw;
+    display: grid; place-items: center;
+    clip-path: polygon(7.7% 0, 92.3% 0, 100% 100%, 0 100%);
+    background:
+      repeating-linear-gradient(90deg, rgba(120, 80, 30, .07) 0 .3cqw, transparent .3cqw .6cqw),
+      linear-gradient(#f3e7cb, #e6d4ad);
+    color: #6b4318;
+    font: 800 max(7px, 1.9cqw)/1 'Inter', sans-serif;
+    letter-spacing: .3em;
+  }
+  .mat::after { content: ""; position: absolute; inset: .6cqw 1.8cqw; border: .3cqw dashed rgba(107, 67, 24, .55); clip-path: inherit; }
+  .mat font-kku { color: #6b4318; }
+
+  .plant { left: .8cqw; bottom: 19.6cqw; width: 5cqw; height: 10.8cqw; }
+  .plant svg { display: block; width: 100%; height: 100%; }
+
+  /* The dump truck. Its rear (left) faces the door; the bed tips around its back corner. */
+  .truck { left: 58cqw; bottom: .4cqw; width: 44cqw; height: 24.34cqw; z-index: 3; translate: 75cqw 0; }
+  .truck.here { translate: 0 0; }
+  .truck svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .truck .bed { transform-box: view-box; transform-origin: 1.5px 16.5px; }
+  .truck .wheel { transform-box: fill-box; transform-origin: center; }
+  .truck text { font-family: 'Inter', 'IBM Plex Sans KR', sans-serif; font-weight: 800; }
+
+  /* Boxes: placed by their resting spot (left, bottom, width, height in world cqw). */
+  .box {
+    left: calc(var(--x) * 1cqw);
+    bottom: calc(var(--b) * 1cqw);
+    width: calc(var(--w) * 1cqw);
+    height: calc(var(--h) * 1cqw);
+    rotate: var(--r, 0deg);
+    padding: 0;
+    border: .25cqw solid var(--kraft-dark);
+    border-radius: .45cqw;
+    background:
+      linear-gradient(rgba(0,0,0,.1), rgba(0,0,0,.1)) 0 22% / 100% .25cqw no-repeat,
+      linear-gradient(90deg, transparent 41%, var(--tape) 41% 59%, transparent 59%) 0 0 / 100% 40% no-repeat,
+      linear-gradient(165deg, #dcae6e, var(--kraft) 55%, #c39150);
+    box-shadow: 0 .5cqw .7cqw rgba(60, 35, 10, .25);
+    cursor: pointer;
+    visibility: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .box.landed { visibility: visible; }
+  .box:focus-visible { outline-offset: .4cqw; }
+  .box .label {
+    position: absolute;
+    left: 10%; right: 10%; bottom: 13%;
+    display: grid;
+    justify-items: center;
+    gap: .25cqw;
+    padding: .55cqw .4cqw .5cqw;
+    border-radius: .3cqw;
+    background: var(--label);
+    box-shadow: 0 .15cqw .2cqw rgba(0,0,0,.12);
+    line-height: 1;
+  }
+  .box .label b { font: 700 max(11px, 2.15cqw)/1 'IBM Plex Mono', monospace; white-space: nowrap; letter-spacing: -.02em; }
+  .box .label small { font: 500 max(9px, 1.45cqw)/1 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; color: var(--muted); white-space: nowrap; }
+  /* is-odd is the narrowest labelled box: its sticker runs closer to the edges so
+     "0.1.2 · 20 lines" fits at the same size as the other boxes' lines. On a phone every
+     sticker runs nearly edge to edge (95%), so the names stay at 10px or more. */
+  .box[data-id="is-odd"] .label { left: 5%; right: 5%; }
+  /* In a narrow world the names are all a sticker has room for: stickers nearly as wide as the box,
+     names set a little tighter, so they stay at 10px or more on the smallest phone stage. */
+  @container world (max-width: 470px) {
+    .box .label { left: 2.5%; right: 2.5%; padding-left: .1cqw; padding-right: .1cqw; }
+    .box .label b { letter-spacing: -.06em; }
+    .box .label small { display: none; }
+  }
+  .box .print {
+    position: absolute;
+    left: 6%; top: 30%;
+    color: rgba(110, 66, 22, .8);
+    font: 700 max(8px, 1.9cqw)/1 'Stardos Stencil', sans-serif;
+    letter-spacing: .08em;
+    rotate: -4deg;
+  }
+  .box .arrows { position: absolute; right: 7%; top: 28%; width: 3.6cqw; height: 3.6cqw; color: rgba(110, 66, 22, .7); }
+  /* Flaps: hidden while closed, standing up and leaning out when the box is open. */
+  .box .flap {
+    position: absolute;
+    bottom: 100%;
+    width: 50%;
+    height: min(55%, 4.2cqw);
+    background: linear-gradient(to top, #b98544, #d9ab6c);
+    border: .2cqw solid var(--kraft-dark);
+    scale: 1 0;
+    transition: scale .3s cubic-bezier(.3, 1.4, .5, 1), rotate .3s;
+  }
+  .box .flap.l { left: 0; transform-origin: 0 100%; }
+  .box .flap.r { right: 0; transform-origin: 100% 100%; }
+  .box.open .flap { scale: 1 1; }
+  .box.open .flap.l { rotate: -28deg; }
+  .box.open .flap.r { rotate: 28deg; }
+  .box.open::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 18%;
+    background: linear-gradient(#5a3b17, rgba(90, 59, 23, 0));
+  }
+  .box.glow { box-shadow: 0 0 0 .55cqw var(--glow), 0 .5cqw .7cqw rgba(60, 35, 10, .25); }
+
+  /* The box you ordered is tiny; its tag hangs off the side in the courier's red. */
+  .box.mine { border-width: .2cqw; }
+  .box.mine .tag {
+    position: absolute;
+    left: calc(100% + .9cqw);
+    top: 22%;
+    padding: .4cqw .7cqw;
+    border-radius: .4cqw;
+    background: var(--courier);
+    color: #fff;
+    font: 700 max(10.5px, 1.8cqw)/1 'IBM Plex Mono', monospace;
+    white-space: nowrap;
+    rotate: 7deg;
+    box-shadow: 0 .2cqw .4cqw rgba(0,0,0,.2);
+  }
+  .box.mine .tag::before {
+    content: ""; position: absolute; left: -1cqw; top: 50%; width: 1.1cqw; height: .2cqw; background: #7b5427;
+  }
+  /* In a narrow world (phones) the punchline card up in the sky reaches down over the spot
+     right of the box, so there the tag hangs off the box's left side, over the door. */
+  @container world (max-width: 460px) {
+    .box.mine .tag { left: auto; right: calc(100% + .9cqw); rotate: -7deg; }
+    .box.mine .tag::before { left: auto; right: -1cqw; }
+  }
+
+  .slip {
+    left: 0; top: 0;
+    padding: .45cqw .8cqw;
+    border-radius: .25cqw;
+    background: #fff;
+    box-shadow: 0 .3cqw .6cqw rgba(0,0,0,.18);
+    font: 600 max(10px, 1.6cqw)/1 'IBM Plex Mono', monospace;
+    white-space: nowrap;
+    opacity: 0;
+    z-index: 9;
+    pointer-events: none;
+  }
+
+  .overlay { left: 0; top: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 10; }
+  .overlay path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .overlay .link { stroke: var(--code-blue); stroke-width: max(2px, .45cqw); stroke-dasharray: none; }
+
+  /* The open box's index.js (or the recall notice), shown up in the empty sky. */
+  .card {
+    top: 3cqw; right: 2.5cqw;
+    /* 215px at least, but a little narrower in the smallest worlds (the 328×408 phone stage)
+       so its corner stays off the box you ordered; 196px still holds the longest line. */
+    width: max(56cqw, min(215px, max(63cqw, 196px)));
+    padding: 1.8cqw 2cqw 1.9cqw;
+    border-radius: 1.2cqw;
+    background: #fff;
+    box-shadow: 0 .4cqw 0 rgba(0,0,0,.05), 0 1.6cqw 3.4cqw rgba(50, 35, 15, .25);
+    z-index: 12;
+    display: none;
+  }
+  .card.on { display: block; }
+  .card .head { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 1.2cqw; row-gap: .4cqw; margin-bottom: 1.2cqw; }
+  .card .name { font: 700 max(12px, 2.3cqw)/1.15 'IBM Plex Mono', monospace; }
+  .card .name.plain { font-family: inherit; }
+  .card .meta { font: 500 max(11px, 1.75cqw)/1.2 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; color: var(--muted); }
+  .lang-ko .card .meta { font-family: 'IBM Plex Sans KR', 'IBM Plex Mono', sans-serif; }
+  .card .sticker {
+    padding: .45cqw .9cqw;
+    border-radius: 999px;
+    background: var(--courier);
+    color: #fff;
+    font-size: max(11px, 1.7cqw);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .card code {
+    display: block;
+    padding: 1.3cqw 1.6cqw;
+    border-radius: .8cqw;
+    background: #f5f3ee;
+    font: 600 max(11.5px, 2.5cqw)/1.35 'IBM Plex Mono', monospace;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .card.big code { font-size: max(15px, 4.1cqw); padding: 1.6cqw 1.8cqw; letter-spacing: -.02em; }
+  .card code .dep { color: var(--code-blue); text-decoration: underline; text-decoration-thickness: .25cqw; text-underline-offset: .5cqw; }
+  .card code .bang { color: var(--courier); }
+  .card code .cm { color: #8a8f96; font-weight: 500; }
+  .card .body { font-size: max(12px, 2.1cqw); font-weight: 700; line-height: 1.35; }
+  .card .note { margin-top: 1.1cqw; font-size: max(11px, 1.85cqw); line-height: 1.45; color: #3c4148; }
+  @container world (max-width: 460px) { .card .note { line-height: 1.32; } .card .body { line-height: 1.25; } }
+  /* The packing list is a printed slip: ink on paper, dashed like a tear-off form. */
+  .card .tree {
+    margin: 0;
+    padding: 1.2cqw 1.5cqw;
+    border: max(1px, .2cqw) dashed #b4ad9e;
+    border-radius: .4cqw;
+    background: var(--label);
+    color: var(--ink);
+    font: 500 max(10.5px, 2.1cqw)/1.45 'IBM Plex Mono', ui-monospace, monospace;
+    white-space: pre;
+    overflow: hidden;
+  }
+  .card .tl { display: block; }
+  .card .tl.off { visibility: hidden; }
+  /* The box you ordered, labelled like food. Its room is kept from the start, so the code (and
+     the arrow from isOdd) never moves when the label is stamped on. In a wide world it gets a
+     row of its own; in a narrow one (phones) that row would push the card down over is-odd,
+     so there it is stamped over the "Your order" sticker, in the sticker's own slot. */
+  .card .slot { margin-left: auto; display: grid; justify-items: end; align-items: center; }
+  .card .slot > * { grid-area: 1 / 1; }
+  .card .ingr {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin: -.2cqw 0 1.1cqw;
+    padding: .45cqw 1cqw .5cqw;
+    border: 1px solid var(--ink);
+    background: #fff;
+    font-size: max(12px, 2.3cqw);
+    font-weight: 700;
+    line-height: 1.25;
+    rotate: -1.5deg;
+    visibility: hidden;
+  }
+  .card .ingr.on { visibility: visible; }
+  /* The label is never smaller than the card's name (12px on a phone). In the sticker's slot it is
+     set a little tighter, with less padding, so the English still fits on one line in the 184px
+     card and stays no taller than the sticker: the card does not grow down over is-odd. There it is
+     stamped straight (tilted, it let the red sticker show around it and its corner touched the
+     line above), and the sticker underneath goes once it is stamped. */
+  .card .slot .ingr {
+    display: none; justify-self: start; margin: 0; padding: .15cqw .6cqw;
+    font-size: 12px; line-height: 1.1; letter-spacing: -.03em; white-space: nowrap; z-index: 1;
+  }
+  @container world (max-width: 460px) {
+    .card .ingr.row { display: none; }
+    .card .slot .ingr { display: block; rotate: 0deg; }
+    /* gone once the stamp has landed (its opacity is up at .18s), not before */
+    .card .slot:has(.ingr.on) .sticker { visibility: hidden; transition: visibility 0s .2s; }
+  }
+  .card .ingr .mono { font-weight: 600; }
+  .card .ingr .bang { color: var(--courier); }
+  .card .needs {
+    display: inline-block;
+    margin-top: 1.1cqw;
+    padding: .35cqw .9cqw;
+    border: .2cqw solid var(--code-blue);
+    border-radius: 999px;
+    color: var(--code-blue);
+    font: 600 max(11px, 1.75cqw)/1.2 'IBM Plex Mono', 'IBM Plex Sans KR', monospace;
+  }
+
+  .flash { inset: -200cqw; background: #fff; opacity: 0; pointer-events: none; z-index: 20; }
+  .photo {
+    position: absolute;
+    left: 12px; top: 12px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 11px 5px 9px;
+    border-radius: 999px;
+    background: rgba(32, 36, 42, .78);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    z-index: 25;
+  }
+  .photo.on { opacity: 1; }
+  .photo svg { width: 13px; height: 13px; }
+
+  .hint {
+    position: absolute;
+    left: 50%;
+    bottom: max(6px, 1.2vmin);
+    translate: -50% 0;
+    z-index: 30;
+    padding: 4px 11px;
+    border-radius: 999px;
+    background: rgba(20, 22, 26, .55);
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity .6s;
+    pointer-events: none;
+  }
+  .hint.on { opacity: 1; }
+
+  /* ---------------- Phones and tall narrow windows: scene on top, app below ---------------- */
+  @media (max-aspect-ratio: 1/1), (max-width: 620px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 8px;
+      padding: 8px;
+    }
+    .scene { order: -1; border-radius: 14px; }
+    .app { container-type: inline-size; border-radius: 14px; }
+    .appbar { padding: 8px 11px 7px; gap: 5px; }
+    .appbar h1 { font-size: 14px; }
+    .appbar .back { font-size: 17px; }
+    .logo { font-size: 11.5px; }
+    .logo svg { width: 15px; height: 15px; }
+    .again { padding: 3px 8px; font-size: 11.5px; }
+    .appbar .again.track { display: block; }
+    .app.after .appbar .again.track { display: none; }
+    .app.after .appbar .again.reorder { display: block; }
+    .actions { display: none; }
+    .photo { display: none; }
+    .hint { bottom: 4px; padding: 3px 9px; font-size: 11.5px; }
+    .appbody { gap: 8px; padding: 9px 11px 10px; }
+    .product { grid-template-columns: 40px minmax(0, 1fr) auto; gap: 9px; }
+    .thumb { width: 40px; height: 40px; border-radius: 9px; }
+    .thumb svg { width: 13px; height: 13px; translate: 0 3px; }
+    .pname { font-size: 14px; }
+    .pdesc { display: none; }
+    .order { font-size: 11px; padding: 1px 6px; }
+    .product { row-gap: 2px; }
+    .qty { gap: 3px; font-size: 11.5px; }
+    .waybill, .history { display: none; }
+    .status { min-height: 0; column-gap: 8px; }
+    .st-live, .st-done { font-size: 15px; }
+    .st-sub { font-size: 12px; }
+    .steps li { font-size: 11px; gap: 4px; }
+    .steps li::before { width: 10px; height: 10px; }
+    .steps li::after { top: 4px; }
+    .memo h2 { display: none; }
+    .status { flex-wrap: nowrap; white-space: nowrap; overflow: hidden; }
+    .dnote { margin: 0; padding: 6px 8px 5px; font-size: 11px; line-height: 1.4; letter-spacing: -.01em; }
+    .dnote::before { top: -3px; width: 46px; height: 8px; }
+    html:not(.embedded) .layout { padding-bottom: 46px; }
+  }
+  /* Short phone stages (the home stage on a 360×640 phone is about 330×410): the app keeps
+     the order, the count, the result and the steps; npm's note goes. */
+  @media (max-height: 480px) and (max-aspect-ratio: 1/1) {
+    .appbar { padding: 6px 10px 5px; }
+    .appbody { gap: 6px; padding: 7px 10px 8px; }
+    .product { grid-template-columns: 30px minmax(0, 1fr) auto; grid-template-areas: "thumb info qty"; }
+    .thumb { width: 30px; height: 30px; border-radius: 7px; }
+    .thumb svg { width: 11px; height: 11px; translate: 0 2px; }
+    .order, .memo { display: none; }
+    .qty { grid-auto-flow: column; align-items: center; gap: 6px; }
+    .steps li { font-size: 10.5px; }
+  }
+</style>
+</head>
+<body>
+<main class="layout">
+
+  <section class="app" aria-label="Tracking">
+    <header class="appbar">
+      <span class="back" aria-hidden="true">‹</span>
+      <h1><span data-lang="en">Track package</span><span data-lang="ko">배송 조회</span></h1>
+      <span class="logo">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.8 18 6v8.6L10 18.8 2 14.6V6z" fill="#e4543b"/><path d="M2 6l8 4.2L18 6M10 10.2v8.6" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <span data-lang="en">Registry Express</span><span data-lang="ko">레지스트리택배</span>
+      </span>
+      <button class="again track" type="button"><span data-lang="en">Track again</span><span data-lang="ko">다시 조회</span></button>
+      <button class="again reorder" type="button"><span data-lang="en">Order again</span><span data-lang="ko">한 번 더 주문</span></button>
+    </header>
+    <div class="appbody">
+      <div class="product">
+        <div class="thumb" aria-hidden="true">
+          <svg viewBox="0 0 16 14"><rect x=".6" y="2.6" width="14.8" height="10.8" rx=".8" fill="#cf9f5f" stroke="#a9783c" stroke-width="1"/><rect x="6.4" y="2.6" width="3.2" height="4.6" fill="#f3dfb0"/></svg>
+        </div>
+        <div class="pinfo">
+          <b class="pname mono">is-even</b>
+          <span class="pdesc" data-lang="en">Tells you if a number is even</span>
+          <span class="pdesc" data-lang="ko">짝수인지 알려 주는 상품</span>
+        </div>
+        <code class="order mono">npm install is-even</code>
+        <div class="qty">
+          <span class="q1"><span data-lang="en">Qty 1</span><span data-lang="ko">수량 1개</span></span>
+          <span class="q2" aria-live="polite"><span data-lang="en">Arrived: <b class="n">0</b></span><span data-lang="ko">도착 <b class="n">0</b>개</span></span>
+        </div>
+      </div>
+
+      <div class="waybill">
+        <span data-lang="en">Tracking no.</span><span data-lang="ko">운송장번호</span>
+        <code class="mono">sha512-LEhnkAdJqic4Dbqn58A0y52IXoHWlsueqQkKfMfdEnIYG8A1sm/GHidKkS6yvXlMoRrkM34csHnXQtOqcb+Jzg==</code>
+      </div>
+
+      <div class="status" aria-live="polite">
+        <span class="st-live"></span>
+        <span class="st-done"><span data-lang="en">Delivered</span><font-kku data-lang="ko" font="dunggeun" size="clamp(19px, 5.4vw, 25px)">배달완료</font-kku></span>
+        <span class="st-sub"></span>
+      </div>
+
+      <ol class="steps"></ol>
+
+      <div class="history">
+        <h2><span data-lang="en">Tracking history</span><span data-lang="ko">상세 배송 정보</span></h2>
+        <ol class="rows"></ol>
+      </div>
+
+      <div class="memo">
+        <h2><span data-lang="en">Driver's note</span><span data-lang="ko">배송 기사 메모</span></h2>
+        <p class="dnote"><span class="line l1">added 5 packages, and audited 6 packages in 4s</span><span class="line">found <b class="zero">0</b> vulnerabilities</span></p>
+      </div>
+      <div class="actions">
+        <button class="again track" type="button"><span data-lang="en">Track again</span><span data-lang="ko">다시 조회</span></button>
+        <button class="again reorder" type="button"><span data-lang="en">Order again</span><span data-lang="ko">한 번 더 주문</span></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" aria-label="Front door">
+    <div class="stage">
+      <div class="world">
+        <div class="bg-wall"></div>
+        <div class="bg-walk"></div>
+        <div class="bg-curb"></div>
+        <div class="bg-road"></div>
+
+        <div class="plate" aria-hidden="true">./node_modules</div>
+        <div class="door" aria-hidden="true">
+          <svg viewBox="0 0 26 43" preserveAspectRatio="none">
+            <rect x="0" y="0" width="26" height="43" fill="#e0cfae"/>
+            <rect x=".7" y=".7" width="24.6" height="42.3" fill="#d2bf99"/>
+            <rect x="2" y="2.2" width="22" height="40.8" fill="#2f6b67"/>
+            <rect x="4.2" y="4.6" width="17.6" height="15.2" rx=".5" fill="none" stroke="#234f4c" stroke-width=".7"/>
+            <rect x="4.2" y="22.4" width="17.6" height="18" rx=".5" fill="none" stroke="#234f4c" stroke-width=".7"/>
+            <rect x="18.6" y="17.6" width="3.4" height="6.2" rx=".5" fill="#2a2e33"/>
+            <g fill="#8fa3ad"><circle cx="19.6" cy="19" r=".35"/><circle cx="20.9" cy="19" r=".35"/><circle cx="19.6" cy="20.3" r=".35"/><circle cx="20.9" cy="20.3" r=".35"/><circle cx="19.6" cy="21.6" r=".35"/><circle cx="20.9" cy="21.6" r=".35"/></g>
+            <rect x="17.4" y="25" width="4.6" height="1.3" rx=".65" fill="#c9ced2"/>
+            <rect x="2" y="41.6" width="22" height="1.4" fill="#1d3f3d"/>
+          </svg>
+        </div>
+        <div class="lamp" aria-hidden="true">
+          <svg viewBox="0 0 6 12"><rect x="2.4" y="0" width="1.2" height="2.4" fill="#4a4f55"/><path d="M.6 2.4h4.8l-.8 6.6H1.4z" fill="#fff1c4" stroke="#4a4f55" stroke-width=".6"/><rect x=".9" y="9" width="4.2" height="1" fill="#4a4f55"/></svg>
+        </div>
+
+        <button class="notice" type="button" data-id="left-pad">
+          <span class="nt-title" data-lang="en">RECALL</span><span class="nt-title" data-lang="ko"><font-kku font="gothic" size="max(7px, 1.45cqw)">회수 안내</font-kku></span>
+          <span class="nt-name">left-pad</span>
+          <span class="nt-date">2016.03.22</span>
+        </button>
+
+        <div class="mat" aria-hidden="true"><span data-lang="en">WELCOME</span><font-kku data-lang="ko" font="jasu" size="max(9px, 2.6cqw)">어서 오세요</font-kku></div>
+
+        <div class="plant" aria-hidden="true">
+          <svg viewBox="0 0 12 26">
+            <path d="M6 15 C 4 10, 1 9, .6 5 C 3 6.5, 5 9, 6 13 Z" fill="#4f8f4a"/>
+            <path d="M6 15 C 7.5 9, 10.5 7.5, 11.4 3 C 8.6 5, 6.8 8.5, 6 13 Z" fill="#3f7b3c"/>
+            <path d="M6 16 C 5.6 10, 6.4 5, 6.2 .6 C 7.6 4.6, 7.4 10, 6.4 16 Z" fill="#5da357"/>
+            <path d="M1.6 15.4h8.8l-1.2 10H2.8z" fill="#c86b43"/>
+            <rect x="1" y="14.6" width="10" height="2.2" rx=".4" fill="#d9805a"/>
+          </svg>
+        </div>
+
+        <div class="truck" aria-hidden="true">
+          <svg viewBox="0 0 47 26">
+            <ellipse cx="23" cy="24.6" rx="22" ry="1.1" fill="rgba(0,0,0,.25)"/>
+            <rect x="1.5" y="16.2" width="43.5" height="2.8" fill="#3a3f44"/>
+            <g class="bed">
+              <rect x="1.5" y="3" width="28.5" height="13.5" rx=".6" fill="#e4543b"/>
+              <rect x="1.5" y="3" width="28.5" height="1.3" fill="#b63e28"/>
+              <g stroke="#c4472f" stroke-width=".6"><path d="M8 4.3v12.2M15.5 4.3v12.2M23 4.3v12.2"/></g>
+              <rect x="1.5" y="3" width="1.4" height="13.5" fill="#9e3522"/>
+              <rect x="3.6" y="7.2" width="25" height="5.6" rx=".6" fill="#fff"/>
+              <text class="truck-name" x="16.1" y="11.15" text-anchor="middle" font-size="3.1" fill="#e4543b"></text>
+            </g>
+            <path d="M31 16.6V7.4c0-1.3.9-2.6 2.2-2.6h6.4c1 0 1.8.5 2.3 1.4l2.8 5.2c.3.6.5 1.2.5 1.9v3.3z" fill="#f4f3ef" stroke="#c9c6be" stroke-width=".4"/>
+            <path d="M35.2 6.2h4.2c.6 0 1.1.3 1.4.8l2.2 4.3h-7.8z" fill="#8fc0d6"/>
+            <rect x="31" y="12.6" width="14.2" height="1.3" fill="#e4543b"/>
+            <rect x="43.6" y="14.6" width="2.4" height="2.4" rx=".4" fill="#5b6066"/>
+            <g class="wheel"><circle cx="8" cy="20.6" r="3.7" fill="#25282b"/><circle cx="8" cy="20.6" r="1.6" fill="#c9cdd0"/><path d="M8 17.6v6M5 20.6h6" stroke="#4a4f55" stroke-width=".5"/></g>
+            <g class="wheel"><circle cx="16.4" cy="20.6" r="3.7" fill="#25282b"/><circle cx="16.4" cy="20.6" r="1.6" fill="#c9cdd0"/><path d="M16.4 17.6v6M13.4 20.6h6" stroke="#4a4f55" stroke-width=".5"/></g>
+            <g class="wheel"><circle cx="38.6" cy="20.6" r="3.7" fill="#25282b"/><circle cx="38.6" cy="20.6" r="1.6" fill="#c9cdd0"/><path d="M38.6 17.6v6M35.6 20.6h6" stroke="#4a4f55" stroke-width=".5"/></g>
+          </svg>
+        </div>
+
+        <!-- Lowest first, so each box is drawn over the one it rests on. -->
+        <button class="box" type="button" data-id="kind-of" style="--x:7; --b:9; --w:28; --h:21; --r:-1.5deg; z-index:4">
+          <span class="print" aria-hidden="true"><span data-lang="en">FRAGILE</span><font-kku data-lang="ko" font="gothic" size="max(8px, 2cqw)">취급주의</font-kku></span>
+          <span class="flap l"></span><span class="flap r"></span>
+          <span class="label"><b>kind-of</b><small></small></span>
+        </button>
+        <button class="box" type="button" data-id="is-buffer" style="--x:35.5; --b:9; --w:20; --h:14.5; --r:2deg; z-index:5">
+          <span class="flap l"></span><span class="flap r"></span>
+          <span class="label"><b>is-buffer</b><small></small></span>
+        </button>
+        <button class="box" type="button" data-id="is-number" style="--x:10; --b:30.2; --w:21; --h:15; --r:-3deg; z-index:6">
+          <svg class="arrows" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 11V3M1 5l2-3 2 3M9 11V3M7 5l2-3 2 3" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+          <span class="flap l"></span><span class="flap r"></span>
+          <span class="label"><b>is-number</b><small></small></span>
+        </button>
+        <button class="box" type="button" data-id="is-odd" style="--x:34; --b:23.6; --w:17.5; --h:14; --r:4deg; z-index:7">
+          <span class="flap l"></span><span class="flap r"></span>
+          <span class="label"><b>is-odd</b><small></small></span>
+        </button>
+        <button class="box mine" type="button" data-id="is-even" style="--x:23.5; --b:45.4; --w:6; --h:5; --r:-6deg; z-index:8">
+          <span class="flap l"></span><span class="flap r"></span>
+          <span class="tag">is-even</span>
+        </button>
+
+        <svg class="overlay" aria-hidden="true">
+          <defs>
+            <marker id="arrow-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#2557d6"/></marker>
+          </defs>
+          <path class="link"/>
+        </svg>
+
+        <div class="card" aria-live="polite"></div>
+
+        <div class="flash"></div>
+      </div>
+    </div>
+    <div class="photo" aria-hidden="true">
+      <svg viewBox="0 0 16 16"><path d="M2 5.2h2.6l1.2-1.8h4.4l1.2 1.8H14v8H2z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><circle cx="8" cy="9" r="2.3" fill="none" stroke="#fff" stroke-width="1.4"/></svg>
+      <span data-lang="en">Delivery photo</span><span data-lang="ko">배송완료 사진</span>
+      <span class="mono photo-time"></span>
+    </div>
+    <p class="hint" id="hint">
+      <span data-lang="en">Tap a box, or the notice on the door.</span>
+      <span data-lang="ko">상자나 문에 붙은 안내문을 눌러 보세요.</span>
+    </p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (s, root = document) => root.querySelector(s);
+  const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const app = $('.app');
+  const world = $('.world');
+  const truck = $('.truck');
+  const bed = $('.truck .bed');
+  const wheels = $$('.truck .wheel');
+  const card = $('.card');
+  const overlay = $('.overlay');
+  const link = $('.overlay .link');
+  const notice = $('.notice');
+  const hint = $('.hint');
+  const photo = $('.photo');
+  const flash = $('.flash');
+  const counter = $$('.q2 .n');
+  const q2 = $('.q2');
+  const boxes = {};
+  $$('.box').forEach((b) => { boxes[b.dataset.id] = b; });
+
+  $('.app').setAttribute('aria-label', TTY.t({ en: 'Package tracking', ko: '배송 조회' }));
+  $('.scene').setAttribute('aria-label', TTY.t({ en: 'Front door', ko: '문 앞' }));
+  $('.truck-name').textContent = TTY.t({ en: 'REGISTRY EXPRESS', ko: '레지스트리택배' });
+  // The tracking number is is-even 1.0.0's real integrity hash (package-lock.json).
+  $('.waybill code').title = TTY.t({ en: 'The integrity hash of is-even 1.0.0', ko: 'is-even 1.0.0의 무결성 해시' });
+
+  // The real tree under `npm install is-even` (2026-10-13): each package needs the next one.
+  // Lines are the lines of each package's index.js.
+  const PKG = {
+    'is-even':   { ver: '1.0.0', lines: 14,  next: 'is-odd' },
+    'is-odd':    { ver: '0.1.2', lines: 20,  next: 'is-number' },
+    'is-number': { ver: '3.0.0', lines: 22,  next: 'kind-of' },
+    'kind-of':   { ver: '3.2.2', lines: 116, next: 'is-buffer' },
+    'is-buffer': { ver: '1.1.6', lines: 21,  next: null },
+  };
+  const CHAIN = ['is-even', 'is-odd', 'is-number', 'kind-of', 'is-buffer'];
+  const LANDING = ['kind-of', 'is-buffer', 'is-number', 'is-odd', 'is-even'];
+  const linesText = (n) => TTY.t({ en: `${n} lines`, ko: `${n}줄` });
+  Object.entries(PKG).forEach(([id, p]) => {
+    const small = boxes[id].querySelector('small');
+    if (small) small.textContent = `${p.ver} · ${linesText(p.lines)}`;
+    boxes[id].setAttribute('aria-label', TTY.t({ en: `Open ${id} ${p.ver}`, ko: `${id} ${p.ver} 상자 열기` }));
+  });
+  notice.setAttribute('aria-label', TTY.t({ en: 'Read the left-pad recall notice', ko: 'left-pad 회수 안내 읽기' }));
+
+  // Every sticker keeps its print on the white. Between a phone and a desktop the 11px/9px
+  // floors make the text wider than the smaller boxes: then all names (or all version lines)
+  // shrink together so they still look printed alike, and the version lines go if they
+  // would have to be smaller than 8px.
+  const labels = $$('.box .label');
+  const roomIn = (l) => { const cs = getComputedStyle(l); return l.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); };
+  function fitLabels() {
+    for (const sel of ['b', 'small']) {
+      const els = labels.map((l) => $(sel, l)).filter(Boolean);
+      els.forEach((el) => { el.style.fontSize = ''; el.hidden = false; });
+      const shown = els.filter((el) => getComputedStyle(el).display !== 'none');
+      if (!shown.length) continue;
+      // (offsetWidth is rounded, and unturned like the sticker itself: keep a pixel spare)
+      const scale = Math.min(1, ...shown.map((el) => (roomIn(el.parentElement) - 1) / el.offsetWidth));
+      if (scale >= 1) continue;
+      const size = parseFloat(getComputedStyle(shown[0]).fontSize) * scale;
+      if (sel === 'small' && size < 8) shown.forEach((el) => { el.hidden = true; });
+      else shown.forEach((el) => { el.style.fontSize = size.toFixed(2) + 'px'; });
+    }
+  }
+
+  const CARDS = {
+    'is-even': {
+      big: true,
+      sticker: TTY.t({ en: 'Your order', ko: '주문하신 상품' }),
+      code: 'return <span class="bang">!</span><span class="dep">isOdd</span>(i);',
+    },
+    'is-odd': {
+      code: esc('return !!(~~i & 1);'),
+      note: TTY.t({ en: 'This one line does all the math.', ko: '홀짝 계산은 이 한 줄이 다 한다.' }),
+    },
+    'is-number': {
+      code: esc('return (num - num + 1) >= 0;'),
+      note: TTY.t({ en: 'Checks it really is a number. NaN and Infinity fail.', ko: '정말 숫자인지 확인한다. NaN과 Infinity는 탈락.' }),
+    },
+    'kind-of': {
+      code: esc("return 'number';"),
+      note: TTY.t({ en: 'Tells you what kind of value it is. One line of 116.', ko: '값의 종류를 알려 준다. 116줄 중 한 줄.' }),
+    },
+    'is-buffer': {
+      code: '<span class="cm">' + esc('// … Remove this eventually.') + '</span>',
+      note: TTY.t({ en: 'Never called when you pass a number. No dependencies, at last.', ko: '숫자를 넣으면 한 번도 안 쓰인다. 드디어 의존성 없음.' }),
+    },
+  };
+  // Stamped on the box you ordered once the arrow has found is-odd: what it is made of.
+  const INGREDIENTS = TTY.t({
+    en: 'Ingredients: <span class="mono">is-odd</span> 99%, <span class="mono bang">!</span> 1%',
+    ko: '원재료명: <span class="mono">is-odd</span> 99%, <span class="mono bang">!</span> 1%',
+  });
+  const NOTICE = {
+    title: TTY.t({ en: 'Recall notice', ko: '회수 안내' }),
+    meta: TTY.t({ en: 'left-pad 0.0.3 · 11 lines', ko: 'left-pad 0.0.3 · 11줄' }),
+    body: TTY.t({ en: 'Pulled by its own seller on March 22, 2016.', ko: '2016년 3월 22일, 판매자가 직접 내린 상품입니다.' }),
+    note: TTY.t({
+      en: "For 2.5 hours, builds broke at thousands of projects that hadn't changed a line (Babel, React…). Items others depend on can no longer be pulled at will. Sorry for the inconvenience.",
+      ko: '그 뒤 2시간 반 동안, 코드를 한 줄도 안 바꾼 프로젝트 수천 곳의 빌드가 깨졌습니다(Babel, React 등). 이제 다른 상품이 기대는 상품은 마음대로 내릴 수 없습니다. 이용에 불편을 드려 죄송합니다.',
+    }),
+  };
+
+  // ---------------- The app ----------------
+  const STEPS = TTY.t({
+    en: ['Picked up', 'In transit', 'At hub', 'Delivering', 'Delivered'],
+    ko: ['집화처리', '간선상차', '허브 도착', '배송출발', '배달완료'],
+  });
+  const ROWS = TTY.t({
+    en: [['registry.npmjs.org', 'Picked up'], ['Dependency check: +4 items', 'In transit'], ['npm cache', 'Arrived at hub'], ['Driver: npm', 'Delivering'], ['Front door · 5 items', 'Delivered']],
+    ko: [['registry.npmjs.org', '집화처리'], ['의존성 확인: 4개 동봉', '간선상차'], ['npm 캐시', '허브 도착'], ['배송 기사 npm', '배송출발'], ['문 앞 · 5개', '배달완료']],
+  });
+  const LIVE = TTY.t({
+    en: [['Picked up', 'registry.npmjs.org'], ['In transit', '+4 items added'], ['At hub', 'npm cache'], ['Delivering', 'arriving soon'], ['', 'is-even and 4 more items']],
+    ko: [['집화처리', 'registry.npmjs.org'], ['간선상차', '동봉 상품 4개 추가'], ['허브 도착', 'npm 캐시'], ['배송출발', '곧 도착해요'], ['', 'is-even 외 4건']],
+  });
+  const stepsEl = $('.steps');
+  const rowsEl = $('.rows');
+  STEPS.forEach((s) => { const li = document.createElement('li'); li.textContent = s; stepsEl.append(li); });
+  ROWS.forEach(([loc, what]) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<time class="mono"></time><span class="loc">${esc(loc)}</span><span class="what">${esc(what)}</span>`;
+    rowsEl.append(li);
+  });
+  const stLive = $('.st-live');
+  const stSub = $('.st-sub');
+  const pad = (n) => String(n).padStart(2, '0');
+  const clock = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  // Seconds after pick-up at which each row happened (npm said "in 4s").
+  const ROW_AT = [0, 1, 1, 2, 4];
+
+  function stepTo(i, when = new Date()) {
+    $$('li', stepsEl).forEach((li, k) => { li.classList.toggle('done', k <= i); li.classList.toggle('now', k === i); });
+    $$('li', rowsEl).forEach((li, k) => {
+      li.classList.toggle('on', k <= i);
+      li.classList.toggle('last', k === i);
+      if (k <= i && !li.dataset.t) {
+        li.dataset.t = '1';
+        $('time', li).textContent = clock(new Date(when.getTime() - (ROW_AT[i] - ROW_AT[k]) * 1000));
+      }
+    });
+    stLive.textContent = LIVE[i][0];
+    stSub.textContent = LIVE[i][1];
+    app.classList.toggle('done', i === 4);
+  }
+  function setArrived(n) {
+    counter.forEach((el) => { el.textContent = String(n); });
+    q2.classList.toggle('on', n > 0);
+  }
+
+  // ---------------- Geometry ----------------
+  const cq = () => world.clientWidth / 100;
+  const rectIn = (el) => {
+    const w = world.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    return { x: r.left - w.left, y: r.top - w.top, w: r.width, h: r.height, cx: r.left - w.left + r.width / 2, cy: r.top - w.top + r.height / 2 };
+  };
+  function sizeOverlay() {
+    overlay.setAttribute('viewBox', `0 0 ${world.clientWidth} ${world.clientHeight}`);
+    overlay.setAttribute('width', world.clientWidth);
+    overlay.setAttribute('height', world.clientHeight);
+  }
+  // ---------------- Scene pieces ----------------
+  const timers = [];
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  const stopTimers = () => timers.splice(0).forEach(clearTimeout);
+  let openId = null;
+
+  function shake(power = 1) {
+    if (TTY.reduce) return;
+    const p = cq() * .5 * power;
+    world.animate([
+      { transform: 'none' }, { transform: `translate(${p}px, ${p * .8}px)` }, { transform: `translate(${-p * .7}px, ${-p * .4}px)` },
+      { transform: `translate(${p * .3}px, ${p * .2}px)` }, { transform: 'none' },
+    ], { duration: 260 });
+  }
+
+  // Each box flies out of the tipped bed in an arc and lands with a small squash.
+  function launch(id, delay) {
+    const box = boxes[id];
+    box.classList.add('landed');
+    const r = rectIn(box);
+    const u = cq();
+    const from = { x: 61 * u, y: world.clientHeight - 16 * u };
+    const dx = from.x - r.cx, dy = from.y - r.cy;
+    const lift = (id === 'is-even' ? 16 : 10) * u;
+    const spin = (id === 'is-even' ? 300 : 60) * (Math.random() < .5 ? -1 : 1);
+    const frames = [];
+    for (let k = 0; k <= 6; k++) {
+      const t = k / 6;
+      const x = dx * (1 - t), y = dy * (1 - t) - lift * 4 * t * (1 - t);
+      frames.push({ transform: `translate(${x}px, ${y}px) rotate(${spin * (1 - t)}deg)`, offset: t * .82, opacity: k === 0 ? 0 : 1 });
+    }
+    frames.push({ transform: 'translate(0, 0) scale(1.07, .9)', offset: .9, opacity: 1 });
+    frames.push({ transform: 'none', opacity: 1 });
+    const dur = id === 'is-even' ? 640 : 500;
+    box.animate(frames, { duration: dur, delay, easing: 'linear', fill: 'backwards' });
+    return dur;
+  }
+  function bounce(el) {
+    if (TTY.reduce) return;
+    const u = cq();
+    el.animate([
+      { transform: 'none' }, { transform: `translateY(${-2.6 * u}px) rotate(-10deg)` }, { transform: 'translateY(0) scale(1.1, .88)' },
+      { transform: `translateY(${-.8 * u}px)` }, { transform: 'none' },
+    ], { duration: 520, easing: 'ease-out' });
+  }
+  function pulse(el) {
+    if (TTY.reduce) return;
+    el.animate([{ transform: 'none' }, { transform: 'scale(1.08)' }, { transform: 'none' }], { duration: 380, easing: 'ease-out' });
+  }
+
+  function drawPath(path, d, ms, marker) {
+    path.setAttribute('d', d);
+    path.removeAttribute('marker-end');
+    if (TTY.reduce || !ms) { if (marker) path.setAttribute('marker-end', marker); return; }
+    path.setAttribute('pathLength', '1');
+    const a = path.animate([{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }], { duration: ms, easing: 'ease-in-out' });
+    a.onfinish = () => { if (marker) path.setAttribute('marker-end', marker); path.removeAttribute('pathLength'); };
+  }
+
+  // ---------------- Cards ----------------
+  // `npm ls --all` for this order, word for word: a staircase, one step per box.
+  const TREE = ['└─┬ is-even@1.0.0', '  └─┬ is-odd@0.1.2', '    └─┬ is-number@3.0.0', '      └─┬ kind-of@3.2.2', '        └── is-buffer@1.1.6'];
+  function cardHTML(id) {
+    if (id === 'list') {
+      return `<div class="head"><span class="name plain">${esc(TTY.t({ en: 'Packing list', ko: '동봉 내역' }))}</span><span class="meta">npm ls --all</span></div>`
+        + `<pre class="tree">${TREE.map((l) => `<span class="tl">${esc(l)}</span>`).join('')}</pre>`;
+    }
+    if (id === 'left-pad') {
+      return `<div class="head"><span class="name plain">${esc(NOTICE.title)}</span><span class="meta">${esc(NOTICE.meta)}</span></div>`
+        + `<p class="body">${esc(NOTICE.body)}</p><p class="note">${esc(NOTICE.note)}</p>`;
+    }
+    const p = PKG[id], c = CARDS[id];
+    const meta = TTY.t({ en: `${p.ver} · index.js, ${p.lines} lines`, ko: `${p.ver} · index.js ${p.lines}줄` });
+    const needs = p.next && id !== 'is-even'
+      ? `<span class="needs dep">${esc(TTY.t({ en: 'needs → ', ko: '필요 → ' }))}${p.next}</span>` : '';
+    const ingr = (where) => `<span class="ingr ${where}">${INGREDIENTS}</span>`;
+    return `<div class="head"><span class="name">${id}</span><span class="meta">${esc(meta)}</span>`
+      + (c.sticker ? `<span class="slot"><span class="sticker">${esc(c.sticker)}</span>${ingr('in-slot')}</span>` : '') + `</div>`
+      + (c.sticker ? ingr('row') : '')
+      + `<code>${c.code}</code>` + (c.note ? `<p class="note">${esc(c.note)}</p>` : '') + needs;
+  }
+  function target(id) { return PKG[id] ? PKG[id].next : null; }
+  function drawLink(ms) {
+    link.setAttribute('d', '');
+    link.removeAttribute('marker-end');
+    const next = openId && target(openId);
+    const from = next && $('.dep', card);
+    if (!from) return;
+    sizeOverlay();
+    const a = rectIn(from), b = rectIn(boxes[next]);
+    const p = { x: a.cx, y: a.y + a.h + cq() * .4 };
+    const q = { x: b.cx, y: b.y - cq() * 1 };
+    const c1 = { x: p.x, y: p.y + (q.y - p.y) * .55 };
+    drawPath(link, `M${p.x} ${p.y}Q${c1.x} ${c1.y} ${q.x} ${q.y}`, ms, 'url(#arrow-blue)');
+  }
+  function sourceOf(id) { return id === 'left-pad' ? notice : boxes[id === 'list' ? 'is-even' : id]; }
+
+  function openCard(id, { slow = false } = {}) {
+    closeCard();
+    openId = id;
+    const src = sourceOf(id);
+    card.className = 'card on' + (CARDS[id] && CARDS[id].big ? ' big' : '');
+    card.innerHTML = cardHTML(id);
+    if (id === 'left-pad') src.classList.add('hot');
+    else if (id !== 'list') src.classList.add('open');
+    const next = target(id);
+    if (TTY.reduce) {
+      // the label first: drawLink measures the card, and the sticker under it must never be drawn
+      if (id === 'is-even') $$('.ingr', card).forEach((el) => el.classList.add('on'));
+      drawLink(0);
+      if (next) boxes[next].classList.add('glow');
+      return;
+    }
+    // Grow the card out of the box (or the notice) it belongs to.
+    const s = rectIn(src), c = rectIn(card);
+    const grow = slow ? 520 : 300;
+    card.animate([
+      { transform: `translate(${s.cx - c.cx}px, ${s.cy - c.cy}px) scale(${Math.max(.08, s.w / c.w)})`, opacity: 0 },
+      { transform: 'none', opacity: 1 },
+    ], { duration: grow, easing: 'cubic-bezier(.2, .9, .3, 1.1)' });
+    if (!next) return;
+    const wait = grow + (slow ? 300 : 60);
+    const dur = slow ? 600 : 360;
+    at(wait, () => { if (openId === id) drawLink(dur); });
+    at(wait + dur, () => {
+      if (openId !== id) return;
+      boxes[next].classList.add('glow');
+      boxes[next].animate([
+        { transform: 'none' }, { transform: 'rotate(-5deg)' }, { transform: 'rotate(4deg)' }, { transform: 'rotate(-2deg)' }, { transform: 'none' },
+      ], { duration: 520, easing: 'ease-in-out' });
+    });
+    if (id === 'is-even') at(wait + dur + 600, () => { if (openId === id) $$('.ingr', card).forEach(stamp); });
+  }
+  function stamp(el) {
+    el.classList.add('on');
+    el.animate([
+      { transform: 'scale(1.7) rotate(-6deg)', opacity: 0 },
+      { transform: 'scale(.94) rotate(1deg)', opacity: 1, offset: .7 },
+      { transform: 'none', opacity: 1 },
+    ], { duration: 260, easing: 'ease-in' });
+  }
+  function closeCard() {
+    if (!openId) return;
+    sourceOf(openId).classList.remove('open', 'hot');
+    $$('.box.open').forEach((b) => b.classList.remove('open'));
+    $$('.box.glow').forEach((b) => b.classList.remove('glow'));
+    link.setAttribute('d', '');
+    link.removeAttribute('marker-end');
+    card.className = 'card';
+    card.innerHTML = '';
+    openId = null;
+  }
+
+  // Why five boxes? The packing list prints line by line; each box answers as its line appears.
+  function packingList(step = 520) {
+    openCard('list');
+    const lines = $$('.tl', card);
+    lines.forEach((l, k) => {
+      l.classList.add('off');
+      at(350 + k * step, () => {
+        if (openId !== 'list') return;
+        l.classList.remove('off');
+        const b = boxes[CHAIN[k]];
+        b.classList.add('glow');
+        pulse(b);
+        at(step * 1.4, () => b.classList.remove('glow'));
+      });
+    });
+  }
+
+  // The punchline: the box you ordered opens, its packing flies out, and inside is one line.
+  function punch() {
+    const box = boxes['is-even'];
+    box.classList.add('open');
+    const r = rectIn(box);
+    const u = cq();
+    ['README.md', 'LICENSE', 'package.json'].forEach((name, k) => {
+      const slip = document.createElement('div');
+      slip.className = 'slip';
+      slip.textContent = name;
+      world.append(slip);
+      const sw = slip.offsetWidth, sh = slip.offsetHeight;
+      const x0 = r.cx - sw / 2, y0 = r.y - sh / 2;
+      const dx = [-11, 1, 12][k] * u, up = [9, 14, 8][k] * u;
+      slip.animate([
+        { transform: `translate(${x0}px, ${y0}px) rotate(0deg) scale(.3)`, opacity: 0 },
+        { transform: `translate(${x0 + dx * .5}px, ${y0 - up}px) rotate(${[-20, 8, 18][k]}deg) scale(1)`, opacity: 1, offset: .35 },
+        { transform: `translate(${x0 + dx}px, ${y0 - up * .55}px) rotate(${[-34, 14, 30][k]}deg) scale(1)`, opacity: 1, offset: .75 },
+        { transform: `translate(${x0 + dx * 1.15}px, ${y0 - up * .25}px) rotate(${[-40, 18, 36][k]}deg) scale(.95)`, opacity: 0 },
+      ], { duration: 1300, delay: k * 120, easing: 'cubic-bezier(.2, .7, .4, 1)' }).onfinish = () => slip.remove();
+    });
+    at(950, () => {
+      openCard('is-even', { slow: true });
+      box.classList.add('open');
+    });
+  }
+
+  // ---------------- Whole scenes ----------------
+  let arrived = 0;
+  let interactive = false;
+  let showing = false;
+  let reordering = false;
+  // The driver's note, first line: npm's output for the order, and for the same order again
+  // (both from a real install on 2026-10-13).
+  const noteLine = $('.dnote .l1');
+  const NOTE_FIRST = { install: noteLine.textContent, again: 'up to date, audited 6 packages in 1s' };
+  function reset() {
+    stopTimers();
+    world.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+    closeCard();
+    $$('.slip').forEach((s) => s.remove());
+    Object.values(boxes).forEach((b) => b.classList.remove('landed', 'open', 'glow'));
+    truck.classList.remove('here');
+    photo.classList.remove('on');
+    notice.classList.remove('hot', 'ping');
+    $('.memo').classList.remove('on');
+    $$('.dnote .line').forEach((l) => l.classList.remove('on'));
+    noteLine.textContent = NOTE_FIRST.install;
+    reordering = false;
+    app.classList.remove('after');
+    $$('li', stepsEl).forEach((li) => li.classList.remove('done', 'now'));
+    $$('li', rowsEl).forEach((li) => { li.classList.remove('on', 'last'); delete li.dataset.t; });
+    app.classList.remove('done');
+    stLive.textContent = TTY.t({ en: 'Preparing', ko: '상품 준비 중' });
+    stSub.textContent = '';
+    arrived = 0;
+    setArrived(0);
+    hint.classList.remove('on');
+    interactive = false;
+    showing = false;
+  }
+
+  // Everything delivered and noted, no motion. Used for reduced motion and when someone
+  // starts tapping before the show is over.
+  function delivered() {
+    stopTimers();
+    showing = false;
+    world.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+    $$('.slip').forEach((s) => s.remove());
+    truck.classList.remove('here');
+    Object.values(boxes).forEach((b) => b.classList.add('landed'));
+    stepTo(4);
+    setArrived(5);
+    photo.classList.add('on');
+    $('.photo-time').textContent = clock(new Date()).slice(0, 5);
+    $('.memo').classList.add('on');
+    $$('.dnote .line').forEach((l) => l.classList.add('on'));
+    interactive = true;
+    hint.classList.add('on');
+    app.classList.add('after');
+  }
+
+  function play() {
+    reset();
+    if (TTY.reduce) {
+      delivered();
+      openCard('is-even');
+      return;
+    }
+    showing = true;
+    at(150, () => stepTo(0));
+    at(400, () => stepTo(1));
+    at(650, () => stepTo(2));
+    // The truck backs up to the door.
+    at(800, () => {
+      stepTo(3);
+      truck.classList.add('here');
+      const u = cq();
+      truck.animate([{ translate: `${75 * u}px 0` }, { translate: `${-1.2 * u}px 0`, offset: .85 }, { translate: '0 0' }],
+        { duration: 750, easing: 'cubic-bezier(.2, .7, .3, 1)' });
+      wheels.forEach((w) => w.animate([{ rotate: '0deg' }, { rotate: '-540deg' }], { duration: 750, easing: 'cubic-bezier(.2, .7, .3, 1)' }));
+    });
+    // Tip the bed and out they come, biggest first, the box you ordered last.
+    at(1550, () => bed.animate([{ rotate: '0deg' }, { rotate: '-20deg' }], { duration: 280, easing: 'ease-in', fill: 'forwards' }));
+    let t = 1700;
+    LANDING.forEach((id, k) => {
+      const delay = k === 4 ? 220 : 0;
+      const launchAt = t + delay;
+      at(launchAt, () => {
+        const dur = launch(id, 0);
+        at(dur * .85, () => {
+          arrived += 1;
+          setArrived(arrived);
+          pulse(q2);
+          if (id === 'kind-of') shake(1.2);
+          else if (id !== 'is-even') shake(.45);
+          else bounce(boxes[id]);
+        });
+      });
+      t += 170;
+    });
+    // Delivered: the courier's photo.
+    at(3250, () => {
+      stepTo(4);
+      flash.animate([{ opacity: 0 }, { opacity: .85 }, { opacity: 0 }], { duration: 380 });
+      photo.classList.add('on');
+      $('.photo-time').textContent = clock(new Date()).slice(0, 5);
+      interactive = true;
+    });
+    at(3450, () => bed.animate([{ rotate: '-20deg' }, { rotate: '0deg' }], { duration: 320, easing: 'ease-out', fill: 'forwards' }));
+    at(3900, () => {
+      const u = cq();
+      truck.animate([{ translate: '0 0' }, { translate: `${80 * u}px 0` }], { duration: 800, easing: 'cubic-bezier(.5, 0, .9, .5)', fill: 'forwards' });
+      wheels.forEach((w) => w.animate([{ rotate: '0deg' }, { rotate: '600deg' }], { duration: 800, easing: 'cubic-bezier(.5, 0, .9, .5)' }));
+    });
+    at(4750, () => { truck.classList.remove('here'); truck.getAnimations().forEach((a) => a.cancel()); bed.getAnimations().forEach((a) => a.cancel()); });
+    // The driver's note: npm's own words.
+    at(3600, () => $('.memo').classList.add('on'));
+    $$('.dnote .line').forEach((l, k) => at(3650 + k * 380, () => l.classList.add('on')));
+    // Why five? Each box needs the next one.
+    at(4700, () => packingList(520));
+    at(8100, () => closeCard());
+    // The box you actually ordered (the arrow reaches is-odd at 10.8 s, the label at 11.4 s).
+    at(8400, punch);
+    // The show is over: the notice on the door winks once, and the boxes are yours.
+    at(12500, () => {
+      showing = false;
+      hint.classList.add('on');
+      app.classList.add('after');
+      notice.classList.add('ping');
+    });
+  }
+  notice.addEventListener('animationend', () => notice.classList.remove('ping'));
+
+  // The same order again: the truck comes back, tips its empty bed, shakes it twice, and
+  // leaves. npm has nothing to add.
+  function reorder() {
+    if (reordering) return;
+    if (showing || !interactive) delivered();
+    hint.classList.remove('on');
+    closeCard();
+    reordering = true;
+    const lines = $$('.dnote .line');
+    const done = () => {
+      noteLine.textContent = NOTE_FIRST.again;
+      stSub.textContent = TTY.t({ en: '0 new items', ko: '새로 온 상품 0건' });
+    };
+    if (TTY.reduce) { done(); reordering = false; return; }
+    lines.forEach((l) => l.classList.remove('on'));
+    truck.getAnimations().forEach((a) => a.cancel());
+    bed.getAnimations().forEach((a) => a.cancel());
+    truck.classList.add('here');
+    const u = cq();
+    const ease = 'cubic-bezier(.2, .7, .3, 1)';
+    truck.animate([{ translate: `${75 * u}px 0` }, { translate: `${-1.2 * u}px 0`, offset: .85 }, { translate: '0 0' }], { duration: 750, easing: ease });
+    wheels.forEach((w) => w.animate([{ rotate: '0deg' }, { rotate: '-540deg' }], { duration: 750, easing: ease }));
+    at(750, () => bed.animate([{ rotate: '0deg' }, { rotate: '-20deg' }], { duration: 280, easing: 'ease-in', fill: 'forwards' }));
+    at(1030, () => bed.animate([{ rotate: '-20deg' }, { rotate: '-26deg' }, { rotate: '-20deg' }, { rotate: '-26deg' }, { rotate: '-20deg' }],
+      { duration: 600, easing: 'ease-in-out', fill: 'forwards' }));
+    at(1700, () => bed.animate([{ rotate: '-20deg' }, { rotate: '0deg' }], { duration: 320, easing: 'ease-out', fill: 'forwards' }));
+    at(1750, () => { done(); lines[0].classList.add('on'); });
+    at(2130, () => lines[1].classList.add('on'));
+    at(2100, () => {
+      truck.animate([{ translate: '0 0' }, { translate: `${80 * u}px 0` }], { duration: 800, easing: 'cubic-bezier(.5, 0, .9, .5)', fill: 'forwards' });
+      wheels.forEach((w) => w.animate([{ rotate: '0deg' }, { rotate: '600deg' }], { duration: 800, easing: 'cubic-bezier(.5, 0, .9, .5)' }));
+    });
+    at(2950, () => {
+      truck.classList.remove('here');
+      truck.getAnimations().forEach((a) => a.cancel());
+      bed.getAnimations().forEach((a) => a.cancel());
+      reordering = false;
+    });
+  }
+
+  // ---------------- Visitors ----------------
+  function tap(id) {
+    if (!interactive) return;
+    // Someone is playing: finish the show now and hand them the boxes.
+    if (showing) delivered();
+    hint.classList.remove('on');
+    if (openId === id) { closeCard(); return; }
+    openCard(id);
+  }
+  Object.entries(boxes).forEach(([id, b]) => b.addEventListener('click', (e) => { e.stopPropagation(); tap(id); }));
+  notice.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (showing || !interactive) delivered();
+    hint.classList.remove('on');
+    if (openId === 'left-pad') { closeCard(); return; }
+    openCard('left-pad');
+  });
+  $('.scene').addEventListener('click', (e) => {
+    if (e.target.closest('.card')) return;
+    if (openId && !showing) closeCard();
+  });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && openId) { if (showing) delivered(); closeCard(); } });
+  $$('.again.track').forEach((b) => b.addEventListener('click', () => { play(); }));
+  $$('.again.reorder').forEach((b) => b.addEventListener('click', () => { reorder(); }));
+
+  // Sticker print, lines and arrows follow the boxes when the window changes size.
+  new ResizeObserver(() => {
+    fitLabels();
+    if (!openId) return;
+    sizeOverlay();
+    if (link.getAttribute('d')) drawLink(0);
+  }).observe(world);
+
+  reset();
+  if (TTY.reduce) { delivered(); openCard('is-even'); }
+  TTY.onShow(() => { if (!TTY.reduce) play(); });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(() => {
+    // Web fonts change the card's size; put the arrow back on the word it points from.
+    fitLabels();
+    if (openId && link.getAttribute('d')) drawLink(0);
+    TTY.ready();
+  });
+})();
+</script>
+</body>
+</html>

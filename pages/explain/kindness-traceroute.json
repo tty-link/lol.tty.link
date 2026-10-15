@@ -1,0 +1,155 @@
+{
+  "id": "kindness-traceroute",
+  "title": {
+    "en": "Thank-You, Traced",
+    "ko": "고마움 경로 추적"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "\"고마워요\" 한 마디가 사람에서 사람으로 건너가는 길을, 네트워크 데이터가 지나간 길을 찍어 보는 traceroute 결과처럼 기록한 페이지다.",
+    "points": [
+      "하트가 닿을 때마다 머리 위로 튀어 오르는 '+1'과, 64에서 69로 오르는 TTL 숫자 → 진짜 네트워크에서는 라우터를 지날 때마다 TTL이 하나씩 줄어든다. 여기서는 다들 하나씩 보태 주고, 하트도 홉마다 커져서 집에 돌아오는 하트는 처음의 세 배 반쯤 된다.",
+      "표 마지막 줄 \"다시 나 (127.0.0.1)\" → 127.0.0.1은 바로 이 컴퓨터를 가리키는 주소다. 나에게 돌아오는 길인데 네 사람을 거쳐 여섯 홉 만에 돌아온다. 표 첫 줄도 \"traceroute to 나 (127.0.0.1)\"로 시작한다.",
+      "지연 시간 칸과 경비실 앞에서 두 번 튕기는 하트 → 밀리초 대신 \"미소 한 번\", \"손 인사\", \"하이파이브\"를 찍는다. traceroute는 대답 없는 탐침마다 별표를 찍는데, 하트가 경비실에 튕길 때마다 별표가 하나씩 찍히고 세 번째에야 \"* * 끄덕\"이 된다. 마지막 줄의 지연은 5홉 아이가 들고 뛰어온 \"장갑 한 짝\"이다.",
+      "요약 \"1개 보냄, 19개 받음, 손실 0%.\" 한 박자 뒤 \"RFC 791: 홉마다 TTL을 1씩 줄일 것. 이 동네엔 공문이 안 내려왔나 봐요.\" → 패킷을 잃기는커녕 창문마다 번지며 열아홉으로 불어났고, 인터넷 표준이 정한 규칙은 이 동네에만 안 내려왔다. TTL은 Time To Live, 패킷의 남은 수명이라서 다들 수명을 하나씩 보태 준 셈이다."
+    ],
+    "terms": [
+      {
+        "term": "traceroute",
+        "plain": "내 컴퓨터에서 목적지까지 데이터가 어떤 장비를 차례로 거쳐 가는지, 장비마다 다녀오는 데 얼마나 걸리는지 보여 주는 명령어."
+      },
+      {
+        "term": "홉",
+        "plain": "데이터가 거쳐 가는 장비 하나하나. 이 페이지에서는 사람 한 명이다."
+      },
+      {
+        "term": "TTL",
+        "plain": "Time To Live, 패킷에 붙은 남은 수명. 라우터를 지날 때마다 1씩 줄고 0이 되면 버려져서, 길 잃은 패킷이 끝없이 돌지 않게 한다."
+      },
+      {
+        "term": "127.0.0.1",
+        "plain": "루프백 주소. 다른 곳이 아니라 '자기 자신'을 가리킨다."
+      },
+      {
+        "term": "패킷 손실",
+        "plain": "보낸 데이터가 중간에 사라지는 것. 0%면 하나도 안 잃었다는 뜻이다."
+      },
+      {
+        "term": "RFC",
+        "plain": "인터넷 기술 표준을 적은 공식 문서. 번호로 부르며, RFC 791은 1981년에 나온 IP 표준이다."
+      }
+    ],
+    "links": [
+      {
+        "title": "traceroute - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/Traceroute",
+        "note": "거쳐 간 경로와 전송 지연을 재는 진단 도구. 이 페이지 첫 줄과 같은 모양의 실제 출력 예도 있다",
+        "lang": "ko"
+      },
+      {
+        "title": "타임 투 리브 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/타임_투_리브",
+        "note": "TTL이 패킷의 무한 순환을 막는 방식",
+        "lang": "ko"
+      },
+      {
+        "title": "localhost - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/Localhost",
+        "note": "127.0.0.1이 자기 자신을 가리키는 이유",
+        "lang": "ko"
+      },
+      {
+        "title": "Pay it forward",
+        "url": "https://en.wikipedia.org/wiki/Pay_it_forward",
+        "note": "받은 친절을 준 사람에게 갚는 대신 다른 사람에게 이어 주는 일",
+        "lang": "en"
+      },
+      {
+        "title": "RFC 791: Internet Protocol",
+        "url": "https://www.rfc-editor.org/rfc/rfc791.html",
+        "note": "1981년의 IP(IPv4) 표준. 데이터그램을 처리하는 곳마다 TTL을 적어도 1씩 줄여야 한다고 적혀 있다",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "별표 둘과 \"0 손실\" → 진짜 traceroute라면 별표 둘은 대답이 없던 탐침이라 손실로 센다. 여기선 경비 아저씨의 대답이 늦었을 뿐이라 손실은 0이다.",
+      "\"64 hops max\" → macOS·BSD의 traceroute가 실제로 찍는 기본값이다(최대 홉 수가 시스템 기본 TTL과 같다). macOS와 리눅스가 패킷에 처음 붙이는 TTL 기본값이 64라서 표의 TTL도 64에서 시작한다.",
+      "패킷 크기 → \"thank you\"는 띄어쓰기까지 9바이트, \"고마워요\"는 UTF-8에서 한글 한 글자가 3바이트라 12바이트다. 한국어판은 1홉과 6홉의 말도 같은 \"고마워요\"라 같은 패킷이 돌아온다.",
+      "진짜로 127.0.0.1에 traceroute를 하면 1홉(localhost)에서 바로 끝난다. 여기서는 네 사람을 돌아 여섯 홉 만에 온다.",
+      "공문 → RFC는 원래 '메모' 시리즈라 요즘 RFC도 첫머리에 **Status of This Memo** 절을 단다. 영어판 \"Nobody here got the memo.\"가 겹말이 되는 까닭이고, 한국어판은 같은 자리에 회사에서 쓰는 '공문'을 넣었다."
+    ]
+  },
+  "en": {
+    "line": "One \"thank you\" travels from person to person across a city at dusk, and the page logs its trip like traceroute, the tool that shows which machines network data passes through.",
+    "points": [
+      "The \"+1\" that pops up over each person the heart reaches, and the TTL counting up from 64 to 69 → on a real network every router takes one off. Here everyone adds one, and the heart grows at every hop until the one that comes home is about three and a half times the first.",
+      "The last row, \"Back to you (127.0.0.1)\" → 127.0.0.1 always means this very computer. A trace to yourself that goes through four other people and takes six hops to come back. The first line already said so: \"traceroute to you (127.0.0.1)\".",
+      "The delay column, and the heart that bounces off the security desk twice → no milliseconds, just \"1 smile\", \"a wave\", \"a high-five\". traceroute prints an asterisk for every probe that gets no reply, so each bounce stamps one into the table, and only on the third try does it become \"* * a nod\". The last hop's delay is \"1 glove\", the one the kid returned.",
+      "\"1 sent. 19 received. 0% loss.\" and, a beat later, \"RFC 791: every hop takes one off the TTL. Nobody here got the memo.\" → the packet didn't get lost, it multiplied, and the internet standard that says the number must go down never reached this town. TTL stands for time to live, so everyone gave the thank-you a little more life."
+    ],
+    "terms": [
+      {
+        "term": "traceroute",
+        "plain": "a command that lists each device (hop) your data passes through on the way to a destination, and how long a round trip to each one takes."
+      },
+      {
+        "term": "Hop",
+        "plain": "one device along the path; on this page, one person."
+      },
+      {
+        "term": "TTL (time to live)",
+        "plain": "a counter on every packet. Each router lowers it by one and the packet is dropped at zero, so lost packets can't circle forever."
+      },
+      {
+        "term": "127.0.0.1",
+        "plain": "the loopback address, meaning \"this computer itself\"."
+      },
+      {
+        "term": "Packet loss",
+        "plain": "data that disappears on the way. 0% means nothing was lost."
+      },
+      {
+        "term": "RFC",
+        "plain": "the numbered documents that define internet standards. RFC 791 (1981) is the one for IP."
+      }
+    ],
+    "links": [
+      {
+        "title": "Traceroute - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Traceroute",
+        "note": "the tool that shows a route hop by hop, with round-trip times and asterisks for probes that got no reply",
+        "lang": "en"
+      },
+      {
+        "title": "Time to live - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Time_to_live",
+        "note": "how TTL stops packets from looping forever",
+        "lang": "en"
+      },
+      {
+        "title": "Localhost - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Localhost",
+        "note": "why 127.0.0.1 points back at your own machine",
+        "lang": "en"
+      },
+      {
+        "title": "Pay it forward - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Pay_it_forward",
+        "note": "passing a kindness on to someone else instead of paying it back",
+        "lang": "en"
+      },
+      {
+        "title": "RFC 791: Internet Protocol",
+        "url": "https://www.rfc-editor.org/rfc/rfc791.html",
+        "note": "the 1981 IP (IPv4) standard, which says everything that processes a packet must lower its TTL by at least one"
+      }
+    ],
+    "deep": [
+      "Two asterisks and \"0 lost\" → a real traceroute would count those two asterisks as lost probes. Here the guard's answer was only late, so loss stays at 0.",
+      "\"64 hops max\" → what traceroute on macOS and BSD actually prints by default (its hop limit is the system's default TTL). 64 is also the TTL macOS and Linux put on new packets, which is why the table starts at TTL 64.",
+      "The packet sizes → \"thank you\" is 9 bytes counting the space; \"고마워요\" (\"thank you\" in Korean) is 12 bytes in UTF-8, three per Hangul syllable.",
+      "A real traceroute to 127.0.0.1 ends after one hop (localhost). Here it goes round four other people and takes six hops.",
+      "The memo → RFCs began as a series of memos, and modern ones still open with a section called **Status of This Memo**. The Korean version swaps the idiom for 공문, the official notice a head office sends down to its branches, so in Korean the town never got the notice."
+    ]
+  }
+}

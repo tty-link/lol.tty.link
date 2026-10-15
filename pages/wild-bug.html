@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Wild Bug Appeared | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap">
+<!-- Pixelify Sans draws 5 like S, 2 like 8 and B like G at small sizes and a bold C like O (Lv.405 read as Lv.40S, Lv.512 as Lv.518, 11 GB as 11 GG, Coffee as Ooffee); Tiny5 lends the page its 5, 2, B and C and nothing else. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tiny5&text=25BC&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="pixel"></script>
+<script src="https://font.tty.link/lib/font-kku-fx.js"></script>
+<script>
+  // Opened on its own on a phone, the four moves fill the bottom of the screen right into the
+  // corner, so the tty.link links ("?" and ":)") go to the top right, over the empty sky. On a
+  // phone held sideways the moves still reach the bottom right (and the bug stands top right),
+  // so they go bottom left, under the dialog's short lines. Other screens leave it to the kit.
+  {
+    const at = matchMedia('(max-width: 600px)').matches ? 'top' : matchMedia('(max-height: 500px)').matches ? 'left' : '';
+    if (at) document.documentElement.setAttribute('data-tty-nav', at);
+  }
+</script>
+<style>
+  /* A monster battle where the monster is a bug and the winning move is explaining your code
+     to a rubber duck. Sprites are drawn pixel by pixel on tiny canvases and scaled up crisp. */
+  :root {
+    --navy: #2b2d42;
+    --paper: #fffaf0;
+    --paper-shade: #e8dfcc;
+    --sky-1: #9fd3ff;
+    --sky-2: #c4e5ff;
+    --sky-3: #e6f4ff;
+    --grass-1: #a5dc84;
+    --grass-2: #8acb68;
+    --hp-hi: #34c26b;
+    --hp-mid: #f2c335;
+    --hp-lo: #ee4b4b;
+    --coffee: #b9773e;
+    --px: max(2px, .5cqmin);
+    --t: clamp(15px, 3.5cqmin, 30px);
+    --dialog-h: clamp(118px, 29cqh, 236px);
+  }
+  html, body { height: 100%; margin: 0; }
+  /* Pixelify Sans joins fi, fl and ff into one glyph that reads as A ("fixed" came out "Axed"). */
+  body { overflow: hidden; background: var(--sky-3); color: var(--navy); font-family: 'Tiny5', 'Pixelify Sans', system-ui, sans-serif; font-variant-ligatures: none; }
+  button { font: inherit; color: inherit; }
+
+  .game { position: fixed; inset: 0; container-type: size; overflow: hidden; user-select: none; -webkit-user-select: none; }
+
+  /* ---- The field ---- */
+  .field {
+    position: absolute;
+    inset: 0 0 var(--dialog-h) 0;
+    overflow: hidden;
+    background: linear-gradient(to bottom,
+      var(--sky-1) 0 11%, var(--sky-2) 11% 21%, var(--sky-3) 21% 29%,
+      #dff3cf 29% 31%, var(--grass-1) 31% 66%, var(--grass-2) 66% 100%);
+  }
+  .cloud { position: absolute; height: 5cqmin; background: #fff; }
+  .cloud::before { content: ""; position: absolute; left: 22%; right: 30%; bottom: 100%; height: 70%; background: #fff; }
+  .cloud.c1 { left: 52%; top: 7%; width: 18cqmin; }
+  .cloud.c2 { left: 30%; top: 17%; width: 11cqmin; opacity: .85; }
+  .cloud.c1 { animation: drift 40s linear infinite alternate; }
+  @keyframes drift { to { translate: -10cqw 0; } }
+
+  /* The hidden evolution: the field goes dark around the glowing bug. */
+  .dim { position: absolute; inset: 0; background: #1d1f33; opacity: 0; pointer-events: none; }
+  .pad { transition: filter .5s steps(4); }
+  .field.evolving .pad { filter: brightness(.42); }
+
+  canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+  .sprite { position: absolute; }
+  .pad { width: 100%; height: auto; }
+
+  .foe { right: 7cqw; top: 23%; width: 40cqmin; }
+  .foe .bug { position: absolute; left: 50%; bottom: 38%; width: 62%; translate: -50% 0; }
+  /* A HEISENBUG is never quite there. */
+  .foe .bug.heisen { animation: unsure 3.1s steps(1, end) infinite; }
+  @keyframes unsure { 0%, 100% { opacity: .9; } 18% { opacity: .35; } 21% { opacity: .9; } 57% { opacity: .2; } 59% { opacity: .6; } 62% { opacity: .9; } }
+  @media (prefers-reduced-motion: reduce) { .foe .bug.heisen { animation: none; opacity: .6; } }
+  .me { left: 4cqw; bottom: -6cqmin; width: 46cqmin; }
+  .me .dev { position: absolute; left: 50%; bottom: 30%; width: 64%; translate: -50% 0; }
+  .me .duck { position: absolute; left: 84%; bottom: 52%; width: 30%; opacity: 0; }
+  /* Where DEV's info box stands on the duck's spot in the grass (portrait and square-ish
+     screens, measured by placeDuck()), the duck perches on DEV's shoulder, as on a phone. */
+  .me.perch .duck { left: calc(50% - var(--nudge, 0px)); bottom: 84%; }
+
+  /* ---- Pixel boxes ---- */
+  .box {
+    position: absolute;
+    background: var(--paper);
+    border: var(--px) solid var(--navy);
+    box-shadow: inset calc(var(--px) * -1) calc(var(--px) * -1) 0 var(--paper-shade);
+    clip-path: polygon(var(--px) 0, calc(100% - var(--px)) 0, 100% var(--px), 100% calc(100% - var(--px)),
+      calc(100% - var(--px)) 100%, var(--px) 100%, 0 calc(100% - var(--px)), 0 var(--px));
+  }
+  .info { width: min(48cqw, 430px); padding: 1.6cqmin 2.4cqmin 2cqmin; font-size: calc(var(--t) * .95); }
+  .info.foe-info { left: 4cqw; top: 5cqh; }
+  .info.me-info { right: 4cqw; bottom: calc(var(--dialog-h) + 3cqh); }
+  .info-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1em; font-weight: 700; }
+  .lv { font-weight: 600; font-size: .85em; }
+  .meter { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .6em; margin-top: 1.2cqmin; font-size: .72em; font-weight: 700; }
+  .bar { height: max(8px, 1.9cqmin); padding: calc(var(--px) * .6); background: var(--navy); }
+  .bar i { display: block; height: 100%; width: var(--v, 100%); background: var(--hp-hi); transition: width 1.1s steps(18), background-color .2s steps(1); }
+  @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+  /* Fallback for screens too coarse for pixel Hangul (see sharpenPixelText). */
+  font-kku[font="dunggeun"] { color: var(--navy); }
+  .bar.mid i { background: var(--hp-mid); }
+  .bar.low i { background: var(--hp-lo); }
+  .bar.coffee i { background: var(--coffee); }
+
+  /* ---- Dialog ---- */
+  .dialog { left: 1.6cqw; right: 1.6cqw; bottom: 1.6cqh; height: calc(var(--dialog-h) - 3.2cqh); display: grid; grid-template-columns: 1fr auto; }
+  .say { position: relative; padding: 2.4cqmin 3.2cqmin; font-size: var(--t); line-height: 1.5; overflow: hidden; }
+  .say-text { margin: 0; white-space: pre-line; }
+  .say .more {
+    position: absolute; right: 3cqmin; bottom: 2.2cqmin; width: 1.6cqmin; height: 1.1cqmin; min-width: 9px; min-height: 6px;
+    background: var(--navy); clip-path: polygon(0 0, 100% 0, 50% 100%); opacity: 0;
+  }
+  .say.waiting .more { opacity: 1; animation: bob .7s steps(2) infinite; }
+  @keyframes bob { 50% { translate: 0 .5cqmin; } }
+
+  .menu {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, auto));
+    align-content: center;
+    gap: .2em 1.6em;
+    padding: 1.8cqmin 3cqmin;
+    border-left: var(--px) solid var(--navy);
+    font-size: calc(var(--t) * .92);
+    visibility: hidden;
+  }
+  .menu.open { visibility: visible; }
+  /* The moves' column is kept only while DEV is asked what to do. The rest of the time the
+     lines have the whole box: at 648px wide the empty column left them a third of it, and a
+     long line such as the HEISENBUG's last one ran out of the box. */
+  .dialog:not(.asking) .menu { display: none; }
+  .menu button {
+    position: relative;
+    padding: .25em 0 .25em 1.1em;
+    border: 0;
+    background: none;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .menu button::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: .5em;
+    height: .66em;
+    translate: 0 -50%;
+    background: var(--navy);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+    opacity: 0;
+  }
+  /* One cursor: hover and keyboard focus both move .on (see the menu's handlers). */
+  .menu button.on::before { opacity: 1; }
+  .menu button:focus-visible { outline: none; }
+  /* The one-line hint, under the question while the moves are open. */
+  .pick { display: block; margin-top: .3em; font-size: max(13px, .74em); line-height: 1.3; opacity: .62; visibility: hidden; }
+  .dialog.choosing .pick { visibility: visible; }
+  .menu button.pressed { translate: .1em .1em; }
+
+  @container (max-width: 640px) {
+    /* On a phone the moves sit under the question, inside the same box. */
+    .dialog { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .menu { grid-template-columns: 1fr 1fr; gap: 0 1em; padding: 0 3cqmin 1.4cqmin; border-left: 0; }
+    .menu:not(.open) { display: none; }
+    .info { width: 56cqw; }
+    .info.foe-info { left: 3cqw; top: 3cqh; }
+    .foe { right: 1cqw; top: 30%; width: 46cqmin; }
+    .me { left: -2cqw; width: 50cqmin; }
+    .me .duck { left: 50%; bottom: 84%; width: 30%; }
+    .info.me-info { right: 3cqw; bottom: calc(var(--dialog-h) + 2cqh); }
+  }
+
+  /* Pops of text over the field: console.log output, quacks, question marks */
+  .pop {
+    position: absolute;
+    padding: .2em .5em;
+    font-size: calc(var(--t) * .8);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* ---- Battle-start wipe ---- */
+  .wipe { position: absolute; inset: 0; z-index: 20; display: grid; grid-template-rows: repeat(10, 1fr); pointer-events: none; }
+  .wipe i { background: var(--navy); }
+  .flash { position: absolute; inset: 0; z-index: 19; background: #fff; opacity: 0; pointer-events: none; }
+  .dark { position: absolute; inset: 0; z-index: 18; background: #111; opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="game">
+  <div class="field">
+    <span class="cloud c1"></span>
+    <span class="cloud c2"></span>
+    <div class="dim"></div>
+
+    <div class="sprite foe">
+      <canvas class="pad" data-sprite="pad"></canvas>
+      <canvas class="bug" data-sprite="bug" aria-hidden="true"></canvas>
+    </div>
+    <div class="sprite me">
+      <canvas class="pad" data-sprite="pad"></canvas>
+      <canvas class="dev" data-sprite="dev" aria-hidden="true"></canvas>
+      <canvas class="duck" data-sprite="duck" aria-hidden="true"></canvas>
+    </div>
+  </div>
+
+  <div class="box info foe-info">
+    <div class="info-head">
+      <span data-lang="en" class="foe-name">BUG</span>
+      <span data-lang="ko"><font-kku class="foe-name" font="pixel" size="clamp(16px, 3.4cqmin, 28px)">버그</font-kku></span>
+      <span class="lv foe-lv">Lv.404</span>
+    </div>
+    <div class="meter"><span>HP</span><div class="bar hp-bug"><i></i></div></div>
+  </div>
+
+  <div class="box info me-info">
+    <div class="info-head">
+      <span data-lang="en">DEV</span>
+      <span data-lang="ko"><font-kku font="pixel" size="clamp(16px, 3.4cqmin, 28px)">개발자</font-kku></span>
+      <span class="lv">Lv.3</span>
+    </div>
+    <div class="meter">
+      <span data-lang="en">Coffee</span>
+      <span data-lang="ko"><font-kku font="pixel" size="clamp(16px, 2.4cqmin, 20px)">커피</font-kku></span>
+      <div class="bar coffee"><i style="--v: 38%"></i></div>
+    </div>
+  </div>
+
+  <div class="box dialog">
+    <div class="say" role="status">
+      <p class="say-text" data-lang="en"></p>
+      <font-kku class="say-text" data-lang="ko" font="pixel" size="clamp(16px, 3.5cqmin, 30px)"> </font-kku>
+      <span class="pick" data-lang="en" aria-hidden="true">Pick a move.</span>
+      <span class="pick" data-lang="ko" aria-hidden="true"><font-kku font="pixel" size="clamp(16px, 2.7cqmin, 23px)">기술을 골라 보세요.</font-kku></span>
+      <span class="more" aria-hidden="true"></span>
+    </div>
+    <div class="menu" role="group"></div>
+  </div>
+
+  <div class="dark"></div>
+  <div class="flash"></div>
+  <div class="wipe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+
+<script>
+(() => {
+  const KO = TTY.lang === 'ko';
+  const $ = (s) => document.querySelector(s);
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  /* ---------- Script ---------- */
+  // Korean particles follow the last syllable: 버그는 / 오프바이원은, 버그가 / 오프바이원이.
+  const batchim = (w) => { const c = w.charCodeAt(w.length - 1) - 0xac00; return c >= 0 && c < 11172 && c % 28 > 0; };
+  const L = TTY.t({
+    en: {
+      // A different bug each battle. hold: a line after the super-effective hit (the bug is left
+      // on 1 HP); log: what console.log does to it instead of printing; reboot: what a restart
+      // does to it instead of confusing it (a leak really is emptied, for now); lv: a number climbs.
+      species: [
+        { id: 'bug', name: 'BUG', lv: '404', appear: 'A wild BUG appeared!', fixed: 'The wild BUG was fixed.\nDEV gained a quiet afternoon.' },
+        { id: 'off', name: 'OFF-BY-ONE', lv: '405', appear: 'A wild OFF-BY-ONE appeared!', hold: 'OFF-BY-ONE hung on with 1 HP!\nDEV changed <= to <.', fixed: 'The wild OFF-BY-ONE was fixed.\nDEV gained a quiet afternoon.' },
+        { id: 'heisen', name: 'HEISENBUG', lv: '??', appear: 'A wild HEISENBUG appeared!', log: ['DEV used console.log!', 'HEISENBUG vanished while watched!', '…and came back once the logs were gone.'], fixed: 'The wild HEISENBUG was fixed.\nAt least, nobody has seen it since.' },
+        { id: 'leak', name: 'MEMORY LEAK', lv: 512, appear: 'A wild MEMORY LEAK appeared!', reboot: 'MEMORY LEAK is back to Lv.512.\nFor now.', fixed: 'The wild MEMORY LEAK was fixed.\nDEV got 11 GB of RAM back.' },
+      ],
+      ask: 'What will DEV do?',
+      moves: [['log', 'console.log'], ['duck', 'Ask the duck'], ['stash', 'git stash & run'], ['reboot', 'Off and on']],
+      log: ['DEV used console.log!', 'It printed "here".\nThen "here 2".', 'It’s not very effective…'],
+      duck: ['Go! RUBBER DUCK!', 'DEV explained the code to the duck,\nline by line…', '…and spotted the bug halfway through!', 'It’s super effective!'],
+      // Lines that take the species' name are functions of it.
+      stash: ['DEV stashed everything and ran!', 'Got away safely…', (n) => `…but ${n} will still be here on Monday.`],
+      reboot: ['DEV used Off and on!', '…', 'It works?!', (n) => `Nobody knows why.\n${n} is confused!`],
+      back: (n) => `Monday morning.\n${n} was right where DEV left it.`,
+      // Run away three times in a row and the bug, left alone, evolves.
+      glow: (n) => `Left alone, ${n} began to glow…`,
+      evolving: (n) => `What? ${n} is evolving!`,
+      evolved: (n) => `${n} evolved into FEATURE!`,
+      feature: 'FEATURE',
+      logs: ['here', 'here 2', 'here 3'],
+      quack: 'Quack.',
+    },
+    ko: {
+      species: [
+        { id: 'bug', name: '버그', lv: '404', appear: '앗! 야생의 버그가 나타났다!', fixed: '야생의 버그를 고쳤다!\n평화로운 오후를 얻었다.' },
+        { id: 'off', name: '오프바이원', lv: '405', appear: '앗! 야생의 오프바이원이 나타났다!', hold: '오프바이원은 HP 1로 버텼다!\n개발자는 <=를 <로 고쳤다.', fixed: '야생의 오프바이원을 고쳤다!\n평화로운 오후를 얻었다.' },
+        { id: 'heisen', name: '하이젠버그', lv: '??', appear: '앗! 야생의 하이젠버그가 나타났다!', log: ['개발자의 console.log!', '지켜보자 하이젠버그가 사라졌다!', '…로그를 지우자 다시 나타났다.'], fixed: '야생의 하이젠버그를 고쳤다!\n…적어도 그 뒤로 본 사람은 없다.' },
+        { id: 'leak', name: '메모리 누수', lv: 512, appear: '앗! 야생의 메모리 누수가 나타났다!', reboot: '메모리 누수가 Lv.512로 돌아왔다.\n…당분간은.', fixed: '야생의 메모리 누수를 고쳤다!\nRAM 11GB를 되찾았다.' },
+      ],
+      ask: '개발자는 무엇을 할까?',
+      moves: [['log', 'console.log'], ['duck', '오리에게 묻기'], ['stash', 'stash 하고 튀기'], ['reboot', '껐다 켜기']],
+      log: ['개발자의 console.log!', '"여기"가 찍혔다.\n"여기2"도 찍혔다.', '효과가 별로인 듯하다…'],
+      duck: ['가랏! 고무 오리!', '오리에게 코드를\n한 줄씩 설명하는데…', '…절반쯤에서 버그가 보였다!', '효과가 굉장했다!'],
+      stash: ['개발자는 전부 stash 하고 도망쳤다!', '무사히 도망쳤다…', (n) => `…${n}${batchim(n) ? '은' : '는'} 월요일에도 기다리고 있을 것이다.`],
+      reboot: ['개발자의 껐다 켜기!', '…', '된다?!', (n) => `아무도 이유를 모른다.\n${n}${batchim(n) ? '은' : '는'} 혼란에 빠졌다!`],
+      back: (n) => `월요일 아침.\n${n}${batchim(n) ? '은' : '는'} 두고 간 자리에 그대로 있었다.`,
+      glow: (n) => `혼자 남은 ${n}${batchim(n) ? '이' : '가'} 빛나기 시작했다…`,
+      evolving: (n) => `어라…? ${n}의 모습이…!`,
+      evolved: (n) => `${n}${batchim(n) ? '은' : '는'} 기능(FEATURE)으로 진화했다!`,
+      feature: '기능',
+      logs: ['여기', '여기2', '여기3'],
+      quack: '꽥.',
+    },
+  });
+
+  /* ---------- Pixel sprites ---------- */
+  function Pix(w, h) {
+    const grid = Array.from({ length: h }, () => Array(w).fill(null));
+    const inside = (x, y) => x >= 0 && y >= 0 && x < w && y < h;
+    const api = {
+      w, h, grid,
+      px(x, y, c) { x = Math.round(x); y = Math.round(y); if (inside(x, y)) grid[y][x] = c; },
+      get(x, y) { return inside(x, y) ? grid[y][x] : null; },
+      rect(x, y, rw, rh, c) { for (let j = 0; j < rh; j++) for (let i = 0; i < rw; i++) api.px(x + i, y + j, c); },
+      ell(cx, cy, rx, ry, c, keep) {
+        for (let y = Math.floor(cy - ry - 1); y <= cy + ry + 1; y++) {
+          for (let x = Math.floor(cx - rx - 1); x <= cx + rx + 1; x++) {
+            const d = ((x + .5 - cx) / rx) ** 2 + ((y + .5 - cy) / ry) ** 2;
+            if (d <= 1 && (!keep || keep(x, y))) api.px(x, y, c);
+          }
+        }
+      },
+      line(x0, y0, x1, y1, c) {
+        const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+        let err = dx + dy;
+        for (;;) {
+          api.px(x0, y0, c);
+          if (x0 === x1 && y0 === y1) break;
+          const e2 = 2 * err;
+          if (e2 >= dy) { err += dy; x0 += sx; }
+          if (e2 <= dx) { err += dx; y0 += sy; }
+        }
+      },
+      outline(c) {
+        const add = [];
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+          if (grid[y][x]) continue;
+          if (api.get(x - 1, y) || api.get(x + 1, y) || api.get(x, y - 1) || api.get(x, y + 1)) add.push([x, y]);
+        }
+        add.forEach(([x, y]) => { grid[y][x] = c; });
+      },
+      paint(canvas) {
+        canvas.width = w; canvas.height = h;
+        const g = canvas.getContext('2d');
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (grid[y][x]) { g.fillStyle = grid[y][x]; g.fillRect(x, y, 1, 1); }
+      },
+    };
+    return api;
+  }
+
+  const NAVY = '#2b2d42';
+  const SPRITES = {
+    pad() {
+      const p = Pix(48, 12);
+      p.ell(24, 6, 23, 5.5, '#5f9f45');
+      p.ell(24, 5.4, 21, 4.4, '#79bd57');
+      p.ell(20, 4.6, 12, 2.2, '#93d371');
+      return p;
+    },
+    // Each species has its own shell; the OFF-BY-ONE has one leg too many.
+    bug(kind = 'bug') {
+      const [shell, shade, shine, spot] = {
+        bug: ['#e5484d', '#bd3239', '#ff8c90', '#ffd166'],
+        off: ['#f08c00', '#c26a00', '#ffc078', '#fff3bf'],
+        heisen: ['#9775fa', '#7048e8', '#d0bfff', '#ffffff'],
+        leak: ['#40c057', '#2b8a3e', '#b2f2bb', '#ffd166'],
+      }[kind];
+      const p = Pix(40, 32);
+      const legs = [[[11, 16], [5, 13], [3, 15]], [[10, 20], [4, 21], [2, 23]], [[11, 24], [6, 28], [4, 30]]];
+      legs.forEach((leg) => {
+        for (let i = 0; i < leg.length - 1; i++) {
+          p.line(leg[i][0], leg[i][1], leg[i + 1][0], leg[i + 1][1], NAVY);
+          p.line(39 - leg[i][0], leg[i][1], 39 - leg[i + 1][0], leg[i + 1][1], NAVY);
+        }
+      });
+      if (kind === 'off') { p.line(29, 22, 35, 25, NAVY); p.line(35, 25, 38, 27, NAVY); }
+      p.line(16, 6, 12, 1, NAVY); p.line(23, 6, 27, 1, NAVY);
+      p.rect(10, 0, 3, 2, '#ffd166'); p.rect(27, 0, 3, 2, '#ffd166');
+      p.ell(19.5, 20, 11.5, 9.5, shell);
+      p.ell(19.5, 20, 11.5, 9.5, shade, (x, y) => (x - 19.5) * .5 + (y - 20) > 4);
+      p.ell(14, 15, 3.4, 2.2, shine);
+      for (let y = 12; y <= 29; y++) { p.px(19, y, NAVY); p.px(20, y, NAVY); }
+      [[13, 21], [25, 17], [15, 26], [24, 25]].forEach(([x, y]) => p.ell(x, y, 1.9, 1.9, spot));
+      p.ell(19.5, 9, 7.6, 5.4, '#3a3d5c');
+      p.rect(14, 7, 3, 3, '#fff'); p.rect(22, 7, 3, 3, '#fff');
+      p.px(16, 7, '#3a3d5c'); p.px(22, 7, '#3a3d5c'); // angry brows
+      p.rect(14, 9, 1, 1, NAVY); p.rect(22, 9, 1, 1, NAVY);
+      p.rect(17, 12, 6, 1, '#ffd166'); // a toothy frown
+      p.outline(NAVY);
+      return p;
+    },
+    dev() {
+      const p = Pix(40, 36);
+      p.ell(20, 31, 15, 9, '#4c6ef5');
+      p.rect(5, 31, 31, 6, '#4c6ef5');
+      p.ell(20, 23, 10, 4, '#3b5bdb');
+      p.ell(20, 13, 8, 9, '#5a3d2b');
+      p.ell(17, 9, 3, 2.4, '#7a5640');
+      for (let a = Math.PI * 1.08; a <= Math.PI * 1.92; a += .04) p.px(20 + Math.cos(a) * 9.4, 13 + Math.sin(a) * 10.2, NAVY);
+      p.rect(9, 11, 3, 7, '#ff6b6b'); p.rect(28, 11, 3, 7, '#ff6b6b');
+      p.rect(17, 27, 1, 5, '#e7ecff'); p.rect(22, 27, 1, 5, '#e7ecff');
+      p.outline(NAVY);
+      return p;
+    },
+    // What a bug becomes when nobody fixes it: the same face, smiling, with wings and a gold shell.
+    feature() {
+      const p = Pix(40, 32);
+      p.line(16, 6, 12, 1, NAVY); p.line(23, 6, 27, 1, NAVY);
+      [[11, 1], [28, 1]].forEach(([x, y]) => { p.rect(x - 1, y, 3, 1, '#ffd166'); p.rect(x, y - 1, 1, 3, '#ffd166'); });
+      p.ell(8, 11, 7.6, 8, '#ff9fd5');
+      p.ell(31, 11, 7.6, 8, '#ff9fd5');
+      p.ell(7, 10, 3, 3.4, '#fff0f6'); p.ell(32, 10, 3, 3.4, '#fff0f6');
+      p.ell(9.5, 23.5, 6.2, 5.6, '#b197fc');
+      p.ell(29.5, 23.5, 6.2, 5.6, '#b197fc');
+      p.ell(19.5, 20, 10, 9.5, '#ffd43b');
+      p.ell(19.5, 20, 10, 9.5, '#f59f00', (x, y) => (x - 19.5) * .5 + (y - 20) > 4);
+      p.ell(14.5, 15, 3.4, 2.2, '#fff3bf');
+      for (let y = 12; y <= 29; y++) { p.px(19, y, NAVY); p.px(20, y, NAVY); }
+      [[14, 22], [25, 18], [24, 25]].forEach(([x, y]) => { p.px(x, y, '#fff'); p.px(x - 1, y, '#fff8db'); p.px(x + 1, y, '#fff8db'); p.px(x, y - 1, '#fff8db'); p.px(x, y + 1, '#fff8db'); });
+      p.ell(19.5, 9, 7.6, 5.4, '#3a3d5c');
+      p.px(14, 9, '#fff'); p.px(15, 8, '#fff'); p.px(16, 9, '#fff'); // happy eyes ^ ^
+      p.px(22, 9, '#fff'); p.px(23, 8, '#fff'); p.px(24, 9, '#fff');
+      p.px(13, 11, '#ff8fab'); p.px(25, 11, '#ff8fab');
+      p.px(17, 11, '#ffd166'); p.rect(18, 12, 4, 1, '#ffd166'); p.px(22, 11, '#ffd166'); // a smile
+      p.outline(NAVY);
+      return p;
+    },
+    duck() {
+      const p = Pix(30, 26);
+      p.ell(13, 17, 11, 7, '#ffd43b');
+      p.rect(1, 10, 3, 4, '#ffd43b');
+      p.ell(19, 9, 6, 6, '#ffd43b');
+      p.ell(14, 17, 5.5, 3.2, '#f5b400');
+      p.rect(24, 9, 4, 2, '#ff922b'); p.rect(24, 11, 3, 1, '#e8590c');
+      p.rect(20, 6, 1, 2, NAVY);
+      p.rect(16, 5, 2, 1, '#fff6c2'); p.rect(6, 13, 3, 1, '#fff6c2');
+      p.outline(NAVY);
+      return p;
+    },
+  };
+  document.querySelectorAll('[data-sprite]').forEach((c) => SPRITES[c.dataset.sprite]().paint(c));
+  // The glowing white shape of a sprite, for the evolution.
+  function silhouette(p) {
+    const q = Pix(p.w, p.h);
+    for (let y = 0; y < p.h; y++) for (let x = 0; x < p.w; x++) if (p.get(x, y)) q.px(x, y, '#fff');
+    return q;
+  }
+
+  /* ---------- Elements ---------- */
+  const say = $('.say');
+  const text = $('.say-text[data-lang="' + TTY.lang + '"]');
+  const menu = $('.menu');
+  const bug = $('.bug');
+  const dev = $('.dev');
+  const duck = $('.duck');
+  const hp = $('.hp-bug');
+  const field = $('.field');
+  const dim = $('.dim');
+  const foeName = $('.foe-name');
+  const foeLv = $('.foe-lv');
+
+  // Battles draw species from a shuffled bag, so the same bug never comes twice in a row.
+  let bag = [];
+  let sp = null;
+  function nextSpecies() {
+    if (!bag.length) {
+      bag = L.species.slice().sort(() => Math.random() - .5);
+      if (sp && bag[bag.length - 1] === sp) bag.unshift(bag.pop());
+    }
+    return bag.pop();
+  }
+  // A MEMORY LEAK keeps growing until it is fixed: a level a quarter second, and a bit bigger.
+  let leaking = 0;
+  let level = 0;
+  let growth = null;
+  function startLeak() {
+    level = sp.lv;
+    foeLv.textContent = 'Lv.' + level;
+    leaking = setInterval(() => { foeLv.textContent = 'Lv.' + (++level); }, 250);
+    growth = anim(bug, [{ scale: '1' }, { scale: '1.18' }], { duration: 18000, easing: 'steps(12)', fill: 'forwards' });
+  }
+  const stopLeak = () => { clearInterval(leaking); leaking = 0; };
+  // Turned off and on again, a leak really is empty: its first level and size.
+  function emptyLeak() {
+    stopLeak();
+    if (growth) growth.cancel();
+    growth = null;
+    level = sp.lv;
+    foeLv.textContent = 'Lv.' + level;
+  }
+
+  L.moves.forEach(([id, label]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.move = id;
+    if (KO && /[가-힣]/.test(label)) {
+      const host = document.createElement('font-kku');
+      host.setAttribute('font', 'pixel');
+      host.setAttribute('size', 'clamp(16px, 3.2cqmin, 27px)');
+      host.textContent = label;
+      b.append(host);
+    } else {
+      b.textContent = label;
+    }
+    b.setAttribute('aria-label', label);
+    menu.append(b);
+  });
+  const buttons = [...menu.children];
+
+  /* ---------- Typing ---------- */
+  let skip = false;
+  let shown = '';
+  const put = (t) => {
+    if (t === shown) return;
+    shown = t;
+    text.textContent = t || (KO ? ' ' : '');
+  };
+  async function type(line) {
+    skip = false;
+    say.classList.remove('waiting');
+    if (TTY.reduce) { put(line); return; }
+    const frames = KO ? FontKkuFx.typingFrames(line) : [...line].map((_, i) => line.slice(0, i + 1));
+    for (const f of frames) {
+      if (skip) break;
+      put(f);
+      const last = f[f.length - 1];
+      await sleep(/[.!?…,\n]/.test(last) ? 130 : last === ' ' ? 40 : KO ? 26 : 30);
+    }
+    put(line);
+  }
+  async function lines(list, pause = 820) {
+    for (const line of list) {
+      await type(line);
+      say.classList.add('waiting');
+      await sleep(pause);
+      say.classList.remove('waiting');
+    }
+  }
+  say.addEventListener('click', () => { skip = true; });
+
+  /* ---------- Effects ---------- */
+  const anim = (el, frames, opts) => (TTY.reduce ? null : el.animate(frames, opts));
+  const setHp = (v) => {
+    hp.style.setProperty('--v', v + '%');
+    hp.classList.toggle('mid', v <= 50 && v > 20);
+    hp.classList.toggle('low', v <= 20);
+  };
+  function pop(label, x, y, hold = 1100) {
+    const el = document.createElement('div');
+    el.className = 'box pop';
+    if (KO && /[가-힣]/.test(label)) {
+      const host = document.createElement('font-kku');
+      host.setAttribute('font', 'pixel');
+      host.setAttribute('size', 'clamp(16px, 2.8cqmin, 24px)');
+      host.textContent = label;
+      el.append(host);
+    } else el.textContent = label;
+    el.style.left = x; el.style.top = y;
+    field.append(el);
+    anim(el, [{ translate: '0 30%', opacity: 0 }, { translate: '0 0', opacity: 1 }], { duration: 260, easing: 'steps(3)' });
+    if (hold) setTimeout(() => unpop(el), hold);
+    return el;
+  }
+  // Takes a pop away (one made with no hold stays until this).
+  function unpop(el) {
+    if (!el.isConnected) return;
+    const a = anim(el, [{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'steps(2)' });
+    if (a) a.finished.then(() => el.remove()); else el.remove();
+  }
+  // A pop just over a sprite's head (the duck's "Quack."), inside the field and never under
+  // DEV's info box, which is drawn over the field.
+  function popOver(label, sprite, hold) {
+    const el = pop(label, '0px', '0px', hold);
+    const f = field.getBoundingClientRect(), s = sprite.getBoundingClientRect(), info = meInfo.getBoundingClientRect();
+    const w = el.offsetWidth, h = el.offsetHeight;
+    // The duck's head is the right part of its sprite; its top rows are empty.
+    const x = Math.max(4, Math.min(f.width - w - 4, s.left - f.left + s.width * .62 - w / 2));
+    let y = s.top - f.top + s.height * .1 - h;
+    if (x + w > info.left - f.left && x < info.right - f.left) y = Math.min(y, info.top - f.top - h - 4);
+    el.style.left = x + 'px';
+    el.style.top = Math.max(4, y) + 'px';
+    return el;
+  }
+
+  /* ---------- The duck's spot ---------- */
+  // In the grass beside DEV, unless DEV's info box stands there (portrait and square-ish
+  // screens): then on DEV's shoulder. Layout boxes, so the battle's slide-in does not count.
+  const me = $('.me');
+  const meInfo = $('.me-info');
+  const game = $('.game');
+  function layoutBox(el) {
+    let x = 0, y = 0;
+    for (let n = el; n && n !== game; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop; }
+    return { l: x, t: y, r: x + el.offsetWidth, b: y + el.offsetHeight };
+  }
+  function placeDuck() {
+    // How far the duck reaches in under the box (0: clear of it).
+    const under = () => {
+      const d = layoutBox(duck), i = layoutBox(meInfo), gap = 8;
+      return d.r + gap > i.l && d.l - gap < i.r && d.b + gap > i.t && d.t - gap < i.b ? d.r + gap - i.l : 0;
+    };
+    me.classList.remove('perch');
+    me.style.removeProperty('--nudge');
+    if (!under()) return;
+    me.classList.add('perch');
+    // On a phone the box comes close to DEV's head too: the duck shuffles in a little.
+    const more = under();
+    if (more > 0) me.style.setProperty('--nudge', Math.min(more, me.offsetWidth * .12) + 'px');
+  }
+  placeDuck();
+  new ResizeObserver(placeDuck).observe(meInfo);
+  new ResizeObserver(placeDuck).observe(game);
+  const blink = (el, times = 3) => anim(el, [{ opacity: 1 }, { opacity: 0 }, { opacity: 1 }], { duration: 160, iterations: times, easing: 'steps(1)' });
+  const shake = (el) => anim(el, [{ translate: '-50% 0' }, { translate: 'calc(-50% - 4%) 0' }, { translate: 'calc(-50% + 4%) 0' }, { translate: '-50% 0' }], { duration: 240, iterations: 2, easing: 'steps(3)' });
+
+  /* ---------- Moves ---------- */
+  const MOVES = {
+    async log() {
+      const said = sp.log || L.log;
+      await type(said[0]);
+      await sleep(300);
+      // On a phone the bug's info box reaches past the middle, so the log lines start lower and
+      // just right of it (and still below the tty.link links pinned to the top right).
+      const fw = field.clientWidth, narrow = fw <= 640;
+      const x0 = narrow ? Math.max(fw * .62, $('.foe-info').getBoundingClientRect().right - field.getBoundingClientRect().left + 6) : fw * .58;
+      for (let i = 0; i < 3; i++) {
+        pop(L.logs[i], `${Math.round(x0 + fw * i * (narrow ? .06 : .07))}px`, (narrow ? 15 + i * 9 : 8 + i * 9) + '%', 1500);
+        await sleep(260);
+      }
+      await sleep(500);
+      if (sp.log) {
+        // Watched, the HEISENBUG is simply not there.
+        bug.style.visibility = 'hidden';
+        await lines([said[1]], 1100);
+        bug.style.visibility = '';
+        await lines([said[2]]);
+        return;
+      }
+      setHp(97);
+      shake(bug);
+      await sleep(400);
+      await lines(said.slice(1));
+    },
+    async duck() {
+      await type(L.duck[0]);
+      duck.style.opacity = 1;
+      anim(duck, [{ translate: '0 -160%', opacity: 1 }, { translate: '0 8%', offset: .7 }, { translate: '0 -6%', offset: .85 }, { translate: '0 0' }], { duration: 650, easing: 'steps(8)' });
+      await sleep(700);
+      // The duck's one word stays up while DEV explains, and goes just before the bug is found.
+      const quack = popOver(L.quack, duck, 0);
+      await sleep(700);
+      await type(L.duck[1]);
+      say.classList.add('waiting');
+      await sleep(500);
+      unpop(quack);
+      await sleep(500);
+      say.classList.remove('waiting');
+      await type(L.duck[2]);
+      await sleep(300);
+      anim($('.flash'), [{ opacity: 0 }, { opacity: .9 }, { opacity: 0 }], { duration: 300, easing: 'steps(3)' });
+      blink(bug, 3);
+      setHp(sp.hold ? 1 : 0);
+      stopLeak();
+      await sleep(1000);
+      // OFF-BY-ONE's next line takes the place of this one, so it stays a little longer there.
+      await lines([L.duck[3]], sp.hold ? 1200 : 700);
+      if (sp.hold) {
+        // The OFF-BY-ONE survives on exactly one HP, until the loop is fixed.
+        await type(sp.hold);
+        await sleep(300);
+        blink(bug, 2);
+        setHp(0);
+        await sleep(450);
+      }
+      anim(bug, [{ translate: '-50% 0', opacity: 1 }, { translate: '-50% 45%', opacity: 0 }], { duration: 700, easing: 'steps(7)', fill: 'forwards' });
+      if (TTY.reduce) bug.style.opacity = 0;
+      await sleep(700);
+      await type(sp.fixed);
+      return 'won';
+    },
+    // Running away works, for now. The second time in a row the bug, left alone, glows;
+    // the third time it evolves.
+    async stash() {
+      const n = ++stashes;
+      await type(L.stash[0]);
+      anim(dev, [{ translate: '-50% 0' }, { translate: '-260% 0' }], { duration: 600, easing: 'steps(6)', fill: 'forwards' });
+      await sleep(900);
+      if (n >= 3) {
+        await lines([L.stash[1]], 900);
+        return evolve();
+      }
+      if (n === 2) {
+        await lines([L.stash[1]], 700);
+        await glimmer();
+        await lines([L.glow(sp.name)], 1100);
+      } else {
+        await lines([L.stash[1], L.stash[2](sp.name)], 1100);
+      }
+      // Cut to Monday: DEV is back, and so is everything DEV left.
+      anim(dev, [{ translate: '-260% 0' }, { translate: '-50% 0' }], { duration: 600, easing: 'steps(6)', fill: 'forwards' });
+      await sleep(600);
+      await lines([L.back(sp.name)], 1300);
+    },
+    async reboot() {
+      await type(L.reboot[0]);
+      anim($('.dark'), [{ opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: 1, offset: .8 }, { opacity: 0 }], { duration: 1500, easing: 'steps(4)' });
+      // (Dark from about 0.4 s to 1.5 s: the easing is steps(4) over the whole run.)
+      await sleep(600);
+      // The one bug a restart really fixes: in the dark the MEMORY LEAK is back to where it began.
+      if (sp.reboot) emptyLeak();
+      await sleep(1000);
+      await lines(L.reboot.slice(1, 3), 700);
+      if (sp.reboot) {
+        // "…for now": it starts climbing again as soon as that is said.
+        await type(sp.reboot);
+        startLeak();
+        say.classList.add('waiting');
+        await sleep(1500);
+        say.classList.remove('waiting');
+        return;
+      }
+      pop('?', '68%', '10%', 1800);
+      anim(bug, [{ rotate: '0deg' }, { rotate: '-8deg' }, { rotate: '8deg' }, { rotate: '0deg' }], { duration: 500, iterations: 3, easing: 'steps(4)' });
+      await lines([L.reboot[3](sp.name)], 1300);
+    },
+  };
+
+  /* ---------- The hidden ending: ignore a bug long enough and it becomes a feature ---------- */
+  let stashes = 0; // git stash picked this many times in a row
+  async function glimmer() {
+    if (TTY.reduce) return;
+    const was = SPRITES.bug(sp.id), white = silhouette(was);
+    for (let k = 0; k < 2; k++) { white.paint(bug); await sleep(120); was.paint(bug); await sleep(180); }
+    await sleep(300);
+  }
+  // The classic cut: the field goes dark, the bug turns into a white shape that flickers
+  // between its old and new outlines, faster and faster, a flash, and there it is.
+  async function evolve() {
+    const name = sp.name;
+    const was = SPRITES.bug(sp.id), now = SPRITES.feature();
+    stopLeak();
+    bug.classList.remove('heisen');
+    anim(dim, [{ opacity: 0 }, { opacity: .74 }], { duration: 600, easing: 'steps(4)', fill: 'forwards' });
+    if (!TTY.reduce) field.classList.add('evolving');
+    await lines([L.evolving(name)], 300);
+    if (!TTY.reduce) {
+      const a = silhouette(was), b = silhouette(now);
+      a.paint(bug);
+      await sleep(700);
+      for (let k = 0, ms = 440; ms > 48; k++, ms *= .84) { (k % 2 ? a : b).paint(bug); await sleep(ms); }
+      b.paint(bug);
+      anim($('.flash'), [{ opacity: 0 }, { opacity: 1, offset: .3 }, { opacity: 1, offset: .5 }, { opacity: 0 }], { duration: 1000, easing: 'steps(6)' });
+      await sleep(420);
+    }
+    now.paint(bug);
+    foeName.textContent = L.feature;
+    anim(dim, [{ opacity: .74 }, { opacity: 0 }], { duration: 500, easing: 'steps(4)', fill: 'forwards' });
+    field.classList.remove('evolving');
+    await sleep(500);
+    anim(bug, [{ translate: '-50% 0' }, { translate: '-50% -10%' }, { translate: '-50% 0' }], { duration: 320, iterations: 2, easing: 'steps(4)' });
+    await sleep(500);
+    // DEV comes back to find it.
+    anim(dev, [{ translate: '-260% 0' }, { translate: '-50% 0' }], { duration: 600, easing: 'steps(6)', fill: 'forwards' });
+    await type(L.evolved(name));
+    return 'evolved';
+  }
+
+  /* ---------- Turn loop ---------- */
+  let waiting = null;
+  let autoTimer = 0;
+  let autoRun = 0; // every new plan for the cursor calls off the one already walking
+  let autoMove = 'duck'; // where the cursor goes on its own in this menu
+  let autoHold = 0; // ms the home page is asked to keep this page up when the cursor picks the duck
+  let autoPicked = false; // the last move was the cursor's own, not the visitor's
+  let byKeyboard = false; // the last move was chosen from the keyboard: focus the next menu
+  const dialog = $('.dialog');
+  const cursorTo = (b) => buttons.forEach((x) => x.classList.toggle('on', x === b));
+  const button = (id) => buttons.find((x) => x.dataset.move === id);
+  // While a move has keyboard focus, the visitor is choosing: the cursor does not move on its own.
+  // (The mouse only puts it off: see the menu's mouse handlers.)
+  const steering = () => menu.contains(document.activeElement);
+  // Nobody playing? Then the cursor walks to the duck, as anyone wise would.
+  function autopilot(resolve, after) {
+    clearTimeout(autoTimer);
+    const run = ++autoRun;
+    const still = () => waiting === resolve && run === autoRun && !steering();
+    autoTimer = setTimeout(async () => {
+      if (!still()) return;
+      cursorTo(null);
+      await sleep(240);
+      if (!still()) return;
+      cursorTo(button(autoMove));
+      await sleep(520);
+      if (!still()) return;
+      // A duck that comes after another move would win after the home page has moved on.
+      if (autoMove === 'duck' && autoHold) TTY.hold(autoHold);
+      choose(autoMove, true);
+    }, after);
+  }
+  function openMenu(autoAfter, move, hold = 0) {
+    menu.classList.add('open');
+    dialog.classList.add('choosing');
+    cursorTo(buttons[0]);
+    autoMove = move;
+    autoHold = hold;
+    return new Promise((resolve) => {
+      waiting = resolve;
+      if (byKeyboard) buttons[0].focus();
+      autopilot(resolve, autoAfter);
+    });
+  }
+  function choose(id, auto = false) {
+    if (!waiting) return;
+    clearTimeout(autoTimer);
+    autoRun++;
+    autoPicked = auto;
+    const b = button(id);
+    byKeyboard = steering() && document.activeElement.matches(':focus-visible');
+    cursorTo(b);
+    b.classList.add('pressed');
+    setTimeout(() => b.classList.remove('pressed'), 140);
+    const done = waiting;
+    waiting = null;
+    setTimeout(() => { menu.classList.remove('open'); dialog.classList.remove('choosing', 'asking'); done(id); }, 180);
+  }
+  menu.setAttribute('aria-label', TTY.t({ en: 'Pick a move.', ko: '기술을 골라 보세요.' }));
+  menu.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) choose(b.dataset.move); });
+  // One ▶: the mouse and keyboard focus both move the same cursor.
+  menu.addEventListener('mouseover', (e) => { const b = e.target.closest('button'); if (b && waiting) cursorTo(b); });
+  // A mouse moving over the moves is someone choosing: the ▶ comes back under it (it may have
+  // set off for the duck), and the cursor waits until the mouse has been still for 6 s (it may
+  // have been left there), or 3 s after it leaves the moves.
+  menu.addEventListener('mousemove', (e) => { if (!waiting || steering()) return; const b = e.target.closest('button'); if (b) cursorTo(b); autopilot(waiting, 6000); });
+  menu.addEventListener('mouseleave', () => { if (waiting && !steering()) autopilot(waiting, 3000); });
+  menu.addEventListener('focusin', (e) => { const b = e.target.closest('button'); if (b && waiting) { clearTimeout(autoTimer); cursorTo(b); } });
+  menu.addEventListener('focusout', (e) => { if (waiting && !menu.contains(e.relatedTarget)) autopilot(waiting, 4200); });
+  // The arrow keys walk the 2×2 grid.
+  menu.addEventListener('keydown', (e) => {
+    const i = buttons.indexOf(document.activeElement);
+    const to = { ArrowLeft: i % 2 ? i - 1 : -1, ArrowRight: i % 2 ? -1 : i + 1, ArrowUp: i - 2, ArrowDown: i + 2 }[e.key];
+    if (i < 0 || to === undefined) return;
+    e.preventDefault();
+    if (to >= 0 && to < buttons.length) buttons[to].focus();
+  });
+
+  function reset() {
+    setHp(100);
+    stopLeak();
+    bug.getAnimations().forEach((a) => a.cancel());
+    dev.getAnimations().forEach((a) => a.cancel());
+    bug.style.opacity = ''; bug.style.visibility = ''; duck.style.opacity = 0;
+    dim.getAnimations().forEach((a) => a.cancel());
+    field.classList.remove('evolving');
+    dialog.classList.remove('asking');
+    stashes = 0;
+    autoPicked = false;
+    put('');
+    sp = nextSpecies();
+    SPRITES.bug(sp.id).paint(bug);
+    bug.classList.toggle('heisen', sp.id === 'heisen');
+    foeName.textContent = sp.name;
+    foeLv.textContent = 'Lv.' + sp.lv;
+  }
+
+  async function battle() {
+    reset();
+    document.querySelectorAll('.wipe i').forEach((bar, i) => {
+      if (TTY.reduce) { bar.style.transform = 'scaleX(0)'; return; }
+      bar.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }],
+        { duration: 520, delay: 120 + i * 45, easing: 'steps(6)', fill: 'both' });
+      bar.style.transformOrigin = i % 2 ? '100% 50%' : '0 50%';
+    });
+    anim($('.foe'), [{ translate: '120cqw 0' }, { translate: '0 0' }], { duration: 900, delay: 350, easing: 'steps(10)', fill: 'backwards' });
+    anim($('.me'), [{ translate: '-120cqw 0' }, { translate: '0 0' }], { duration: 900, delay: 350, easing: 'steps(10)', fill: 'backwards' });
+    await sleep(1350);
+    if (sp.id === 'leak') startLeak();
+    // The setup line stays up 2 s (A wild BUG appeared!) before the question replaces it.
+    await lines([sp.appear], 1250);
+    let first = true;
+    for (;;) {
+      dialog.classList.add('asking');
+      await type(L.ask);
+      // The first menu waits about 3.8 s (with the hint) before the cursor picks the duck itself.
+      // Against a HEISENBUG it tries console.log first (watch it vanish), and 2 s into the next
+      // menu goes for the duck. A duck picked after the first menu asks the home page for the
+      // time it takes to win and to read the last line (TTY.hold keeps at least that much left):
+      // the last line is typed about 12.5 s after the pick, 15.7 s against OFF-BY-ONE.
+      const id = await openMenu(first ? 3000 : autoPicked ? 2000 : 4200, first && sp.log ? 'log' : 'duck', first ? 0 : sp.hold ? 19000 : 16000);
+      first = false;
+      if (id !== 'stash') stashes = 0;
+      const result = await MOVES[id]();
+      if (result === 'won' || result === 'evolved') break;
+      await sleep(400);
+    }
+    say.classList.add('waiting');
+    // With reduced motion the battle is played once (still playable) and rests on the win.
+    if (TTY.reduce) return;
+    await sleep(7000);
+    battle();
+  }
+
+  // Reduced motion still gets the whole battle and the move menu, just without movement.
+  TTY.onShow(battle);
+
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  /* pixel draws each jamo from a 20-dot grid, so it needs about 22 device pixels per
+     letter to stay legible (measured: clean from 22px at 1x; 16px garbles at 1x but is
+     crisp on a 2x or 3x phone). Where a pixel line would be too coarse, it is drawn in
+     dunggeun instead. */
+  let fallbackLoaded = null;
+  function sharpenPixelText(root = document) {
+    const dpr = window.devicePixelRatio || 1;
+    root.querySelectorAll('font-kku[font="pixel"], font-kku[data-was-pixel]').forEach((host) => {
+      const px = parseFloat(getComputedStyle(host).fontSize) || 0;
+      const coarse = px * dpr < 22;
+      const now = host.getAttribute('font');
+      if (coarse && now === 'pixel') {
+        if (!fallbackLoaded && window.FontKku && FontKku.loadFont) fallbackLoaded = FontKku.loadFont('https://font.tty.link/lib/profiles/dunggeun.css').catch(() => {});
+        host.setAttribute('data-was-pixel', '');
+        host.setAttribute('font', 'dunggeun');
+      } else if (!coarse && now === 'dunggeun' && host.hasAttribute('data-was-pixel')) {
+        host.setAttribute('font', 'pixel');
+      }
+    });
+  }
+  sharpenPixelText();
+  new MutationObserver((records) => records.forEach((r) => r.addedNodes.forEach((n) => { if (n.nodeType === 1) sharpenPixelText(n.parentNode || document); }))).observe(document.body, { childList: true, subtree: true });
+  let sizing;
+  addEventListener('resize', () => { clearTimeout(sizing); sizing = setTimeout(() => sharpenPixelText(), 150); });
+
+  // font-kku's own stylesheet sets the sizes, so check again once everything has loaded.
+  Promise.all([loaded, document.fonts.ready]).then(() => { sharpenPixelText(); TTY.ready(); });
+})();
+</script>
+</body>
+</html>

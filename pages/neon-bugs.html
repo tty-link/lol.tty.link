@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bugs Fixed While You Wait | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tilt+Neon&family=Kalam:wght@400;700&family=Gowun+Dodum&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="neon pilgi"></script>
+<style>
+  /* A repair shop's neon sign at night. One tube is broken, and the shop has decided that
+     is a feature. Tapping the sign is percussive maintenance: it works, for a while. */
+  :root {
+    --mortar: #120b19;
+    --brick: #2a1730;
+    --pink: #ff6fdf;
+    --pink-core: #ffe3f8;
+    --cyan: #6ff4ff;
+    --green: #8dffb5;
+    --glass: #4b3b52;
+    --paper: #f6efdc;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: #f4ecf6;
+    font-family: 'Gowun Dodum', system-ui, sans-serif;
+    background:
+      radial-gradient(ellipse 55% 42% at 50% 34%, rgba(255, 79, 216, .2) 0%, transparent 70%),
+      radial-gradient(ellipse 120% 80% at 50% 0%, transparent 40%, rgba(0, 0, 0, .6) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='76' height='68'%3E%3Cpath d='M0 33H76M0 67H76M1 0V33M39 34V67' stroke='%23120b19' stroke-width='3'/%3E%3Cpath d='M3 3h33v27H3zM42 37h31v27H42z' fill='%23ffffff' fill-opacity='.03'/%3E%3C/svg%3E") 0 0 / 76px 68px,
+      linear-gradient(180deg, #341d3b 0%, var(--brick) 60%, #1d1022 100%);
+  }
+  /* When the lights go off, the pink on the bricks goes with them. */
+  body::after { content: ""; position: fixed; inset: 0; pointer-events: none; background: rgba(0, 0, 0, 0); transition: background .5s ease; }
+  body.is-off::after { background: rgba(0, 0, 0, .42); }
+
+  .scene {
+    position: relative;
+    z-index: 1;
+    container-type: inline-size;
+    display: grid;
+    justify-items: center;
+    gap: 4.5cqi;
+    width: min(calc(100vw - 28px), calc((100vh - 48px) * 1.15), 960px);
+  }
+
+  /* The board: black acrylic on two wires, four screws. */
+  .sign {
+    position: relative;
+    width: 100%;
+    padding: 6.5cqi 5cqi 5.5cqi;
+    border: 0;
+    border-radius: 2.4cqi;
+    background: linear-gradient(180deg, rgba(20, 10, 26, .86), rgba(10, 5, 14, .92));
+    box-shadow: 0 3cqi 7cqi rgba(0, 0, 0, .55), inset 0 0 0 1px rgba(255, 255, 255, .06);
+    color: inherit;
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+  }
+  .sign:focus-visible { outline: 3px solid var(--cyan); outline-offset: 4px; }
+  .sign::before, .sign::after {
+    content: "";
+    position: absolute;
+    top: -40vh;
+    width: 1px;
+    height: 40vh;
+    background: linear-gradient(transparent, rgba(255, 255, 255, .25));
+  }
+  .sign::before { left: 18%; }
+  .sign::after { right: 18%; }
+  .screw { position: absolute; width: 1.3cqi; height: 1.3cqi; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #d9d2dc, #6f6673); }
+  .screw.a { top: 1.8cqi; left: 1.8cqi; } .screw.b { top: 1.8cqi; right: 1.8cqi; }
+  .screw.c { bottom: 1.8cqi; left: 1.8cqi; } .screw.d { bottom: 1.8cqi; right: 1.8cqi; }
+
+  /* English tubes: Tilt Neon, a white-hot core and layered glow. */
+  .tube { display: block; font-family: 'Tilt Neon', sans-serif; line-height: 1; white-space: nowrap; }
+  .tube .ch { display: inline-block; }
+  .big { font-size: 15.5cqi; color: var(--pink-core); text-shadow: 0 0 .04em #fff, 0 0 .12em #ff4fd8, 0 0 .3em #ff2fb0, 0 0 .6em #b0007a; }
+  .small { margin-top: 2.6cqi; font-size: 7.4cqi; color: #e2fdff; text-shadow: 0 0 .04em #fff, 0 0 .12em #5ef2ff, 0 0 .3em #19c6ff, 0 0 .6em #0077b6; }
+
+  /* Korean tubes: font-kku neon (pink initials and finals, sky-blue vowels). */
+  .kk { display: block; line-height: 1; }
+  .kk + .kk { margin-top: 2.8cqi; }
+  /* The glow follows each jamo's color (font-kku glow paint), so color recolors the glow and
+     stroke color recolors the tube. The glow is drawn after a clipped vowel is cut, so it stays whole. */
+  .kk.small-ko [part~="jamo"] {
+    color: #5ef2ff;
+    -webkit-text-stroke-color: var(--cyan);
+  }
+
+  /* The broken tube is the one that says "fix": the x of "fixed", and in Korean the ㅅ on top of
+     수, the first syllable of 수리 ("repair"), which leaves ㅜ리. Every rule below names both in
+     one :is(), so the two languages always get the same treatment (and the same specificity,
+     0,4,0, from the Korean selector). The cycle starts 1.75 s in, so its long outage (37–46%)
+     comes about 0.2 s after the switch-on sputter ends, or after a knock wears off.
+     The Korean selector leans on font-kku's DOM (data-source on the glyph, part on the jamo);
+     수 appears in no other .kk line, so it picks exactly one tube. */
+  :is(.broken, .kk [part="glyph"][data-source="수"] [part~="choseong"]) { animation: broken 5.2s steps(1, end) -1.75s infinite; }
+  @keyframes broken {
+    0% { opacity: 1; }
+    6% { opacity: .1; } 7% { opacity: 1; } 8.4% { opacity: .25; } 9.6% { opacity: 1; }
+    37% { opacity: .08; } 44% { opacity: .65; } 44.8% { opacity: .08; } 46% { opacity: 1; }
+    70% { opacity: .2; } 70.8% { opacity: 1; }
+    83% { opacity: .1; } 83.6% { opacity: 1; }
+  }
+  /* After enough knocks the x is fixed for good and another tube goes: the g of "Bugs"
+     (which leaves "Bu s fixed"), and in Korean the ㅂ of 버그 (ㅓ그). The new one stays out
+     for the whole 3 s bubble that owns up to it, with one weak try, then flickers like the old
+     one. A fixed tube still sputters in with the others when the sign is switched on again
+     (--ignite is only set while igniting). */
+  .regressed :is(.broken, .kk [part="glyph"][data-source="수"] [part~="choseong"]) { animation: var(--ignite, none); opacity: 1; }
+  .regressed :is(.regress, .kk [part="glyph"][data-source="버"] [part~="choseong"]) {
+    animation: regress-out 2.6s steps(1, end) both, broken 5.2s steps(1, end) 2.6s infinite;
+  }
+  @keyframes regress-out { 0% { opacity: .08; } 50% { opacity: .5; } 53% { opacity: .08; } 100% { opacity: .08; } }
+  .kicked :is(.broken, .regress, .kk [part="glyph"][data-source="수"] [part~="choseong"], .kk [part="glyph"][data-source="버"] [part~="choseong"]) { animation: none; opacity: 1; }
+
+  /* Lower row: the Open sign, the shop's card, the switch. */
+  .lower { display: grid; grid-template-columns: auto 1fr; gap: 4cqi; align-items: center; width: 100%; }
+  .open {
+    display: grid;
+    place-items: center;
+    padding: 2.6cqi 3.6cqi;
+    border: .5cqi solid #b9ffd3;
+    border-radius: 2cqi;
+    box-shadow: 0 0 1cqi #3dff8f, inset 0 0 1cqi #3dff8f, 0 0 3cqi rgba(18, 214, 107, .6);
+    background: rgba(8, 14, 10, .55);
+  }
+  .open .tube { font-size: 8cqi; color: #eafff1; text-shadow: 0 0 .04em #fff, 0 0 .12em #3dff8f, 0 0 .3em #12d66b, 0 0 .6em #00873f; }
+  .open .kk [part~="jamo"] {
+    color: #3dff8f;
+    -webkit-text-stroke-color: var(--green);
+  }
+
+  .card {
+    justify-self: start;
+    max-width: 52cqi;
+    padding: 2.8cqi 3.4cqi 3cqi;
+    background: linear-gradient(180deg, #fbf6e6, var(--paper));
+    color: #2a2230;
+    rotate: -2.5deg;
+    box-shadow: 0 1.6cqi 3cqi rgba(0, 0, 0, .45);
+  }
+  .card::before { content: ""; display: block; width: 12cqi; height: 3cqi; margin: -4.4cqi auto 1.4cqi; background: rgba(255, 255, 255, .5); rotate: 3deg; }
+  .card-main { font-family: 'Kalam', cursive; font-weight: 700; font-size: 4.6cqi; line-height: 1.1; }
+  .card-small { margin-top: 1.4cqi; font-family: 'Kalam', cursive; font-size: 2.9cqi; line-height: 1.3; color: #5b4f5e; }
+  .lang-ko .card-small { font-family: 'Gowun Dodum', sans-serif; font-size: 2.7cqi; line-height: 1.5; word-break: keep-all; }
+  /* The status is corrected by hand, in red pen, every time the sign is knocked. */
+  .status s { text-decoration-color: #c8322b; text-decoration-thickness: .14em; opacity: .7; }
+  .status .pen { font-family: 'Kalam', cursive; font-weight: 700; color: #c8322b; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 3cqi; align-items: center; justify-content: center; min-height: 44px; }
+  .switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 40px;
+    padding: 6px 16px 6px 8px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .4);
+    color: inherit;
+    font: inherit;
+    font-size: clamp(13px, 2.6cqi, 16px);
+    cursor: pointer;
+  }
+  .switch:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+  .track { position: relative; width: 40px; height: 22px; border-radius: 999px; background: #3a3340; transition: background .2s ease; }
+  .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: translate .2s ease; }
+  .switch[aria-checked="true"] .track { background: #22b862; box-shadow: 0 0 10px rgba(61, 255, 143, .55); }
+  .switch[aria-checked="true"] .track::after { translate: 18px 0; }
+
+  /* The shop's reply: after a knock, or after the visitor switches the sign off and on. */
+  .bubble {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    z-index: 3;
+    translate: -50% -40%;
+    padding: 1.4cqi 2.6cqi;
+    border-radius: 999px;
+    background: var(--paper);
+    color: #2a2230;
+    font-size: clamp(13px, 3.2cqi, 19px);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 1cqi 2cqi rgba(0, 0, 0, .4);
+  }
+  .bubble.on { animation: bubble 3s ease both; }
+  /* "Turned it off and on again. Still a feature." is nine words: it stays up a second longer. */
+  .bubble.on.long { animation-duration: 4s; }
+  /* It rests across the board's top edge (40% above it): a scene that fills the height, as on
+     its own at 1000×800, has no room above the board. */
+  @keyframes bubble { 0% { opacity: 0; translate: -50% -10%; } 10%, 85% { opacity: 1; translate: -50% -40%; } 100% { opacity: 0; translate: -50% -50%; } }
+  /* A knock has to read on a 358-px stage: about 3° and 2cqi down, so the board's corners jump
+     some 15 px. */
+  .sign.thump { animation: thump .45s cubic-bezier(.3, 1.6, .5, 1); }
+  @keyframes thump { 0% { rotate: 0deg; } 22% { rotate: -3deg; translate: 0 2cqi; } 50% { rotate: 2deg; translate: 0 -.4cqi; } 76% { rotate: -.8deg; translate: 0 0; } 100% { rotate: 0deg; } }
+
+  /* Off: glass tubes, no light. */
+  .is-off .big, .is-off .small, .is-off .open .tube { color: var(--glass); text-shadow: none; }
+  .is-off .kk [part~="jamo"] { -webkit-text-stroke-color: var(--glass); text-shadow: none; animation: none; }
+  /* The off state must beat the broken-tube flicker (same specificity, so it comes after). */
+  .is-off :is(.broken, .regress, .kk [part="glyph"][data-source="수"] [part~="choseong"], .kk [part="glyph"][data-source="버"] [part~="choseong"]) { animation: none; }
+  .is-off .open { border-color: var(--glass); box-shadow: none; }
+
+  /* On again: each tube sputters in, a little after the one before. Everything but the broken
+     tube has caught about 1.5 s after the switch-on starts (the small line and the Open box
+     hurry), so for the last second of it the one dark tube is the only thing happening.
+     --ignite is also read by the fixed x/ㅅ after a regression. */
+  .is-igniting .tube .ch { --ignite: ignite .9s steps(1, end) calc(var(--i, 0) * 70ms) backwards; }
+  .is-igniting .small .ch { --ignite: ignite .9s steps(1, end) calc(var(--i, 0) * 40ms + 250ms) backwards; }
+  .is-igniting .kk [part~="jamo"] { --ignite: ignite .9s steps(1, end) calc(var(--fy-glyph-index, 0) * 90ms + var(--lag, 0ms)) backwards; }
+  .is-igniting .small-ko [part~="jamo"] { --ignite: ignite .9s steps(1, end) calc(var(--fy-glyph-index, 0) * 45ms + var(--lag, 0ms) + 250ms) backwards; }
+  .is-igniting .tube .ch, .is-igniting .kk [part~="jamo"] { animation: var(--ignite); }
+  .is-igniting .kk [part~="jungseong"] { --lag: 140ms; }
+  .is-igniting .kk [part~="jongseong"] { --lag: 260ms; }
+  .is-igniting .open { animation: ignite .9s steps(1, end) .3s backwards; }
+  @keyframes ignite { 0% { opacity: .08; } 30% { opacity: .8; } 40% { opacity: .15; } 55% { opacity: 1; } 65% { opacity: .4; } 75% { opacity: 1; } }
+  /* The broken tube does not catch with the others: it stays dark through most of the switch-on,
+     with a few weak tries, so "Bugs fi ed" / "버그 즉석 ㅜ리" is the first thing anyone sees. It
+     catches at the end and goes on flickering. Only while it is still broken (not knocked
+     steady, not fixed). Specificity 0,8,0 beats the flicker and the sputter. */
+  .is-igniting:not(.regressed) .sign:not(.kicked) :is(.broken, .kk [part="glyph"][data-source="수"] [part~="choseong"]) { animation: dud 2.6s steps(1, end) both; }
+  @keyframes dud { 0% { opacity: .08; } 22% { opacity: .55; } 25% { opacity: .08; } 47% { opacity: .35; } 49% { opacity: .08; } 66% { opacity: .7; } 70% { opacity: .08; } 90% { opacity: 1; } }
+
+  @container (max-width: 520px) {
+    .lower { grid-template-columns: auto 1fr; gap: 3.4cqi; }
+    .card { max-width: none; }
+    .card-main { font-size: 5.2cqi; }
+    /* The status line is where the red pen writes: about 13 px on a phone. */
+    .card-small { font-size: 4cqi; line-height: 1.25; }
+    .lang-ko .card-small { font-size: 3.8cqi; line-height: 1.4; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sign.thump { animation: none; }
+    /* No sputter (is-igniting is never set) and no flicker: the broken tube is simply half dead. */
+    :is(.broken, .kk [part="glyph"][data-source="수"] [part~="choseong"]),
+    .regressed :is(.regress, .kk [part="glyph"][data-source="버"] [part~="choseong"]) { animation: none; opacity: .3; }
+    .regressed :is(.broken, .kk [part="glyph"][data-source="수"] [part~="choseong"]),
+    .kicked :is(.broken, .regress, .kk [part="glyph"][data-source="수"] [part~="choseong"], .kk [part="glyph"][data-source="버"] [part~="choseong"]) { opacity: 1; }
+    .bubble.on { animation: none; opacity: 1; translate: -50% -40%; }
+    body::after, .track, .track::after { transition: none; }
+  }
+</style>
+</head>
+<body class="is-off">
+<main class="scene">
+  <button class="sign" type="button" aria-describedby="card">
+    <i class="screw a"></i><i class="screw b"></i><i class="screw c"></i><i class="screw d"></i>
+    <span data-lang="en">
+      <span class="tube big" data-split>Bu<span class="regress">g</span>s fi<span class="broken">x</span>ed</span>
+      <span class="tube small" data-split>while you wait</span>
+    </span>
+    <span data-lang="ko">
+      <span class="kk"><font-kku font="neon" size="13cqi">버그 즉석 수리</font-kku></span>
+      <span class="kk small-ko"><font-kku font="neon" size="6.6cqi">기다리시는 동안 고쳐 드려요</font-kku></span>
+    </span>
+    <span class="bubble" aria-live="polite"></span>
+  </button>
+
+  <div class="lower">
+    <div class="open" aria-label="Open">
+      <span class="tube" data-lang="en" data-split>Open</span>
+      <span class="kk" data-lang="ko"><font-kku font="neon" size="7.4cqi">영업 중</font-kku></span>
+    </div>
+    <aside class="card" id="card">
+      <p class="card-main" data-lang="en">No refunds on features.</p>
+      <p class="card-main" data-lang="ko"><font-kku font="pilgi" size="5cqi">기능은 환불되지 않습니다.</font-kku></p>
+      <p class="card-small" data-lang="en">Known issue: one tube flickers.<br>Status: <span class="status">won't fix</span><br>Still bugging you? Tap the sign.</p>
+      <p class="card-small" data-lang="ko">알려진 문제: 관 하나가 깜빡임.<br>처리 상태: <span class="status">수정 안 함</span><br>그래도 거슬리면 간판을 톡 쳐 주세요.</p>
+    </aside>
+  </div>
+
+  <div class="controls">
+    <!-- The label names the thing; the knob and aria-checked say whether it is on. -->
+    <button class="switch" type="button" role="switch" aria-checked="false">
+      <span class="track" aria-hidden="true"></span><span class="switch-label" data-lang="en">Lights</span><span class="switch-label" data-lang="ko">간판 불</span>
+    </button>
+  </div>
+</main>
+
+<script>
+(() => {
+  const body = document.body;
+  const sign = document.querySelector('.sign');
+  const bubble = document.querySelector('.bubble');
+  const sw = document.querySelector('.switch');
+  const TEXT = {
+    fixed: { en: 'Percussive maintenance: fixed. For now.', ko: '두드려서 고쳤습니다. 일단은요.' },
+    again: { en: 'Fixed again. Same as last time.', ko: '또 고쳤습니다. 지난번처럼요.' },
+    regressed: { en: 'Fixed that one. Broke this one.', ko: '그건 고쳤는데 이게 나갔네요.' },
+    rebooted: { en: 'Turned it off and on again. Still a feature.', ko: '껐다 켜 봤습니다. 여전히 기능입니다.' },
+    // The ticket's status, and what the red pen writes over it on knocks 1 to 5. The first knock
+    // really does steady the tube, so the shop writes "fixed" (수리 완료: the very word whose
+    // tube is broken); 3.4 s later it goes out again. The fifth is the regression.
+    status: {
+      en: ["won't fix", 'fixed', 'by design', 'working as intended', 'feature', 'reopened'],
+      ko: ['수정 안 함', '수리 완료', '의도된 동작', '사양입니다', '기능입니다', '재발'],
+    },
+    onCall: { en: 'On call', ko: '당직 중' },
+  };
+  const status = document.querySelector('.status');
+  const STATUS = TTY.t(TEXT.status);
+
+  // Between midnight and six the shop is closed, but someone is on call.
+  if (new Date().getHours() < 6) {
+    const open = document.querySelector('.open');
+    open.setAttribute('aria-label', 'On call');
+    const tube = open.querySelector('.tube');
+    if (tube) tube.textContent = TEXT.onCall.en;
+    const kk = open.querySelector('font-kku');
+    if (kk) {
+      const night = document.createElement('font-kku');
+      night.setAttribute('font', 'neon');
+      night.setAttribute('size', kk.getAttribute('size'));
+      night.textContent = TEXT.onCall.ko;
+      kk.replaceWith(night);
+    }
+  }
+
+  // Each English letter is its own tube, so it can sputter in on its own beat.
+  document.querySelectorAll('[data-split]').forEach((tube) => {
+    let i = 0;
+    const split = (node) => {
+      [...node.childNodes].forEach((child) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          const frag = document.createDocumentFragment();
+          [...child.textContent].forEach((c) => {
+            const s = document.createElement('span');
+            s.className = 'ch';
+            s.style.setProperty('--i', i++);
+            s.textContent = c === ' ' ? ' ' : c;
+            frag.append(s);
+          });
+          child.replaceWith(frag);
+        } else if (child.nodeType === Node.ELEMENT_NODE) {
+          child.classList.add('ch');
+          child.style.setProperty('--i', i++);
+        }
+      });
+    };
+    split(tube);
+  });
+
+  function say(text, long) {
+    bubble.textContent = text;
+    bubble.classList.remove('on');
+    bubble.classList.toggle('long', !!long);
+    void bubble.offsetWidth; // restart the float even if the last one is still up
+    bubble.classList.add('on');
+  }
+
+  let igniting = 0;
+  let kicks = 0;
+  let mended = 0;
+  // The visitor has made something happen (knocked, switched the lit sign off, switched it back
+  // on): no knock on their behalf. A click that only brings the lights on early does not count.
+  let played = false;
+  let started = false; // the lights have come on once (by start() or by the visitor)
+  function setOn(on, animate) {
+    sw.setAttribute('aria-checked', String(on));
+    body.classList.toggle('is-off', !on);
+    clearTimeout(igniting);
+    body.classList.remove('is-igniting');
+    // A knock's fix does not survive the power going off.
+    if (!on) { clearTimeout(mended); sign.classList.remove('kicked'); }
+    if (on && animate && !TTY.reduce) {
+      void body.offsetWidth; // restart the sputter even if the class was just removed
+      body.classList.add('is-igniting');
+      igniting = setTimeout(() => body.classList.remove('is-igniting'), 2600);
+    }
+  }
+  // The lights coming on for the first time, by start() or by a visitor's early click. The shop's
+  // own knock is booked from here, 8.2 s on, inside the broken tube's second long outage
+  // (7.97–8.34 s), so the knock answers it. The fix holds 3.2 s, and the tube goes out again
+  // 3.4 s after the knock, under "fixed". It counts as knock 1, so the regression is the fifth
+  // knock in all: the visitor's fourth.
+  function lightsOn() {
+    started = true;
+    setOn(true, true);
+    setTimeout(() => { if (!played && !kicks && !body.classList.contains('is-off')) knock(); }, 8200);
+  }
+  // The visitor switching it back on: the broken tube fails to catch all over again.
+  function relight() {
+    if (!started) { lightsOn(); return; } // nothing was turned off yet: just the lights coming on
+    played = true;
+    setOn(true, true);
+    if (!body.classList.contains('regressed')) say(TTY.t(TEXT.rebooted), true);
+  }
+  sw.addEventListener('click', () => {
+    if (sw.getAttribute('aria-checked') === 'true') { played = true; setOn(false); } else relight();
+  });
+
+  // Percussive maintenance: the broken tube holds steady for 3.2 s.
+  function knock() {
+    kicks += 1;
+    sign.classList.remove('thump');
+    void sign.offsetWidth;
+    sign.classList.add('thump');
+    // Knocks 1 to 4 relabel the ticket; the fifth fixes the x for good and, right then,
+    // another tube goes (so that one is not held steady).
+    sign.classList.toggle('kicked', kicks !== 5);
+    if (kicks <= 5) {
+      let pen;
+      if (TTY.lang === 'ko') {
+        pen = document.createElement('font-kku');
+        pen.setAttribute('font', 'pilgi');
+        pen.setAttribute('size', '1.2em');
+        pen.style.color = '#c8322b';
+      } else {
+        pen = document.createElement('b');
+      }
+      pen.classList.add('pen');
+      pen.textContent = STATUS[kicks];
+      status.replaceChildren(Object.assign(document.createElement('s'), { textContent: STATUS[kicks - 1] }), ' ', pen);
+    }
+    if (kicks === 5) body.classList.add('regressed');
+    say(TTY.t(kicks === 5 ? TEXT.regressed : kicks > 1 ? TEXT.again : TEXT.fixed));
+    clearTimeout(mended);
+    mended = setTimeout(() => sign.classList.remove('kicked'), 3200);
+  }
+  sign.addEventListener('click', () => {
+    if (body.classList.contains('is-off')) relight();
+    else { played = true; knock(); }
+  });
+
+  // If the visitor got there first (a click while the fonts and the 0.45 s wait were still
+  // pending), the lights are already on and the shop's knock is already booked.
+  function start() { if (!started) lightsOn(); }
+  // The first three seconds are the joke, so they wait for the fonts (on the home stage they
+  // have nearly always arrived by the time the page is shown).
+  TTY.onShow(() => TTY.drawn.then(() => setTimeout(start, TTY.reduce ? 0 : 450)));
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

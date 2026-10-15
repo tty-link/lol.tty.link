@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cooking at Temperature | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Gowun+Dodum&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="retro malang"></script>
+<style>
+  /* A page from a 1970s cookbook: the gas knob is the sampling temperature, the spice jars
+     are the next-word probabilities (p^(1/T), renormalised), and a ladle serves one word per
+     bowl to finish "For lunch today, I'm having ___". */
+  :root {
+    --sun: #e0a526;
+    --avo: #7b8b3a;
+    --avo-hi: #9aa957;
+    --avo-d: #5c6926;
+    --rust: #c8582a;
+    --rust-d: #93391a;
+    --cream: #f6ecd6;
+    --cream-d: #e8d8b3;
+    --brown: #5b3b22;
+    --brown-d: #3b2414;
+    --gas: #3d7bff;
+    --wood: #9b6a3b;
+    --wood-hi: #b98550;
+    --wood-d: #74491f;
+    --ink: #2d4a8c;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container: page / size;
+    position: relative;
+    overflow: hidden;
+    /* Sunflower tiles with cream grout and a little glaze on every tile. */
+    --tile: clamp(26px, 6.4vmin, 56px);
+    background-color: var(--sun);
+    background-image:
+      linear-gradient(90deg, rgba(255, 243, 212, .62) 0 2px, transparent 2px),
+      linear-gradient(rgba(255, 243, 212, .62) 0 2px, transparent 2px),
+      radial-gradient(circle at 30% 26%, rgba(255, 255, 255, .26), transparent 50%),
+      linear-gradient(135deg, transparent 55%, rgba(150, 88, 8, .1));
+    background-size: var(--tile) var(--tile);
+    color: var(--brown-d);
+    font-family: 'Fraunces', 'Gowun Dodum', Georgia, serif;
+    font-optical-sizing: auto;
+  }
+  .lang-ko body { font-family: 'Gowun Dodum', 'Fraunces', sans-serif; word-break: keep-all; }
+  button { font: inherit; color: inherit; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  /* ---------- Layout ----------
+     Phone first: title, recipe card, spice rack (rows), then the counter line with the pot
+     on the left and the bowls on the right, then the stove front (knob) and the drawers.
+     On wide stages the stove takes the left column and everything else goes right. In both,
+     the cooktop and the counter top meet on one line. */
+  .kitchen {
+    --pad-x: 4cqw;
+    --pad-t: 1.8cqh;
+    --gap: 2cqw;
+    --cook: clamp(8px, 1.8cqh, 20px);
+    --title: clamp(22px, 7.2cqw, 40px);
+    --title-kku: clamp(24px, 7.8cqw, 46px);
+    --sub: clamp(12px, 3.3cqw, 17px);
+    --kick: clamp(11px, 3cqw, 15px);
+    --sent: clamp(13px, 3.75cqw, 21px);
+    --tip: clamp(11px, 3cqw, 15px);
+    --jar: clamp(11px, 2.1cqh, 15px);
+    --bowl: clamp(12px, 3.4cqw, 20px);
+    --note-kku: clamp(15px, 4.4cqw, 22px);
+    --small: 11px;
+    --k: clamp(38px, 10.5cqw, 70px);
+    --dl: 11px;
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 36fr) minmax(0, 64fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "head head"
+      "card card"
+      "shelf shelf"
+      "pot bowls"
+      "panel btns";
+    padding-top: var(--pad-t);
+  }
+  @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
+    .kitchen {
+      --pad-x: 3.2cqw;
+      --pad-t: 2.6cqh;
+      --gap: 3cqw;
+      --cook: clamp(12px, 2.4cqh, 22px);
+      --title: clamp(30px, 5.6cqmin, 62px);
+      --title-kku: clamp(32px, 6.4cqmin, 70px);
+      --sub: clamp(13px, 2cqmin, 19px);
+      --kick: clamp(12px, 1.75cqmin, 16px);
+      --sent: clamp(15px, 2.65cqmin, 25px);
+      --tip: clamp(11.5px, 1.6cqmin, 15px);
+      --jar: clamp(11px, 1.55cqmin, 14.5px);
+      --bowl: clamp(15px, 2.6cqmin, 27px);
+      --note-kku: clamp(18px, 3cqmin, 30px);
+      --small: clamp(11px, 1.4cqmin, 13px);
+      --k: clamp(54px, 10.6cqmin, 104px);
+      --dl: clamp(11px, 1.5cqmin, 14px);
+      grid-template-columns: minmax(0, 37fr) minmax(0, 63fr);
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      grid-template-areas:
+        "head card"
+        "pot shelf"
+        "pot bowls"
+        "panel btns";
+    }
+  }
+
+  /* ---------- Title ---------- */
+  .head { grid-area: head; margin: 0 var(--pad-x); align-self: start; }
+  .title {
+    font-size: var(--title);
+    font-weight: 900;
+    line-height: .95;
+    letter-spacing: -.012em;
+    font-variation-settings: 'SOFT' 100, 'WONK' 1;
+    color: var(--cream);
+    -webkit-text-stroke: .07em var(--brown-d);
+    paint-order: stroke fill;
+    text-shadow: .04em .04em 0 var(--rust), .08em .08em 0 var(--rust), .12em .12em 0 var(--brown-d);
+  }
+  .title .tl { display: inline; }
+  .lang-ko .title { line-height: 1; }
+  /* retro, recoloured to the kitchen: cream face, brown outline, a rust and brown drop. */
+  .title-kku {
+    color: var(--cream);
+    -webkit-text-stroke-color: var(--brown-d);
+    --fy-font-stroke: .03em;
+    text-shadow: .03em .03em 0 var(--rust), .06em .06em 0 var(--rust), .09em .09em 0 var(--brown-d);
+  }
+  .sub { margin-top: .5em; font-size: var(--sub); font-style: italic; font-weight: 500; color: var(--brown-d); }
+  .lang-ko .sub { font-style: normal; margin-top: .45em; }
+  /* The one-line hint, under the subtitle from the start. */
+  .hint { margin-top: .3em; font-size: var(--small); line-height: 1.25; font-weight: 600; color: rgba(59, 36, 20, .8); transition: opacity .35s; }
+  .lang-ko .hint { font-weight: 400; color: var(--brown-d); }
+  @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
+    .head { margin: .2em var(--gap) 0 var(--pad-x); }
+    .title .tl { display: block; }
+    .lang-ko .title .tl + .tl { margin-top: .12em; }
+    .sub { margin-top: .9em; }
+    .hint { margin-top: .45em; }
+  }
+
+  /* ---------- Recipe card ---------- */
+  .card {
+    grid-area: card;
+    position: relative;
+    margin: 1.1cqh var(--pad-x) 0;
+    padding: .7em .9em .55em;
+    border-radius: 3px;
+    background:
+      linear-gradient(var(--rust) 0 0) 0 2.05em / 100% 2px no-repeat,
+      repeating-linear-gradient(transparent 0 calc(1.5em - 1px), rgba(61, 123, 255, .16) calc(1.5em - 1px) 1.5em) 0 2.1em / 100% auto no-repeat,
+      var(--cream);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, .08), 0 .5em 1.4em rgba(90, 52, 8, .32);
+    rotate: -.5deg;
+    font-size: var(--sent);
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -.45em;
+    width: 4.2em;
+    height: 1em;
+    translate: -50% 0;
+    rotate: 2deg;
+    background: rgba(255, 252, 238, .62);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
+  }
+  .kicker { font-size: var(--kick); font-style: italic; font-weight: 700; color: var(--rust); letter-spacing: .01em; line-height: 1.3; }
+  .lang-ko .kicker { font-style: normal; }
+  /* The card keeps, from the start, the room its longest line will need: --sent-lines (the
+     longest scripted sentence) and --tip-lines (the longest tip) are measured by the script at
+     this size. So the card never grows mid-scene. (On the home's 648 × 732 stage the flambé
+     sentence took a third line as its last shaky word arrived, and the counter row shrank under
+     the flying ladle; the third bowl sank 13 px and the ladle missed it.) */
+  .sentence {
+    margin-top: .35em;
+    min-height: calc(var(--sent-lines, 2) * 1.35em);
+    font-size: var(--sent);
+    line-height: 1.35;
+    font-weight: 500;
+    color: var(--brown-d);
+    font-variation-settings: 'SOFT' 60;
+  }
+  .sentence .w { font-weight: 800; color: var(--rust-d); }
+  .lang-ko .sentence .w { font-weight: 700; }
+  .sentence .blank { display: inline-block; width: 4.2em; border-bottom: 2px solid currentColor; translate: 0 -.18em; opacity: .55; }
+  .sentence .new .w, .sentence .w.new, .sentence .tok.new {
+    background: linear-gradient(rgba(224, 165, 38, .55), rgba(224, 165, 38, .55)) 0 85% / 100% .42em no-repeat;
+    animation: marker .9s cubic-bezier(.3, .7, .2, 1) both;
+  }
+  /* A word the sieve has just filtered out: struck through in the lid's grey. */
+  .sentence .w.off { color: rgba(59, 36, 20, .5); text-decoration: line-through 2px #6d6a62; }
+  @keyframes marker {
+    from { background-size: 0 .42em; opacity: 0; }
+    30% { opacity: 1; }
+    to { background-size: 100% .42em; opacity: 1; }
+  }
+  .sentence .tok { display: inline-block; font-weight: 800; color: #7a2e8c; }
+  .sentence.shaky .tok { animation: jitter .16s steps(2) infinite alternate; }
+  .sentence.shaky .tok.new { animation: marker .9s cubic-bezier(.3, .7, .2, 1) both, jitter .16s .9s steps(2) infinite alternate; }
+  @keyframes jitter {
+    from { transform: translate(0, 0) rotate(var(--r, 0deg)); }
+    to { transform: translate(.05em, -.06em) rotate(calc(var(--r, 0deg) * -1)); }
+  }
+  .tip {
+    display: flex;
+    align-items: flex-start;
+    gap: .55em;
+    min-height: calc(var(--tip-lines, 2) * 1.3em + .75em + 1.5px); /* lines + padding + border: the longest tip, two lines on a phone, one from about 560 px */
+    margin: .45em -.9em -.55em;
+    padding: .35em .9em .4em;
+    border-top: 1.5px dashed rgba(91, 59, 34, .35);
+    background: rgba(123, 139, 58, .14);
+    font-size: var(--tip);
+    line-height: 1.3;
+    color: var(--brown-d);
+  }
+  .tip-tag {
+    flex: none;
+    margin-top: .05em;
+    padding: .08em .5em .12em;
+    border-radius: 999px;
+    background: var(--avo-d);
+    color: var(--cream);
+    font-size: var(--small);
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: .04em;
+  }
+  .tip.empty .tip-tag { visibility: hidden; }
+  .tip-text { font-style: italic; }
+  .lang-ko .tip-text { font-style: normal; }
+  @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
+    .card { margin: 0 var(--pad-x) 0 var(--gap); padding: .8em 1em .6em; }
+    .tip { min-height: calc(var(--tip-lines, 2) * 1.3em + .8em + 1.5px); margin: .5em -1em -.6em; padding: .38em 1em .42em; }
+  }
+
+  /* The chef's note (the medium-heat scene, then singed after the flambé): on phones it is taped
+     over the hint line and the card's top corner, and the hint steps aside meanwhile; on wide
+     stages it hangs on the tiles under the title, above the pot. */
+  .head { position: relative; z-index: 3; }
+  .note {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    max-width: 100%;
+    padding: .2em .65em .3em;
+    background: #fffdf3;
+    box-shadow: 0 .3em .8em rgba(60, 30, 0, .3);
+    color: var(--ink);
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+    font-size: clamp(15px, 4.4cqw, 22px);
+    line-height: 1.05;
+    text-align: center;
+    white-space: nowrap;
+    rotate: -2.5deg;
+    translate: 0 30%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .4s;
+  }
+  /* The medium-heat note covers the hint line on phones, so the hint steps aside for it. The
+     singed note is short and sits right of the hint text, so the hint stays (it is what tells
+     a visitor, at the end and in the reduced-motion scene, what to touch). */
+  .head.noted:not(.burnt) .hint { opacity: 0; }
+  .note::before { content: ""; position: absolute; left: 50%; top: -.35em; width: 2.6em; height: .8em; translate: -50% 0; rotate: -4deg; background: rgba(224, 165, 38, .55); }
+  .note .note-kku { color: var(--ink); }
+  .note.on { opacity: 1; }
+  /* After the flambé the note comes back singed: scorched edges and a burnt corner. */
+  .note .note-b { display: none; }
+  .note.burnt .note-a { display: none; }
+  .note.burnt .note-b { display: inline; }
+  .note.burnt {
+    background:
+      radial-gradient(circle at 100% 100%, #3b2414 0 .3em, #7a4a1c .5em, rgba(176, 112, 47, .55) .85em, transparent 1.25em),
+      radial-gradient(circle at 0 0, rgba(122, 74, 28, .5), transparent .9em),
+      #fbf1d6;
+    box-shadow: inset 0 0 0 1.5px rgba(74, 42, 16, .75), inset 0 0 .55em .12em rgba(140, 80, 20, .5), 0 .3em .8em rgba(60, 30, 0, .3);
+    rotate: 3deg;
+    /* hangs a little past the card's corner, clear of the hint text */
+    margin-right: calc(var(--pad-x) * -.35);
+  }
+  /* The narrowest phone stage (328 px): the Korean note is a size smaller so it starts right of
+     the hint "손잡이를 돌리고 한 국자 더 떠 보세요." (it overlapped it by 17 px). */
+  @container page (max-width: 345px) {
+    .lang-ko .note.burnt { --note-kku: 13.5px; padding-left: .35em; padding-right: .35em; }
+  }
+  @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
+    .note { right: auto; left: .2em; bottom: auto; top: calc(100% + 1.1em); max-width: 100%; padding: .35em .9em .45em; font-size: clamp(19px, 3.2cqmin, 34px); white-space: normal; rotate: -3deg; translate: 0; }
+    .head.noted:not(.burnt) .hint { opacity: 1; }
+  }
+
+  /* ---------- Spice rack ---------- */
+  .shelf {
+    grid-area: shelf;
+    position: relative;
+    z-index: 2;
+    margin: 1.2cqh var(--pad-x) 0;
+    padding: .35em .7em .4em;
+    border: 3px solid var(--wood-d);
+    border-radius: 6px;
+    background:
+      linear-gradient(rgba(246, 236, 214, .94), rgba(239, 226, 196, .94));
+    box-shadow: inset 0 0 0 2px var(--wood-hi), 0 .4em 1em rgba(90, 52, 8, .25);
+    font-size: var(--jar);
+    min-height: 0;
+  }
+  /* Rows packed close (.06em): on the 648 × 732 stage the counter row below needs the room. */
+  .jars { list-style: none; padding: 0; display: grid; gap: .06em; }
+  .jar {
+    --c: #888;
+    --pf: 0;
+    --pk: 0;
+    display: grid;
+    grid-template-columns: 7.2em minmax(0, 1fr) 2.9em;
+    align-items: center;
+    column-gap: .55em;
+    line-height: 1.12;
+  }
+  .jar .name { order: 1; text-align: right; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lang-ko .jar .name { font-weight: 400; }
+  .jar .glass { order: 2; position: relative; height: .78em; border-radius: 999px; background: rgba(255, 255, 255, .7); box-shadow: inset 0 0 0 1.5px rgba(91, 59, 34, .32); overflow: hidden; }
+  .jar .num { order: 3; font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .jar .fill, .jar .cut { position: absolute; top: 0; bottom: 0; left: 0; }
+  .jar .fill {
+    width: calc(var(--pf) * 100%);
+    background:
+      radial-gradient(circle at 30% 40%, rgba(255, 255, 255, .35) 0 1px, transparent 1.5px) 0 0 / 5px 5px,
+      var(--c);
+  }
+  .jar .cut {
+    left: calc(var(--pk) * 100%);
+    width: calc((var(--pf) - var(--pk)) * 100%);
+    background: repeating-linear-gradient(-45deg, rgba(59, 36, 20, .62) 0 2px, rgba(246, 236, 214, .9) 2px 4.5px);
+  }
+  .jar .lid { display: none; }
+  .jar.tail .glass { background: repeating-linear-gradient(90deg, #e9d6ae 0 3px, #dcc596 3px 5px); }
+  .jar.tail .fill {
+    background:
+      radial-gradient(circle at 20% 30%, #c63d2a 0 1px, transparent 1.6px) 0 0 / 7px 6px,
+      radial-gradient(circle at 70% 60%, #6f7f2e 0 1px, transparent 1.6px) 0 0 / 9px 7px,
+      radial-gradient(circle at 50% 50%, #6c3a8e 0 1px, transparent 1.6px) 2px 1px / 6px 8px,
+      #a87a43;
+  }
+  .jar.tail .num { color: var(--rust-d); }
+  .jar.filtered .num { text-decoration: line-through; opacity: .5; }
+  .jar.filtered .name { opacity: .55; }
+  .jar.filtered .lid {
+    display: block;
+    position: absolute;
+    right: .2em;
+    top: 50%;
+    translate: 0 -50%;
+    padding: 0 .45em;
+    border-radius: 999px;
+    background: #6d6a62;
+    color: #f4f1ea;
+    font-size: var(--small);
+    line-height: 1.15;
+  }
+  .jar.pick { animation: pick .6s ease-out; }
+  @keyframes pick {
+    0%, 100% { background: transparent; }
+    25% { background: rgba(224, 165, 38, .45); }
+  }
+
+  @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
+    /* Wide: the jars stand on a wooden shelf against the tiles; the fill level is the bar. */
+    .shelf {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      margin: 1.6cqh var(--pad-x) 1.2cqh var(--gap);
+      padding: 0;
+      border: 0;
+      background: none;
+      box-shadow: none;
+    }
+    .jars {
+      --nh: 3.3em;
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      gap: .55em;
+      height: 100%;
+      max-height: 40cqh;
+      padding: 0 .4em;
+    }
+    /* The plank, at the top of the name labels. */
+    .jars::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(var(--nh) - .7em);
+      height: .7em;
+      border-radius: 2px;
+      background: linear-gradient(var(--wood-hi), var(--wood) 55%, var(--wood-d));
+      box-shadow: 0 .35em .6em rgba(80, 45, 5, .35);
+    }
+    .jar {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.1;
+      border-radius: 6px;
+    }
+    .jar.tail { flex-grow: 1.7; }
+    .jar .num { order: 0; margin-bottom: .3em; font-size: 1.04em; text-align: center; color: var(--brown-d); }
+    .jar .glass {
+      order: 1;
+      flex: 1 1 0;
+      width: 80%;
+      max-width: 4.6em;
+      height: auto;
+      min-height: 3em;
+      margin-top: .55em;
+      border-radius: .45em .45em .6em .6em;
+      background: linear-gradient(90deg, rgba(255, 255, 255, .5), rgba(255, 255, 255, .18) 28%, rgba(255, 255, 255, .34) 68%, rgba(255, 255, 255, .12));
+      box-shadow: inset 0 0 0 2px rgba(91, 59, 34, .4), inset .25em 0 0 rgba(255, 255, 255, .25);
+      overflow: visible;
+    }
+    .jar .glass::before {
+      content: "";
+      position: absolute;
+      left: -8%;
+      right: -8%;
+      top: -.55em;
+      height: .6em;
+      border-radius: .2em .2em .05em .05em;
+      background: linear-gradient(#8b5b30, var(--brown));
+      box-shadow: inset 0 .12em 0 rgba(255, 255, 255, .22);
+    }
+    .jar .fill, .jar .cut { left: 2px; right: 2px; top: auto; width: auto; border-radius: 0 0 .5em .5em; }
+    .jar .fill { bottom: 2px; height: calc(var(--pf) * (100% - 4px)); }
+    .jar .cut { bottom: calc(2px + var(--pk) * (100% - 4px)); height: calc((var(--pf) - var(--pk)) * (100% - 4px)); border-radius: 0; }
+    /* Names hang under the plank on two staggered rows, so long ones never collide. */
+    .jar .name {
+      order: 2;
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+      height: var(--nh);
+      padding-top: .92em;
+      font-size: 1em;
+      line-height: 1.02;
+      text-align: center;
+      white-space: nowrap;
+      overflow: visible;
+      color: var(--brown-d);
+    }
+    .jar:nth-child(even) .name { padding-top: 2.2em; }
+    .jar:nth-child(even) .name::before { content: ""; position: absolute; left: 50%; top: .78em; width: 1px; height: 1.3em; background: rgba(59, 36, 20, .4); }
+    .jar.filtered .lid {
+      top: -.8em;
+      right: -14%;
+      left: -14%;
+      translate: 0;
+      rotate: -6deg;
+      padding: .15em 0;
+      border-radius: .2em;
+      text-align: center;
+      box-shadow: 0 .15em .3em rgba(0, 0, 0, .3);
+      z-index: 2;
+    }
+    /* The tail is a burlap sack, wider than the jars. */
+    .jar.tail .glass {
+      max-width: 7.2em;
+      width: 92%;
+      border-radius: 30% 30% .7em .7em / 12% 12% .7em .7em;
+      background: repeating-linear-gradient(90deg, rgba(233, 214, 174, .8) 0 3px, rgba(220, 197, 150, .8) 3px 5px);
+      box-shadow: inset 0 0 0 2px rgba(91, 59, 34, .45);
+    }
+    .jar.tail .glass::before { top: 7%; height: .35em; left: 12%; right: 12%; background: #6b4a2a; border-radius: 999px; }
+    .jar.tail .fill { border-radius: 0 0 .6em .6em; }
+    .jar.tail .num { font-weight: 800; }
+  }
+
+  /* ---------- Pot on the cooktop ---------- */
+  .pot-cell { grid-area: pot; position: relative; min-height: 0; }
+  .pot-cell::before {
+    /* the range's backguard, behind the pot */
+    content: "";
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    bottom: var(--cook);
+    height: min(22%, 8cqh);
+    border-radius: .6em .6em 0 0;
+    background: linear-gradient(var(--avo-hi), var(--avo));
+    box-shadow: inset 0 .2em 0 rgba(255, 255, 255, .25), inset 0 -.2em 0 rgba(0, 0, 0, .1);
+  }
+  .pot-cell::after {
+    /* cooktop */
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--cook);
+    background: linear-gradient(#b3c06d, #92a04c 55%, #6d7a31);
+    border-top: 2px solid #d3dba0;
+  }
+  .stove { position: absolute; left: 0; top: 0; z-index: 1; width: 100%; height: calc(100% - var(--cook) * .45); overflow: visible; }
+  .stove .flick { transform-box: fill-box; transform-origin: 50% 100%; animation: flick var(--d, .3s) ease-in-out infinite alternate; }
+  .stove .blue { opacity: var(--on, 0); }
+  .stove .blue .flick { transform: scale(calc(.7 + var(--h, 0) * .3), var(--h, 0)); }
+  .stove .fire { opacity: var(--fire, 0); }
+  .stove .fire .flick { transform: scale(calc(.6 + var(--fire, 0) * .4), calc(.12 + var(--fire, 0) * .88)); }
+  @keyframes flick { from { scale: 1 1; } to { scale: .88 1.14; } }
+  .stove .steam path { opacity: var(--steam, 0); animation: steam 3.4s linear infinite; animation-delay: var(--d, 0s); stroke-dasharray: 34 30; }
+  @keyframes steam { from { stroke-dashoffset: 128; } to { stroke-dashoffset: 0; } }
+  .stove .sieve { transition: transform .75s cubic-bezier(.3, 1.35, .5, 1), opacity .4s; transform: translateY(-150px); opacity: 0; transform-box: fill-box; transform-origin: 50% 60%; }
+  .stove.sieved .sieve { transform: none; opacity: 1; }
+  .stove .rest { transition: opacity .15s; }
+  .stove.flying .rest { opacity: 0; }
+
+  /* ---------- Bowls on the counter ---------- */
+  .bowls {
+    grid-area: bowls;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: end;
+    column-gap: 1.5cqw;
+    padding: 0 var(--pad-x) var(--cook) 2cqw;
+  }
+  .bowls::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--cook);
+    background: linear-gradient(#f0d9b0, #ddbf8e 55%, #b98a52);
+    border-top: 2px solid #fff1d3;
+  }
+  .bowl { position: relative; display: grid; justify-items: center; min-width: 0; --broth: #efe2c6; }
+  .bowl .word {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: 2.15em;
+    margin-bottom: .1em;
+    font-size: var(--bowl);
+    font-weight: 700;
+    line-height: 1.04;
+    text-align: center;
+    color: var(--brown-d);
+    font-variation-settings: 'SOFT' 100, 'WONK' 1;
+  }
+  .bowl .bw { display: block; overflow-wrap: anywhere; }
+  .bowl .bw-kku { color: var(--brown-d); }
+  .bowl .dishwrap { position: relative; width: min(100%, 15cqh); margin-bottom: -.3em; }
+  .bowl .dish { display: block; width: 100%; height: auto; overflow: visible; }
+  .bowl .day {
+    position: absolute;
+    left: 50%;
+    top: 58%;
+    translate: -50% -50%;
+    font-size: var(--small);
+    font-style: italic;
+    font-weight: 600;
+    color: var(--cream);
+    white-space: nowrap;
+    text-shadow: 0 1px 0 rgba(60, 20, 0, .35);
+  }
+  .lang-ko .bowl .day { font-style: normal; }
+  .bowl.landed .dishwrap { animation: clink .5s cubic-bezier(.3, 1.6, .5, 1); }
+  /* The sieve went on and this bowl's word is filtered: greyed and crossed out. */
+  .bowl .word { position: relative; transition: opacity .3s; }
+  .bowl.struck .word { opacity: .5; }
+  .bowl.struck .word::after { content: ""; position: absolute; left: 6%; right: 6%; bottom: .46em; height: 3px; border-radius: 2px; background: #6d6a62; rotate: -5deg; }
+  @keyframes clink { 30% { transform: translateY(6%) scaleX(1.04); } }
+  @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
+    .bowls { padding: 0 var(--pad-x) var(--cook) var(--gap); column-gap: 2cqw; }
+    .bowl .dishwrap { width: min(100%, 19cqh); }
+  }
+
+  /* ---------- Stove front: the knob ---------- */
+  .panel {
+    grid-area: panel;
+    position: relative;
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    padding: .7em 0 .55em;
+    background:
+      linear-gradient(rgba(255, 255, 255, .55), rgba(255, 255, 255, 0)) 0 0 / 100% 3px no-repeat,
+      linear-gradient(180deg, var(--avo-hi), var(--avo) 35%, var(--avo-d));
+    font-size: var(--dl);
+    color: var(--cream);
+  }
+  .dial {
+    --r: calc(var(--k) * .64 + .3em);
+    --cy: calc(var(--r) + 1.25em);
+    position: relative;
+    width: 100%;
+    height: calc(var(--cy) + var(--k) * .5 + .25em);
+  }
+  .ticks { position: absolute; left: 50%; top: var(--cy); width: calc(var(--k) * 1.24); height: calc(var(--k) * 1.24); translate: -50% -50%; overflow: visible; }
+  .dl {
+    position: absolute;
+    left: calc(50% + var(--sx) * var(--r));
+    top: calc(var(--cy) + var(--sy) * var(--r));
+    font-weight: 600;
+    line-height: 1.08;
+    white-space: nowrap;
+    color: rgba(246, 236, 214, .82);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .dl.l { translate: -100% -50%; text-align: right; }
+  .dl.r { translate: 0 -50%; text-align: left; }
+  .dl.t { translate: -50% -100%; text-align: center; }
+  .dl .v { display: none; font-weight: 500; opacity: .85; font-variant-numeric: tabular-nums; }
+  .dl.on { color: #fff; text-shadow: 0 0 .5em rgba(255, 220, 140, .6); }
+  .dl.on.hot { color: #ffd166; }
+  .knob {
+    position: absolute;
+    left: 50%;
+    top: var(--cy);
+    width: var(--k);
+    height: var(--k);
+    translate: -50% -50%;
+    border-radius: 50%;
+    cursor: grab;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .knob.dragging { cursor: grabbing; }
+  .knob svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 .18em .2em rgba(30, 30, 0, .45)); }
+  .knob .rot { transform: rotate(var(--ang, -120deg)); }
+  .knob:focus-visible { outline: 3px solid var(--gas); outline-offset: 4px; }
+  .readout { margin-top: .1em; font-size: var(--small); font-variant-numeric: tabular-nums; color: rgba(246, 236, 214, .9); white-space: nowrap; }
+  .readout b { font-weight: 700; color: #fff; }
+  @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
+    .panel { padding: 1em 0 .7em; }
+    .dl .v { display: block; }
+    .dial { --r: calc(var(--k) * .66 + .45em); --cy: calc(var(--r) + 2.35em); height: calc(var(--cy) + var(--k) * .5 + .5em); }
+  }
+
+  /* ---------- Drawers (the two buttons) ---------- */
+  .btns {
+    grid-area: btns;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    gap: .45em;
+    padding: .55em var(--pad-x) .5em 2cqw;
+    border-left: 3px solid var(--brown-d);
+    background:
+      repeating-linear-gradient(90deg, rgba(60, 30, 0, .07) 0 2px, transparent 2px 13px),
+      linear-gradient(var(--wood), var(--wood-d));
+    font-size: clamp(12px, 3.3cqw, 17px);
+  }
+  .drawer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5em;
+    min-height: 2.35em;
+    padding: .3em .6em;
+    border: 0;
+    border-radius: 4px;
+    background: linear-gradient(var(--wood-hi), var(--wood) 70%);
+    box-shadow: inset 0 0 0 2px rgba(59, 36, 20, .45), inset 0 3px 0 rgba(255, 255, 255, .18), 0 2px 0 rgba(40, 20, 5, .45);
+    cursor: pointer;
+    transition: translate .08s, filter .15s;
+  }
+  .drawer:hover { filter: brightness(1.07); }
+  .drawer:active { translate: 0 2px; box-shadow: inset 0 0 0 2px rgba(59, 36, 20, .45), 0 0 0 rgba(0, 0, 0, 0); }
+  .drawer:focus-visible { outline: 3px solid var(--gas); outline-offset: 2px; }
+  .plate {
+    display: inline-flex;
+    align-items: center;
+    gap: .45em;
+    padding: .22em .7em .26em;
+    border-radius: 3px;
+    background: linear-gradient(#fffaf0, var(--cream-d));
+    box-shadow: inset 0 0 0 1.5px rgba(91, 59, 34, .55), 0 1px 0 rgba(0, 0, 0, .2);
+    color: var(--brown-d);
+    font-weight: 700;
+    line-height: 1.15;
+    white-space: nowrap;
+  }
+  .lang-ko .plate { font-weight: 400; }
+  .plate svg { width: 1.25em; height: 1.25em; flex: none; }
+  .btns::after { content: ""; border-radius: 4px; box-shadow: inset 0 0 0 2px rgba(59, 36, 20, .35); min-height: 0; }
+  /* The cookbook's fine print, printed on the bottom drawer. Phones have no drawer to spare. */
+  .fine { display: none; }
+  /* Opened on its own, the page gets the kit's "?" and ":)" at the bottom right. On the stacked
+     layout they sit beside the lower drawer (the sieve), never on it. Phones (the folded nav, about
+     74 × 34 px, 8 px from the edges): the sieve drawer stops 88 px short of the right edge, while the
+     ladle drawer above keeps its full width. Wider stacked stages (tablets; the nav is a row about
+     260 × 30 px, 12 px up): the drawers end 48 px above the bottom instead. */
+  @media (max-width: 600px) { html:not(.embedded) #sieve-btn { margin-right: calc(88px - var(--pad-x)); } }
+  @container page not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
+    @media (min-width: 601px) { html:not(.embedded) .btns { padding-bottom: 48px; } }
+  }
+  @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
+    .btns {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: auto 1fr;
+      gap: .7em;
+      padding: .8em var(--pad-x) 0 var(--gap);
+      font-size: clamp(13px, 1.9cqmin, 18px);
+    }
+    .btns::after { display: none; }
+    .fine {
+      display: block;
+      grid-column: 1 / -1;
+      min-height: 0;
+      padding: .75em 1.1em;
+      border-radius: 4px 4px 0 0;
+      box-shadow: inset 0 0 0 2px rgba(59, 36, 20, .35), inset 0 0 0 .7em rgba(255, 255, 255, .04);
+      font-size: var(--small);
+      line-height: 1.35;
+      color: rgba(246, 236, 214, .86);
+      overflow: hidden;
+    }
+    .fine b { margin-right: .3em; color: var(--cream); }
+    .drawer { min-height: 2.8em; }
+  }
+
+  /* ---------- Short stacked stages ----------
+     The home page's small phone stages (about 358 × 396 and 328 × 408) and any portrait stage up to
+     500 px tall (a landscape phone, 667 × 375, stays as before: below the supported height). Ten
+     jars in one column left the pot and the bowls no row at all (0 px) and spilled the list onto
+     the drawers. Here the jars stand in two columns of five (a subgrid, so each column's names
+     line up), the card drops its kicker, the knob is a little smaller, and the counter row keeps
+     a floor. The shelf is never squeezed below its jars. */
+  @container page (max-height: 500px) and (max-width: 699.98px) and (max-aspect-ratio: 1/1) {
+    .kitchen {
+      --pad-t: 1.2cqh;
+      --title-kku: clamp(22px, 6.4cqw, 30px);
+      --k: 34px;
+      grid-template-rows: auto auto auto minmax(60px, 1fr) auto;
+    }
+    /* no kicker, so no rust rule under it: only the blue lines of the card */
+    .card {
+      margin-top: .8cqh;
+      padding-top: .5em;
+      background: repeating-linear-gradient(transparent 0 calc(1.5em - 1px), rgba(61, 123, 255, .16) calc(1.5em - 1px) 1.5em) 0 .35em / 100% auto no-repeat, var(--cream);
+    }
+    .kicker { display: none; }
+    .sentence { margin-top: 0; }
+    .tip { min-height: calc(var(--tip-lines, 2) * 1.3em + .5em + 1.5px); margin-top: .35em; padding-top: .25em; padding-bottom: .25em; }
+    .shelf { margin-top: .9cqh; padding: .3em .55em .32em; min-height: auto; }
+    .jars {
+      grid-template-columns: max-content minmax(0, 1fr) max-content .4em max-content minmax(0, 1fr) max-content;
+      grid-template-rows: repeat(5, auto);
+      grid-auto-flow: column;
+      column-gap: .45em;
+      row-gap: .12em;
+    }
+    .jar { grid-template-columns: subgrid; column-gap: .45em; line-height: 1.05; }
+    .jar:nth-child(-n+5) { grid-column: 1 / span 3; }
+    .jar:nth-child(n+6) { grid-column: 5 / span 3; }
+    /* A narrow bar: the "filtered" lid covers the whole glass, and drops its word when the
+       glass is too narrow for it (the struck-out number and the faded name still say it). */
+    .jar .glass { container: glass / inline-size; }
+    .jar.filtered .lid { left: 0; right: 0; top: 0; bottom: 0; translate: none; display: grid; place-items: center; padding: 0; line-height: 1; overflow: hidden; white-space: nowrap; }
+    .panel { padding: .45em 0 .35em; }
+  }
+  /* "filtered" is about 38 px wide at 11 px, "걸러짐" about 29 px. */
+  @container glass (max-width: 41.98px) {
+    .lang-en .jar.filtered .lid { font-size: 0; background: repeating-linear-gradient(-45deg, #6d6a62 0 2px, #8f8b82 2px 4px); }
+  }
+  @container glass (max-width: 32.98px) {
+    .lang-ko .jar.filtered .lid { font-size: 0; background: repeating-linear-gradient(-45deg, #6d6a62 0 2px, #8f8b82 2px 4px); }
+  }
+
+  /* ---------- Flying ladle and sparks ---------- */
+  .fly { position: fixed; inset: 0; z-index: 6; pointer-events: none; overflow: hidden; }
+  .fly .ladle { position: absolute; left: 0; top: 0; width: 60px; overflow: visible; will-change: transform; }
+  /* A "filtered" lid knocked off its jar when the heat gets past the sieve. */
+  .fly .lid-pop { position: absolute; display: grid; place-items: center; white-space: nowrap; overflow: hidden; box-shadow: 0 .15em .3em rgba(0, 0, 0, .3); }
+  .fx { position: fixed; inset: 0; z-index: 5; width: 100%; height: 100%; pointer-events: none; }
+
+  .reduce .stove .flick, .reduce .stove .steam path, .reduce .sentence .tok { animation: none !important; }
+  .reduce .stove .sieve { transition: none; }
+</style>
+</head>
+<body>
+<main class="kitchen">
+  <header class="head">
+    <h1 class="title">
+      <span data-lang="en"><span class="tl">Cooking at</span> <span class="tl">Temperature</span></span>
+      <span data-lang="ko"><span class="tl"><font-kku class="title-kku" font="retro" size="var(--title-kku)">온도 조절</font-kku></span> <span class="tl"><font-kku class="title-kku" font="retro" size="var(--title-kku)">요리 교실</font-kku></span></span>
+    </h1>
+    <p class="sub">
+      <span data-lang="en">How a chatbot picks its next word</span>
+      <span data-lang="ko">챗봇이 다음 단어를 고르는 법</span>
+    </p>
+    <p class="hint" id="tk-hint">
+      <span data-lang="en">Turn the knob, then ladle one more.</span>
+      <span data-lang="ko">손잡이를 돌리고 한 국자 더 떠 보세요.</span>
+    </p>
+    <aside class="note">
+      <span class="note-a">
+        <span data-lang="en">Creativity happens at medium heat.</span>
+        <span data-lang="ko"><font-kku class="note-kku" font="malang" size="var(--note-kku)">창의성은 중불에서.</font-kku></span>
+      </span>
+      <span class="note-b">
+        <span data-lang="en">I said medium.</span>
+        <span data-lang="ko"><font-kku class="note-kku" font="malang" size="var(--note-kku)">중불이라고 했잖아요.</font-kku></span>
+      </span>
+    </aside>
+  </header>
+
+  <section class="card" aria-labelledby="card-kicker">
+    <p class="kicker" id="card-kicker"><span data-lang="en">Today's sentence:</span><span data-lang="ko">오늘의 문장:</span></p>
+    <p class="sentence"></p>
+    <p class="tip empty"><b class="tip-tag"></b><span class="tip-text"></span></p>
+  </section>
+
+  <section class="shelf">
+    <ol class="jars"></ol>
+  </section>
+
+  <div class="pot-cell" aria-hidden="true">
+    <svg class="stove" viewBox="0 0 320 300" preserveAspectRatio="xMidYMax meet">
+      <defs>
+        <linearGradient id="g-pot" x1="0" x2="1">
+          <stop offset="0" stop-color="#7f2f10"/><stop offset=".16" stop-color="#b94c22"/><stop offset=".5" stop-color="#df7440"/><stop offset=".82" stop-color="#c8582a"/><stop offset="1" stop-color="#86330f"/>
+        </linearGradient>
+        <linearGradient id="g-blue" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#1b3cb0"/><stop offset=".5" stop-color="#3d7bff"/><stop offset="1" stop-color="#a9c4ff" stop-opacity=".35"/>
+        </linearGradient>
+        <linearGradient id="g-fire" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#ffe17a"/><stop offset=".3" stop-color="#ff9a2a"/><stop offset=".72" stop-color="#e5481c"/><stop offset="1" stop-color="#b3200c" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="g-steel" x1="0" x2="1">
+          <stop offset="0" stop-color="#8d8a82"/><stop offset=".45" stop-color="#e9e7e0"/><stop offset="1" stop-color="#9c998f"/>
+        </linearGradient>
+        <pattern id="p-mesh" width="4.5" height="4.5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <path d="M0 0 H4.5 M0 0 V4.5" stroke="#5f5c55" stroke-width=".8"/>
+        </pattern>
+        <path id="tongue" d="M-5.5 0 C-6.5 -9 -2.5 -17 0 -30 C2.5 -17 6.5 -9 5.5 0 Z"/>
+        <path id="core" d="M-2.4 0 C-3 -5 -1 -9.5 0 -15 C1 -9.5 3 -5 2.4 0 Z"/>
+        <path id="blaze" d="M-24 0 C-34 -36 -18 -58 -22 -96 C-12 -80 -9 -86 -7 -116 C-4 -148 -9 -170 0 -200 C8 -168 15 -142 12 -112 C20 -128 27 -108 22 -82 C30 -56 34 -30 24 0 Z"/>
+        <path id="blaze-in" d="M-13 0 C-18 -24 -8 -40 -9 -64 C-4 -54 -2 -62 0 -92 C4 -62 8 -54 10 -66 C14 -44 18 -22 13 0 Z"/>
+      </defs>
+
+      <!-- Flambé: the orange column, behind the pot -->
+      <g class="fire">
+        <g transform="translate(106 292) scale(1.05 .92)"><use class="flick" href="#blaze" fill="url(#g-fire)" style="--d:.21s"/></g>
+        <g transform="translate(214 292) scale(-1.05 1)"><use class="flick" href="#blaze" fill="url(#g-fire)" style="--d:.27s"/></g>
+        <g transform="translate(160 292) scale(1.6 1.36)"><use class="flick" href="#blaze" fill="url(#g-fire)" style="--d:.24s"/></g>
+        <g transform="translate(132 292) scale(1.2 1.5)"><use class="flick" href="#blaze-in" fill="#ffd166" opacity=".85" style="--d:.18s"/></g>
+        <g transform="translate(190 292) scale(-1.2 1.7)"><use class="flick" href="#blaze-in" fill="#ffe9a6" opacity=".8" style="--d:.2s"/></g>
+      </g>
+
+      <!-- burner and grate -->
+      <ellipse cx="160" cy="296" rx="96" ry="7" fill="#2b241f" opacity=".5"/>
+      <g class="blue">
+        <g transform="translate(92 293)"><g class="flick" style="--d:.23s"><use href="#tongue" fill="url(#g-blue)"/></g></g>
+        <g transform="translate(110 291)"><g class="flick" style="--d:.31s"><use href="#tongue" fill="url(#g-blue)"/></g></g>
+        <g transform="translate(210 291)"><g class="flick" style="--d:.27s"><use href="#tongue" fill="url(#g-blue)"/></g></g>
+        <g transform="translate(228 293)"><g class="flick" style="--d:.21s"><use href="#tongue" fill="url(#g-blue)"/></g></g>
+      </g>
+
+      <!-- pot -->
+      <g class="pot">
+        <path d="M86 176 h-12 a8 8 0 0 0 0 16 h12" fill="none" stroke="#3b2414" stroke-width="5" stroke-linecap="round"/>
+        <path d="M234 176 h12 a8 8 0 0 1 0 16 h-12" fill="none" stroke="#3b2414" stroke-width="5" stroke-linecap="round"/>
+        <path d="M84 170 L92 270 Q94 284 110 284 L210 284 Q226 284 228 270 L236 170 Z" fill="url(#g-pot)" stroke="#5a2209" stroke-width="2"/>
+        <path d="M92 262 Q160 274 228 262" fill="none" stroke="#f6ecd6" stroke-width="3" opacity=".75"/>
+        <!-- daisies -->
+        <g fill="#f6ecd6" opacity=".92">
+          <g transform="translate(122 222)"><ellipse rx="4" ry="9" transform="rotate(0)"/><ellipse rx="4" ry="9" transform="rotate(45)"/><ellipse rx="4" ry="9" transform="rotate(90)"/><ellipse rx="4" ry="9" transform="rotate(135)"/><circle r="4.2" fill="#e0a526"/></g>
+          <g transform="translate(162 238) scale(.8)"><ellipse rx="4" ry="9"/><ellipse rx="4" ry="9" transform="rotate(45)"/><ellipse rx="4" ry="9" transform="rotate(90)"/><ellipse rx="4" ry="9" transform="rotate(135)"/><circle r="4.2" fill="#e0a526"/></g>
+          <g transform="translate(200 216) scale(.9)"><ellipse rx="4" ry="9"/><ellipse rx="4" ry="9" transform="rotate(45)"/><ellipse rx="4" ry="9" transform="rotate(90)"/><ellipse rx="4" ry="9" transform="rotate(135)"/><circle r="4.2" fill="#e0a526"/></g>
+        </g>
+        <ellipse cx="160" cy="170" rx="77" ry="13" fill="#f6ecd6" stroke="#5a2209" stroke-width="2"/>
+        <ellipse cx="160" cy="172" rx="69" ry="9" fill="#a3361a"/>
+        <ellipse cx="146" cy="170" rx="30" ry="3.2" fill="#d4643a" opacity=".7"/>
+      </g>
+
+      <!-- the ladle resting in the pot -->
+      <g class="rest">
+        <path d="M194 172 L244 104" stroke="#5f5c55" stroke-width="7" stroke-linecap="round"/>
+        <path d="M194 172 L244 104" stroke="url(#g-steel)" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M244 104 q8 -12 -2 -16 q-8 -2 -8 6" fill="none" stroke="#8d8a82" stroke-width="4" stroke-linecap="round"/>
+      </g>
+
+      <!-- blue flames in front of the pot's base -->
+      <g class="blue">
+        <g transform="translate(118 297)"><g class="flick" style="--d:.26s"><use href="#tongue" fill="url(#g-blue)"/><use href="#core" fill="#dbe6ff"/></g></g>
+        <g transform="translate(139 298)"><g class="flick" style="--d:.2s"><use href="#tongue" fill="url(#g-blue)"/><use href="#core" fill="#dbe6ff"/></g></g>
+        <g transform="translate(160 298.5)"><g class="flick" style="--d:.29s"><use href="#tongue" fill="url(#g-blue)"/><use href="#core" fill="#dbe6ff"/></g></g>
+        <g transform="translate(181 298)"><g class="flick" style="--d:.22s"><use href="#tongue" fill="url(#g-blue)"/><use href="#core" fill="#dbe6ff"/></g></g>
+        <g transform="translate(202 297)"><g class="flick" style="--d:.25s"><use href="#tongue" fill="url(#g-blue)"/><use href="#core" fill="#dbe6ff"/></g></g>
+      </g>
+      <g stroke="#2b241f" stroke-width="5" stroke-linecap="round" fill="none">
+        <path d="M80 291 H240"/>
+        <path d="M96 286 L90 300 M224 286 L230 300 M160 291 V300"/>
+      </g>
+
+      <!-- flambé, in front: side licks around the pot -->
+      <g class="fire">
+        <g transform="translate(88 294) scale(.6 .62)"><use class="flick" href="#blaze" fill="url(#g-fire)" style="--d:.19s"/></g>
+        <g transform="translate(232 294) scale(-.6 .58)"><use class="flick" href="#blaze" fill="url(#g-fire)" style="--d:.23s"/></g>
+        <g transform="translate(160 296) scale(1.5 .55)"><use class="flick" href="#blaze-in" fill="#ffd166" opacity=".9" style="--d:.17s"/></g>
+      </g>
+
+      <!-- steam -->
+      <g class="steam" fill="none" stroke="#fffaf0" stroke-width="6" stroke-linecap="round" opacity=".7">
+        <path d="M128 158 c-10 -14 10 -24 0 -38 s10 -24 0 -38" style="--d:-.4s"/>
+        <path d="M160 156 c-10 -14 10 -24 0 -38 s10 -24 0 -38 s10 -24 0 -36" style="--d:-1.6s"/>
+        <path d="M192 158 c-10 -14 10 -24 0 -38 s10 -24 0 -38" style="--d:-2.4s"/>
+      </g>
+
+      <!-- the sieve (top-p 0.9) -->
+      <g class="sieve">
+        <path d="M80 166 L22 146" stroke="#5f5c55" stroke-width="7" stroke-linecap="round"/>
+        <path d="M80 166 L22 146" stroke="url(#g-steel)" stroke-width="4.5" stroke-linecap="round"/>
+        <circle cx="16" cy="144" r="6" fill="none" stroke="#8d8a82" stroke-width="3.5"/>
+        <path d="M240 166 L254 170" stroke="#8d8a82" stroke-width="5" stroke-linecap="round"/>
+        <ellipse cx="160" cy="166" rx="82" ry="14.5" fill="#efece4" opacity=".35"/>
+        <ellipse cx="160" cy="166" rx="82" ry="14.5" fill="url(#p-mesh)"/>
+        <ellipse cx="160" cy="166" rx="82" ry="14.5" fill="none" stroke="url(#g-steel)" stroke-width="5"/>
+        <ellipse cx="160" cy="166" rx="82" ry="14.5" fill="none" stroke="#6d6a62" stroke-width="1"/>
+      </g>
+    </svg>
+  </div>
+
+  <section class="bowls">
+    <div class="bowl"><div class="word"></div><div class="dishwrap"><svg class="dish" viewBox="0 0 120 64"><use href="#dish"/></svg><span class="day"></span></div></div>
+    <div class="bowl"><div class="word"></div><div class="dishwrap"><svg class="dish" viewBox="0 0 120 64"><use href="#dish"/></svg><span class="day"></span></div></div>
+    <div class="bowl"><div class="word"></div><div class="dishwrap"><svg class="dish" viewBox="0 0 120 64"><use href="#dish"/></svg><span class="day"></span></div></div>
+  </section>
+
+  <div class="panel">
+    <div class="dial">
+      <svg class="ticks" viewBox="-60 -60 120 120" aria-hidden="true">
+        <defs>
+          <linearGradient id="g-arc" x1="0" x2="1">
+            <stop offset="0" stop-color="#9fc0ff"/><stop offset=".55" stop-color="#3d7bff"/><stop offset=".78" stop-color="#ffb347"/><stop offset="1" stop-color="#ff6a2a"/>
+          </linearGradient>
+        </defs>
+        <path d="M-48.5 28 A56 56 0 1 1 48.5 28" fill="none" stroke="url(#g-arc)" stroke-width="3.2" stroke-linecap="round"/>
+        <g stroke="#f6ecd6" stroke-width="3" stroke-linecap="round">
+          <path d="M-43.3 25 L-51.1 29.5"/><path d="M-43.3 -25 L-51.1 -29.5"/><path d="M0 -50 V-59"/><path d="M43.3 -25 L51.1 -29.5"/><path d="M43.3 25 L51.1 29.5"/>
+        </g>
+      </svg>
+      <div class="knob" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="2" aria-describedby="tk-hint">
+        <svg viewBox="-50 -50 100 100" aria-hidden="true">
+          <defs>
+            <radialGradient id="g-knob" cx="38%" cy="32%" r="75%">
+              <stop offset="0" stop-color="#fffbf2"/><stop offset=".65" stop-color="#efe1c2"/><stop offset="1" stop-color="#c9b385"/>
+            </radialGradient>
+            <linearGradient id="g-chrome" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fbfbf7"/><stop offset=".45" stop-color="#a9aba6"/><stop offset=".7" stop-color="#e2e3de"/><stop offset="1" stop-color="#8d8f8a"/>
+            </linearGradient>
+          </defs>
+          <circle r="49" fill="url(#g-chrome)" stroke="#5a5c56" stroke-width="1"/>
+          <circle r="42" fill="#2c2a20" opacity=".22"/>
+          <g class="rot">
+            <circle r="39" fill="url(#g-knob)" stroke="#b49d6c" stroke-width="1.5"/>
+            <rect x="-10" y="-37" width="20" height="74" rx="9" fill="#fbf4e3" stroke="#c4ad7d" stroke-width="1.5"/>
+            <rect x="-6" y="-31" width="3" height="62" rx="1.5" fill="#fff" opacity=".8"/>
+            <path d="M0 -46 L-6 -36 L6 -36 Z" fill="#c8582a"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <p class="readout" aria-hidden="true"></p>
+  </div>
+
+  <div class="btns">
+    <button type="button" class="drawer" id="ladle-btn">
+      <span class="plate">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3 L14 13" stroke="#5b3b22" stroke-width="2.2" stroke-linecap="round"/><path d="M11 13 h10 a5 5 0 0 1 -10 0 z" fill="#c8582a" stroke="#5b3b22" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span data-lang="en">One more ladle</span><span data-lang="ko">한 국자 더</span>
+      </span>
+    </button>
+    <button type="button" class="drawer" id="sieve-btn">
+      <span class="plate">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9 L7 11" stroke="#5b3b22" stroke-width="2.2" stroke-linecap="round"/><path d="M7 10 h15 a7.5 7 0 0 1 -15 0 z" fill="#e8e5dc" stroke="#5b3b22" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 13 l3 3 M13 12 l4 4 M16 12 l3 3 M12 15.5 l3-3 M15 16 l4-4" stroke="#8d8a82" stroke-width="1"/></svg>
+        <span class="sieve-label"></span>
+      </span>
+    </button>
+    <p class="fine">
+      <span data-lang="en"><b>*</b>Fine print: even with the heat off it can taste a little different. On GPUs the order of floating-point additions can change, so temperature 0 isn't perfectly repeatable.</span>
+      <span data-lang="ko"><b>※</b>작은 글씨: 불을 꺼도 가끔 맛이 달라요. GPU에서는 부동소수점 덧셈 순서가 그때그때 바뀔 수 있어서, 온도를 0에 둬도 매번 똑같지는 않아요.</span>
+    </p>
+  </div>
+</main>
+
+<!-- one bowl, used three times -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-bowl" x1="0" x2="1">
+      <stop offset="0" stop-color="#e2cfa6"/><stop offset=".35" stop-color="#fbf3e1"/><stop offset="1" stop-color="#dcc79c"/>
+    </linearGradient>
+    <g id="dish">
+      <path d="M44 56 L47 63 H73 L76 56" fill="#d9c49a" stroke="#5b3b22" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M3 14 C5 40 28 58 60 58 C92 58 115 40 117 14" fill="url(#g-bowl)" stroke="#5b3b22" stroke-width="2"/>
+      <path d="M6.5 27 C30 36 90 36 113.5 27 L109 40 C88 48 32 48 11 40 Z" fill="#c8582a"/>
+      <ellipse cx="60" cy="14" rx="57" ry="10" fill="#fdf7ea" stroke="#5b3b22" stroke-width="2"/>
+      <ellipse cx="60" cy="15" rx="50" ry="6.6" fill="var(--broth)"/>
+    </g>
+  </defs>
+</svg>
+
+<div class="fly" aria-hidden="true"></div>
+<canvas class="fx" aria-hidden="true"></canvas>
+<p class="sr" aria-live="polite"></p>
+
+<template id="ladle-tpl">
+  <svg class="ladle" viewBox="0 0 100 64">
+    <path d="M60 32 L10 8" stroke="#5f5c55" stroke-width="6.5" stroke-linecap="round"/>
+    <path d="M60 32 L10 8" stroke="#dcdad2" stroke-width="3.6" stroke-linecap="round"/>
+    <path d="M10 8 q-8 -6 -2 -8" fill="none" stroke="#8d8a82" stroke-width="3" stroke-linecap="round"/>
+    <path d="M58 34 h34 a17 17 0 0 1 -34 0 z" fill="#c9c6bd" stroke="#5f5c55" stroke-width="2"/>
+    <ellipse cx="75" cy="34" rx="16" ry="3.6" fill="var(--soup, #c8582a)"/>
+  </svg>
+</template>
+
+<script>
+(() => {
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const ko = TTY.lang === 'ko';
+  const root = document.documentElement;
+  if (TTY.reduce) root.classList.add('reduce');
+  const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+
+  /* ---------- The menu: probabilities at temperature 1 ----------
+     The nine named words, then a tail of 49,991 nameless tokens that share 0.002.
+     Every temperature is computed from these with p^(1/T), renormalised. */
+  const P1 = [0.34, 0.22, 0.15, 0.11, 0.08, 0.06, 0.02, 0.012, 0.006];
+  const TAIL = { count: 49991, total: 0.002 };
+  const WORDS = TTY.t({
+    en: ['tomato soup', 'a sandwich', 'ramen', 'salad', 'tacos', 'leftovers', 'clouds', 'Wednesday', 'purple'],
+    ko: ['김치찌개', '된장찌개', '비빔밥', '김밥', '샐러드', '어제 남은 거', '구름', '수요일', '보라색'],
+  });
+  const TAIL_NAME = TTY.t({ en: '49,991 others', ko: '그 밖의 49,991개' });
+  const TAIL_WORDS = TTY.t({
+    en: ['staircase', 'fridge hum', 'galaxy', 'socks', "Thursday's", '0.7', 'lol'],
+    ko: ['계단', '냉장고 소리', '은하수', '양말', '목요일의', '0.7', 'ㅋ'],
+  });
+  // Spice colours, one per jar: chilli, doenjang, gochujang, herbs, lime, sesame, sky, lavender, plum.
+  const SPICE = ['#c63d2a', '#8a5a2b', '#e07a2c', '#6f7f2e', '#aebb45', '#c49a63', '#9fb6cc', '#9784c2', '#6c3a8e'];
+  const TAIL_COLOR = '#a87a43';
+  const DETENTS = [
+    { T: 0, a: -120, name: TTY.t({ en: 'Off', ko: '끔' }), v: '0' },
+    { T: 0.3, a: -60, name: TTY.t({ en: 'Low', ko: '약불' }), v: '0.3' },
+    { T: 0.7, a: 0, name: TTY.t({ en: 'Medium', ko: '중불' }), v: '0.7' },
+    { T: 1.2, a: 60, name: TTY.t({ en: 'High', ko: '강불' }), v: '1.2' },
+    { T: 2.0, a: 120, name: TTY.t({ en: 'Flambé', ko: '불쇼' }), v: '2.0' },
+  ];
+  const TIPS = TTY.t({
+    en: [
+      'Heat off (temperature 0): always the top word. Greedy decoding.',
+      'Medium: mostly sensible, now and then something new.',
+      'High: more surprises on the menu.',
+      'Flambé: the 49,991 others take over the pot.',
+      'Put a sieve (top-p 0.9) over high heat and the burnt bits stay out.',
+      'Flambé: the 49,991 others took over the pot. The sieve did its best.',
+    ],
+    ko: [
+      '불을 끄면(온도 0) 늘 1등 단어만. 탐욕적 디코딩.',
+      '중불: 대체로 무난하고, 가끔 새로워요.',
+      '강불: 의외의 메뉴가 늘어요.',
+      '불쇼: 그 밖의 49,991개가 냄비를 덮쳐요.',
+      '강불에 체(top-p 0.9)를 받치면 탄 건 걸러져요.',
+      '불쇼: 그 밖의 49,991개가 냄비를 덮쳤어요. 체는 최선을 다했어요.',
+    ],
+  });
+  // Not in the autoplay: shown when a visitor leaves the knob on Low.
+  const TIP_LOW = TTY.t({ en: 'Low: mostly the top word, sometimes the runner-up.', ko: '약불: 대개 1등, 가끔 2등.' });
+  // The sentence: one bowl per day.
+  const LEAD = TTY.t({ en: ["For lunch today, I'm having ", 'Tomorrow, ', 'The day after, '], ko: ['오늘 점심은 ', '내일 점심', '모레 점심'] });
+  // At flambé the third day comes apart before its bowl arrives: three shaky words, each from
+  // its own jar (j: Wednesday, purple, the sack), go in front of the word the ladle brings.
+  const GARNISH = TTY.t({
+    en: [{ t: 'Wednesday', j: 7 }, { t: 'purple', j: 8 }, { t: 'flavored', j: 9 }],
+    ko: [{ t: '수요일의', j: 7 }, { t: '보라색', j: 8 }, { t: '맛', j: 9 }],
+  });
+  const L = TTY.t({
+    en: { tip: 'Tip', filtered: 'filtered', temp: 'temperature', heat: 'Heat (temperature)', days: ['today', 'tomorrow', 'day after'], on: 'Sieve on', off: 'Sieve off', shelf: 'Next-word probabilities', bowls: 'Bowls', ladled: 'Ladled', sieveOn: 'Sieve on: top-p 0.9.', sieveOff: 'Sieve off.' },
+    ko: { tip: '팁', filtered: '걸러짐', temp: '온도', heat: '불 세기(온도)', days: ['오늘', '내일', '모레'], on: '체 받치기', off: '체 치우기', shelf: '다음 단어 확률', bowls: '국그릇', ladled: '한 국자', sieveOn: '체를 받쳤어요: top-p 0.9.', sieveOff: '체를 치웠어요.' },
+  });
+
+  /* ---------- Sampling maths ---------- */
+  const LOGP = P1.map(Math.log);
+  const LOG_EACH = Math.log(TAIL.total / TAIL.count);
+  // Probabilities at temperature T. T = 0 is the limit: all of it on the top word.
+  function dist(T) {
+    if (T < 0.004) return { p: P1.map((_, i) => (i === 0 ? 1 : 0)), tail: 0, each: 0 };
+    const top = LOGP[0];
+    const w = LOGP.map((l) => Math.exp((l - top) / T));
+    const we = Math.exp((LOG_EACH - top) / T);
+    const Z = w.reduce((a, b) => a + b, 0) + TAIL.count * we;
+    return { p: w.map((x) => x / Z), tail: (TAIL.count * we) / Z, each: we / Z };
+  }
+  // top-p: keep the biggest first until the kept mass reaches 0.9. Each tail token is smaller
+  // than every named word at any temperature, so the tail is always last in line; if the
+  // nine named words do not reach 0.9, only enough tail tokens to get there pass the sieve.
+  function nucleus(d, topP = 0.9) {
+    const keep = d.p.map(() => false);
+    let cum = 0;
+    for (let i = 0; i < d.p.length; i++) {
+      keep[i] = true;
+      cum += d.p[i];
+      if (cum >= topP - 1e-12) return { keep, tailKept: 0, tailCount: 0 };
+    }
+    const n = Math.min(TAIL.count, Math.ceil((topP - cum) / d.each));
+    return { keep, tailKept: n * d.each, tailCount: n };
+  }
+  function sample(T, sieve) {
+    const d = dist(T);
+    let probs = d.p.slice();
+    let tail = d.tail;
+    if (sieve) {
+      const s = nucleus(d);
+      probs = probs.map((x, i) => (s.keep[i] ? x : 0));
+      tail = s.tailKept;
+    }
+    let r = Math.random() * (probs.reduce((a, b) => a + b, 0) + tail);
+    for (let i = 0; i < probs.length; i++) if ((r -= probs[i]) < 0) return { i };
+    return { tail: true, word: TAIL_WORDS[Math.floor(Math.random() * TAIL_WORDS.length)] };
+  }
+
+  /* ---------- Elements ---------- */
+  const stove = $('.stove');
+  const knob = $('.knob');
+  const dial = $('.dial');
+  const readout = $('.readout');
+  const sentenceEl = $('.sentence');
+  const tipEl = $('.tip');
+  const note = $('.note');
+  const sieveBtn = $('#sieve-btn');
+  const ladleBtn = $('#ladle-btn');
+  const fly = $('.fly');
+  const status = $('.sr');
+  $('.shelf').setAttribute('aria-label', L.shelf);
+  $('.bowls').setAttribute('aria-label', L.bowls);
+  knob.setAttribute('aria-label', L.heat);
+
+  // Jars: nine spices and the sack.
+  const jars = [...WORDS.map((w, i) => ({ name: w, color: SPICE[i] })), { name: TAIL_NAME, tail: true }].map((j) => {
+    const li = document.createElement('li');
+    li.className = 'jar' + (j.tail ? ' tail' : '');
+    if (!j.tail) li.style.setProperty('--c', j.color);
+    li.innerHTML = '<span class="num">0.000</span><span class="glass"><span class="fill"></span><span class="cut"></span><span class="lid"></span></span><span class="name"></span>';
+    $('.name', li).textContent = j.name;
+    $('.lid', li).textContent = L.filtered;
+    $('.jars').append(li);
+    return { el: li, num: $('.num', li), f: 0, k: 0, vf: 0, vk: 0, tf: 0, tk: 0 };
+  });
+
+  // Dial labels around the knob.
+  const labels = DETENTS.map((d, i) => {
+    const el = document.createElement('span');
+    const rad = (d.a * Math.PI) / 180;
+    el.className = 'dl ' + (i === 2 ? 't' : d.a < 0 ? 'l' : 'r') + (i === 4 ? ' hot' : '');
+    el.style.setProperty('--sx', Math.sin(rad).toFixed(3));
+    el.style.setProperty('--sy', (-Math.cos(rad)).toFixed(3));
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = '<span class="n"></span> <span class="v"></span>';
+    $('.n', el).textContent = d.name;
+    $('.v', el).textContent = d.v;
+    el.addEventListener('click', () => { takeOver(); aim = i; goAngle(d.a, 520); });
+    dial.append(el);
+    return el;
+  });
+
+  // Bowls.
+  const bowls = $$('.bowl').map((el, i) => {
+    $('.day', el).textContent = L.days[i];
+    // src: the jar the word came from (an index, or 'tail'); garnish: shaky words in front of it;
+    // struck: the sieve is on and filters that jar.
+    return { el, wordEl: $('.word', el), dish: $('.dishwrap', el), word: null, src: null, garnish: [], struck: false, serial: -1 };
+  });
+
+  /* ---------- Heat ---------- */
+  let ang = -120;       // knob angle, -120 (Off) .. 120 (Flambé)
+  let T = 0;
+  let aim = 0;          // the detent the knob is heading to
+  let cooking = false;  // false: empty jars (numbers '–'); the page starts cooking at medium heat
+  let sieveOn = false;
+  let lastFire = 0;     // to jolt the sieve once as the flambé column comes up through it
+  const angleToT = (a) => {
+    for (let i = 0; i < 4; i++) {
+      const A = DETENTS[i], B = DETENTS[i + 1];
+      if (a <= B.a) return A.T + ((B.T - A.T) * (clamp(a, A.a, B.a) - A.a)) / (B.a - A.a);
+    }
+    return 2;
+  };
+  const nearest = (a) => DETENTS.reduce((best, d, i) => (Math.abs(d.a - a) < Math.abs(DETENTS[best].a - a) ? i : best), 0);
+
+  function setAngle(a) {
+    ang = clamp(a, -120, 120);
+    T = angleToT(ang);
+    knob.style.setProperty('--ang', ang.toFixed(2) + 'deg');
+    const n = nearest(ang);
+    const exact = Math.abs(DETENTS[n].a - ang) < 0.5;
+    labels.forEach((el, i) => el.classList.toggle('on', i === n));
+    knob.setAttribute('aria-valuenow', T.toFixed(2));
+    knob.setAttribute('aria-valuetext', exact ? `${DETENTS[n].name} ${DETENTS[n].v}` : `${L.temp} ${T.toFixed(2)}`);
+    readout.innerHTML = `${L.temp} <b>${T.toFixed(2)}</b>`;
+    if (visitor && exact && !drag && (!tween || Math.abs(tween.to - ang) < 0.5)) visitorTip(n);
+    // Flames: blue tongues grow with T; past 1.3 the orange column comes up.
+    const on = clamp(T / 0.06, 0, 1);
+    const h = T <= 1.2 ? 0.28 + 0.62 * (T / 1.2) : 0.9 + 0.5 * ((T - 1.2) / 0.8);
+    const fire = clamp((T - 1.3) / 0.6, 0, 1);
+    stove.style.setProperty('--on', on.toFixed(3));
+    stove.style.setProperty('--h', h.toFixed(3));
+    stove.style.setProperty('--fire', fire.toFixed(3));
+    stove.style.setProperty('--steam', clamp(T / 0.6, 0, 1) * 0.75);
+    if (sieveOn && fire >= 0.5 && lastFire < 0.5) joltSieve();
+    lastFire = fire;
+    updateJars();
+  }
+  // The flambé column comes up through the sieve: it bucks, rattles and settles back.
+  function joltSieve() {
+    if (TTY.reduce) return;
+    $('.sieve', stove).animate([
+      { transform: 'none' },
+      { transform: 'translate(0, -30px) rotate(-9deg)', offset: 0.28 },
+      { transform: 'translate(0, -4px) rotate(4deg)', offset: 0.55 },
+      { transform: 'translate(0, -12px) rotate(-3deg)', offset: 0.76 },
+      { transform: 'none' },
+    ], { duration: 720, easing: 'ease-out' });
+  }
+
+  let tween = null;
+  function goAngle(a, ms = 700) {
+    if (TTY.reduce || ms === 0) { tween = null; setAngle(a); return; }
+    tween = { from: ang, to: a, t0: performance.now(), ms };
+    wake();
+  }
+
+  function updateJars() {
+    const d = dist(T);
+    const s = sieveOn ? nucleus(d) : null;
+    jars.forEach((j, i) => {
+      const tail = i === jars.length - 1;
+      const p = cooking ? (tail ? d.tail : d.p[i]) : 0;
+      const kept = !s ? p : tail ? Math.min(p, s.tailKept) : s.keep[i] ? p : 0;
+      j.tf = p;
+      j.tk = cooking ? kept : 0;
+      j.num.textContent = cooking ? p.toFixed(3) : '–';
+      const filtered = !!s && cooking && (tail ? s.tailCount === 0 : !s.keep[i]);
+      // The sieve stays, but the heat now gets this jar through it: its lid is knocked off.
+      if (s && !filtered && j.el.classList.contains('filtered')) popLid(j);
+      j.el.classList.toggle('filtered', filtered);
+    });
+    markBowls(s);
+    wake();
+  }
+  // Bowls whose jar the sieve filters are crossed out, in the bowl and in the sentence.
+  function markBowls(s = sieveOn ? nucleus(dist(T)) : null) {
+    let changed = false;
+    bowls.forEach((b) => {
+      const off = !!s && cooking && !!b.word && b.src !== null && (b.src === 'tail' ? s.tailCount === 0 : !s.keep[b.src]);
+      if (off === b.struck) return;
+      b.struck = off;
+      b.el.classList.toggle('struck', off);
+      changed = true;
+    });
+    if (changed) renderSentence();
+  }
+  let lastPop = 0, pops = 0;
+  function popLid(j) {
+    if (TTY.reduce) return;
+    const lid = $('.lid', j.el);
+    const r = lid.getBoundingClientRect();
+    if (!r.width || !lid.offsetWidth) return;
+    const cs = getComputedStyle(lid);
+    const c = document.createElement('span');
+    c.className = 'lid-pop';
+    c.textContent = lid.textContent;
+    const w = lid.offsetWidth, h = lid.offsetHeight;
+    Object.assign(c.style, {
+      left: r.left + r.width / 2 - w / 2 + 'px', top: r.top + r.height / 2 - h / 2 + 'px', width: w + 'px', height: h + 'px',
+      backgroundColor: cs.backgroundColor, backgroundImage: cs.backgroundImage, color: cs.color, fontSize: cs.fontSize,
+      fontFamily: cs.fontFamily, lineHeight: cs.lineHeight, padding: cs.padding, borderRadius: cs.borderRadius, rotate: cs.rotate,
+    });
+    fly.append(c);
+    // Lids that come off in the same instant go one after another.
+    const now = performance.now();
+    const delay = Math.max(0, lastPop + 90 - now);
+    lastPop = now + delay;
+    const dir = pops++ % 2 ? 1 : -1;
+    // In px from the lid's height: narrow phone lids have no text (font-size 0), so em would not move.
+    const up = Math.max(14, h * 1.4), side = Math.max(6, h * 0.7);
+    c.animate([
+      { transform: 'none', opacity: 1 },
+      { transform: `translate(${dir * side * 0.35}px, ${-up}px) rotate(${dir * 18}deg)`, opacity: 1, offset: 0.4 },
+      { transform: `translate(${dir * side}px, ${-up * 0.7}px) rotate(${dir * 40}deg)`, opacity: 0 },
+    ], { duration: 520, delay, easing: 'cubic-bezier(.2, .8, .4, 1)', fill: 'both' }).onfinish = () => c.remove();
+  }
+
+  // While a visitor cooks, the tip follows their heat and sieve. The two sieve tips name high
+  // heat and flambé, so they show only there; at off, low and medium the heat's own tip shows.
+  let visitor = false;
+  function visitorTip(n = nearest(ang)) {
+    if (Math.abs(DETENTS[n].a - ang) > 0.5) return;
+    setTip(sieveOn && n >= 3 ? (n === 4 ? 5 : 4) : [0, 'low', 1, 2, 3][n]);
+  }
+  function setSieve(on) {
+    sieveOn = on;
+    stove.classList.toggle('sieved', on);
+    $('.sieve-label').textContent = on ? L.off : L.on;
+    updateJars();
+  }
+
+  /* ---------- Bowls and the sentence ---------- */
+  let serial = 0;
+
+  function wordNode(text) {
+    if (ko) {
+      // font-kku fills its own text with jamo; the bowl keeps the word it was given.
+      const k = document.createElement('font-kku');
+      k.className = 'bw-kku';
+      k.setAttribute('font', 'malang');
+      k.setAttribute('size', 'var(--bowl)');
+      k.setAttribute('wrap-unit', 'word');
+      k.textContent = text;
+      return k;
+    }
+    const s = document.createElement('span');
+    s.className = 'bw';
+    s.textContent = text;
+    return s;
+  }
+  function fillBowl(i, text, color, src) {
+    const b = bowls[i];
+    // Shaky words that were waiting for this bowl stay; a new dish in a full bowl starts clean.
+    if (b.word) b.garnish = [];
+    b.word = text;
+    b.src = src;
+    b.el.style.setProperty('--broth', mix(color, '#f3e2c0', 0.45));
+    b.wordEl.replaceChildren(wordNode(text));
+    if (!TTY.reduce) {
+      b.wordEl.animate([{ transform: 'translateY(-.6em) scale(.7)', opacity: 0 }, { transform: 'translateY(.08em) scale(1.06)', opacity: 1, offset: 0.6 }, { transform: 'none', opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.3, .9, .4, 1)' });
+      b.el.classList.remove('landed');
+      void b.el.offsetWidth;
+      b.el.classList.add('landed');
+    }
+  }
+  function clearBowls() {
+    bowls.forEach((b) => {
+      b.word = null;
+      b.src = null;
+      b.garnish = [];
+      b.struck = false;
+      b.el.classList.remove('struck');
+      b.serial = -1;
+      b.el.style.removeProperty('--broth');
+      const old = b.wordEl.firstChild;
+      if (!old) return;
+      if (TTY.reduce) { b.wordEl.replaceChildren(); return; }
+      old.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(-.4em)' }], { duration: 260, easing: 'ease-in' }).onfinish = () => { if (b.wordEl.firstChild === old) b.wordEl.replaceChildren(); };
+    });
+    renderSentence();
+  }
+  function oldestBowl() {
+    let best = 0;
+    bowls.forEach((b, i) => { if (b.serial < bowls[best].serial) best = i; });
+    return best;
+  }
+  // One shaky word from jar g.j goes in front of bowl i's word; a pinch of that spice falls in.
+  function addGarnish(i, k) {
+    const g = GARNISH[k];
+    bowls[i].garnish.push(g.t);
+    flash(jars[g.j].el);
+    sprinkle(i, g.j === jars.length - 1 ? TAIL_COLOR : SPICE[g.j]);
+    renderSentence(i, bowls[i].garnish.length - 1);
+  }
+
+  // One day per bowl: "For lunch today, I'm having {1}. Tomorrow, {2}. The day after, {3}."
+  // changed: the day that just changed (marker pen); tok: the shaky word that just came, if any.
+  // (list and el let reserveCard() lay out a sentence that is not on the card yet.)
+  function renderSentence(changed = -1, tok = -1, list = bowls, el = sentenceEl) {
+    const frag = document.createDocumentFragment();
+    const filled = list.map((b) => b.word);
+    el.classList.toggle('shaky', list.some((b) => b.garnish.length));
+    if (!list.some((b) => b.word || b.garnish.length)) {
+      const b = document.createElement('span');
+      b.className = 'blank';
+      frag.append(LEAD[0], b);
+      el.replaceChildren(frag);
+      return;
+    }
+    list.forEach((b, i) => {
+      const w = b.word;
+      const g = b.garnish;
+      if (!w && !g.length) return;
+      const part = document.createElement('span');
+      part.className = 'part' + (i === changed && tok < 0 && !g.length ? ' new' : '');
+      // Korean says "also" (도) when a day repeats the day before.
+      part.append(!ko || i === 0 ? LEAD[i] : LEAD[i] + (w && w === filled[i - 1] ? '도 ' : '은 '));
+      g.forEach((t, k) => {
+        const s = document.createElement('span');
+        s.className = 'tok' + (i === changed && k === tok ? ' new' : '');
+        s.style.setProperty('--r', ((k % 2 ? 1 : -1) * (1.2 + (k % 3))).toFixed(1) + 'deg');
+        s.textContent = t;
+        if (k) part.append(' ');
+        part.append(s);
+      });
+      if (w) {
+        const ws = document.createElement('span');
+        ws.className = 'w' + (b.struck ? ' off' : '') + (i === changed && tok < 0 && g.length ? ' new' : '');
+        ws.textContent = w;
+        if (g.length) part.append(' ');
+        part.append(ws);
+      }
+      // A day that came apart trails off without its full stop.
+      if (!g.length) part.append('.');
+      if (frag.childNodes.length) frag.append(' ');
+      frag.append(part);
+    });
+    el.replaceChildren(frag);
+  }
+  const sentenceText = () => sentenceEl.textContent.replace(/\s+/g, ' ').trim();
+
+  /* ---------- The ladle ---------- */
+  const tpl = $('#ladle-tpl');
+  let flights = 0;
+  function serve(pick, bowl) {
+    const i = bowl === undefined ? oldestBowl() : bowl;
+    bowls[i].serial = ++serial;
+    const text = pick.tail ? pick.word : WORDS[pick.i];
+    const color = pick.tail ? TAIL_COLOR : SPICE[pick.i];
+    flash(jars[pick.tail ? jars.length - 1 : pick.i].el);
+    const land = () => {
+      fillBowl(i, text, color, pick.tail ? 'tail' : pick.i);
+      bowls[i].struck = false;
+      bowls[i].el.classList.remove('struck');
+      renderSentence(i);
+      markBowls();
+    };
+    if (TTY.reduce) { land(); return Promise.resolve(text); }
+    return flyLadle(i, color).then(() => { land(); return text; });
+  }
+  function flash(jar) {
+    if (TTY.reduce) return;
+    jar.classList.remove('pick');
+    void jar.offsetWidth;
+    jar.classList.add('pick');
+  }
+  // A pinch of spice falling into bowl i.
+  function sprinkle(i, color) {
+    if (TTY.reduce) return;
+    const r = bowls[i].dish.getBoundingClientRect();
+    for (let n = 0; n < 16; n++) {
+      parts.push({ x: r.left + r.width * (0.3 + Math.random() * 0.4), y: r.top - r.height * (0.3 + Math.random() * 0.6), vx: (Math.random() - 0.5) * 0.8, vy: 0.4 + Math.random(), g: 0.14, floor: r.top + r.height * 0.24, life: 1, decay: 0.028, size: 1.2 + Math.random() * 1.3, color });
+    }
+    wake();
+  }
+  function flyLadle(i, color) {
+    const pot = $('.pot', stove).getBoundingClientRect();
+    const dish = bowls[i].dish.getBoundingClientRect();
+    const svg = tpl.content.firstElementChild.cloneNode(true);
+    const w = clamp(pot.width * 0.62, 40, 150);
+    const h = (w * 64) / 100;
+    const cx = w * 0.75, cy = h * (34 / 64);   // the cup, in the ladle's own box
+    svg.style.width = w + 'px';
+    svg.style.setProperty('--soup', color);
+    svg.style.transformOrigin = `${cx}px ${cy}px`;
+    fly.append(svg);
+    flights++;
+    stove.classList.add('flying');
+    const sx = pot.left + pot.width * 0.62, sy = pot.top + pot.height * 0.02;
+    const ex = dish.left + dish.width / 2, ey = dish.top + dish.height * 0.05;
+    const peak = Math.min(sy, ey) - Math.max(36, Math.abs(ex - sx) * 0.22);
+    const at = (x, y, r) => `translate(${(x - cx).toFixed(1)}px, ${(y - cy).toFixed(1)}px) rotate(${r}deg)`;
+    const dur = 820;
+    const anim = svg.animate([
+      { transform: at(sx, sy + 8, 0), opacity: 0 },
+      { transform: at(sx, sy - 6, -6), opacity: 1, offset: 0.14 },
+      { transform: at((sx + ex) / 2, peak, -10), offset: 0.5 },
+      { transform: at(ex, ey - 10, 0), offset: 0.78 },
+      { transform: at(ex, ey, 42), opacity: 1, offset: 0.92 },
+      { transform: at(ex, ey - 4, 50), opacity: 0 },
+    ], { duration: dur, easing: 'cubic-bezier(.45, .05, .4, 1)', fill: 'forwards' });
+    anim.onfinish = () => {
+      svg.remove();
+      if (--flights <= 0) { flights = 0; stove.classList.remove('flying'); }
+    };
+    return new Promise((r) => setTimeout(r, dur * 0.86));
+  }
+
+  /* ---------- Tips and the chef's note ---------- */
+  let tipNow = null;
+  function setTip(k) {
+    if (k === tipNow) return;
+    tipNow = k;
+    const text = k === null ? '' : k === 'low' ? TIP_LOW : TIPS[k];
+    tipEl.classList.toggle('empty', !text);
+    $('.tip-tag', tipEl).textContent = L.tip;
+    $('.tip-text', tipEl).textContent = text;
+    if (text && !TTY.reduce) tipEl.animate([{ opacity: 0, transform: 'translateY(.3em)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'ease-out' });
+  }
+  // The chef's note: taped up at medium heat, drops off at high, and comes back singed (burnt)
+  // after the flambé.
+  function setNote(on, burnt = false) {
+    const was = note.classList.contains('on');
+    if (on) note.classList.toggle('burnt', burnt);
+    note.classList.toggle('on', on);
+    $('.head').classList.toggle('noted', on);
+    $('.head').classList.toggle('burnt', on && burnt);
+    if (TTY.reduce) return;
+    if (on) note.animate([{ opacity: 0, transform: 'translate(30%, -40%) rotate(18deg) scale(.8)' }, { opacity: 1, transform: 'translate(0, 4%) rotate(-2deg) scale(1.04)', offset: 0.7 }, { opacity: 1, transform: 'none' }], { duration: 560, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
+    else if (was) note.animate([{ opacity: 1, transform: 'none' }, { opacity: 1, transform: 'translateY(30%) rotate(-5deg)', offset: 0.4 }, { opacity: 0, transform: 'translateY(140%) rotate(-14deg)' }], { duration: 480, easing: 'ease-in' });
+  }
+
+  // Phones crop the headroom above the pot so the pot itself is bigger; steam and flames
+  // still draw past the box (overflow is visible) and rise behind the spice rack.
+  const isWide = () => innerWidth >= 700 && innerWidth >= innerHeight;
+  function fitStove() { stove.setAttribute('viewBox', isWide() ? '0 0 320 300' : '0 92 320 208'); }
+  fitStove();
+  addEventListener('resize', fitStove);
+
+  /* ---------- Frame loop: knob tween, sloshing jars, sparks and spilled grains ---------- */
+  const fx = $('.fx');
+  const ctx = fx.getContext('2d');
+  let dpr = 1;
+  function sizeFx() {
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    fx.width = Math.round(innerWidth * dpr);
+    fx.height = Math.round(innerHeight * dpr);
+  }
+  sizeFx();
+  addEventListener('resize', sizeFx);
+  const parts = [];
+  let raf = 0;
+  function wake() { if (!raf) raf = requestAnimationFrame(tick); }
+  function tick(now) {
+    raf = 0;
+    let busy = false;
+    if (tween) {
+      const k = clamp((now - tween.t0) / tween.ms, 0, 1);
+      const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+      setAngle(tween.from + (tween.to - tween.from) * e);
+      if (k >= 1) tween = null; else busy = true;
+    }
+    for (const j of jars) {
+      if (TTY.reduce) { j.f = j.tf; j.k = j.tk; j.vf = j.vk = 0; } else {
+        j.vf = j.vf * 0.8 + (j.tf - j.f) * 0.14; j.f += j.vf;
+        j.vk = j.vk * 0.8 + (j.tk - j.k) * 0.14; j.k += j.vk;
+        if (Math.abs(j.tf - j.f) > 1e-4 || Math.abs(j.vf) > 1e-4 || Math.abs(j.tk - j.k) > 1e-4 || Math.abs(j.vk) > 1e-4) busy = true;
+        else { j.f = j.tf; j.k = j.tk; }
+      }
+      const f = clamp(j.f, 0, 1);
+      j.el.style.setProperty('--pf', f.toFixed(4));
+      j.el.style.setProperty('--pk', clamp(j.k, 0, f).toFixed(4));
+    }
+    if (!TTY.reduce && particles(now)) busy = true;
+    if (busy) wake();
+  }
+  let lastP = 0;
+  function particles(now) {
+    const dt = Math.min(50, now - (lastP || now)) / 16.7;
+    lastP = now;
+    const fire = clamp((T - 1.3) / 0.6, 0, 1);
+    const sack = jars[jars.length - 1];
+    const spill = cooking ? clamp((sack.f - 0.45) / 0.3, 0, 1) : 0;
+    if (fire > 0.05 && document.visibilityState === 'visible') {
+      const r = $('.pot', stove).getBoundingClientRect();
+      const k = clamp(r.width / 200, 0.35, 1.2);   // sparks fly as far as the pot is big
+      for (let n = 0; n < 3 * fire * dt * Math.sqrt(k); n++) {
+        parts.push({ x: r.left + r.width * (0.2 + Math.random() * 0.6), y: r.top + r.height * 0.1, vx: (Math.random() - 0.5) * 1.6 * k, vy: (-2 - Math.random() * 3.2 * fire) * k, g: -0.02 * k, life: 1, decay: 0.012 + Math.random() * 0.02, size: (1 + Math.random() * 2.2) * Math.max(0.6, k), color: Math.random() < 0.5 ? '#ffd166' : '#ff8a2a' });
+      }
+    }
+    if (spill > 0.02 && document.visibilityState === 'visible') {
+      const r = $('.glass', sack.el).getBoundingClientRect();
+      const wide = r.height > r.width;
+      for (let n = 0; n < 1.4 * spill * dt; n++) {
+        const c = [...SPICE, TAIL_COLOR][Math.floor(Math.random() * 10)];
+        if (wide) parts.push({ x: r.left + r.width * (0.3 + Math.random() * 0.4), y: r.bottom - r.height * sack.f, vx: (Math.random() - 0.5) * 2.4, vy: -1.6 - Math.random() * 1.6, g: 0.16, floor: r.bottom + 4, life: 1, decay: 0.012, size: 1.2 + Math.random() * 1.3, color: c });
+        else parts.push({ x: r.left + r.width * sack.f, y: r.top + r.height * Math.random(), vx: 0.6 + Math.random() * 1.6, vy: -0.8 - Math.random(), g: 0.12, floor: r.bottom + 3, life: 1, decay: 0.02, size: 1 + Math.random(), color: c });
+      }
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i];
+      p.vy += p.g * dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      if (p.floor && p.y > p.floor) { p.y = p.floor; p.vy *= -0.3; p.vx *= 0.6; }
+      p.life -= p.decay * dt;
+      if (p.life <= 0) { parts.splice(i, 1); continue; }
+      ctx.globalAlpha = Math.min(1, p.life * 1.5);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    return parts.length > 0 || fire > 0.05 || spill > 0.02;
+  }
+  // a colour between two hex colours
+  function mix(a, b, t) {
+    const h = (s) => [1, 3, 5].map((k) => parseInt(s.slice(k, k + 2), 16));
+    const A = h(a), B = h(b);
+    return '#' + A.map((x, k) => Math.round(x + (B[k] - x) * t).toString(16).padStart(2, '0')).join('');
+  }
+
+  /* ---------- Knob: drag, click, keys ---------- */
+  let drag = null;
+  const pointerAngle = (e, c) => (Math.atan2(e.clientX - c.x, -(e.clientY - c.y)) * 180) / Math.PI;
+  knob.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    takeOver();
+    tween = null;
+    const r = knob.getBoundingClientRect();
+    const c = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    drag = { id: e.pointerId, c, last: pointerAngle(e, c), x: e.clientX, y: e.clientY, a: ang, moved: false };
+    try { knob.setPointerCapture(e.pointerId); } catch (err) { /* synthetic pointer */ }
+    knob.focus({ preventScroll: true });
+    e.preventDefault();
+  });
+  knob.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 5) return;
+    drag.moved = true;
+    knob.classList.add('dragging');
+    const now = pointerAngle(e, drag.c);
+    let d = now - drag.last;
+    if (d > 180) d -= 360;
+    if (d < -180) d += 360;
+    drag.last = now;
+    drag.a = clamp(drag.a + d, -120, 120);
+    setAngle(drag.a);
+  });
+  const release = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    knob.classList.remove('dragging');
+    if (drag.moved) { aim = nearest(ang); goAngle(DETENTS[aim].a, 220); } else { aim = (aim + 1) % DETENTS.length; goAngle(DETENTS[aim].a, aim === 0 ? 700 : 480); }
+    drag = null;
+    takeOver();
+  };
+  knob.addEventListener('pointerup', release);
+  knob.addEventListener('pointercancel', release);
+  knob.addEventListener('keydown', (e) => {
+    const keys = { ArrowRight: 1, ArrowUp: 1, PageUp: 1, ArrowLeft: -1, ArrowDown: -1, PageDown: -1 };
+    let to = null;
+    if (e.key in keys) to = clamp(aim + keys[e.key], 0, 4);
+    else if (e.key === 'Home') to = 0;
+    else if (e.key === 'End') to = 4;
+    else if (e.key === 'Enter' || e.key === ' ') to = (aim + 1) % DETENTS.length;
+    if (to === null) return;
+    e.preventDefault();
+    takeOver();
+    aim = to;
+    goAngle(DETENTS[to].a, 450);
+  });
+
+  ladleBtn.addEventListener('click', () => {
+    takeOver();
+    const pick = sample(T, sieveOn);
+    const text = pick.tail ? pick.word : WORDS[pick.i];
+    serve(pick).then(() => { status.textContent = `${L.ladled}: ${text}. ${sentenceText()}`; });
+  });
+  sieveBtn.addEventListener('click', () => {
+    takeOver();
+    setSieve(!sieveOn);
+    visitorTip();
+    status.textContent = sieveOn ? L.sieveOn : L.sieveOff;
+  });
+
+  /* ---------- Autoplay ----------
+     Times are seconds from the start of a 24-second loop (it starts once the page has drawn).
+     Each scene turns the knob, then the ladle serves scripted words (so the story is always
+     the same); only the visitor's "one more ladle" samples for real. What the card reads:
+
+       start   For lunch today, I'm having ___                       / 오늘 점심은 ___   (medium heat, jars full)
+       0.3 Off      For lunch today, I'm having tomato soup. Tomorrow, tomato soup. The day after, tomato soup.
+                    오늘 점심은 김치찌개. 내일 점심도 김치찌개. 모레 점심도 김치찌개.
+       5.2 Medium   For lunch today, I'm having tomato soup. Tomorrow, a sandwich. The day after, ramen.   (chef's note)
+                    오늘 점심은 김치찌개. 내일 점심은 된장찌개. 모레 점심은 비빔밥.
+       8.6 High     For lunch today, I'm having salad. Tomorrow, leftovers. The day after, clouds.   (the note drops)
+                    오늘 점심은 김밥. 내일 점심은 어제 남은 거. 모레 점심은 구름.
+      12.3 + sieve  "clouds" is filtered: crossed out, then the third bowl is ladled again
+                    For lunch today, I'm having salad. Tomorrow, leftovers. The day after, ramen.
+                    오늘 점심은 김밥. 내일 점심은 어제 남은 거. 모레 점심은 비빔밥.
+      15.4 Flambé, sieve still on: the lids fly off, the sieve bucks, the sack overflows
+                    For lunch today, I'm having staircase. Tomorrow, fridge hum. The day after, Wednesday purple flavored galaxy
+                    오늘 점심은 계단. 내일 점심은 냉장고 소리. 모레 점심은 수요일의 보라색 맛 은하수
+                    (complete when the third bowl lands, about 18.7 s, and up to the end)
+      20.3          the chef's note comes back singed: "I said medium." / "중불이라고 했잖아요."  */
+  const LOOP = 24;
+  const SCENES = [
+    // the turn to Off is the opening beat; its tip waits until the knob has stopped
+    { at: 0.3, T: 0, tip: 0, tipAt: 1.0, picks: [0, 0, 0], first: 0.6, step: 0.7 },
+    { at: 5.2, T: 0.7, tip: 1, clear: true, note: true, picks: [0, 1, 2], first: 0.6, step: 0.6 },
+    { at: 8.6, T: 1.2, tip: 2, clear: true, note: false, picks: [3, 5, 6], first: 0.7, step: 0.7 },
+    // the sieve: no clearing; only the third bowl (clouds) is ladled again
+    { at: 12.3, T: 1.2, tip: 4, sieve: true, picks: [, , 2], first: 1.3, step: 0 },
+    // flambé: the tip waits for the column; the third day's shaky words come before its bowl
+    { at: 15.4, T: 2.0, tip: 5, tipAt: 0.6, clear: true, picks: ['t0', 't1', 't2'], first: 0.9, step: 0.85, garnish: [2.55, 2.8, 3.05] },
+  ];
+  const TAG_AT = 20.3;
+  const angleOf = (t) => DETENTS.find((d) => d.T === t).a;
+  let run = 0;
+  let idle = 0;
+  function play() {
+    const mine = ++run;
+    visitor = false;
+    const at = (sec, fn) => setTimeout(() => { if (run === mine) fn(); }, sec * 1000);
+    at(0, () => { clearBowls(); setNote(false); setSieve(false); setTip(null); });
+    SCENES.forEach((sc) => {
+      at(sc.at, () => {
+        cooking = true;
+        if (sc.clear) clearBowls();
+        if (sc.sieve !== undefined) setSieve(sc.sieve);
+        aim = DETENTS.findIndex((d) => d.T === sc.T);
+        if (Math.abs(ang - angleOf(sc.T)) < 0.5) {
+          updateJars();
+          if (!TTY.reduce) knob.animate([{ rotate: '0deg' }, { rotate: '-7deg' }, { rotate: '3deg' }, { rotate: '0deg' }], { duration: 360, easing: 'ease-out' });
+        } else goAngle(angleOf(sc.T), 820);
+        if (!sc.tipAt) setTip(sc.tip);
+        if (sc.note !== undefined) setNote(sc.note);
+      });
+      if (sc.tipAt) at(sc.at + sc.tipAt, () => setTip(sc.tip));
+      // (forEach skips the holes in a sparse list like [, , 2])
+      (sc.picks || []).forEach((p, k) => at(sc.at + sc.first + k * sc.step, () => {
+        serve(typeof p === 'number' ? { i: p } : { tail: true, word: TAIL_WORDS[+p.slice(1)] }, k);
+      }));
+      (sc.garnish || []).forEach((t, k) => at(sc.at + t, () => addGarnish(2, k)));
+    });
+    at(TAG_AT, () => setNote(true, true));
+    at(LOOP, play);
+  }
+  // A visitor's turn: autoplay stops, and starts over 12 s after the last touch.
+  function takeOver() {
+    cooking = true;
+    visitor = true;
+    if (note.classList.contains('on')) setNote(false); // the visitor's turn: the hint line comes back
+    if (TTY.reduce) return;
+    run++;
+    clearTimeout(idle);
+    idle = setTimeout(play, 12000);
+  }
+
+  /* ---------- The card's height ----------
+     Lay out every sentence the autoplay will write, and every tip, off screen at this size, and
+     give the card room for the longest of each from the start (--sent-lines, --tip-lines). Then
+     no scene, and no shaky word of the punchline, can make the card grow and push the counter
+     down under a flying ladle. Measured again when the window resizes (the home opens the
+     stage at full window size first, then shrinks it) and when a font arrives. */
+  function scriptedSentences() {
+    const out = [];
+    let cur = [0, 1, 2].map(() => ({ word: null, garnish: [], struck: false }));
+    SCENES.forEach((sc) => {
+      if (sc.clear) cur = cur.map(() => ({ word: null, garnish: [], struck: false }));
+      (sc.picks || []).forEach((p, k) => { cur[k] = { ...cur[k], word: typeof p === 'number' ? WORDS[p] : TAIL_WORDS[+p.slice(1)] }; });
+      if (sc.garnish) cur[2] = { ...cur[2], garnish: GARNISH.map((g) => g.t) };
+      out.push(cur.map((b) => ({ ...b })));
+    });
+    return out;
+  }
+  const card = $('.card');
+  let reservedW = -1;
+  function reserveCard(force) {
+    const w = sentenceEl.clientWidth;
+    if (!w || (w === reservedW && !force)) return;
+    reservedW = w;
+    const hide = (el, width) => Object.assign(el.style, { position: 'absolute', left: '0', top: '0', width: width + 'px', margin: '0', minHeight: '0', visibility: 'hidden', pointerEvents: 'none' });
+    const lines = (el) => Math.round(el.offsetHeight / parseFloat(getComputedStyle(el).lineHeight));
+    const sp = document.createElement('p');
+    sp.className = 'sentence';
+    sp.setAttribute('aria-hidden', 'true');
+    hide(sp, w);
+    card.append(sp);
+    let sl = 1;
+    scriptedSentences().forEach((list) => { renderSentence(-1, -1, list, sp); sl = Math.max(sl, lines(sp)); });
+    sp.remove();
+    const tp = tipEl.cloneNode(true);
+    tp.classList.remove('empty');
+    tp.setAttribute('aria-hidden', 'true');
+    hide(tp, tipEl.offsetWidth);
+    $('.tip-tag', tp).textContent = L.tip;
+    card.append(tp);
+    const tt = $('.tip-text', tp);
+    let tl = 1;
+    [...TIPS, TIP_LOW].forEach((s) => { tt.textContent = s; tl = Math.max(tl, lines(tt)); });
+    tp.remove();
+    card.style.setProperty('--sent-lines', Math.max(2, sl));
+    card.style.setProperty('--tip-lines', tl);
+  }
+  reserveCard();
+  addEventListener('resize', () => reserveCard()); // (not a ResizeObserver on the card: its own height changes here)
+  if (document.fonts) document.fonts.addEventListener('loadingdone', () => reserveCard(true));
+
+  /* ---------- Start ---------- */
+  setSieve(false);
+  if (TTY.reduce) {
+    // The last scene of the autoplay: flambé with the sieve still on, three bowls from the
+    // long tail, the third day come apart, and the singed note.
+    cooking = true;
+    aim = 4;
+    setSieve(true);
+    setAngle(120);
+    [0, 1, 2].forEach((i) => { bowls[i].serial = ++serial; fillBowl(i, TAIL_WORDS[i], TAIL_COLOR, 'tail'); });
+    bowls[2].garnish = GARNISH.map((g) => g.t);
+    renderSentence();
+    setTip(5);
+    setNote(true, true);
+  } else {
+    // Medium heat with full jars, so the opening turn to "Off" is something to see.
+    cooking = true;
+    aim = 2;
+    setAngle(0);
+    renderSentence();
+  }
+  // The first second is the gag (and the ladle measures the bowls), so wait for the fonts.
+  TTY.onShow(() => TTY.drawn.then(() => { reserveCard(true); if (!TTY.reduce) play(); }));
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

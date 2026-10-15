@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Sign-Up Stamp Rally | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Nunito:ital,wght@0,400;0,700;0,800;1,600&family=Oswald:wght@500;700&family=Gochi+Hand&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="riso dojang"></script>
+<style>
+  /* A tourist stamp-rally card for signing up to one small sock shop. It is folded like an
+     accordion and unfolds well past the edge of the screen; every checkpoint of the sign-up
+     is a stamp station. Collect all seven and the prize desk hands you... the next card. */
+  :root {
+    --bg: #2b5c68;
+    --paper: #fbf4e3;
+    --paper-back: #efe3c8;
+    --pink: #ff4f9e;
+    --blue: #2b62d4;
+    --ink: #2a2622;
+    --muted: #6f6453;
+    --line: #dccfb2;
+    --ok: #1f8a55;
+    --bad: #d2392f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 1.6px) 0 0 / 22px 22px,
+      radial-gradient(120% 90% at 50% 40%, #33707d 0%, var(--bg) 60%, #224a54 100%);
+    color: var(--ink);
+    font-family: 'Nunito', system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; word-break: keep-all; }
+
+  /* All sizes come from the panel width: --u is 1% of it (set by measure()). */
+  .stage { position: fixed; inset: 0; --u: 4px; }
+
+  /* ---------- Header: the tour name and a stamp counter ---------- */
+  .top {
+    position: absolute; left: 0; right: 0; top: 0; height: var(--top);
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    padding: 0 12px;
+    color: #fff;
+    font-weight: 800;
+    font-size: clamp(12px, calc(var(--top) * .34), 16px);
+    opacity: 0; transition: opacity .5s;
+  }
+  .top.on { opacity: 1; }
+  .top-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .count { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .dots { display: inline-flex; gap: 3px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.65); transition: background .25s, border-color .25s; }
+  .dot.got { border-color: transparent; }
+  .count b { margin-left: 4px; }
+
+  /* ---------- The view: the card and its camera ---------- */
+  .view {
+    position: absolute; left: 0; right: 0; top: var(--vt); height: var(--ph);
+    perspective: calc(var(--u) * 340);
+    perspective-origin: 50% 50%;
+    cursor: pointer;
+    outline: none;
+  }
+  .view:focus-visible::after { content: ""; position: absolute; inset: -6px 8px; border: 3px solid #ffd84a; border-radius: 10px; pointer-events: none; }
+  .track, .track2 {
+    position: absolute; left: 0; top: 0; width: var(--pw); height: var(--ph);
+    transform-style: preserve-3d;
+  }
+  .track { transform-origin: 0 50%; transition: transform .5s cubic-bezier(.65, 0, .25, 1); }
+  .track.zoom { transition-duration: .9s; }
+  .track.drift { transition: transform 2.2s cubic-bezier(.4, 0, .6, 1); }
+  .snap, .snap * { transition: none !important; }
+  .panel {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    transform-origin: 0 50%;
+    transform-style: preserve-3d;
+  }
+  .face, .back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+  .back { transform: rotateY(180deg); background: var(--paper-back); }
+  .face {
+    display: flex; flex-direction: column;
+    padding: calc(var(--u) * 5) calc(var(--u) * 5.5) calc(var(--u) * 4.5);
+    background: var(--paper);
+    font-size: max(11.5px, calc(var(--u) * 4.3));
+    line-height: 1.35;
+  }
+  /* Fold creases and the shading while folded (opacity set per panel by setFold, on the .shade
+     element itself: an inherited custom property set on the panel every frame restyled the whole
+     panel, font-kku glyphs and all, and the Korean unfold stalled up to 1.6 s on the home stage). */
+  .face::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--u) * 3); background: linear-gradient(90deg, rgba(90,70,30,.13), transparent); pointer-events: none; }
+  .panel.first .face::before { display: none; }
+  .shade { position: absolute; inset: 0; background: #20180c; opacity: 0; pointer-events: none; }
+  .panel:not(.first) .face { box-shadow: inset 1px 0 0 rgba(120,100,60,.18); }
+
+  /* ---------- A station panel ---------- */
+  .head { display: grid; grid-template-columns: auto 1fr; column-gap: calc(var(--u) * 3); align-items: center; flex: none; }
+  .num {
+    display: grid; place-items: center;
+    width: calc(var(--u) * 10.5); height: calc(var(--u) * 10.5);
+    border-radius: 50%;
+    background: var(--pink); color: #fff;
+    font: calc(var(--u) * 5.6)/1 'Dela Gothic One', sans-serif;
+  }
+  .name { font-weight: 800; font-size: calc(var(--u) * 6.2); line-height: 1.12; letter-spacing: -.01em; }
+  .lang-ko .name { font-weight: 700; font-size: calc(var(--u) * 6.4); }
+  .guide { grid-column: 1 / -1; margin-top: calc(var(--u) * 1.8); color: var(--muted); font-size: max(10.5px, calc(var(--u) * 3.9)); font-style: italic; font-weight: 600; line-height: 1.3; }
+  .lang-ko .guide { font-style: normal; font-weight: 400; }
+
+  .ms {
+    position: relative;
+    flex: 0 1 auto; min-height: 0;
+    display: flex; flex-direction: column; justify-content: center; gap: calc(var(--u) * 1.6);
+    margin: calc(var(--u) * 3.4) 0 auto;
+    padding: calc(var(--u) * 3) calc(var(--u) * 3.4);
+    background: #fff;
+    border: calc(var(--u) * .35) solid var(--line);
+    border-radius: calc(var(--u) * 2.6);
+    box-shadow: 0 calc(var(--u) * .8) 0 rgba(120,100,60,.12);
+    overflow: hidden;
+  }
+  .row { display: flex; align-items: center; gap: calc(var(--u) * 2); min-width: 0; }
+  .muted { color: var(--muted); }
+  .small { font-size: max(10.5px, calc(var(--u) * 3.6)); }
+  .ms .b { transition: color .2s var(--d, 0ms), background-color .2s var(--d, 0ms), border-color .2s var(--d, 0ms), opacity .25s var(--d, 0ms), transform .3s var(--d, 0ms); }
+  .ms.fast .b, .ms.fast .b *, .ms.fast .b::before, .ms.fast .b::after { transition: none !important; }
+
+  /* Checkboxes, ticks and crosses. */
+  .cb {
+    flex: none; position: relative;
+    width: calc(var(--u) * 4.2); height: calc(var(--u) * 4.2);
+    border: calc(var(--u) * .5) solid #9a8f7c; border-radius: calc(var(--u) * 1);
+    background: #fff;
+  }
+  .cb::after { content: "✓"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-size: calc(var(--u) * 3.4); font-weight: 800; line-height: 1; opacity: 0; }
+  .go .cb.b { background: var(--blue); border-color: var(--blue); }
+  .go .cb.b::after { opacity: 1; transition: opacity .1s var(--d, 0ms); }
+  .tag { color: var(--blue); font-weight: 700; }
+  .tag.opt { color: var(--muted); }
+  .terms .all { font-weight: 700; padding-bottom: calc(var(--u) * 1.4); border-bottom: calc(var(--u) * .3) solid var(--line); }
+
+  .mark { flex: none; width: calc(var(--u) * 4.4); text-align: center; font-weight: 800; color: #b8ad98; }
+  .mark.b::before { content: "○"; }
+  .go .mark.b { color: var(--ok); }
+  .go .mark.b::before { content: "✓"; }
+  .go .mark.b.x { color: var(--bad); }
+  .go .mark.b.x::before { content: "✕"; }
+  .go .rule.b.x { color: var(--bad); }
+
+  .field {
+    display: flex; align-items: center; gap: calc(var(--u) * 1.5);
+    min-height: calc(var(--u) * 7.6);
+    padding: 0 calc(var(--u) * 2.4);
+    border: calc(var(--u) * .4) solid #cfc6b5; border-radius: calc(var(--u) * 1.4);
+    background: #fbfaf7;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    letter-spacing: .04em;
+    white-space: nowrap; overflow: hidden;
+  }
+  .lbl { font-weight: 700; font-size: max(10.5px, calc(var(--u) * 3.6)); color: var(--muted); }
+
+  /* 2 (ko): user names that are taken. */
+  .id .uid { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: max(11px, calc(var(--u) * 3.9)); }
+  .id .st { margin-left: auto; font-size: max(10.5px, calc(var(--u) * 3.4)); font-weight: 600; opacity: 0; white-space: nowrap; }
+  .go .id .st.b { opacity: 1; }
+  .id .st.no { color: var(--bad); }
+  .id .st.yes { color: var(--ok); }
+  .go .id .uid.b.gone { text-decoration: line-through; color: #a89d8a; }
+
+  /* SMS code: timer, expiry and the text that arrives just too late. */
+  .sms .timer { margin-left: auto; font: 700 max(11.5px, calc(var(--u) * 4.6))/1 ui-monospace, Menlo, Consolas, monospace; color: var(--bad); font-variant-numeric: tabular-nums; }
+  .sms .code { flex: 1; letter-spacing: .3em; }
+  .sms .status { min-height: 1.35em; color: var(--bad); font-weight: 700; font-size: max(10.5px, calc(var(--u) * 3.7)); opacity: 0; }
+  .sms .status.on { opacity: 1; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: calc(var(--u) * 1.4) calc(var(--u) * 3);
+    border-radius: calc(var(--u) * 1.4);
+    background: #ece5d6; color: var(--ink);
+    font-weight: 700; font-size: max(10.5px, calc(var(--u) * 3.7));
+    white-space: nowrap;
+  }
+  .btn.primary { background: var(--blue); color: #fff; }
+  .btn.pressed { transform: scale(.92); filter: brightness(.85); }
+  .bubble {
+    position: absolute; left: calc(var(--u) * 4); right: calc(var(--u) * 4); top: calc(var(--u) * 3.5);
+    display: grid; grid-template-columns: auto 1fr; gap: 0 calc(var(--u) * 2.4); align-items: center;
+    padding: calc(var(--u) * 2.4) calc(var(--u) * 3);
+    border-radius: calc(var(--u) * 3);
+    background: rgba(255,255,255,.97);
+    box-shadow: 0 calc(var(--u) * 1.4) calc(var(--u) * 4) rgba(0,0,0,.28);
+    font-size: max(10.5px, calc(var(--u) * 3.6)); line-height: 1.3;
+    z-index: 3;
+    opacity: 0; transform: translateY(-140%);
+  }
+  .bubble.on { opacity: 1; transform: none; transition: transform .35s cubic-bezier(.2,.9,.3,1.2), opacity .2s; }
+  .bubble .ic { grid-row: span 2; display: grid; place-items: center; width: calc(var(--u) * 8); height: calc(var(--u) * 8); border-radius: calc(var(--u) * 2); background: var(--ok); color: #fff; }
+  .bubble .ic svg { width: 60%; height: 60%; }
+  .bubble .when { color: var(--muted); font-size: max(10px, calc(var(--u) * 3.1)); }
+  .bubble b { font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: .06em; }
+
+  /* Mail. */
+  .box .folder { display: flex; align-items: center; gap: calc(var(--u) * 2); padding: calc(var(--u) * 1.2) calc(var(--u) * 2); border-radius: calc(var(--u) * 1.4); }
+  .box .folder .n { margin-left: auto; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .go .box .folder.inbox.b { background: #fdecea; }
+  .go .box .folder.spam.b { background: #fff3c4; }
+  .mail { display: flex; align-items: center; gap: calc(var(--u) * 2); padding: calc(var(--u) * 1.6) calc(var(--u) * 2); border-left: calc(var(--u) * 1) solid #f0b400; background: #fffaf0; font-size: max(10.5px, calc(var(--u) * 3.6)); opacity: 0; transform: translateX(8%); }
+  .go .mail.b { opacity: 1; transform: none; }
+  .mail .t { flex: 1; min-width: 0; font-weight: 700; line-height: 1.25; }
+  .go .btn.b.press { background: #1d4fb0; transform: scale(.94); }
+
+  /* Security programs (ko). */
+  .prog { display: grid; grid-template-columns: 1fr auto; gap: calc(var(--u) * .8) calc(var(--u) * 2); align-items: center; font-size: max(11px, calc(var(--u) * 3.8)); }
+  .bar { grid-column: 1 / -1; height: calc(var(--u) * 1.8); border-radius: 99px; background: #ece5d6; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--ok); }
+  .go .bar i.b { width: 100%; transition: width .5s var(--d, 0ms) cubic-bezier(.5,0,.3,1); }
+  .prog .ok { color: var(--ok); font-weight: 700; font-size: max(10px, calc(var(--u) * 3.3)); opacity: 0; }
+  .go .prog .ok.b { opacity: 1; }
+  .restart { color: var(--bad); font-weight: 700; font-size: max(10.5px, calc(var(--u) * 3.6)); opacity: 0; }
+  .go .restart.b { opacity: 1; }
+
+  /* Picture CAPTCHA, "type the characters" CAPTCHA, privacy pop-up, 2FA, human check. */
+  .cap-band { padding: calc(var(--u) * 2) calc(var(--u) * 2.6); background: var(--blue); color: #fff; font-weight: 700; font-size: max(10.5px, calc(var(--u) * 3.6)); line-height: 1.25; border-radius: calc(var(--u) * 1.2); }
+  .cap-band b { display: block; font-size: max(12px, calc(var(--u) * 4.6)); }
+  .grid-wrap { position: relative; align-self: center; width: calc(var(--u) * 40); aspect-ratio: 1; }
+  .grid-wrap svg { display: block; width: 100%; height: 100%; }
+  .cell { position: absolute; width: 33.33%; height: 33.33%; border: calc(var(--u) * .9) solid transparent; }
+  .go .cell.b { border-color: var(--blue); background: rgba(43,98,212,.18); }
+  .cell::after { content: "✓"; position: absolute; left: -2px; top: -2px; width: calc(var(--u) * 4.2); height: calc(var(--u) * 4.2); border-radius: 50%; background: var(--blue); color: #fff; font-size: calc(var(--u) * 3); font-weight: 800; display: grid; place-items: center; opacity: 0; }
+  .go .cell.b::after { opacity: 1; transition: opacity .1s var(--d, 0ms); }
+  .pole-note { position: absolute; right: calc(var(--u) * -21); bottom: calc(var(--u) * 1); width: calc(var(--u) * 20); font: max(12px, calc(var(--u) * 4.6))/1.05 'Gochi Hand', cursive; color: var(--bad); rotate: -8deg; opacity: 0; }
+  .go .pole-note.b { opacity: 1; }
+  .squiggle { align-self: center; width: calc(var(--u) * 62); height: calc(var(--u) * 15); border-radius: calc(var(--u) * 1.2); background: #eef0f2; }
+  .typed { display: inline-block; overflow: hidden; vertical-align: bottom; clip-path: inset(0 100% 0 0); }
+  .go .typed.b { clip-path: inset(0 0 0 0); transition: clip-path .5s var(--d, 0ms) steps(5); }
+  .tick { margin-left: auto; color: var(--ok); font-weight: 800; opacity: 0; }
+  .go .tick.b { opacity: 1; }
+  .pop-title { font-weight: 800; font-size: max(11.5px, calc(var(--u) * 4.8)); }
+  .pop-body { color: var(--muted); font-size: max(10px, calc(var(--u) * 3.5)); line-height: 1.3; -webkit-mask: linear-gradient(#000 55%, transparent); mask: linear-gradient(#000 55%, transparent); max-height: 3.9em; overflow: hidden; }
+  .pop-btns { display: flex; gap: calc(var(--u) * 2); }
+  .pop-btns .btn { flex: 1; }
+  .qr-row { display: flex; gap: calc(var(--u) * 3); align-items: center; }
+  .qr { flex: none; width: calc(var(--u) * 21); height: calc(var(--u) * 21); position: relative; }
+  .qr svg { display: block; width: 100%; height: 100%; }
+  .qr .scan { position: absolute; left: -4%; right: -4%; top: 0; height: calc(var(--u) * .8); background: var(--bad); box-shadow: 0 0 calc(var(--u) * 2) var(--bad); opacity: 0; }
+  .go .qr .scan.b { animation: scan .7s var(--d, 0ms) ease-in-out 1 both; }
+  .ms.fast .qr .scan { animation: none; }
+  @keyframes scan { 0% { top: 0; opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+  .codes { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: max(10px, calc(var(--u) * 3.3)); line-height: 1.4; padding: calc(var(--u) * 1.4) calc(var(--u) * 2); background: #f4efe4; border-radius: calc(var(--u) * 1.2); }
+  .go .codes.b { background: #fff3c4; }
+  .human { display: flex; align-items: center; gap: calc(var(--u) * 3); padding: calc(var(--u) * 3); border: calc(var(--u) * .4) solid #d6d1c6; border-radius: calc(var(--u) * 1.6); background: #fafafa; font-weight: 700; }
+  .human .cb { width: calc(var(--u) * 6); height: calc(var(--u) * 6); }
+  .spin { width: calc(var(--u) * 6); height: calc(var(--u) * 6); border-radius: 50%; border: calc(var(--u) * .9) solid #d6d1c6; border-top-color: var(--blue); display: none; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(1turn); } }
+  .human.checking .cb { display: none; }
+  .human.checking .spin { display: block; }
+  .human.passed .cb { background: var(--ok); border-color: var(--ok); }
+  .human.passed .cb::after { opacity: 1; }
+  .human-st { color: var(--muted); font-size: max(10.5px, calc(var(--u) * 3.6)); min-height: 1.35em; }
+  .human-st.ok { color: var(--ok); font-weight: 700; }
+
+  /* ---------- Stamp slot and stamps ---------- */
+  .slot {
+    position: relative; flex: none; align-self: center; margin-top: calc(var(--u) * 3.4);
+    width: var(--slot); aspect-ratio: 1;
+  }
+  .slot::before { /* the route, dashed, from edge to edge of the panel */
+    content: ""; position: absolute; top: 50%; left: calc((var(--pw) - var(--slot)) / -2); right: calc((var(--pw) - var(--slot)) / -2);
+    border-top: calc(var(--u) * .8) dashed rgba(43,98,212,.55);
+  }
+  .panel.last .slot::before { right: 50%; }
+  .ring-empty {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: calc(var(--u) * .7) dashed #c3b48f;
+    background: var(--paper);
+    display: grid; place-items: center; align-content: center; gap: calc(var(--u) * 1);
+    color: #b3a37c; font-weight: 700; font-size: max(10px, calc(var(--u) * 3.5)); text-align: center; line-height: 1.2;
+  }
+  .ring-empty .big-n { font: calc(var(--u) * 9)/1 'Dela Gothic One', sans-serif; color: #e2d5b4; }
+  .ring-empty > .big-n, .ring-empty > .lab { transition: opacity .2s; }
+  .slot.got > .ring-empty > .big-n, .slot.got > .ring-empty > .lab { opacity: 0; }
+  .stamp {
+    position: absolute; inset: 0;
+    color: var(--ink-c, #d23a2f);
+    rotate: var(--rot, -6deg);
+    opacity: 0;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+  }
+  .stamp.on { opacity: .93; }
+  .stamp .ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .stamp .ring .c1 { fill: none; stroke: currentColor; stroke-width: 3.6; }
+  .stamp .ring .c2 { fill: none; stroke: currentColor; stroke-width: 1.2; }
+  .stamp .ring .arc { fill: currentColor; font: 700 7.4px 'Nunito', sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+  .lang-ko .stamp .ring .arc { font: 700 7.6px 'IBM Plex Sans KR', sans-serif; letter-spacing: .02em; text-transform: none; }
+  .stamp .ring .ico { fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+  .stamp .ring .ico .fill { fill: currentColor; stroke: none; }
+  .words {
+    position: absolute; left: 10%; right: 10%; top: 51%;
+    display: flex; flex-direction: column; align-items: center; gap: calc(var(--slot) * .01);
+    text-align: center; line-height: 1;
+  }
+  .w-sm { font: 600 max(10px, calc(var(--slot) * .072))/1 'Oswald', sans-serif; letter-spacing: .08em; }
+  .w-big { font: 700 calc(var(--slot) * .141)/.95 'Oswald', sans-serif; letter-spacing: .02em; }
+  .kk { color: inherit; }
+  /* Small stamps: the one that says the code expired. */
+  .stamp.mini { inset: auto; left: -12%; top: -10%; width: 48%; height: 48%; --ink-c: #4f6487; rotate: -16deg; }
+  .stamp.mini .words { top: 36%; }
+  .stamp.mini .w-big { font-size: max(10px, calc(var(--slot) * .086)); }
+
+  /* ---------- Cover ---------- */
+  .cover .face { padding-top: 0; }
+  .band {
+    margin: 0 calc(var(--u) * -5.5);
+    padding: calc(var(--u) * 2.6) calc(var(--u) * 5.5);
+    background: var(--pink); color: #fff;
+    font-weight: 800; font-size: max(10.5px, calc(var(--u) * 3.8)); letter-spacing: .04em;
+    flex: none;
+  }
+  .lang-ko .band { letter-spacing: .02em; font-weight: 700; }
+  .title { margin-top: calc(var(--u) * 5); display: grid; gap: calc(var(--u) * 1.2); flex: none; }
+  .title-en {
+    font: calc(var(--u) * 10)/1 'Dela Gothic One', sans-serif;
+    color: var(--blue);
+    text-shadow: calc(var(--u) * .7) calc(var(--u) * .5) 0 rgba(255,79,158,.85);
+    letter-spacing: -.01em;
+  }
+  .socks { display: flex; align-items: center; justify-content: center; gap: calc(var(--u) * 3); flex: 1 1 auto; min-height: 0; padding: calc(var(--u) * 2) 0; }
+  .socks svg { height: 100%; max-height: calc(var(--u) * 34); width: auto; max-width: 70%; }
+  .info { display: grid; grid-template-columns: auto 1fr; gap: calc(var(--u) * .6) calc(var(--u) * 3); font-size: max(10.5px, calc(var(--u) * 3.9)); flex: none; }
+  .info dt { font-weight: 800; color: var(--blue); }
+  .info .stars { color: var(--pink); letter-spacing: .08em; }
+  .goal { margin-top: calc(var(--u) * 3); padding: calc(var(--u) * 2.4) calc(var(--u) * 3); border: calc(var(--u) * .5) dashed var(--blue); border-radius: calc(var(--u) * 2); font-weight: 800; font-size: max(10.5px, calc(var(--u) * 4.2)); line-height: 1.3; text-align: center; color: var(--blue); flex: none; }
+  .start { position: absolute; right: calc(var(--u) * 3); bottom: calc(var(--u) * 3); padding: calc(var(--u) * .8) calc(var(--u) * 2.4); background: var(--blue); color: #fff; font-weight: 800; font-size: max(10px, calc(var(--u) * 3.4)); border-radius: 99px; }
+
+  /* Finish panel: a row of the seven stamps you collected. */
+  .mini-row { display: flex; justify-content: center; gap: calc(var(--u) * 1.6); flex-wrap: wrap; }
+  .mini-dot { width: calc(var(--u) * 7.6); height: calc(var(--u) * 7.6); border-radius: 50%; border: calc(var(--u) * .5) dashed #c3b48f; }
+  .mini-dot.got { border: calc(var(--u) * .7) solid var(--c); background: radial-gradient(circle, transparent 46%, var(--c) 48% 56%, transparent 58%); opacity: .9; }
+  .prize { text-align: center; font-weight: 800; font-size: max(11.5px, calc(var(--u) * 4.6)); }
+  .prize small { display: block; margin-top: calc(var(--u) * .8); color: var(--muted); font-weight: 700; font-size: max(11px, calc(var(--u) * 4)); }
+
+  /* ---------- Course 2: the card the prize desk hands you ---------- */
+  .card2 {
+    position: absolute; top: 0; left: var(--c2x, 0px);
+    width: var(--pw); height: var(--ph);
+    transform-style: preserve-3d;
+    transform-origin: 0 50%;
+    /* The end shot (pullBack): slid to the left edge and a little smaller. */
+    transition: translate .9s cubic-bezier(.65, 0, .25, 1), scale .9s cubic-bezier(.65, 0, .25, 1);
+    visibility: hidden;
+  }
+  .card2.on { visibility: visible; }
+  .card2 .band { background: var(--blue); }
+  .punch { margin-top: calc(var(--u) * 5); display: grid; gap: calc(var(--u) * 1.6); flex: none; }
+  .punch .done { font-weight: 800; font-size: calc(var(--u) * 6.6); color: var(--ok); line-height: 1.1; }
+  .punch .now { font-weight: 800; font-size: calc(var(--u) * 8.2); line-height: 1.15; text-wrap: balance; }
+  .lang-ko .punch .now { font-weight: 700; font-size: calc(var(--u) * 8.4); }
+  .card2 .info { margin-top: auto; }
+  .card2 .cover .slot { width: calc(var(--u) * 36); margin: auto; }
+  .card2 .cover .slot::before { display: none; }
+  .card2 .cover .info { margin-top: 0; }
+  .blank .name { color: #b9ab8a; }
+  .veil { position: absolute; inset: 0; background: rgba(20,40,46,.42); opacity: 0; transition: opacity .5s; pointer-events: none; }
+  .veil.on { opacity: 1; }
+
+  .confetti { position: absolute; width: calc(var(--u) * 2.4); height: calc(var(--u) * 1.3); pointer-events: none; z-index: 5; }
+
+  .hint {
+    position: absolute; left: 50%; bottom: 0; height: var(--bot);
+    display: flex; align-items: center;
+    translate: -50% 0;
+    color: rgba(255,255,255,.86);
+    font-weight: 700;
+    font-size: clamp(12px, calc(var(--bot) * .36), 15px);
+    white-space: nowrap;
+    opacity: 0; transition: opacity .6s;
+  }
+  .hint.on { opacity: 1; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+</style>
+</head>
+<body>
+<main class="stage" id="stage">
+  <header class="top" id="top" aria-hidden="true">
+    <span class="top-title" id="top-title"></span>
+    <span class="count"><span class="dots" id="dots"></span><b id="count">0/7</b></span>
+  </header>
+  <div class="view" id="view" tabindex="0" role="button" aria-describedby="hint">
+    <div class="track" id="track"></div>
+    <div class="veil" id="veil"></div>
+    <div class="card2" id="card2"><div class="track2" id="track2"></div></div>
+  </div>
+  <p class="hint" id="hint"></p>
+  <p class="sr" id="live" aria-live="polite"></p>
+</main>
+
+<!-- Rubber-stamp ink filters (one per ink colour) are written in here by inkFilter(). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs id="inks"></defs></svg>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  // ---------- Words ----------
+  const L = TTY.t({
+    en: {
+      tour: 'The Sign-Up Stamp Rally',
+      tour2: 'The Identity Check Stamp Rally',
+      band: 'Sock Nook · Sign-up Course',
+      title: ['The Sign-Up', 'Stamp Rally'],
+      info: [['Goal', 'one pair of socks ($4.99)'], ['Stops', '7 stamps'], ['Time', 'about 40 minutes'], ['Difficulty', '<span class="stars">★★★★★</span>']],
+      goal: 'Collect all 7 stamps to create your account!',
+      start: 'START ▸',
+      stampHere: 'STAMP<br>HERE',
+      hint: 'Tap the card for the next stamp.',
+      hintEnd: 'Session expired. Tap to start over.',
+      view: 'Collect the next stamp',
+      viewEnd: 'Start the rally again',
+      live: (n, total, name) => `Stamp ${n} of ${total}: ${name}`,
+      price: '$4.99',
+      finish: { name: 'Prize Desk', guide: 'Show all seven stamps.', prize: 'Prize: one (1) account', sub: 'Socks sold separately.', words: ['7 / 7', 'COMPLETE'], arc: 'Sign-up rally', ink: '#c8322b' },
+      c2: { band: 'Course 2', title: ['Identity Check', 'Stamp Rally'], done: 'Welcome aboard!', now: "Now please verify it's you.", info: [['Goal', 'one pair of socks ($4.99)'], ['Stops', '12 stamps'], ['Time', 'about 2 hours']] },
+      blank: 'Stop',
+    },
+    ko: {
+      tour: '회원 가입 스탬프 투어',
+      tour2: '본인인증 스탬프 투어',
+      band: '양말상회 · 회원 가입 코스',
+      title: ['회원 가입', '스탬프 투어'],
+      info: [['목표', '양말 한 켤레 (3,900원)'], ['코스', '도장 7곳'], ['소요', '약 40분'], ['난이도', '<span class="stars">★★★★★</span>']],
+      goal: '도장 7개를 모두 모으면 회원 가입 완료!',
+      start: '출발 ▸',
+      stampHere: '도장<br>찍는 곳',
+      hint: '카드를 누르면 다음 도장을 찍어요.',
+      hintEnd: '세션이 만료되었어요. 누르면 처음부터.',
+      view: '다음 도장 찍기',
+      viewEnd: '처음부터 다시',
+      live: (n, total, name) => `도장 ${n}/${total}: ${name}`,
+      price: '3,900원',
+      finish: { name: '기념품 교환소', guide: '도장 일곱 개를 보여 주세요.', prize: '기념품: 회원 가입 1개', sub: '양말은 별매입니다.', words: ['7/7', '완주'], arc: '회원 가입 스탬프 투어', ink: '#c8322b' },
+      c2: { band: '제2코스', title: ['본인인증', '스탬프 투어'], done: '가입 완료!', now: '이제 본인인증을 해 주세요.', info: [['목표', '양말 한 켤레 (3,900원)'], ['코스', '도장 12곳'], ['소요', '약 2시간']] },
+      blank: '지점',
+    },
+  });
+
+  // Little line icons for the stamps (24×24, drawn in the stamp's ink).
+  const ICON = {
+    scroll: '<path d="M6 2.5h9l4 4v15H6z"/><path d="M15 2.5v4h4M9 10h7M9 13.5h7M9 17h4"/>',
+    popup: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18M8 14l3 3 5-6"/>',
+    nametag: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M9 6V4h6v2M7 12h10M7 15.5h6"/>',
+    key: '<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M15.5 12v2.5"/>',
+    phone: '<rect x="4" y="2.5" width="10" height="19" rx="2"/><path d="M8 18.5h2"/><circle cx="17.5" cy="8" r="4"/><path d="M17.5 6v2.3l1.4 1"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6l8.5 7 8.5-7"/>',
+    light: '<rect x="7" y="1.5" width="10" height="15.5" rx="2.5"/><circle class="fill" cx="12" cy="5.5" r="2"/><circle class="fill" cx="12" cy="9.5" r="2"/><circle class="fill" cx="12" cy="13.5" r="2"/><path d="M12 17v5M8.5 22h7M7 4.5H4.5M7 8.5H4.5M17 4.5h2.5M17 8.5h2.5"/>',
+    shield: '<path d="M12 2.5l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10v-6z"/><path d="M12 8v6M9 11l3 3 3-3"/>',
+    lockphone: '<rect x="5" y="2.5" width="10" height="19" rx="2"/><rect x="13" y="11" width="8" height="7" rx="1.4"/><path d="M15 11V9a2 2 0 0 1 4 0v2"/>',
+    bridge: '<path d="M2 9h20M4 9v11M20 9v11M4 20a8 8 0 0 1 16 0M2 23q2.5-1.6 5 0t5 0 5 0 5 0"/>',
+    person: '<circle cx="12" cy="7.5" r="3.8"/><path d="M4.5 21c.6-4.5 3.6-7 7.5-7s6.9 2.5 7.5 7"/>',
+    flag: '<path d="M5 21V3M5 4h12l-2.5 4L17 12H5"/>',
+  };
+  const SMS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>';
+
+  // ---------- The seven stations ----------
+  // Each: name, guide (the leaflet's one-liner), ink, icon, stamp words [small, big],
+  // ms (mission box HTML) and dur (ms the mission plays before the stamp comes down).
+  const STATIONS = ko ? [
+    { name: '약관 광장', guide: '전문을 다 읽으면 해가 집니다.', ink: '#d23a2f', icon: 'scroll', words: ['안 읽고', '동의'], dur: 650,
+      ms: `<div class="ms terms">
+        <div class="row all"><i class="cb b" style="--d:100ms"></i>전체 동의</div>
+        <div class="row"><i class="cb b" style="--d:240ms"></i><span><span class="tag">[필수]</span> 이용약관 <span class="muted small">(제1조~제58조)</span></span></div>
+        <div class="row"><i class="cb b" style="--d:300ms"></i><span><span class="tag">[필수]</span> 개인정보 수집·이용</span></div>
+        <div class="row"><i class="cb b" style="--d:350ms"></i><span><span class="tag">[필수]</span> 만 14세 이상입니다</span></div>
+        <div class="row"><i class="cb b" style="--d:410ms"></i><span><span class="tag opt">[선택]</span> 마케팅 정보 수신</span></div>
+      </div>` },
+    { name: '아이디 중복 고개', guide: '좋은 아이디는 이미 다 주인이 있습니다.', ink: '#2456b8', icon: 'nametag', words: ['네 번째에', '통과'], dur: 780,
+      ms: `<div class="ms ids">
+        <div class="lbl">아이디 (영문·숫자 5~20자)</div>
+        <div class="row id"><span class="uid b gone" style="--d:120ms">socks</span><span class="st no b" style="--d:120ms">이미 사용 중</span></div>
+        <div class="row id"><span class="uid b gone" style="--d:280ms">socks1</span><span class="st no b" style="--d:280ms">이미 사용 중</span></div>
+        <div class="row id"><span class="uid b gone" style="--d:440ms">socks12</span><span class="st no b" style="--d:440ms">이미 사용 중</span></div>
+        <div class="row id"><span class="uid">ilovesocks1987</span><span class="st yes b" style="--d:640ms">사용 가능</span></div>
+      </div>` },
+    { name: '비밀번호 미로', guide: '잊지 못할 비밀번호를 만들어 보세요.', ink: '#7a3fa6', icon: 'key', words: ['규칙 통과', '벌써 잊음'], dur: 700,
+      ms: `<div class="ms pw">
+        <div class="row rule"><span class="mark b" style="--d:80ms"></span>8~16자</div>
+        <div class="row rule"><span class="mark b" style="--d:180ms"></span>영문 대·소문자, 숫자, 특수문자 포함</div>
+        <div class="row rule b x" style="--d:270ms"><span class="mark b x" style="--d:270ms"></span>단, &lt; &gt; ( ) ' " ; 는 사용 불가</div>
+        <div class="row rule"><span class="mark b" style="--d:370ms"></span>아이디와 3자 이상 같으면 안 됨</div>
+        <div class="row rule"><span class="mark b" style="--d:460ms"></span>같은 숫자 3번 연속 금지</div>
+        <div class="field">●●●●●●●●●●●●</div>
+      </div>` },
+    { name: '본인인증 터널', guide: '제한 시간 3분. 넉넉합니다.', ink: '#c8322b', icon: 'phone', words: ['재전송 끝에', '본인 맞음'], dur: 2300, sms: true,
+      ms: `<div class="ms sms">
+        <div class="row"><span class="btn">통신사 선택 ▾</span><span class="muted">010-••••-1234</span></div>
+        <div class="lbl">인증번호 6자리</div>
+        <div class="field"><span class="code">______</span><span class="timer">3:00</span></div>
+        <div class="status">인증 시간이 만료되었습니다.</div>
+        <div class="row"><span class="btn resend">재전송</span><span class="btn primary" style="margin-left:auto">확인</span></div>
+      </div>
+      <div class="bubble"><span class="ic">${SMS_ICON}</span><span class="when">문자 · 방금</span><span class="msg">[Web발신] [양말상회] 인증번호 [<b>482913</b>]</span></div>`,
+      codes: ['482913', '570226'], expired: '만료', smsText: (c) => `[Web발신] [양말상회] 인증번호 [<b>${c}</b>]` },
+    { name: '메일함 계곡', guide: '인증 메일은 받은편지함에서 기다립니다.', ink: '#1f8a55', icon: 'mail', words: ['스팸함에서', '찾음'], dur: 750,
+      ms: `<div class="ms box">
+        <div class="small">인증 메일을 보냈어요. 메일함을 확인해 주세요.</div>
+        <div class="folder inbox b" style="--d:120ms">받은편지함<span class="n">0</span></div>
+        <div class="folder spam b" style="--d:340ms">스팸함<span class="n">1</span></div>
+        <div class="mail b" style="--d:420ms"><span class="t">[양말상회] 이메일 인증을 완료해 주세요</span><span class="btn primary b press" style="--d:640ms">인증</span></div>
+      </div>` },
+    { name: '보안 프로그램 마을', guide: '안전한 쇼핑을 위한 작은 준비.', ink: '#147f86', icon: 'shield', words: ['양말 사러 와서', '설치 완료'], dur: 780,
+      ms: `<div class="ms progs">
+        <div class="small">안전한 서비스 이용을 위해 보안 프로그램을 설치해 주세요.</div>
+        <div class="prog">키보드 보안<span class="ok b" style="--d:360ms">설치됨</span><span class="bar"><i class="b" style="--d:0ms"></i></span></div>
+        <div class="prog">개인 방화벽<span class="ok b" style="--d:520ms">설치됨</span><span class="bar"><i class="b" style="--d:160ms"></i></span></div>
+        <div class="prog">통합 설치 관리자<span class="ok b" style="--d:680ms">설치됨</span><span class="bar"><i class="b" style="--d:320ms"></i></span></div>
+        <div class="restart b" style="--d:680ms">설치 후 브라우저를 다시 시작해 주세요.</div>
+      </div>` },
+    { name: '자동입력 방지 다리', guide: '사람이라면 누구나 쉽게 건널 수 있습니다.', ink: '#a8432a', icon: 'bridge', words: ['아마도', '로봇 아님'], dur: 650,
+      ms: `<div class="ms capt">
+        <div class="small">자동입력 방지 문자를 입력해 주세요.</div>
+        ${captchaText()}
+        <div class="row"><span class="btn">↻ 새로고침</span><span class="btn">음성으로 듣기</span></div>
+        <div class="field"><span class="typed b" style="--d:120ms">8kP3x</span><span class="tick b" style="--d:560ms">✓</span></div>
+      </div>` },
+  ] : [
+    { name: 'Privacy Pop-up Plaza', guide: 'Allow until sunset to read it all.', ink: '#d23a2f', icon: 'popup', words: ['READ NONE', 'ACCEPTED'], dur: 650,
+      ms: `<div class="ms pop">
+        <div class="pop-title">We value your privacy</div>
+        <div class="pop-body">We and our 847 partners store and access information on your device, process personal data, measure ad performance, develop and improve products…</div>
+        <div class="pop-btns"><span class="btn">Manage options</span><span class="btn primary b press" style="--d:360ms">Accept all</span></div>
+      </div>` },
+    { name: 'Password Rules Maze', guide: 'Make it unforgettable.', ink: '#7a3fa6', icon: 'key', words: ['ALREADY', 'FORGOTTEN'], dur: 700,
+      ms: `<div class="ms pw">
+        <div class="row rule"><span class="mark b" style="--d:80ms"></span>8–16 characters</div>
+        <div class="row rule"><span class="mark b" style="--d:160ms"></span>An uppercase letter, a number, a symbol</div>
+        <div class="row rule b x" style="--d:240ms"><span class="mark b x" style="--d:240ms"></span>But not &lt; &gt; ' " ; or &amp;</div>
+        <div class="row rule"><span class="mark b" style="--d:340ms"></span>Not one of your last 5 passwords</div>
+        <div class="field">●●●●●●●●●●●●</div>
+      </div>` },
+    { name: 'Inbox Valley', guide: 'Your link awaits in your inbox.', ink: '#1f8a55', icon: 'mail', words: ['FOUND IN', 'SPAM'], dur: 750,
+      ms: `<div class="ms box">
+        <div class="small">We sent a link to j•••@mail.com. Check your inbox.</div>
+        <div class="folder inbox b" style="--d:120ms">Inbox<span class="n">0</span></div>
+        <div class="folder spam b" style="--d:340ms">Spam<span class="n">1</span></div>
+        <div class="mail b" style="--d:420ms"><span class="t">Sock Nook: Verify your email</span><span class="btn primary b press" style="--d:640ms">Verify</span></div>
+      </div>` },
+    { name: 'SMS Code Tunnel', guide: '3-minute limit. Plenty of time.', ink: '#c8322b', icon: 'phone', words: ['AFTER RESEND', "IT'S ME"], dur: 2300, sms: true,
+      ms: `<div class="ms sms">
+        <div class="small">Enter the 6-digit code we texted to •••• 1234.</div>
+        <div class="field"><span class="code">______</span><span class="timer">3:00</span></div>
+        <div class="status">Code expired. Please request a new one.</div>
+        <div class="row"><span class="btn resend">Resend code</span><span class="btn primary" style="margin-left:auto">Verify</span></div>
+      </div>
+      <div class="bubble"><span class="ic">${SMS_ICON}</span><span class="when">Messages · now</span><span class="msg">Sock Nook: your code is <b>482913</b></span></div>`,
+      codes: ['482913', '570226'], expired: 'EXPIRED', smsText: (c) => `Sock Nook: your code is <b>${c}</b>` },
+    { name: 'Traffic Light Crossing', guide: 'Any human can spot a traffic light.', ink: '#d9661a', icon: 'light', words: ['PROBABLY', 'HUMAN'], dur: 780,
+      ms: `<div class="ms grid">
+        <div class="cap-band">Select all squares with<b>traffic lights</b></div>
+        <div class="grid-wrap">${trafficLight()}
+          <i class="cell b" style="left:33.33%;top:0;--d:120ms"></i>
+          <i class="cell b" style="left:33.33%;top:33.33%;--d:280ms"></i>
+          <i class="cell b" style="left:66.66%;top:0;--d:440ms"></i>
+          <span class="pole-note b" style="--d:600ms">the pole??</span>
+        </div>
+      </div>` },
+    { name: 'Two-Factor Fort', guide: 'Bring your phone. Never lose it.', ink: '#147f86', icon: 'lockphone', words: ['SAVED', 'SOMEWHERE'], dur: 780,
+      ms: `<div class="ms tfa">
+        <div class="qr-row"><div class="qr">${qr()}<i class="scan b" style="--d:80ms"></i></div><div class="small">Scan this code with your authenticator app.</div></div>
+        <div class="small">Then save your 10 backup codes:</div>
+        <div class="codes b" style="--d:600ms">4f2k-9xq1 · 7hd0-2mcz<br>p81r-0kvn · 3ya7-w5tq…</div>
+      </div>` },
+    { name: 'Are-You-Human Gate', guide: 'You proved it at stop 5. Once more.', ink: '#a8432a', icon: 'person', words: ['STILL', 'HUMAN'], dur: 850, human: true,
+      ms: `<div class="ms hum">
+        <div class="small">One more quick check before you continue.</div>
+        <div class="human"><i class="cb"></i><i class="spin"></i>Verify you are human</div>
+        <div class="human-st"></div>
+      </div>`, checking: 'Verifying…', passed: 'Success!' },
+  ];
+
+  // A "type the characters" CAPTCHA image: wobbly letters, a line through them, noise.
+  function captchaText() {
+    const ch = ['8', 'k', 'P', '3', 'x'];
+    const rot = [-14, 10, -6, 16, -10];
+    const dy = [4, -3, 5, -4, 2];
+    const letters = ch.map((c, i) => `<text x="${22 + i * 26}" y="${40 + dy[i]}" transform="rotate(${rot[i]} ${22 + i * 26} ${36 + dy[i]})">${c}</text>`).join('');
+    let dots = '';
+    for (let i = 0; i < 40; i++) dots += `<circle cx="${(i * 37) % 150}" cy="${(i * 23) % 56 + 2}" r="${0.7 + (i % 3) * .4}"/>`;
+    return `<svg class="squiggle" viewBox="0 0 150 60" aria-hidden="true">
+      <g fill="#8a95a3">${dots}</g>
+      <g font-family="Georgia, serif" font-style="italic" font-weight="700" font-size="34" fill="#3d4652">${letters}</g>
+      <path d="M6 38 C 40 18, 70 54, 100 30 S 140 34, 146 22" fill="none" stroke="#3d4652" stroke-width="2.4"/>
+    </svg>`;
+  }
+
+  // A 3×3 photo of a street corner with one traffic light whose pole runs through the middle column.
+  function trafficLight() {
+    return `<svg viewBox="0 0 90 90" aria-hidden="true">
+      <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9cc8ea"/><stop offset="1" stop-color="#d8e9f3"/></linearGradient></defs>
+      <rect width="90" height="90" fill="url(#sky)"/>
+      <rect y="66" width="90" height="24" fill="#8b8f93"/>
+      <path d="M0 78h90" stroke="#f2f2f2" stroke-width="1.5" stroke-dasharray="6 5"/>
+      <circle cx="12" cy="52" r="11" fill="#5c9a5c"/><rect x="10.5" y="55" width="3" height="13" fill="#6b4f33"/>
+      <rect x="43" y="22" width="3.6" height="50" fill="#45494d"/>
+      <rect x="47" y="16" width="20" height="4" fill="#45494d"/>
+      <rect x="37.5" y="9" width="14.5" height="34" rx="3.5" fill="#2c3034"/>
+      <circle cx="44.75" cy="16" r="4" fill="#e54b3c"/><circle cx="44.75" cy="26" r="4" fill="#6b5b2c"/><circle cx="44.75" cy="36" r="4" fill="#2f5a3a"/>
+      <rect x="62" y="12" width="9" height="16" rx="2.5" fill="#2c3034"/><circle cx="66.5" cy="16.5" r="2.4" fill="#e54b3c"/><circle cx="66.5" cy="23.5" r="2.4" fill="#2f5a3a"/>
+      <g stroke="#fff" stroke-width="1.6"><path d="M30 0v90M60 0v90M0 30h90M0 60h90"/></g>
+    </svg>`;
+  }
+
+  // A QR-looking square (decorative: three finder corners and a fixed pattern, not a real code).
+  function qr() {
+    let s = 7, cells = '';
+    const rnd = () => ((s = (s * 1103515245 + 12345) % 2147483648) / 2147483648);
+    const finder = (x, y) => `<path d="M${x} ${y}h7v7h-7zM${x + 1} ${y + 1}v5h5v-5z" fill-rule="evenodd"/><rect x="${x + 2}" y="${y + 2}" width="3" height="3"/>`;
+    for (let y = 0; y < 21; y++) for (let x = 0; x < 21; x++) {
+      const inFinder = (x < 8 && y < 8) || (x > 12 && y < 8) || (x < 8 && y > 12);
+      if (!inFinder && rnd() < .48) cells += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+    }
+    return `<svg viewBox="-1 -1 23 23" shape-rendering="crispEdges" aria-hidden="true"><rect x="-1" y="-1" width="23" height="23" fill="#fff"/><g fill="#1d1d1d">${finder(0, 0)}${finder(14, 0)}${finder(0, 14)}${cells}</g></svg>`;
+  }
+
+  // ---------- Building the card ----------
+  const stage = $('#stage');
+  const view = $('#view');
+  const track = $('#track');
+  const track2 = $('#track2');
+  const card2 = $('#card2');
+  const veil = $('#veil');
+  const top = $('#top');
+  const hint = $('#hint');
+  const live = $('#live');
+  const kkus = []; // [element, size in --u] so font-kku sizes follow the panel width
+
+  // font-kku sizes follow the layout: data-u is in % of the panel width, data-s in parts of the stamp slot.
+  const kku = (font, text, f, cls = '') => `<font-kku class="kk ${cls}" font="${font}" data-u="${f}" size="${f * 4}">${text}</font-kku>`;
+  const kkuS = (font, text, f) => `<font-kku class="kk" font="${font}" data-s="${f}" size="${f * 240}">${text}</font-kku>`;
+
+  // The station name runs along the top of the ring (about 100 units of arc); long names get smaller.
+  const arcSize = (name) => (ko ? Math.min(7.6, 92 / (name.length * 1.02)) : Math.min(7.4, 100 / (name.length * .74))).toFixed(2);
+  function stampHTML(words, arc, icon, extra = '') {
+    const [sm, big] = words;
+    const w = ko
+      ? `${sm ? kkuS('dojang', sm, .079) : ''}${kkuS('dojang', big, extra === 'mini' ? .097 : .148)}`
+      : `${sm ? `<span class="w-sm">${sm}</span>` : ''}<span class="w-big">${big}</span>`;
+    const id = 'arc' + Math.random().toString(36).slice(2, 8);
+    return `<div class="stamp ${extra}" aria-hidden="true">
+      <svg class="ring" viewBox="0 0 100 100">
+        <circle class="c1" cx="50" cy="50" r="47"/><circle class="c2" cx="50" cy="50" r="42"/>
+        ${arc ? `<path id="${id}" d="M15.5 50 A34.5 34.5 0 0 1 84.5 50" fill="none"/><text class="arc" style="font-size:${arcSize(arc)}px"><textPath href="#${id}" startOffset="50%" text-anchor="middle">${arc}</textPath></text>` : ''}
+        ${icon ? `<g class="ico" transform="translate(39.5 22.5) scale(.875)">${ICON[icon]}</g>` : ''}
+      </svg>
+      <div class="words">${w}</div>
+    </div>`;
+  }
+
+  function panelEl(cls, faceHTML) {
+    const el = document.createElement('div');
+    el.className = 'panel ' + cls;
+    el.innerHTML = `<div class="face">${faceHTML}<i class="shade"></i></div><div class="back"><i class="shade"></i></div>`;
+    el.shades = el.querySelectorAll(':scope > div > .shade');
+    return el;
+  }
+
+  // Rubber-stamp ink: everything in the stamp (ring, icon, words, even the red dojang sprite)
+  // is flooded with one ink colour, then speckled where the rubber missed and wobbled a little.
+  const inkDefs = $('#inks');
+  let inkN = 0;
+  function inkFilter(color) {
+    const id = 'ink' + inkN++;
+    inkDefs.insertAdjacentHTML('beforeend', `<filter id="${id}" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
+      <feFlood flood-color="${color}" result="c"/>
+      <feComponentTransfer in="SourceAlpha" result="a"><feFuncA type="linear" slope="2.2"/></feComponentTransfer>
+      <feComposite in="c" in2="a" operator="in" result="solid"/>
+      <feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="2" seed="${inkN * 7}" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.4 2.15" result="holes"/>
+      <feComposite in="solid" in2="holes" operator="in" result="eroded"/>
+      <feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="2" seed="${inkN * 3}" result="w"/>
+      <feDisplacementMap in="eroded" in2="w" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>`);
+    return `url(#${id})`;
+  }
+  function inkStamp(el, color, rot) {
+    el.style.setProperty('--ink-c', color);
+    el.style.filter = inkFilter(color);
+    if (rot !== undefined) el.style.setProperty('--rot', rot + 'deg');
+  }
+
+  const ROT = [-8, 6, -11, 5, -5, 9, -7, -6];
+  const panels = []; // card 1: cover, 7 stations, finish
+  const stations = [];
+
+  // Cover.
+  const socksSVG = `<svg viewBox="0 -4 126 96" aria-hidden="true">
+    <g transform="rotate(-8 40 46)">
+      <path d="M22 6h26v44c0 4 2 6 6 8l14 8c6 3 7 10 3 15-3 4-8 5-13 3L22 72c-7-3-10-8-10-15V6z" fill="#ff4f9e" stroke="#2a2622" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M12 6h36v9H12z" fill="#fff" stroke="#2a2622" stroke-width="2.4"/>
+      <path d="M12 22h36M12 30h36" stroke="#2b62d4" stroke-width="4"/>
+    </g>
+    <g transform="rotate(7 80 46)">
+      <path d="M62 8h26v44c0 4 2 6 6 8l10 6c6 3 7 10 3 15-3 4-8 5-13 3L62 74c-7-3-10-8-10-15V8z" fill="#2b62d4" stroke="#2a2622" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M52 8h36v9H52z" fill="#fff" stroke="#2a2622" stroke-width="2.4"/>
+      <path d="M52 24h36M52 32h36" stroke="#ff4f9e" stroke-width="4"/>
+    </g>
+    <!-- The price tag, big enough to read in the zoomed-out opening shot. -->
+    <g transform="rotate(12 100 18) translate(98 16) scale(1.5) translate(-98 -16)"><path d="M83 8h30v16H83l-6-8z" fill="#ffd84a" stroke="#2a2622" stroke-width="1.6"/><circle cx="82" cy="16" r="1.5" fill="#2a2622"/>
+      <text x="98.5" y="19.6" font-family="Nunito, sans-serif" font-weight="800" font-size="9" text-anchor="middle" fill="#2a2622">${L.price}</text></g>
+  </svg>`;
+  const titleHTML = ko
+    ? `<div class="title">${kku('riso', L.title[0], 12.5)}${kku('riso', L.title[1], 12.5)}</div>`
+    : `<div class="title"><div class="title-en">${L.title[0]}</div><div class="title-en">${L.title[1]}</div></div>`;
+  const infoHTML = (rows) => `<dl class="info">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
+  panels.push(panelEl('first cover', `
+    <div class="band">${L.band}</div>
+    ${titleHTML}
+    <div class="socks">${socksSVG}</div>
+    ${infoHTML(L.info)}
+    <div class="goal">${L.goal}</div>
+    <span class="start">${L.start}</span>`));
+
+  // Stations.
+  STATIONS.forEach((s, i) => {
+    const el = panelEl('station', `
+      <div class="head"><span class="num">${i + 1}</span><span class="name">${s.name}</span><span class="guide">${s.guide}</span></div>
+      ${s.ms}
+      <div class="slot">
+        <div class="ring-empty"><span class="big-n">${i + 1}</span><span class="lab">${L.stampHere}</span></div>
+        ${s.sms ? stampHTML(['', s.expired], '', '', 'mini') : ''}
+        ${stampHTML(s.words, s.name, s.icon)}
+      </div>`);
+    const stamp = $$('.stamp', el).pop();
+    inkStamp(stamp, s.ink, ROT[i]);
+    const mini = $('.stamp.mini', el);
+    if (mini) inkStamp(mini, '#4f6487');
+    stations.push({ ...s, el, stamp, mini, ms: $('.ms', el), slot: $('.slot', el) });
+    panels.push(el);
+  });
+
+  // Finish.
+  const F = L.finish;
+  const finishEl = panelEl('station finish last', `
+    <div class="head"><span class="num">✓</span><span class="name">${F.name}</span><span class="guide">${F.guide}</span></div>
+    <div class="ms"><div class="mini-row">${STATIONS.map((s) => `<i class="mini-dot" style="--c:${s.ink}"></i>`).join('')}</div>
+      <div class="prize">${F.prize}<small>${F.sub}</small></div></div>
+    <div class="slot">
+      <div class="ring-empty"><span class="lab">${L.stampHere}</span></div>
+      ${stampHTML(F.words, F.arc, 'flag')}
+    </div>`);
+  const finish = { el: finishEl, stamp: $('.stamp', finishEl), ink: F.ink, slot: $('.slot', finishEl) };
+  inkStamp(finish.stamp, F.ink, ROT[7]);
+  panels.push(finishEl);
+  panels.forEach((p) => track.append(p));
+
+  // Course 2: a cover with the punchline (and stamp slot 1), then blank stops 2 to 7 folded
+  // behind it. Stops 8 to 12 are somewhere off the edge of the screen.
+  const C = L.c2;
+  const panels2 = [panelEl('first cover c2', `
+    <div class="band">${C.band}</div>
+    ${ko ? `<div class="title">${kku('riso', C.title[0], 12.5)}${kku('riso', C.title[1], 12.5)}</div>`
+         : `<div class="title"><div class="title-en" style="font-size:calc(var(--u) * 8.4)">${C.title[0]}</div><div class="title-en" style="font-size:calc(var(--u) * 8.4)">${C.title[1]}</div></div>`}
+    <div class="punch"><span class="done">${C.done}</span><span class="now">${C.now}</span></div>
+    <div class="slot"><div class="ring-empty"><span class="big-n">1</span><span class="lab">${L.stampHere}</span></div></div>
+    ${infoHTML(C.info)}
+    <span class="start">${L.start}</span>`)];
+  for (let i = 2; i <= 7; i++) {
+    panels2.push(panelEl('station blank', `
+      <div class="head"><span class="num">${i}</span><span class="name">${L.blank} ${i}</span></div>
+      <div class="ms" style="opacity:.35"></div>
+      <div class="slot"><div class="ring-empty"><span class="big-n">${i}</span><span class="lab">${L.stampHere}</span></div></div>`));
+  }
+  panels2.forEach((p) => track2.append(p));
+  card2.setAttribute('aria-hidden', 'true');
+
+  // Header dots.
+  const dotsEl = $('#dots');
+  const countEl = $('#count');
+  const titleEl = $('#top-title');
+  function setHeader(total, got, title) {
+    titleEl.textContent = title;
+    dotsEl.innerHTML = '';
+    for (let i = 0; i < Math.min(total, 7); i++) dotsEl.insertAdjacentHTML('beforeend', '<i class="dot"></i>');
+    dotsEl.style.display = total > 7 ? 'none' : '';
+    countEl.textContent = `${got}/${total}`;
+  }
+  function countStamp(n, ink) {
+    const d = dotsEl.children[n - 1];
+    if (d) { d.classList.add('got'); d.style.background = ink; }
+    countEl.textContent = `${n}/7`;
+    const dot = $$('.mini-dot', finishEl)[n - 1];
+    if (dot) dot.classList.add('got');
+  }
+
+  // ---------- Measuring ----------
+  let W = 0, pw = 0, ph = 0, u = 0;
+  function measure() {
+    W = innerWidth;
+    const H = innerHeight;
+    const topH = Math.max(30, Math.min(50, H * .068));
+    const botH = Math.max(30, Math.min(44, H * .06));
+    const avail = H - topH - botH - 8;
+    pw = Math.min(avail * .6, W * .8, 440);
+    ph = Math.min(avail, pw / .56);
+    u = pw / 100;
+    // The stamp slot: 58% of the panel width, unless the panel is short (phones).
+    const slot = Math.min(u * 58, ph * .34);
+    const s = stage.style;
+    s.setProperty('--slot', slot + 'px');
+    s.setProperty('--u', u + 'px');
+    s.setProperty('--pw', pw + 'px');
+    s.setProperty('--ph', ph + 'px');
+    s.setProperty('--top', topH + 'px');
+    s.setProperty('--bot', botH + 'px');
+    s.setProperty('--vt', (topH + 4 + (avail - ph) / 2) + 'px');
+    $$('font-kku[data-u]').forEach((el) => el.setAttribute('size', (u * Number(el.dataset.u)).toFixed(1)));
+    $$('font-kku[data-s]').forEach((el) => el.setAttribute('size', Math.max(10, slot * Number(el.dataset.s)).toFixed(1)));
+  }
+
+  // ---------- The accordion ----------
+  // Panel i hangs off the right edge of panel i-1. Hinges alternate, so with fold angle a the
+  // panels zigzag: +a, -a, +a… (0 = flat). The cover (panel 0) always faces us.
+  const FOLDED = 86;
+  function setFold(list, angles) {
+    let x = 0, z = 0;
+    list.forEach((p, i) => {
+      const th = i === 0 ? 0 : (i % 2 ? 1 : -1) * angles[i];
+      p.style.transform = `translate3d(${x.toFixed(2)}px, 0, ${z.toFixed(2)}px) rotateY(${th.toFixed(2)}deg)`;
+      const sh = Math.sin(Math.abs(th) * Math.PI / 180);
+      const shade = (sh * (th > 0 ? .42 : .12)).toFixed(3);
+      p.shades.forEach((el) => { el.style.opacity = shade; });
+      const r = th * Math.PI / 180;
+      x += pw * Math.cos(r);
+      z -= pw * Math.sin(r);
+    });
+  }
+  const flat = (list) => setFold(list, list.map(() => 0));
+  const folded = (list) => setFold(list, list.map(() => FOLDED));
+  // A damped spring (step response, damping .6): starts slowly, springs open, overshoots a
+  // little and settles within about a second. t in seconds.
+  const spring = (t) => {
+    const z = .55, w = 6.2, wd = w * Math.sqrt(1 - z * z);
+    return t <= 0 ? 0 : 1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + (z * w / wd) * Math.sin(wd * t));
+  };
+  let unfolding = null;
+  // Each hinge opens on its own spring, one after another, so the fold rolls out to the right.
+  function unfold(list, { hinge = 1500, stagger = 170 } = {}) {
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      const total = hinge + stagger * (list.length - 2);
+      const job = { list, resolve, raf: 0 };
+      unfolding = job;
+      const frame = (now) => {
+        const t = now - t0;
+        setFold(list, list.map((_, i) => {
+          if (i === 0) return 0;
+          const ti = t - (i - 1) * stagger;
+          return ti >= hinge ? 0 : FOLDED * (1 - spring(ti / 1000));
+        }));
+        if (t < total) job.raf = requestAnimationFrame(frame);
+        else { flat(list); unfolding = null; resolve(); }
+      };
+      job.raf = requestAnimationFrame(frame);
+    });
+  }
+  function stopUnfold() {
+    if (!unfolding) return;
+    cancelAnimationFrame(unfolding.raf);
+    flat(unfolding.list);
+    const r = unfolding.resolve;
+    unfolding = null;
+    r();
+  }
+
+  // ---------- Camera ----------
+  // The track is scaled around its left edge: a panel at x lands on screen at cam + zoom * x.
+  // 'overview' is the opening shot: zoomed out, the cover near the left edge, so the unfold
+  // has room to roll across the screen and off the other side.
+  let cam = 0, zoom = 1;
+  const sideBySide = () => W >= pw * 2.15;
+  const overviewZoom = () => Math.max(.52, Math.min(.6, W / (pw * 4)));
+  function camFor(k) {
+    // k: 0 cover, 1..7 stations, 8 finish. With course 2 out, the finish moves left (if there is room).
+    if (k === 'overview') return Math.max(12, W * .08);
+    if (k === 'end') return sideBySide() ? (W / 2 - pw * .55) - (8 * pw + pw / 2) : W / 2 - (8 * pw + pw / 2);
+    return W / 2 - (k * pw + pw / 2);
+  }
+  function aim(k, snap) {
+    setCam(camFor(k), k === 'overview' ? overviewZoom() : 1, snap);
+  }
+  function setCam(c, z, snap) {
+    cam = c;
+    const from = zoom;
+    zoom = z;
+    track.classList.remove('drift');
+    track.classList.toggle('zoom', from !== zoom);
+    if (snap) track.classList.add('snap');
+    track.style.transform = `translate3d(${cam.toFixed(1)}px, 0, 0) scale(${zoom.toFixed(3)})`;
+    if (snap) { void track.offsetWidth; track.classList.remove('snap'); }
+  }
+  function follow() {
+    track.classList.add('drift');
+    cam -= pw * zoom * 1.5;
+    track.style.transform = `translate3d(${cam.toFixed(1)}px, 0, 0) scale(${zoom.toFixed(3)})`;
+  }
+  let c2x = 0;
+  function placeCard2() {
+    c2x = sideBySide() ? W / 2 : W / 2 - pw / 2;
+    card2.style.setProperty('--c2x', c2x + 'px');
+  }
+  // The end shot. Course 2 lands beside (or over) the prize desk, then the camera pulls back:
+  // the new card slides to the left edge, a little smaller, so its fold has the whole screen to
+  // roll across and off the other side, as the first card did at the start. The course-1 strip
+  // moves the same way, the prize desk just left of course 2 (off screen, mostly).
+  // Zoom: about three panels across, but never so small that the punchline ("Now please
+  // verify it's you.", 8.2u) drops below 16px; small phone stages just slide.
+  let pulled = false;
+  const endZoom = () => Math.min(1, Math.max(.75, W / (pw * 3.2), 16 / (u * 8.2)));
+  function pullBack(snap) {
+    pulled = true;
+    const z = endZoom();
+    const left = Math.max(10, W * .04);
+    if (snap) card2.classList.add('snap');
+    card2.style.translate = `${(left - c2x).toFixed(1)}px 0`;
+    card2.style.scale = z.toFixed(3);
+    if (snap) { void card2.offsetWidth; card2.classList.remove('snap'); }
+    setCam(left - pw * z * 9.05, z, snap);
+    veil.classList.remove('on');
+  }
+
+  // ---------- Stamps ----------
+  function thump(el, panel) {
+    if (TTY.reduce) return;
+    el.animate([
+      { transform: 'scale(2.4)', opacity: 0 },
+      { transform: 'scale(.94)', opacity: .95, offset: .7 },
+      { transform: 'scale(1)', opacity: .93 },
+    ], { duration: 360, easing: 'cubic-bezier(.5, 0, .9, .4)' });
+    if (panel) panel.firstElementChild.animate([
+      { transform: 'none' }, { transform: 'translate(0, .5%) scale(.995)' }, { transform: 'translate(0, -.15%)' }, { transform: 'none' },
+    ], { duration: 300, delay: 260 });
+  }
+  function confetti() {
+    if (TTY.reduce) return;
+    const slot = $('.slot', finishEl).getBoundingClientRect();
+    const vb = view.getBoundingClientRect();
+    const colors = ['#ff4f9e', '#2b62d4', '#ffd84a', '#1f8a55', '#d9661a'];
+    for (let i = 0; i < 18; i++) {
+      const c = document.createElement('i');
+      c.className = 'confetti';
+      c.style.background = colors[i % colors.length];
+      c.style.left = (slot.left - vb.left + slot.width / 2) + 'px';
+      c.style.top = (slot.top - vb.top + slot.height * .4) + 'px';
+      view.append(c);
+      const ang = (i / 18) * Math.PI * 2;
+      const d = pw * (.28 + (i % 4) * .07);
+      c.animate([
+        { transform: 'translate(0,0) rotate(0)', opacity: 1 },
+        { transform: `translate(${Math.cos(ang) * d}px, ${Math.sin(ang) * d - pw * .1}px) rotate(${200 + i * 40}deg)`, opacity: 1, offset: .55 },
+        { transform: `translate(${Math.cos(ang) * d * 1.1}px, ${Math.sin(ang) * d + pw * .35}px) rotate(${400 + i * 40}deg)`, opacity: 0 },
+      ], { duration: 1300, easing: 'cubic-bezier(.2,.7,.4,1)' }).onfinish = () => c.remove();
+    }
+  }
+
+  // ---------- Timers ----------
+  const timers = new Set();
+  const later = (ms, fn) => { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); return id; };
+  const clearTimers = () => { timers.forEach(clearTimeout); timers.clear(); cancelAnimationFrame(countdownRaf); };
+  let countdownRaf = 0;
+
+  // ---------- Station scenes ----------
+  const fmt = (sec) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+  function resetStation(s) {
+    s.ms.classList.remove('go', 'fast');
+    s.stamp.classList.remove('on');
+    s.slot.classList.remove('got');
+    if (s.sms) {
+      s.mini.classList.remove('on');
+      $('.timer', s.el).textContent = '3:00';
+      $('.code', s.el).textContent = '______';
+      $('.status', s.el).classList.remove('on');
+      $('.resend', s.el).classList.remove('pressed');
+      const b = $('.bubble', s.el);
+      b.classList.remove('on');
+      $('.msg', b).innerHTML = s.smsText(s.codes[0]);
+    }
+    if (s.human) {
+      const h = $('.human', s.el);
+      h.classList.remove('checking', 'passed');
+      const st = $('.human-st', s.el);
+      st.textContent = '';
+      st.classList.remove('ok');
+    }
+  }
+  // Plays the mission (or jumps to its end when fast). Calls done() when it is ready for the stamp.
+  function enter(s, fast, done) {
+    if (s.sms) return enterSms(s, fast, done);
+    if (s.human) return enterHuman(s, fast, done);
+    if (fast) s.ms.classList.add('fast');
+    s.ms.classList.add('go');
+    if (fast) done(); else later(s.dur, done);
+  }
+  function enterSms(s, fast, done) {
+    const timer = $('.timer', s.el), status = $('.status', s.el), bubble = $('.bubble', s.el), field = $('.field', s.el);
+    const expire = () => { timer.textContent = '0:00'; status.classList.add('on'); };
+    if (fast) {
+      expire(); bubble.classList.add('on'); s.mini.classList.add('on');
+      return done();
+    }
+    // Three minutes, in a hurry: the clock runs 3:00 → 0:00 in 1 s.
+    const t0 = performance.now(), span = 1000;
+    const tick = (now) => {
+      const p = Math.min(1, (now - t0) / span);
+      timer.textContent = fmt(180 * (1 - p));
+      if (p < 1) countdownRaf = requestAnimationFrame(tick);
+      else {
+        expire();
+        if (!TTY.reduce) field.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-3%)' }, { transform: 'translateX(3%)' }, { transform: 'translateX(-2%)' }, { transform: 'none' }], { duration: 320 });
+        // …and once the field has stopped shaking, the text arrives. It stays up about 0.85 s
+        // (with the small EXPIRED stamp on it) before the resend clears it.
+        later(450, () => bubble.classList.add('on'));
+        later(900, () => { s.mini.classList.add('on'); thump(s.mini); });
+        later(1300, done);
+      }
+    };
+    countdownRaf = requestAnimationFrame(tick);
+  }
+  // Before the main SMS stamp: resend, a new text, the code typed in.
+  function smsResend(s, then) {
+    const timer = $('.timer', s.el), status = $('.status', s.el), bubble = $('.bubble', s.el), code = $('.code', s.el), resend = $('.resend', s.el);
+    resend.classList.add('pressed');
+    timer.textContent = '3:00';
+    status.classList.remove('on');
+    bubble.classList.remove('on');
+    later(140, () => { resend.classList.remove('pressed'); $('.msg', bubble).innerHTML = s.smsText(s.codes[1]); bubble.classList.add('on'); });
+    const c = s.codes[1];
+    for (let i = 1; i <= 6; i++) later(200 + i * 45, () => { code.textContent = c.slice(0, i) + '_'.repeat(6 - i); });
+    later(280, () => { timer.textContent = '2:59'; });
+    later(500, () => { timer.textContent = '2:58'; then(); });
+  }
+  function enterHuman(s, fast, done) {
+    const h = $('.human', s.el), st = $('.human-st', s.el);
+    const pass = () => { h.classList.remove('checking'); h.classList.add('passed'); st.textContent = s.passed; st.classList.add('ok'); };
+    if (fast) { pass(); return done(); }
+    later(120, () => { h.classList.add('checking'); st.textContent = s.checking; });
+    later(620, pass);
+    later(s.dur, done);
+  }
+
+  // ---------- The rally ----------
+  // k: -1 before the first pan (cover), 0..6 stations, 7 finish.
+  let k = -1;
+  let phase = 'cover'; // cover | entering | ready | stamping | stamped | course2 | end
+  let auto = true;
+  let gotCount = 0;
+  let leafletFolded = true; // card 1 is still folded up (before the unfold)
+  const STAMP_HOLD = 650; // ms a fresh stamp stays put before the camera leaves
+
+  function say(text) { live.textContent = text; }
+  function setHint(end) {
+    hint.textContent = end ? L.hintEnd : L.hint;
+    view.setAttribute('aria-label', end ? L.viewEnd : L.view);
+  }
+
+  function goTo(n) {
+    const fromOverview = zoom !== 1;
+    k = n;
+    aim(n + 1, TTY.reduce);
+    phase = 'entering';
+    if (n === 7) { // the finish has no mission
+      later(TTY.reduce ? 0 : 440, () => { phase = 'ready'; if (auto) later(TTY.reduce ? 0 : 80, step); });
+      return;
+    }
+    const s = stations[n];
+    const go = () => enter(s, TTY.reduce, () => { phase = 'ready'; if (auto) later(40, step); });
+    // The mission starts as the camera settles (the pan is .5 s, the zoom from the overview .9 s).
+    if (TTY.reduce) go(); else later(fromOverview ? 700 : 330, go);
+  }
+
+  function stampStation() {
+    phase = 'stamping';
+    if (k === 7) {
+      finish.stamp.classList.add('on');
+      finish.slot.classList.add('got');
+      thump(finish.stamp, finishEl);
+      confetti();
+      say(`${F.words[1]} ${F.words[0]}`);
+      phase = 'stamped';
+      later(TTY.reduce ? 0 : 800, course2);
+      return;
+    }
+    const s = stations[k];
+    const land = () => {
+      s.stamp.classList.add('on');
+      s.slot.classList.add('got');
+      thump(s.stamp, s.el);
+      gotCount = k + 1;
+      countStamp(gotCount, s.ink);
+      say(L.live(gotCount, 7, s.name));
+      phase = 'stamped';
+      // Each stamp is the joke of its stop: let it sit still long enough to read before the
+      // camera moves on (a tap moves on at once).
+      later(TTY.reduce ? 0 : STAMP_HOLD, () => goTo(k + 1));
+    };
+    if (s.sms) {
+      if (TTY.reduce) {
+        $('.code', s.el).textContent = s.codes[1];
+        $('.msg', $('.bubble', s.el)).innerHTML = s.smsText(s.codes[1]);
+        $('.timer', s.el).textContent = '2:58';
+        $('.status', s.el).classList.remove('on');
+        land();
+      } else smsResend(s, land);
+    } else land();
+  }
+
+  // The prize desk hands over the next card.
+  function course2() {
+    phase = 'course2';
+    placeCard2();
+    aim('end', TTY.reduce);
+    veil.classList.toggle('on', !sideBySide());
+    card2.classList.add('on');
+    setHeader(12, 0, L.tour2);
+    say(`${C.done} ${C.now}`);
+    folded(panels2);
+    const finishUp = () => { phase = 'end'; setHint(true); };
+    if (TTY.reduce) { flat(panels2); pullBack(true); finishUp(); return; }
+    card2.animate([
+      { transform: 'translateY(115%) rotate(7deg)' },
+      { transform: 'translateY(-2%) rotate(-2.5deg)', offset: .75 },
+      { transform: 'rotate(-1.5deg)' },
+    ], { duration: 650, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' });
+    later(1000, () => pullBack());
+    later(1300, () => unfold(panels2, { hinge: 1300, stagger: 150 }));
+    // The hint turns into the last tag ("Session expired.") once the camera has pulled back
+    // (the fold keeps rolling out beyond the right edge).
+    later(1900, finishUp);
+  }
+
+  function step() {
+    switch (phase) {
+      case 'cover':
+        // A tap before or during the unfold lays the card flat and goes to stop 1.
+        clearTimers();
+        stopUnfold();
+        if (leafletFolded) { flat(panels); leafletFolded = false; }
+        top.classList.add('on');
+        hint.classList.add('on');
+        goTo(0);
+        break;
+      case 'entering': {
+        clearTimers();
+        const s = k < 7 ? stations[k] : null;
+        if (s && s.sms) {
+          // Skipping the countdown still shows the joke: 0:00, the expired line and the late
+          // text with its small EXPIRED stamp stay up 0.7 s before the resend. Taps in that
+          // time are ignored (phase 'stamping').
+          const fresh = !s.mini.classList.contains('on');
+          enter(s, true, () => {});
+          if (fresh) thump(s.mini);
+          phase = 'stamping';
+          later(700, stampStation);
+          break;
+        }
+        if (s) enter(s, true, () => {});
+        stampStation();
+        break;
+      }
+      case 'ready':
+        stampStation();
+        break;
+      case 'stamped':
+        clearTimers();
+        if (k < 7) goTo(k + 1); else course2();
+        break;
+      case 'end':
+        restart();
+        break;
+      default: // stamping, course2: let it finish
+    }
+  }
+
+  function resetAll() {
+    clearTimers();
+    stopUnfold();
+    stations.forEach(resetStation);
+    finish.stamp.classList.remove('on');
+    finish.slot.classList.remove('got');
+    $$('.mini-dot', finishEl).forEach((d) => d.classList.remove('got'));
+    card2.classList.remove('on');
+    card2.getAnimations().forEach((a) => a.cancel());
+    card2.classList.add('snap');
+    card2.style.translate = '';
+    card2.style.scale = '';
+    void card2.offsetWidth;
+    card2.classList.remove('snap');
+    pulled = false;
+    veil.classList.remove('on');
+    gotCount = 0;
+    k = -1;
+    setHeader(7, 0, L.tour);
+    setHint(false);
+  }
+
+  function restart() {
+    resetAll();
+    auto = true;
+    play();
+  }
+
+  // ---------- Playing ----------
+  function play() {
+    resetAll();
+    phase = 'cover';
+    if (TTY.reduce) {
+      // The last scene, without motion: every stamp collected and course 2 handed over.
+      flat(panels);
+      leafletFolded = false;
+      top.classList.add('on');
+      hint.classList.add('on');
+      stations.forEach((s, i) => {
+        enter(s, true, () => {});
+        if (s.sms) { $('.code', s.el).textContent = s.codes[1]; $('.msg', $('.bubble', s.el)).innerHTML = s.smsText(s.codes[1]); $('.timer', s.el).textContent = '2:58'; $('.status', s.el).classList.remove('on'); }
+        s.stamp.classList.add('on');
+        s.slot.classList.add('got');
+        countStamp(i + 1, s.ink);
+      });
+      finish.stamp.classList.add('on');
+      finish.slot.classList.add('got');
+      k = 7;
+      course2();
+      return;
+    }
+    aim('overview', true);
+    folded(panels);
+    leafletFolded = true;
+    // A beat to see the folded leaflet, then it springs open.
+    later(600, () => { leafletFolded = false; unfold(panels); });
+    // The camera drifts after the unrolling fold, which keeps coming from beyond the edge.
+    later(1100, () => { if (phase === 'cover') follow(); });
+    // By 2.6 s only the last hinges, far off the right edge, are still settling.
+    later(2600, () => { if (phase === 'cover') step(); });
+  }
+
+  // A reduced-motion restart: the cover with the strip laid flat; taps walk through it.
+  function playStill() {
+    resetAll();
+    phase = 'cover';
+    auto = false;
+    flat(panels);
+    leafletFolded = false;
+    aim(0, true);
+    top.classList.add('on');
+    hint.classList.add('on');
+  }
+
+  // ---------- Input ----------
+  let idle = 0;
+  function takeOver() {
+    auto = false;
+    clearTimeout(idle);
+    // After a while without touching, the rally carries on by itself.
+    if (!TTY.reduce) idle = setTimeout(() => { auto = true; if (phase === 'ready' || phase === 'stamped' || phase === 'cover') step(); }, 9000);
+  }
+  function press() {
+    if (TTY.reduce && phase === 'end') { playStill(); return; }
+    if (phase === 'end') { clearTimeout(idle); restart(); return; }
+    takeOver();
+    step();
+  }
+  view.addEventListener('click', press);
+  view.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    press();
+  });
+
+  addEventListener('resize', () => {
+    measure();
+    // The folded leaflet stays folded: the home stage resizes its frame while the page is
+    // already showing (the first page, after the intro), before the 0.6 s unfold.
+    if (!unfolding) { (leafletFolded ? folded : flat)(panels); if (card2.classList.contains('on') && phase === 'end') flat(panels2); }
+    placeCard2();
+    aim(phase === 'course2' || phase === 'end' ? 'end' : (phase === 'cover' && zoom !== 1) ? 'overview' : k + 1, true);
+    veil.classList.toggle('on', card2.classList.contains('on') && !sideBySide());
+    if (pulled) pullBack(true);
+  });
+
+  measure();
+  setHeader(7, 0, L.tour);
+  setHint(false);
+  folded(panels);
+  aim(TTY.reduce ? 0 : 'overview', true);
+  TTY.drawn.then(TTY.ready);
+  // Opened on its own, the page is shown at once; the unfold waits for the fonts (TTY.drawn,
+  // 2.5 s at most) so the 3-second gag is not spent behind a blank title. On the home stage
+  // it is long loaded.
+  TTY.onShow(() => TTY.drawn.then(play));
+})();
+</script>
+</body>
+</html>

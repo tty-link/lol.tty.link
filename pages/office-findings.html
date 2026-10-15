@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<!-- The standalone nav sits bottom left: empty floor or background at every size, while the
+     report column on the right can reach the bottom (and the top) of a short landscape screen. -->
+<html lang="en" data-tty-nav="left">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find the Vulnerabilities | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;800&family=Shadows+Into+Light&family=Nanum+Pen+Script&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="dojang pilgi sebul"></script>
+<style>
+  /* A cozy office, walked through by a penetration tester with a red marker. Findings are
+     circled one by one and written up beside the picture; a click circles the next one. */
+  :root {
+    --paper: #fbf8f1;
+    --ink: #22262b;
+    --soft: #6a6f75;
+    --marker: #e0322b;
+    --crit: #b3121c;
+    --high: #e0592a;
+    --med: #d99a12;
+    --low: #4f7aa6;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container-type: size;
+    overflow: hidden;
+    background: #ece6d8;
+    color: var(--ink);
+    font-family: 'Schibsted Grotesk', 'IBM Plex Sans KR', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', 'Schibsted Grotesk', sans-serif; word-break: keep-all; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 3cqmin;
+    height: 100%;
+    padding: 4cqmin;
+  }
+  .scene {
+    position: relative;
+    container-type: inline-size;
+    align-self: center;
+    border-radius: 2cqmin;
+    overflow: hidden;
+    background: #e6eedb;
+    box-shadow: 0 .6cqmin 0 rgba(0,0,0,.08), 0 2cqmin 5cqmin rgba(60, 50, 30, .18);
+    cursor: pointer;
+  }
+  .scene svg { display: block; width: 100%; height: auto; }
+  .hand { font-family: 'Shadows Into Light', 'Nanum Pen Script', cursive; }
+  .lang-ko .hand { font-family: 'Nanum Pen Script', 'Shadows Into Light', cursive; }
+  .ring { fill: none; stroke: var(--marker); stroke-width: 4; stroke-linecap: round; }
+  .ring-num { fill: var(--marker); font-size: 30px; }
+  /* A pass note in green pen, left on whatever turned out to be fine. */
+  .okay {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: .8cqi;
+    padding: .6cqi 1.6cqi .7cqi 1.2cqi;
+    border-radius: .8cqi;
+    background: #f1f9e8;
+    box-shadow: 0 .3cqi 1cqi rgba(30, 60, 20, .22);
+    color: #23753a;
+    font-size: max(13px, 2.9cqi);
+    line-height: 1.15;
+    white-space: nowrap;
+    rotate: -3deg;
+    pointer-events: none;
+  }
+  .lang-ko .okay { font-size: max(15px, 3.4cqi); }
+  .okay svg { flex: none; width: 1.1em; height: 1.1em; }
+  .blink { animation: blink 1.4s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+
+  /* ---- The write-up ---- */
+  /* The padding is in px (clamped), not cqi: cqi here would be the whole stage's width, and
+     54 px a side squeezed the column's text (the stamp, the hint) down to 7 px on desktop. */
+  .report {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: 100%;
+    padding: clamp(14px, 3cqmin, 32px) clamp(16px, 3.4cqmin, 36px);
+    border-radius: 2cqmin;
+    background: var(--paper);
+    box-shadow: 0 2cqmin 5cqmin rgba(60, 50, 30, .14);
+  }
+  .report h1 { font-size: 7cqi; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+  .report .sub { margin-top: 2cqi; font-size: 4cqi; color: var(--soft); }
+  .list { min-height: 0; margin-top: 4cqi; padding: 0; list-style: none; overflow: hidden; }
+  .item { display: grid; grid-template-columns: auto 1fr; gap: 1cqi 3cqi; align-items: start; padding: 2.6cqi 0; border-top: .3cqi solid #e6e0d2; }
+  .num { font-family: 'Shadows Into Light', cursive; font-size: 7cqi; line-height: .9; color: var(--marker); }
+  .lang-ko .num { font-family: 'Nanum Pen Script', cursive; }
+  .item h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 1.4cqi 2.4cqi; font-size: 4.2cqi; font-weight: 600; line-height: 1.25; }
+  /* Severity chips are plain text in the severity colour, at a size that stays legible;
+     dojang (which paints its own red ink) is kept for the big Retest stamp only. */
+  .chip { padding: .5cqi 2cqi; border-radius: 99px; border: max(1px, .35cqi) solid var(--sev); color: var(--sev); font-size: max(11px, 3.2cqi); font-weight: 600; line-height: 1.3; white-space: nowrap; }
+  .lang-ko .chip { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 600; }
+  .note { grid-column: 2; font-size: 4.2cqi; line-height: 1.45; color: var(--soft); }
+  .note > font-kku { color: #4a4f55; }
+  .item:not(.latest) .note { display: none; }
+  .verdict {
+    display: none;
+    position: relative;
+    margin-top: 3cqi;
+    padding: 4cqi 4cqi 4.4cqi;
+    border: .5cqi dashed var(--marker);
+    border-radius: 2.4cqi;
+  }
+  .verdict.on { display: block; }
+  .verdict small { display: block; font-size: 3.4cqi; color: var(--soft); }
+  .verdict strong { display: block; margin-top: 1cqi; font-size: 7.4cqi; font-weight: 800; line-height: 1.1; }
+  .verdict .stamp { position: absolute; right: 3cqi; top: -3cqi; rotate: 10deg; padding: 1cqi 2.2cqi; border: .6cqi double var(--marker); border-radius: 2cqi; background: var(--paper); color: var(--marker); font-family: inherit; font-weight: 800; font-size: 3.4cqi; line-height: 1.2; cursor: pointer; }
+  /* The stamp is also the button for the retest; it nudges now and then to say so (the first
+     nudge about 1.5 s after it lands). In flight, scaled up and see-through, it takes no clicks. */
+  .verdict .stamp.ready { animation: nudge 2.6s ease-in-out -.6s infinite; }
+  .verdict .stamp.flying { pointer-events: none; }
+  @keyframes nudge { 0%, 72%, 100% { scale: 1; } 80% { scale: 1.12; } 88% { scale: .97; } }
+  .item.fixed h2 > span:first-child { color: var(--soft); text-decoration: line-through; text-decoration-color: rgba(35, 117, 58, .55); }
+  .door-shut { transform-box: fill-box; transform-origin: right center; }
+  .tick { fill: none; stroke: #23753a; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+  .verdict .stamp > font-kku, .verdict strong > font-kku { color: var(--ink); }
+  .hint { margin-top: 3cqi; font-size: 3.2cqi; color: var(--soft); }
+
+  /* Narrow stage: picture on top, the latest finding underneath. */
+  @container (max-aspect-ratio: 1/1) {
+    .layout { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; gap: 2.4cqmin; padding: 3cqmin; }
+    /* Near-square stages (the home stage is about 650 × 730): the picture gives way so the
+       report still fits underneath. */
+    .scene { align-self: start; justify-self: center; width: min(100%, calc((100cqh - 62cqw) * 1.6)); }
+    .report { padding: 4cqi 5cqi; }
+    /* Capped so a wide portrait stage (the home stage is about 650 × 730) keeps the report below the picture. */
+    .report h1 { font-size: min(6.6cqi, 30px); }
+    .verdict strong { font-size: min(7.4cqi, 34px); }
+    .report .sub { font-size: 3.4cqi; margin-top: 1.2cqi; }
+    .list { margin-top: 2cqi; }
+    .item:not(.latest) { display: none; }
+    .item { border-top: 0; padding: 1.4cqi 0; }
+    .verdict { margin-top: 1.4cqi; }
+    /* The hint after the verdict is the bait for the retest: kept at 10 px on a 358-wide phone stage. */
+    .hint { font-size: max(10px, 3.2cqi); }
+  }
+  .layout.done .list .item { display: none; }
+  @container (min-aspect-ratio: 1/1) {
+    .layout.done .list .item { display: grid; } .layout.done .list .item .note { display: none; }
+    /* After a retest, the one finding still open keeps its line. */
+    .layout.retest .list .item.latest .note { display: block; }
+  }
+
+  /* Side by side, the report is the narrow column: floors keep the small print readable,
+     the Retest stamp (the button for the second punchline) above all. */
+  @container (min-aspect-ratio: 1/1) {
+    .hint { font-size: max(12px, 3.2cqi); }
+    .verdict small { font-size: max(12px, 3.4cqi); }
+    /* At this size the stamp floats instead, so the tally wraps beside it, not under it. */
+    .verdict .stamp { position: relative; right: auto; top: auto; float: right; margin: -7cqi -1cqi 0 1.6cqi; font-size: max(13px, 3.4cqi); }
+  }
+  /* A short landscape stage (a phone on its side): tighter rows so the whole list still fits. */
+  @container (min-aspect-ratio: 1/1) and (max-height: 600px) {
+    .report h1 { font-size: 7cqi; }
+    .report .sub { margin-top: 1.2cqi; font-size: 3.6cqi; }
+    .list { margin-top: 2.4cqi; }
+    .item { padding: 1.5cqi 0; }
+    .verdict { margin-top: 2cqi; padding: 3cqi 3.4cqi 3.2cqi; }
+    .hint { margin-top: 2cqi; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { .blink, .verdict .stamp.ready { animation: none; } }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="scene" role="button" tabindex="0" aria-label="Circle the next finding">
+    <svg viewBox="0 0 800 500" aria-hidden="true">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd3f5"/><stop offset="1" stop-color="#d9f0ff"/></linearGradient>
+        <pattern id="planks" width="120" height="40" patternUnits="userSpaceOnUse"><rect width="120" height="40" fill="#d4a373"/><path d="M0 39.5 H120 M60 0 V40" stroke="#bf8c5d" stroke-width="2"/></pattern>
+      </defs>
+      <!-- room -->
+      <rect width="800" height="340" fill="#e6eedb"/>
+      <rect y="340" width="800" height="160" fill="url(#planks)"/>
+      <rect y="334" width="800" height="8" fill="#cbd7bd"/>
+      <ellipse cx="430" cy="440" rx="250" ry="38" fill="#e9c46a" opacity=".55"/>
+      <!-- lamp -->
+      <path d="M430 0 V44" stroke="#3a3f44" stroke-width="2"/>
+      <path d="M402 70 L414 44 H446 L458 70 Z" fill="#f4a261"/>
+      <!-- window + plant -->
+      <rect x="40" y="50" width="150" height="150" rx="6" fill="#fff"/>
+      <rect x="50" y="60" width="130" height="130" fill="url(#sky)"/>
+      <path d="M115 60 V190 M50 125 H180" stroke="#fff" stroke-width="6"/>
+      <ellipse cx="80" cy="96" rx="16" ry="7" fill="#fff" opacity=".85"/>
+      <rect x="36" y="198" width="158" height="8" rx="3" fill="#cfd8c2"/>
+      <path d="M92 196 h36 l-5 -28 h-26 z" fill="#c8553d"/>
+      <path d="M110 170 C 96 150, 92 136, 100 122 M110 170 C 118 148, 128 140, 134 128 M110 170 C 108 150, 112 138, 110 120" stroke="#3a7d44" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <!-- whiteboard -->
+      <rect x="222" y="36" width="216" height="138" rx="5" fill="#fdfdfd" stroke="#a9b2b8" stroke-width="4"/>
+      <rect x="240" y="174" width="180" height="6" rx="2" fill="#a9b2b8"/>
+      <text class="hand" x="240" y="66" font-size="22" fill="#2c6fb6" data-text-en="Q4 plan" data-text-ko="4분기 계획">Q4 plan</text>
+      <path d="M244 82 h40 v22 h-40 z M302 82 h40 v22 h-40 z M284 93 h18 M360 82 h56 v22 h-56 z M342 93 h18" stroke="#2c6fb6" stroke-width="2" fill="none"/>
+      <text class="hand" x="244" y="146" font-size="23" fill="#1f4e86"><tspan data-text-en="Wi-Fi: hunter" data-text-ko="와이파이: hunter">Wi-Fi: hunter</tspan><tspan class="pw-digit">2</tspan></text>
+      <!-- where the eraser goes when the password is "rotated" -->
+      <rect class="smear" x="0" y="0" width="0" height="0" rx="4" fill="#fdfdfd" opacity="0"/>
+      <text class="hand" x="252" y="126" font-size="17" fill="#d1495b" data-text-en="(do not share)" data-text-ko="(공유 금지)">(do not share)</text>
+      <!-- bookshelf -->
+      <rect x="462" y="58" width="134" height="118" fill="#a47148"/>
+      <rect x="470" y="66" width="118" height="46" fill="#7f5539"/><rect x="470" y="120" width="118" height="48" fill="#7f5539"/>
+      <g><rect x="474" y="72" width="10" height="40" fill="#e76f51"/><rect x="486" y="76" width="9" height="36" fill="#2a9d8f"/><rect x="497" y="70" width="12" height="42" fill="#e9c46a"/><rect x="512" y="78" width="8" height="34" fill="#264653"/><rect x="524" y="74" width="30" height="8" fill="#f4a261" transform="rotate(-8 524 74)"/><rect x="560" y="72" width="10" height="40" fill="#8ab17d"/><rect x="572" y="80" width="11" height="32" fill="#c8553d"/>
+      <rect x="476" y="128" width="12" height="40" fill="#577590"/><rect x="490" y="132" width="9" height="36" fill="#f28482"/><rect x="530" y="140" width="28" height="28" rx="14" fill="#90be6d"/><rect x="566" y="126" width="10" height="42" fill="#f6bd60"/></g>
+      <!-- door to the server room, propped open -->
+      <rect x="626" y="74" width="140" height="266" fill="#5c4033"/>
+      <rect x="636" y="84" width="120" height="256" fill="#26323a"/>
+      <g><rect x="652" y="110" width="40" height="200" rx="3" fill="#3d4b55"/><circle class="blink" cx="662" cy="124" r="3" fill="#7bd389"/><circle cx="672" cy="124" r="3" fill="#7bd389"/><circle class="blink" cx="662" cy="150" r="3" fill="#ffb703" style="animation-delay:-.7s"/><circle cx="662" cy="176" r="3" fill="#7bd389"/><circle class="blink" cx="672" cy="202" r="3" fill="#7bd389" style="animation-delay:-.3s"/>
+      <path d="M658 140 h28 M658 166 h28 M658 192 h28 M658 218 h28 M658 244 h28" stroke="#53636e" stroke-width="2"/></g>
+      <g class="door-open"><path d="M756 84 L712 98 L712 330 L756 340 Z" fill="#c9a27e" stroke="#5c4033" stroke-width="3"/>
+      <circle cx="720" cy="220" r="4" fill="#5c4033"/></g>
+      <!-- after the retest: shut, with a card reader -->
+      <g class="door-shut" opacity="0"><rect x="637.5" y="85.5" width="117" height="253" fill="#c9a27e" stroke="#5c4033" stroke-width="3"/>
+      <rect x="650" y="100" width="91" height="96" rx="3" fill="none" stroke="#b08a66" stroke-width="2"/><rect x="650" y="214" width="91" height="108" rx="3" fill="none" stroke="#b08a66" stroke-width="2"/>
+      <circle cx="744" cy="206" r="4" fill="#5c4033"/><rect x="738" y="168" width="11" height="18" rx="2" fill="#2b2d33"/><circle cx="743.5" cy="173" r="1.8" fill="#e63946"/></g>
+      <rect x="650" y="52" width="92" height="18" rx="3" fill="#264653"/>
+      <text x="696" y="65" font-size="11" fill="#fff" text-anchor="middle" font-family="Schibsted Grotesk, IBM Plex Sans KR, sans-serif" data-text-en="Server room" data-text-ko="서버실">Server room</text>
+      <g class="ext" transform="translate(694 284)"><rect x="0" y="10" width="18" height="46" rx="8" fill="#d62828"/><rect x="5" y="2" width="8" height="10" fill="#3a3f44"/><path d="M13 6 C 26 6, 26 26, 20 34" stroke="#3a3f44" stroke-width="3" fill="none"/><rect x="2" y="24" width="14" height="9" fill="#fff" opacity=".8"/></g>
+      <!-- tall plant -->
+      <path d="M190 336 h44 l-6 -40 h-32 z" fill="#457b9d"/>
+      <path d="M212 296 C 190 260, 180 230, 196 200 M212 296 C 226 262, 244 240, 236 206 M212 296 C 208 258, 214 236, 212 214" stroke="#2d6a4f" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <!-- desk -->
+      <rect x="250" y="268" width="368" height="16" rx="3" fill="#b07d4f"/>
+      <rect x="262" y="284" width="12" height="96" fill="#8a5a3b"/><rect x="594" y="284" width="12" height="96" fill="#8a5a3b"/>
+      <rect x="500" y="284" width="94" height="52" fill="#9c6b43"/><rect x="536" y="306" width="22" height="5" rx="2" fill="#6e4329"/>
+      <!-- phone with a #firstday post -->
+      <rect x="282" y="214" width="32" height="54" rx="6" fill="#22262b"/>
+      <rect x="285" y="220" width="26" height="40" rx="3" fill="#fff"/>
+      <rect x="289" y="226" width="18" height="24" rx="2" fill="#9ad1d4"/><circle cx="298" cy="234" r="4" fill="#fff"/><rect x="292" y="241" width="12" height="2" fill="#fff"/><rect x="292" y="245" width="12" height="2" fill="#22262b"/>
+      <path d="M292 255 l2 -2 a1.6 1.6 0 0 1 2 2 l-2 2 -2 -2 z" fill="#e63946"/>
+      <!-- after the retest: the post is deleted (the phone stays on) -->
+      <g class="post-gone" opacity="0"><rect x="289" y="226" width="18" height="24" rx="2" fill="#e3e6ea"/><path d="M294 233 l8 10 M302 233 l-8 10" stroke="#9aa1a8" stroke-width="1.6" stroke-linecap="round"/><rect x="290" y="251" width="8" height="7" fill="#fff"/></g>
+      <!-- monitor, unlocked, with a sticky note -->
+      <rect x="410" y="244" width="22" height="24" fill="#3a3f44"/><rect x="392" y="264" width="58" height="6" rx="2" fill="#3a3f44"/>
+      <rect x="344" y="150" width="154" height="100" rx="7" fill="#2b2d42"/>
+      <rect x="352" y="157" width="138" height="85" rx="2" fill="#eaf4ff"/>
+      <rect x="352" y="157" width="138" height="12" fill="#5390d9"/>
+      <rect x="358" y="176" width="36" height="60" rx="2" fill="#d7e7fb"/>
+      <rect x="400" y="177" width="82" height="7" rx="2" fill="#2b2d42" opacity=".6"/><rect x="400" y="190" width="70" height="5" rx="2" fill="#2b2d42" opacity=".35"/><rect x="400" y="200" width="76" height="5" rx="2" fill="#2b2d42" opacity=".35"/><rect x="400" y="210" width="60" height="5" rx="2" fill="#2b2d42" opacity=".35"/><rect x="400" y="224" width="40" height="10" rx="3" fill="#5390d9"/>
+      <g class="locked" opacity="0"><rect x="352" y="157" width="138" height="85" rx="2" fill="#1d2b4f"/><path d="M413 196 v-6 a8 8 0 0 1 16 0 v6" stroke="#cfe0ff" stroke-width="3.4" fill="none"/><rect x="408" y="195" width="26" height="20" rx="3" fill="#cfe0ff"/><circle cx="421" cy="204" r="2.6" fill="#1d2b4f"/><path d="M402 228 h38" stroke="#cfe0ff" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 9" opacity=".7"/></g>
+      <g class="postit"><g transform="rotate(9 486 176)"><rect x="468" y="158" width="38" height="36" fill="#ffd166"/><text class="hand" x="472" y="173" font-size="12" fill="#3a3f44">pw:</text><text class="hand" x="471" y="187" font-size="10.5" fill="#3a3f44">Summer26!</text></g></g>
+      <rect x="378" y="262" width="82" height="6" rx="2" fill="#adb5bd"/>
+      <!-- coffee left behind? no: the owner took the coffee; the cup ring stays -->
+      <ellipse cx="326" cy="266" rx="10" ry="3" fill="none" stroke="#8a5a3b" stroke-width="2" opacity=".5"/>
+      <!-- laptop with a USB stick from the parking lot -->
+      <path d="M512 226 h70 l-6 40 h-58 z" fill="#ced4da" stroke="#868e96" stroke-width="2"/>
+      <rect x="500" y="264" width="94" height="6" rx="2" fill="#adb5bd"/>
+      <g class="usb"><rect x="594" y="258" width="20" height="9" rx="2" fill="#343a40"/><rect x="588" y="260" width="7" height="5" fill="#ced4da"/>
+      <path d="M612 266 l10 18" stroke="#868e96" stroke-width="1.4"/>
+      <g transform="rotate(14 620 284)"><rect x="604" y="282" width="40" height="16" rx="2" fill="#fff8e1" stroke="#c9a227" stroke-width="1.4"/><text x="624" y="293.5" font-size="6.4" text-anchor="middle" fill="#3a3f44" font-family="Schibsted Grotesk, IBM Plex Sans KR, sans-serif" data-text-en="Salaries 2026" data-text-ko="2026 연봉">Salaries 2026</text></g></g>
+      <!-- empty chair, pushed back -->
+      <path d="M404 296 h64 l-4 40 h-56 z" fill="#577590"/>
+      <rect x="400" y="334" width="72" height="12" rx="5" fill="#43597a"/>
+      <path d="M436 346 V392 M412 400 L436 392 L460 400" stroke="#343a40" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <g transform="rotate(-4 438 314)"><rect x="410" y="300" width="56" height="30" rx="2" fill="#fff"/><text class="hand" x="438" y="313" font-size="10.5" fill="#3a3f44" text-anchor="middle" data-text-en="back in 5" data-text-ko="5분만">back in 5</text><text class="hand" x="438" y="325" font-size="8.5" fill="#d1495b" text-anchor="middle" data-text-en="(14 min ago)" data-text-ko="(14분 전)">(14 min ago)</text></g>
+      <g class="ticks"></g>
+      <g class="rings"></g>
+    </svg>
+  </div>
+
+  <section class="report" aria-live="polite">
+    <h1 data-lang="en">Find the vulnerabilities</h1>
+    <h1 data-lang="ko"><font-kku font="sebul" size="min(7.4cqi, 32px)">취약점 찾기</font-kku></h1>
+    <p class="sub" data-lang="en">Scope: one cozy office · Tool: a red marker</p>
+    <p class="sub" data-lang="ko">점검 범위: 아늑한 사무실 · 점검 도구: 빨간 펜</p>
+    <ol class="list"></ol>
+    <div class="verdict">
+      <button class="stamp" type="button"></button>
+      <small class="tally"></small>
+      <strong data-lang="en">Cozy. Also critical.</strong>
+      <strong data-lang="ko"><font-kku font="sebul" size="min(8cqi, 36px)">아늑함. 그리고 치명적.</font-kku></strong>
+    </div>
+    <p class="hint">
+      <span data-lang="en">Click anything suspicious. Or anywhere, for the next one.</span>
+      <span data-lang="ko">수상한 곳을 눌러 보세요. 아무 데나 누르면 다음 취약점.</span>
+    </p>
+  </section>
+</div>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const layout = document.querySelector('.layout');
+  const scene = document.querySelector('.scene');
+  const rings = document.querySelector('.rings');
+  const list = document.querySelector('.list');
+  const verdict = document.querySelector('.verdict');
+  const NS = 'http://www.w3.org/2000/svg';
+
+  // The picture's own handwriting follows the language.
+  document.querySelectorAll('[data-text-en]').forEach((t) => { t.textContent = t.getAttribute('data-text-' + TTY.lang); });
+  scene.setAttribute('aria-label', TTY.t({ en: 'Circle the next finding', ko: '다음 취약점에 동그라미' }));
+
+  // The chip, the tally and the verdict share one word: Critical / 치명적.
+  const SEV = {
+    crit: { color: 'var(--crit)', en: 'Critical', ko: '치명적' },
+    high: { color: 'var(--high)', en: 'High', ko: '높음' },
+    med: { color: 'var(--med)', en: 'Medium', ko: '중간' },
+    low: { color: 'var(--low)', en: 'Low', ko: '낮음' },
+  };
+  // at: the marker ring [cx, cy, rx, ry]. hit: the boxes [x1, y1, x2, y2] a click must land in
+  // to find it (the whole door, the whole whiteboard); without one, the ring itself. dwell: how
+  // long its line stays up on its own before the next one, in ms (longer lines get longer).
+  const FINDINGS = [
+    { at: [487, 177, 30, 27], sev: 'high', dwell: 2400,
+      en: ['Password on a sticky note', 'Stuck to the monitor. Convenient for everyone.'],
+      ko: ['포스트잇 비밀번호', '모니터에 붙어 있음. 전 직원 공용.'] },
+    { at: [421, 202, 86, 58], sev: 'med', dwell: 3400, hit: [[344, 150, 498, 270]],
+      en: ['Unlocked screen', 'Owner: coffee run, 14 minutes. Has since promised everyone donuts.'],
+      ko: ['잠기지 않은 화면', '주인은 14분째 커피 타는 중. 그새 ‘커피 제가 쏩니다’ 올림.'] },
+    { at: [318, 138, 92, 26], sev: 'med', dwell: 2000, hit: [[222, 36, 438, 180]],
+      en: ['Wi-Fi password on the whiteboard', '“hunter2”, right under “do not share”.'],
+      ko: ['화이트보드에 와이파이 비번', '‘hunter2’. 바로 위에 ‘공유 금지’.'] },
+    { at: [612, 276, 40, 30], sev: 'crit', dwell: 2400, hit: [[500, 224, 596, 272], [584, 252, 648, 306]],
+      en: ['A USB stick from the parking lot', 'Labeled “Salaries 2026”. Already plugged in.'],
+      ko: ['주차장에서 주운 USB', '‘2026 연봉’ 꼬리표. 이미 꽂혀 있음.'] },
+    { at: [716, 290, 44, 58], sev: 'high', dwell: 2300, hit: [[626, 50, 770, 340]],
+      en: ['Server room door, propped open', 'With the extinguisher. Two-for-one deal.'],
+      ko: ['열어 둔 서버실 문', '소화기로 괴어 둠. 지적 사항 1+1.'] },
+    { at: [298, 240, 30, 38], sev: 'low', dwell: 2000, hit: [[280, 212, 316, 270]],
+      en: ['Badge photo on social media', '#firstday. Barcode reads fine at 400%.'],
+      ko: ['SNS에 올린 사원증 사진', '#첫출근. 400%로 확대하면 바코드도 읽힘.'] },
+  ];
+
+  // Things that look like findings and are not. Clicking one leaves a pass note.
+  // Boxes are [x1, y1, x2, y2] in picture coordinates. `first` ones are judged before the
+  // findings (the coffee ring sits inside the phone's ring); the rest only after them.
+  const DECOYS = [
+    { box: [308, 254, 344, 276], first: true, en: 'Coffee ring: pass. The coffee is fine.', ko: '커피 자국: 양호. 커피는 무사함.' },
+    { box: [400, 0, 460, 74], en: 'Lamp: no firmware. Pass.', ko: '조명: 펌웨어 없음. 양호.' },
+    { box: [36, 48, 196, 208], en: 'Window: locked. Suspiciously fine.', ko: '창문: 잠겨 있음. 수상할 만큼 양호.' },
+    { box: [460, 56, 598, 178], en: 'Bookshelf: unread. Pass.', ko: '책장: 아무도 안 읽음. 양호.' },
+    { box: [180, 196, 244, 338], en: 'Plant: pass. Needs water.', ko: '화분: 양호. 물은 좀 줘야 함.' },
+    { box: [180, 400, 680, 480], en: 'Rug: cozy. Pass.', ko: '러그: 아늑함. 양호.' },
+  ];
+
+  // The verdict opens with the count by severity, the way a report summary does.
+  const tallyParts = ['crit', 'high', 'med', 'low'].map((k) => [k, FINDINGS.filter((f) => f.sev === k).length]).filter(([, n]) => n);
+  document.querySelector('.tally').textContent = ko
+    ? `지적 ${FINDINGS.length}건: ` + tallyParts.map(([k, n]) => `${SEV[k].ko} ${n}`).join(' · ')
+    : `${FINDINGS.length} findings: ` + tallyParts.map(([k, n]) => `${n} ${SEV[k].en.toLowerCase()}`).join(' · ');
+
+  function kku(font, size, text) {
+    const el = document.createElement('font-kku');
+    el.setAttribute('font', font);
+    el.setAttribute('size', size);
+    el.setAttribute('wrap-unit', 'word');
+    el.textContent = text;
+    return el;
+  }
+
+  // A marker ring that doesn't quite close, like a real one.
+  function ring([cx, cy, rx, ry], n) {
+    const g = document.createElementNS(NS, 'g');
+    const p = document.createElementNS(NS, 'path');
+    const tilt = (n % 2 ? -1 : 1) * 6;
+    const a = cx - rx, b = cx + rx;
+    p.setAttribute('d', `M${cx + rx * .2} ${cy - ry} C ${b + rx * .25} ${cy - ry}, ${b + rx * .1} ${cy + ry * 1.05}, ${cx} ${cy + ry} S ${a - rx * .2} ${cy - ry * .6}, ${cx - rx * .05} ${cy - ry * 1.08} L ${cx + rx * .45} ${cy - ry * .92}`);
+    p.setAttribute('class', 'ring');
+    p.setAttribute('transform', `rotate(${tilt} ${cx} ${cy})`);
+    p.setAttribute('pathLength', '1');
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('class', 'hand ring-num');
+    t.setAttribute('x', cx + rx * .78);
+    t.setAttribute('y', cy - ry * .9);
+    t.textContent = n;
+    g.append(p, t);
+    rings.append(g);
+    if (!TTY.reduce) {
+      p.animate([{ strokeDasharray: '1', strokeDashoffset: 1 }, { strokeDasharray: '1', strokeDashoffset: 0 }], { duration: 650, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'both' });
+      t.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, delay: 550, fill: 'both' });
+    }
+  }
+
+  // A line of the report. On a retest the chip says fixed or not, and only the open one keeps a note.
+  function writeUp(f, n, status) {
+    list.querySelectorAll('.latest').forEach((el) => el.classList.remove('latest'));
+    const sev = status || SEV[f.sev];
+    const [title, finding] = f[TTY.lang];
+    const note = status ? status.note : finding;
+    const li = document.createElement('li');
+    li.className = 'item latest' + (status && status.fixed ? ' fixed' : '');
+    li.style.setProperty('--sev', sev.color);
+    const num = document.createElement('span');
+    num.className = 'num';
+    num.textContent = n;
+    const h = document.createElement('h2');
+    const name = document.createElement('span');
+    name.textContent = title;
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.textContent = ko ? sev.ko : sev.en;
+    h.append(name, chip);
+    li.append(num, h);
+    if (note) {
+      const p = document.createElement('p');
+      p.className = 'note';
+      if (ko) p.append(kku('pilgi', 'max(12px, 4.2cqi)', note)); else p.textContent = note;
+      li.append(p);
+    }
+    list.append(li);
+    if (!TTY.reduce) li.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 420, easing: 'cubic-bezier(.6,0,.3,1)' });
+    fitList();
+  }
+  // Keep the newest finding in view when the list is longer than the column (also once the
+  // verdict box opens underneath and the list gets shorter).
+  function fitList() {
+    while (list.scrollHeight > list.clientHeight + 2 && list.children.length > 1) list.firstElementChild.remove();
+  }
+
+  const stamp = verdict.querySelector('.stamp');
+  const tally = verdict.querySelector('.tally');
+  const verdictLine = verdict.querySelector('strong');
+  const firstTally = tally.textContent;
+  const VERDICT_SIZE = 'min(8cqi, 36px)';
+  const COZY = TTY.t({ en: 'Cozy. Also critical.', ko: '아늑함. 그리고 치명적.' });
+  const hint = document.querySelector('.hint');
+  const HINTS = TTY.t({
+    en: ['Click anything suspicious. Or anywhere, for the next one.', 'Press the Retest stamp. They say it’s all fixed.', 'Press the stamp again. Or the picture, to start over.'],
+    ko: ['수상한 곳을 눌러 보세요. 아무 데나 누르면 다음 취약점.', '재점검 도장을 눌러 보세요. 다 고쳤답니다.', '도장을 또 누르거나, 그림을 눌러 처음부터.'],
+  });
+  const say = (i) => { hint.textContent = HINTS[i]; hint.style.visibility = ''; };
+  // While the verdict opens and the stamp is in the air, the old hint would point at nothing
+  // (a click on the picture does nothing then): it steps aside until the stamp lands.
+  const hush = () => { hint.style.visibility = 'hidden'; };
+  // Retest, Re-retest, Re-re-retest, Re-re-re-retest, and no further (Korean adds a 재 each time).
+  const stampText = (k) => (ko ? '재'.repeat(Math.min(k, 3) + 1) + '점검' : (k ? 'Re-' + 're-'.repeat(Math.min(k, 3) - 1) + 'retest' : 'Retest'));
+  // The verdict box opens (0.42 s), then a beat later the stamp lands on it: the tag after the
+  // punchline. The hint that goes with the stamp changes when it lands.
+  const STAMP_AT = 1300;
+  let landing = null;
+  function slam(k, hintNo) {
+    stamp.classList.remove('ready');
+    stamp.replaceChildren(ko ? kku('dojang', 'max(14px, 4cqi)', stampText(k)) : document.createTextNode(stampText(k)));
+    stamp.setAttribute('aria-label', TTY.t({ en: stampText(k) + ': check the fixes', ko: stampText(k) + ': 조치 결과 보기' }));
+    if (TTY.reduce) { say(hintNo); return; }
+    hush();
+    verdict.animate([{ transform: 'scale(.92)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
+    stamp.classList.add('flying');
+    landing = stamp.animate([{ transform: 'scale(2.4)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], { duration: 300, delay: STAMP_AT, easing: 'cubic-bezier(.5,0,.9,.4)', fill: 'backwards' });
+    landing.finished.then(() => { stamp.classList.remove('flying'); stamp.classList.add('ready'); say(hintNo); }, () => {});
+  }
+  // A click on the picture once the report is done points at the stamp instead.
+  function nudge() {
+    if (!TTY.reduce && stamp.classList.contains('ready')) stamp.animate([{ scale: 1 }, { scale: 1.16 }, { scale: .97 }, { scale: 1 }], { duration: 480, easing: 'ease-out' });
+  }
+  function rate() {
+    clearTimeout(rating);
+    layout.classList.add('done');
+    verdict.classList.add('on');
+    slam(0, 1);
+    fitList();
+  }
+
+  // Findings keep their own numbers; the tour circles them in order, a visitor in any order.
+  const found = new Set();
+  let timer = null;
+  let rating = null;
+  let dwell = 2100;
+  // Once a visitor clicks the picture, the tour waits longer so it does not find their next one first.
+  let hunting = false;
+  const HUNTING = 6000;
+  // After the last finding: its own dwell, the verdict, then this long in all before starting
+  // over (on the home stage, past the end of the page's 19 s).
+  const END_HOLD = 9200;
+  const allFound = () => found.size === FINDINGS.length;
+  function reset() {
+    clearTimeout(rating);
+    found.clear();
+    hunting = false;
+    dwell = 2300; // the pause before the first ring when the tour starts over
+    rings.replaceChildren();
+    list.replaceChildren();
+    verdict.classList.remove('on');
+    layout.classList.remove('done');
+    unfix();
+  }
+  function circle(i) {
+    found.add(i);
+    dwell = FINDINGS[i].dwell;
+    ring(FINDINGS[i].at, i + 1);
+    writeUp(FINDINGS[i], i + 1);
+    if (allFound()) rating = setTimeout(rate, TTY.reduce ? 0 : dwell);
+  }
+  function schedule() {
+    clearTimeout(timer);
+    if (!TTY.reduce) timer = setTimeout(next, allFound() ? END_HOLD : (hunting ? HUNTING : dwell));
+  }
+  const nextOpen = () => FINDINGS.findIndex((_, i) => !found.has(i));
+  // The tour's own step: the next finding, or a fresh start once the report is done.
+  function next() {
+    if (allFound()) reset();
+    else circle(nextOpen());
+    schedule();
+  }
+
+  /* ---- The retest: everything fixed, and the Wi-Fi password rotated, as advised ---- */
+  const $ = (sel) => scene.querySelector(sel);
+  const ticks = $('.ticks');
+  const digit = $('.pw-digit');
+  const smear = $('.smear');
+  const ext = $('.ext');
+  // What each fix does to the picture, and where its green tick goes.
+  const FIXES = [
+    { i: 0, tick: [487, 180], run: (go) => go($('.postit'), [{ opacity: 1 }, { opacity: 0, transform: 'translate(40px, -60px) rotate(30deg)' }]) },
+    { i: 1, tick: [372, 230], run: (go) => go($('.locked'), [{ opacity: 0 }, { opacity: 1 }]) },
+    { i: 3, tick: [604, 252], run: (go) => go($('.usb'), [{ opacity: 1 }, { opacity: 0, transform: 'translate(30px, 6px)' }]) },
+    { i: 4, tick: [696, 150], run: (go) => {
+      go($('.door-open'), [{ opacity: 1 }, { opacity: 0 }]);
+      go($('.door-shut'), [{ opacity: 0, transform: 'scaleX(.35)' }, { opacity: 1, transform: 'none' }]);
+      // The extinguisher goes back on the wall where it belongs.
+      ext.animate([{ transform: 'translate(694px, 284px)' }, { transform: 'translate(772px, 278px)' }], { duration: TTY.reduce ? 0 : 450, easing: 'ease-in-out', fill: 'forwards' });
+    } },
+    // The post comes down; the phone itself was never the problem.
+    { i: 5, tick: [326, 234], run: (go) => go($('.post-gone'), [{ opacity: 0 }, { opacity: 1 }]) },
+  ];
+  const FIXED = TTY.t({ en: 'Fixed', ko: '조치 완료' });
+  const OPEN = TTY.t({ en: 'Not fixed', ko: '미조치' });
+  const AGAIN = TTY.t({ en: 'Changed, as advised. Then written on the whiteboard again.', ko: '권고대로 바꿈. 그리고 화이트보드에 또 적음.' });
+  const fadeTo = (el, frames) => {
+    const a = el.animate(frames, { duration: TTY.reduce ? 0 : 420, easing: 'cubic-bezier(.3,.7,.3,1)', fill: 'forwards' });
+    changed.push(a);
+  };
+  const changed = [];
+  const pending = [];
+  const at = (ms, fn) => { if (TTY.reduce) fn(); else pending.push(setTimeout(fn, ms)); };
+  let retests = 0;
+  let retesting = false;
+  function tick([x, y]) {
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('class', 'tick');
+    p.setAttribute('d', `M${x - 11} ${y - 1} l8 9 l15 -20`);
+    p.setAttribute('pathLength', '1');
+    ticks.append(p);
+    if (!TTY.reduce) p.animate([{ strokeDasharray: '1', strokeDashoffset: 1 }, { strokeDasharray: '1', strokeDashoffset: 0 }], { duration: 320, easing: 'ease-out', fill: 'both' });
+  }
+  // Wipe the last digit off the whiteboard and write the next one.
+  function rotate(n) {
+    smear.getAnimations().forEach((a) => a.cancel());
+    const text = digit.parentNode;
+    const from = text.getNumberOfChars() - digit.textContent.length;
+    const a = text.getExtentOfChar(from), b = text.getExtentOfChar(text.getNumberOfChars() - 1);
+    const box = { x: a.x, y: a.y, width: b.x + b.width - a.x, height: a.height };
+    const pad = 3;
+    smear.setAttribute('x', box.x - pad); smear.setAttribute('y', box.y + 2);
+    smear.setAttribute('width', box.width + pad * 2 + 8); smear.setAttribute('height', box.height - 2);
+    if (TTY.reduce) { digit.textContent = n; return; }
+    smear.animate([{ opacity: 0 }, { opacity: 1, offset: .5 }, { opacity: 1 }], { duration: 360, fill: 'forwards' });
+    at(420, () => {
+      digit.textContent = n;
+      // The new digit is written left to right as the smear moves off.
+      smear.animate([{ opacity: 1, transform: 'none' }, { opacity: 1, transform: `translateX(${box.width + pad * 2 + 8}px)` }], { duration: 360, easing: 'ease-in', fill: 'forwards' })
+        .finished.then(() => smear.animate([{ opacity: 0 }], { duration: 0, fill: 'forwards' }), () => {});
+    });
+  }
+  function retestVerdict() {
+    const k = retests;
+    tally.textContent = TTY.t({ en: `Retest: ${FIXES.length} fixed · 1 not fixed`, ko: `재점검: 조치 ${FIXES.length}건 · 미조치 1건` });
+    const line = TTY.t({ en: `Tidy. Also hunter${2 + k}.`, ko: `깔끔함. 그리고 hunter${2 + k}.` });
+    verdictLine.replaceChildren(ko ? kku('sebul', VERDICT_SIZE, line) : document.createTextNode(line));
+    layout.classList.add('done', 'retest');
+    verdict.classList.add('on');
+    slam(k, 2);
+    fitList();
+    retesting = false;
+    // Left alone, the office goes back to how it was found, and the tour starts again.
+    clearTimeout(timer);
+    if (!TTY.reduce) timer = setTimeout(next, 9000);
+  }
+  function retest() {
+    if (retesting || !allFound() || stamp.classList.contains('flying')) return;
+    retesting = true;
+    hush(); // the stamp it names is gone until the retest verdict lands
+    clearTimeout(timer);
+    retests += 1;
+    const first = retests === 1;
+    verdict.classList.remove('on');
+    layout.classList.remove('done');
+    let t = 0;
+    if (first) {
+      rings.replaceChildren();
+      list.replaceChildren();
+      FIXES.forEach((fix, n) => at(250 + n * 260, () => {
+        fix.run(fadeTo);
+        tick(fix.tick);
+        writeUp(FINDINGS[fix.i], fix.i + 1, { en: FIXED, ko: FIXED, color: '#23753a', fixed: true, note: '' });
+      }));
+      t = 250 + FIXES.length * 260 + 200;
+    } else {
+      rings.replaceChildren();
+    }
+    at(t, () => rotate(2 + retests));
+    at(t + 900, () => {
+      ring(FINDINGS[2].at, 3);
+      if (first) writeUp(FINDINGS[2], 3, { en: OPEN, ko: OPEN, color: 'var(--marker)', note: AGAIN });
+      fitList();
+    });
+    at(t + 1800, retestVerdict);
+  }
+  // Back to the office as it was found.
+  function unfix() {
+    pending.splice(0).forEach(clearTimeout);
+    changed.splice(0).forEach((a) => a.cancel());
+    ext.getAnimations().forEach((a) => a.cancel());
+    smear.getAnimations().forEach((a) => a.cancel());
+    ticks.replaceChildren();
+    digit.textContent = '2';
+    retests = 0;
+    retesting = false;
+    tally.textContent = firstTally;
+    if (layout.classList.contains('retest')) verdictLine.replaceChildren(ko ? kku('sebul', VERDICT_SIZE, COZY) : document.createTextNode(COZY));
+    layout.classList.remove('retest');
+    if (landing) landing.cancel();
+    stamp.classList.remove('ready', 'flying');
+    say(0);
+  }
+  stamp.addEventListener('click', retest);
+
+  /* ---- A visitor hunting for themselves ---- */
+  const svg = scene.querySelector('svg');
+  const toPicture = (e) => {
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  };
+  const inBox = ([x1, y1, x2, y2], { x, y }) => x >= x1 && x <= x2 && y >= y1 && y <= y2;
+  // What a click lands on, in this order: a pass note that sits inside a ring (the coffee ring);
+  // the ring of an open finding that has no box (the sticky note, which sits on the screen); an
+  // open finding's box, the smallest winning (the USB tag hangs over the door); another prop.
+  // Findings with a box are judged by the box alone: the screen's wide ring would also take in
+  // the right end of the whiteboard and the bottom of the bookshelf.
+  function judge(pt) {
+    const early = DECOYS.find((d) => d.first && inBox(d.box, pt));
+    if (early) return { decoy: early };
+    let best = -1, area = Infinity;
+    FINDINGS.forEach((f, i) => {
+      const [cx, cy, rx, ry] = f.at;
+      if (found.has(i) || f.hit || ((pt.x - cx) / (rx * 1.15)) ** 2 + ((pt.y - cy) / (ry * 1.15)) ** 2 > 1) return;
+      if (rx * ry < area) { best = i; area = rx * ry; }
+    });
+    if (best === -1) FINDINGS.forEach((f, i) => (found.has(i) ? [] : f.hit || []).forEach((b) => {
+      const a = (b[2] - b[0]) * (b[3] - b[1]);
+      if (inBox(b, pt) && a < area) { best = i; area = a; }
+    }));
+    if (best !== -1) return { finding: best };
+    const decoy = DECOYS.find((d) => !d.first && inBox(d.box, pt));
+    return decoy ? { decoy } : {};
+  }
+  const CHECK = '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5.8 10.4 l3 3 5.6 -6.4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  let note = null;
+  function pass(decoy, at) {
+    if (note) note.remove();
+    note = document.createElement('p');
+    note.className = 'okay hand';
+    note.innerHTML = CHECK + '<span></span>';
+    note.lastChild.textContent = decoy[TTY.lang];
+    scene.append(note);
+    // Above the spot clicked, kept inside the picture.
+    const w = scene.clientWidth, h = scene.clientHeight;
+    const px = (at.x / 800) * w, py = (at.y / 500) * h;
+    note.style.left = Math.max(6, Math.min(w - note.offsetWidth - 6, px - note.offsetWidth / 2)) + 'px';
+    note.style.top = Math.max(6, py - note.offsetHeight - 10) + 'px';
+    const mine = note;
+    if (TTY.reduce) { setTimeout(() => mine.remove(), 2400); return; }
+    mine.animate([{ opacity: 0, transform: 'translateY(30%) scale(.9)' }, { opacity: 1, transform: 'none', offset: .12 }, { opacity: 1, offset: .85 }, { opacity: 0 }], { duration: 2400, easing: 'ease-out' }).finished.then(() => mine.remove());
+  }
+  // A click on nothing in particular, or Enter: the next finding. Once the report is done it no
+  // longer starts over (a click in a hurry would wipe the verdict away): it brings the verdict
+  // forward or points at the stamp. After a retest the hint offers the picture to start over.
+  function advance() {
+    if (retesting) return;
+    if (!allFound()) circle(nextOpen());
+    else if (layout.classList.contains('retest')) reset();
+    else if (!verdict.classList.contains('on')) rate();
+    else nudge();
+    schedule();
+  }
+  scene.addEventListener('click', (e) => {
+    const at = toPicture(e);
+    const { finding, decoy } = judge(at);
+    if (retesting) { if (decoy) pass(decoy, at); return; } // the retest plays out
+    if (!allFound()) hunting = true;
+    if (decoy) { pass(decoy, at); schedule(); return; }
+    if (finding !== undefined) { circle(finding); schedule(); return; }
+    advance();
+  });
+  scene.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); advance(); } });
+
+  if (TTY.reduce) {
+    FINDINGS.forEach((_, i) => circle(i));
+  }
+  TTY.onShow(() => { if (!TTY.reduce) timer = setTimeout(next, 600); });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

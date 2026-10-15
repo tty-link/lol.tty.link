@@ -1,0 +1,148 @@
+{
+  "id": "mind-gc",
+  "title": {
+    "en": "Garbage Collection for the Mind",
+    "ko": "마음 분리수거"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "프로그램이 더 이상 안 쓰는 메모리를 알아서 치우는 '가비지 컬렉션'을 아파트 분리수거장으로 그려서, 아무도 붙잡고 있지 않은 걱정은 밤사이 치워지고 아끼는 것은 남는다고 말한다.",
+    "points": [
+      "23시 종이 울리자 나방을 향해 뛰어오르던 고양이가 공중에서 멈추고, 들썩이던 걱정들도 기운 채 굳고, 화면이 일시 정지한 영상처럼 회색이 된다 → 치우는 동안 프로그램 전체를 세우는 Stop-the-world를 말 그대로 그렸다. 띠는 \"세상이 잠시 멈춥니다\"라더니 아침 영수증에는 '‘잠시’ 멈춤: 7시간 12분(수면 · 길수록 좋음)'. 개발자에게 이 멈춤은 짧을수록 좋은 골칫거리인데, 사람의 잠은 길수록 좋다. 그러고는 관리사무소가 영수증에 도장을 찍는다: \"‘5분만 더’ 반려\". 길수록 좋다면서 5분 연장은 안 해 준다.",
+      "뿌리 등불(나·가족·친구·내일의 나)에서 뻗은 연두 선이 닿은 물건만 남음 → 실제 수거기도 '뿌리'에서 줄을 따라가 닿는 것에 표시하고(마크) 표시 없는 것을 쓸어 낸다(스윕). 그래서 '들은 칭찬'을 직접 버려 보면 \"내가 아직 붙잡고 있어요. 못 버려요.\"로 튕겨 나온다. 엄마 목소리는 가족이, 오늘 배운 단축키는 내일의 내가 붙잡고 있다(끌어 볼 때만 나온다).",
+      "‘걱정’과 ‘걱정에 대한 걱정’이 서로를 가리키고, 말풍선은 \"서로 붙잡고 버티는 중. 정작 이 둘을 붙잡은 사람은 없음.\" → 서로만 붙잡고 있는 순환 참조. 둘 위의 `rc=1`처럼 자기를 가리키는 수만 세는 방식으로는 둘 다 1이라 못 치우지만, 뿌리에서 따라가는 방식으로는 어디서도 닿지 않으니 치운다. 진짜 가비지 컬렉션 이야기다.",
+      "곱씹던 잔소리는 음식물, 남의 평가(가볍고 오래 안 썩음)는 플라스틱, 회의에서 한 말실수(다들 벌써 잊음)는 일반 쓰레기, 3년 전 흑역사는 대형 폐기물 스티커(수수료: 이불킥 3년 치(완납)), 번아웃은 '전용 수거함: 휴가' → 아파트 분리수거 규칙을 마음에 그대로 옮긴 말장난. 남의 평가는 플라스틱처럼 가벼운데 이상하게 썩지 않고 오래 남는다. 뿌리에서 안 닿는다는 건 아무도 기억하지 않는다는 뜻이고, 흑역사 수수료는 밤마다 이불을 차며 이미 다 냈다.",
+      "영수증 맨 아래 '대부분의 걱정은 하루를 넘기지 못합니다(약한 세대 가설).' → 실제 수거기는 '새로 만든 것은 대부분 금방 쓸모없어진다'는 관찰(약한 세대 가설)에 맞춰 새것만 따로, 더 자주 치운다. 개발자에게는 GC 교과서의 한 줄이, 잠들기 전의 사람에게는 위로가 된다."
+    ],
+    "terms": [
+      {
+        "term": "가비지 컬렉션(쓰레기 수집)",
+        "plain": "프로그램이 더 이상 쓰지 않는 메모리를 자동으로 찾아 치우는 일."
+      },
+      {
+        "term": "마크 앤 스윕(표시하고 쓸기)",
+        "plain": "'뿌리'(지금 실행 중인 코드가 바로 쥐고 있는 변수 같은 출발점)에서 닿는 것에 모두 표시하고, 표시 없는 것을 쓸어 내는 방법."
+      },
+      {
+        "term": "Stop-the-world",
+        "plain": "수거기가 치우는 동안 프로그램 전체를 잠깐 세우는 것. 길어지면 프로그램이 그동안 멈춰 버려서, 개발자들은 이 멈춤을 줄이려고 수거기를 고르고 조정한다."
+      },
+      {
+        "term": "순환 참조",
+        "plain": "둘이 서로만 가리켜서 가리키는 수가 0이 되지 않는 상태. 참조를 세기만 해서는 치우지 못해서, 파이썬처럼 순환을 따로 찾는 장치를 더 붙이기도 한다."
+      },
+      {
+        "term": "약한 세대 가설",
+        "plain": "새로 생긴 것은 대부분 금방 쓸모없어진다는 관찰. 그래서 수거기는 새것들만 따로, 더 자주 치운다. 여기서는 \"대부분의 걱정은 하루를 넘기지 못합니다\"."
+      }
+    ],
+    "links": [
+      {
+        "title": "쓰레기 수집 (컴퓨터 과학) - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/쓰레기_수집_(컴퓨터_과학)",
+        "note": "뿌리에서 따라가는 방식과 참조 세기, 순환 참조, '대부분의 객체는 일찍 죽는다'는 세대 수집",
+        "lang": "ko"
+      },
+      {
+        "title": "Tracing garbage collection - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Tracing_garbage_collection",
+        "note": "뿌리, 마크 앤 스윕, 치우는 동안 프로그램을 통째로 세우는 stop-the-world",
+        "lang": "en"
+      },
+      {
+        "title": "참조 횟수 계산 방식 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/참조_횟수_계산_방식",
+        "note": "서로 가리키는 객체가 남기는 순환 참조 문제",
+        "lang": "ko"
+      },
+      {
+        "title": "Garbage Collector Implementation - Java GC 튜닝 안내서",
+        "url": "https://docs.oracle.com/en/java/javase/25/gctuning/garbage-collector-implementation.html",
+        "note": "\"대부분의 객체는 아주 잠깐만 산다\"는 약한 세대 가설(weak generational hypothesis)과 젊은 세대만 치우는 작은 수거",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "세상이 멈춘 동안 구름·나방·들썩이던 걱정, 시계 가운데서 깜빡이던 쌍점(:)까지 멈춘다. 깨어나면 시계가 23:00에서 06:12로 → 23:00 + 7시간 12분 = 06:12라서 영수증의 '7시간 12분'과 맞고, 06:12에 깼으니 다음 수거는 '내일'이 아니라 '오늘 밤 23:00'이다. 같은 까닭으로 바닥의 이름표도 '내일 점심 약속'은 '오늘 점심 약속'으로, '오늘 배운 단축키'는 '어제 배운 단축키'로 바뀐다.",
+      "깨어나는 순간 고양이는 7시간 전에 시작한 도약을 마저 끝내지만, 함께 멈춰 있던 나방도 같은 순간 다시 움직여 휙 달아난다 → 멈췄던 프로그램은 멈춘 줄도 모르고 하던 일을 그대로 이어 간다. Stop-the-world가 실제로 그렇다.",
+      "순환 장면에서 걱정 둘 위에 뜨는 `rc=1` → 참조 세기 방식이 보는 값 그대로다. 둘 다 서로에게서 하나씩 가리킴을 받아 0이 아니니 참조 세기로는 '아직 쓰는 중'이지만, 뿌리 등불 어디에서도 선이 닿지 않는다.",
+      "연두 선이 그어지는 순서 → 페이지가 실제로 뿌리에서 너비 우선 탐색을 돌려 걸은 순서 그대로다. 물건을 끌어다 버릴 때 튕겨 낼지, 누구 이름으로 튕겨 낼지도 같은 탐색 결과로 정한다.",
+      "23시 전에 물건을 만지면 그 자리에서 23:00이 되고 세상이 멈춘 채로 손으로 치우게 된다(누를 때만). 다 치워야 06:12 아침이 오고 같은 영수증과 도장이 나온다. 손으로 치운 밤도 '7시간 12분'이다.",
+      "영수증의 '확보된 마음 2.3GB' → 정해 둔 글자가 아니라 수거한 물건마다 매긴 용량의 합이다(할 일 0.1 + 남의 평가 0.3 + 잔소리 0.3 + 말실수 0.2 + 걱정 둘 0.4 + 번아웃 0.5 + 흑역사 0.5). 손으로 다 치워도 같은 2.3GB가 나오고, 키가 넉넉한 화면에서는 수거함별 줄도 찍힌다."
+    ]
+  },
+  "en": {
+    "line": "This page draws garbage collection, the way programs automatically clear out memory nobody uses any more, as a Korean apartment recycling yard where worries nobody holds on to are collected overnight and the things you love stay.",
+    "points": [
+      "The bell rings at 11 p.m.: the cat leaping at a moth by the street lamp freezes in mid-air, the fidgeting worries freeze mid-wobble, and the whole picture turns grey under a big pause sign, like a paused video → \"stop-the-world\", the pause while a garbage collector runs, drawn literally. The band promises \"The world pauses for a moment\"; the morning receipt says \"paused “for a moment”: 7 h 12 min (sleep; longer is better)\". Developers fight to keep these pauses short; for people, longer is better. Then the office stamps the receipt \"Snooze DENIED\": longer is better, just not five minutes longer.",
+      "Only the items reached by a green line from a root lamp (you, family, friends, tomorrow-you) stay → a real collector also follows references from its roots, marks what it reaches and sweeps the rest. Try throwing out \"a compliment you got\" and it bounces back: \"You're still holding on to this one. Can't throw it out.\" Mom's voice is held by your family, the shortcut by tomorrow-you (only when you drag them).",
+      "\"worry\" and \"worrying about the worry\" point at each other: \"Holding each other up. Nobody's holding them.\" → a reference cycle. Counting references (the `rc=1` over each) sees 1 on both and can't clear them; tracing from the roots reaches neither, so out they go. That is real garbage collection behaviour.",
+      "The lecture you kept chewing on goes in food waste, other people's opinions (light, never rot) in plastic, a slip in the meeting (forgotten) in general waste, the cringe from three years ago gets a bulky-waste sticker (\"fee: 3 years of cringing (paid)\"), and burnout goes to \"special collection: a holiday\" → Korean recycling rules (see below) applied to the mind. Opinions are like plastic: they weigh nothing and never break down. Unreachable means nobody remembers it, and the cringe has been paid for, night after night.",
+      "The last line of the receipt, \"Most worries don't survive a single day (the weak generational hypothesis).\" → real collectors are built on the observation that most new objects die young, so they sweep the young ones separately and more often. For developers it is a line from the GC textbook; for anyone going to bed it is a comfort."
+    ],
+    "terms": [
+      {
+        "term": "garbage collection",
+        "plain": "automatically finding and freeing memory a program no longer uses."
+      },
+      {
+        "term": "mark and sweep",
+        "plain": "start from the roots (what the running code holds directly, like its variables), mark everything reachable from them, then sweep away whatever is unmarked."
+      },
+      {
+        "term": "stop-the-world",
+        "plain": "a pause in which the collector halts the whole program while it works. The program stands still meanwhile, so developers pick and tune collectors to keep these pauses short."
+      },
+      {
+        "term": "reference cycle",
+        "plain": "two things that only point at each other, so their counts never reach zero. Counting references alone cannot free them, so some languages, such as Python, add a separate cycle finder."
+      },
+      {
+        "term": "weak generational hypothesis",
+        "plain": "most new objects become garbage soon, so collectors clear out the young ones separately and more often. Here: \"Most worries don't survive a single day.\""
+      },
+      {
+        "term": "Korean apartment recycling",
+        "plain": "in South Korea most people live in big apartment blocks, and each block has a shared yard of bins, one per kind (paper, plastic, food scraps and so on). Everything else goes in special bags you have to buy, used batteries and fluorescent lamps have their own collection boxes, and anything too big for a bag, like a sofa, needs a sticker bought from the district office, which is your fee for taking it away."
+      }
+    ],
+    "links": [
+      {
+        "title": "Tracing garbage collection – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Tracing_garbage_collection",
+        "note": "roots, mark and sweep, stop-the-world pauses and the generational hypothesis",
+        "lang": "en"
+      },
+      {
+        "title": "Reference counting – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Reference_counting",
+        "note": "why pure reference counting \"will never consider cyclic chains of objects for deletion\"",
+        "lang": "en"
+      },
+      {
+        "title": "Garbage Collector Implementation – Java GC tuning guide",
+        "url": "https://docs.oracle.com/en/java/javase/25/gctuning/garbage-collector-implementation.html",
+        "note": "the \"weak generational hypothesis\", \"which states that most objects survive for only a short period of time\""
+      },
+      {
+        "title": "Waste management in South Korea – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Waste_management_in_South_Korea",
+        "note": "the paid rubbish bags (since 1995), food waste collected on its own and sorted recycling",
+        "lang": "en"
+      },
+      {
+        "title": "Electronics and Large Items – IBS \"Living in Korea\"",
+        "url": "https://centers.ibs.re.kr/html/living_en/housing/trash-large.html",
+        "note": "a Korean research institute's English guide to buying a sticker at the district office for each large item you throw out, with sample fees"
+      }
+    ],
+    "deep": [
+      "While the world is paused, the clouds, the moth, the fidgeting worries and even the clock's blinking colon stand still. On waking the clock jumps from 23:00 to 06:12 → 23:00 + 7 h 12 min = 06:12, the receipt's \"7 h 12 min\", and since you woke at 06:12, the next collection is \"tonight, 11 p.m.\", not tomorrow. For the same reason the floor labels change: \"lunch plans tomorrow\" becomes \"lunch plans today\", and \"a shortcut you learned today\" becomes \"a shortcut you learned yesterday\".",
+      "The moment the world wakes, the cat finishes the leap it started seven hours ago, but the moth, frozen right along with it, wakes too and darts off → a paused program carries on exactly where it stopped, with no idea it was ever paused. That is what stop-the-world is like.",
+      "The `rc=1` badges over the two worries in the cycle scene → exactly what reference counting sees: each gets one reference, from the other, so the count never hits zero and it thinks both are still in use, yet no line from any root lamp reaches them.",
+      "The order the green lines are drawn → the page really runs a breadth-first search from the roots and draws the edges in the order it walked them. The same result decides which items bounce back when you drag them, and whose name the bubble gives.",
+      "Touch anything before 11 p.m. and it becomes 23:00 on the spot: the world stops and you do the collecting by hand (only when you touch). Morning comes only once everything is sorted, with the same receipt and stamp. Your night lasts \"7 h 12 min\" too.",
+      "The receipt's \"freed 2.3 GB of mind\" → not fixed text but the sum of what was collected (to-do list 0.1 + opinions 0.3 + lecture 0.3 + slip 0.2 + the two worries 0.4 + burnout 0.5 + cringe 0.5). Sort everything by hand and you get the same 2.3 GB; on taller screens the receipt lists it bin by bin."
+    ]
+  }
+}

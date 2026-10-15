@@ -1,0 +1,2060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wi-Fi Feng Shui | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Serif+KR:wght@500;700;900&family=Gowun+Batang:wght@400;700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="butgeul dojang"></script>
+<style>
+  /* A geomancer's appraisal of a flat, for Wi-Fi. The "energy" map is a real (small) radio
+     model: log-distance path loss plus walls and objects crossed on the way, washed in ink.
+     Every feng shui line on the page is also plain Wi-Fi advice. */
+  :root {
+    --paper: #efe5cf;
+    --paper-hi: #f7f0de;
+    --ink: #222;
+    --ink-2: #4b4236;
+    --soft: #7a6c58;
+    --red: #b3261e;
+    --jade: #4f8a7a;
+    --jade-deep: #3b6f61;
+    --rule: rgba(179, 38, 30, .42);
+    --fr: clamp(5px, 1.2cqmin, 13px);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container: page / size;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--paper);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .36 0 0 0 0 .29 0 0 0 0 .19 0 0 0 .11 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      radial-gradient(60% 50% at 18% 12%, rgba(255, 251, 238, .7), transparent 70%),
+      radial-gradient(55% 45% at 88% 92%, rgba(190, 160, 110, .2), transparent 70%),
+      radial-gradient(40% 35% at 70% 30%, rgba(255, 250, 235, .35), transparent 70%);
+    color: var(--ink);
+    font-family: 'EB Garamond', 'Gowun Batang', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .lang-ko body { font-family: 'Gowun Batang', 'EB Garamond', serif; word-break: keep-all; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+  /* Paper fibres and the printed double frame of an official form, in cinnabar. */
+  .fibres { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .fibres path { fill: none; stroke: #a8916a; stroke-linecap: round; }
+  .frame { position: absolute; inset: var(--fr); border: 2px solid var(--rule); pointer-events: none; }
+  .frame::after { content: ""; position: absolute; inset: 3px; border: 1px solid var(--rule); }
+
+  /* ---- Layout: one column on phones, plan + ledger side by side when wide ---- */
+  .sheet {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto auto;
+    grid-template-areas: "head" "plan" "verdicts" "reading" "rules" "strays";
+    row-gap: clamp(4px, 1.1cqh, 10px);
+    padding: calc(var(--fr) + 9px) calc(var(--fr) + 10px) calc(var(--fr) + 8px);
+  }
+  .col-main, .col-side { display: contents; }
+  .head { grid-area: head; }
+  .planwrap { grid-area: plan; }
+  .verdicts { grid-area: verdicts; }
+  .reading { grid-area: reading; }
+  .rules { grid-area: rules; }
+  .foot { display: contents; }
+  .strays { grid-area: strays; }
+  .actions { grid-area: verdicts; justify-self: end; align-self: start; }
+
+  /* ---- Heading ---- */
+  .head { display: grid; grid-template-columns: 1fr auto; align-items: start; column-gap: 10px; }
+  .title { font-weight: 500; font-size: clamp(25px, 5.4cqmin, 50px); line-height: 1.02; letter-spacing: .005em; }
+  .title .kk-ink { color: #1d1b19; }
+  .lang-ko .title { line-height: 1; }
+  .sub { margin-top: .35em; font-size: clamp(11.5px, 1.75cqmin, 16px); line-height: 1.32; color: var(--ink-2); font-style: italic; }
+  .lang-ko .sub { font-style: normal; margin-top: .5em; }
+  .sub .client { color: var(--red); font-style: normal; }
+  .chop {
+    display: grid;
+    place-items: center;
+    width: clamp(34px, 5.6cqmin, 54px);
+    aspect-ratio: 1;
+    margin-top: 2px;
+    border-radius: 3px 4px 3px 5px;
+    background: var(--red);
+    color: #f6ead2;
+    font: 900 clamp(13px, 2.1cqmin, 21px)/1 'Noto Serif KR', serif;
+    writing-mode: vertical-rl;
+    letter-spacing: .06em;
+    rotate: 4deg;
+    opacity: .9;
+    box-shadow: inset 0 0 0 2px rgba(246, 234, 210, .5);
+  }
+
+  /* ---- The plan: three stacked SVGs (ink map / walls / movable things) + paper tags ---- */
+  /* Above the ledger: on phones the opening close-up spills over the remedy button, and its 凶 seal
+     must not end up under it (the lens takes no pointer, so the button still works). */
+  .planwrap { position: relative; z-index: 3; container-type: size; min-height: 0; display: grid; place-items: center; }
+  .plan {
+    position: relative;
+    container: plan / inline-size;
+    width: min(100cqw, calc(100cqh * 13.05 / 9.2));
+    aspect-ratio: 13.05 / 9.2;
+  }
+  .plan > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .plan .layer-top { touch-action: none; }
+  .map .wash { image-rendering: auto; }
+  .map .hatch { transition: opacity .6s; }
+  .map .iso { fill: none; stroke: #2a2520; stroke-linecap: round; }
+  .map .iso.l50 { stroke-width: .035; stroke-dasharray: none; opacity: .55; }
+  .map .iso.l67 { stroke-width: .045; stroke-dasharray: .14 .09; opacity: .7; }
+  .map .iso.l75 { stroke-width: .035; stroke-dasharray: .03 .1; opacity: .7; }
+  .map .iso-lbl { font-family: 'EB Garamond', serif; font-style: italic; font-size: var(--fs-small); fill: #5f5546; paint-order: stroke; stroke: var(--paper); stroke-width: calc(var(--fs-small) * .32); stroke-linejoin: round; }
+  .map .spark { fill: #2a2520; }
+
+  .walls .w { fill: none; stroke: #1f1d1b; }
+  .walls .w-ext { stroke-width: .24; stroke-linecap: square; }
+  .walls .w-c { stroke-width: .2; stroke-linecap: square; }
+  .walls .w-p { stroke-width: .085; stroke-linecap: butt; stroke: #2b2825; }
+  .walls .win { fill: none; stroke: #2b2825; stroke-width: .025; }
+  .walls .door { fill: none; stroke: #2b2825; stroke-width: .025; }
+  .walls .door-arc { fill: none; stroke: #2b2825; stroke-width: .018; stroke-dasharray: .06 .05; }
+  .walls .dim { fill: none; stroke: #5a5145; stroke-width: .018; }
+  .walls .dim-t { font-family: 'EB Garamond', serif; font-size: var(--fs-dim); fill: #5a5145; letter-spacing: .04em; }
+  .walls .f { fill: rgba(247, 240, 222, .5); stroke: #2b2825; stroke-width: .03; stroke-linejoin: round; }
+  .walls .fl { fill: none; stroke: #2b2825; stroke-width: .022; stroke-linecap: round; }
+  .walls .fd { fill: #2b2825; }
+  .walls .tile { fill: none; stroke: rgba(43, 40, 37, .18); stroke-width: .012; }
+  .walls .mirror { fill: none; stroke: #7e98a3; stroke-width: .06; stroke-linecap: round; }
+  .walls .glint { stroke: #aac0c8; stroke-width: .02; }
+  .walls .water { fill: rgba(126, 160, 170, .28); }
+  .walls .wave { fill: none; stroke: #5e7f88; stroke-width: .018; }
+  .walls .fish { fill: #b3261e; }
+  .walls .lbl { font-size: var(--fs-room); fill: #2a2520; text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: var(--paper); stroke-width: calc(var(--fs-room) * .28); stroke-linejoin: round; letter-spacing: .04em; }
+  .walls .lbl-obj { font-size: var(--fs-tag); fill: #5a5145; text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: var(--paper); stroke-width: calc(var(--fs-tag) * .3); stroke-linejoin: round; font-style: italic; }
+  .lang-ko .walls .lbl-obj { font-style: normal; }
+  .plan[data-dense="lo"] .walls .lbl-obj, .plan[data-dense="lo"] .walls .dim-t { display: none; }
+  .walls .mw-disp { fill: #3a332b; }
+  .walls .mw-text { font: 600 .16px/1 'EB Garamond', serif; fill: #ffcf6a; text-anchor: middle; dominant-baseline: central; opacity: 0; }
+  .walls .mw-on .mw-disp { fill: #2a1d10; }
+  .walls .mw-on .mw-glow { opacity: .5; animation: hum .23s steps(2) infinite; }
+  @keyframes hum { 50% { opacity: .28; } }
+  .walls .mw-on .mw-text { opacity: 1; }
+  .walls .mw-glow { fill: #ffcf6a; opacity: 0; }
+
+  .layer-top .seat { fill: none; stroke: var(--red); stroke-width: .03; }
+  .layer-top .seat-dot { fill: var(--red); }
+  .layer-top .seat-v { font-family: 'EB Garamond', serif; font-size: var(--fs-small); font-weight: 600; fill: var(--ink-2); paint-order: stroke; stroke: var(--paper); stroke-width: calc(var(--fs-small) * .32); stroke-linejoin: round; font-variant-numeric: lining-nums tabular-nums; }
+  .layer-top .seat-v.bad { fill: var(--red); }
+  .layer-top .seat-v.good { fill: var(--jade-deep); }
+  .plan[data-dense="lo"] .layer-top .seat-v { display: none; }
+
+  .dev { cursor: grab; outline: none; }
+  .dev:active { cursor: grabbing; }
+  .dev .pop { transform-box: fill-box; transform-origin: center; }
+  .dev .hit { fill: transparent; }
+  .dev .ring { fill: none; stroke: var(--red); stroke-width: .035; stroke-dasharray: .1 .07; opacity: 0; }
+  .dev:focus-visible .ring { opacity: 1; }
+  .dev .body { fill: var(--paper-hi); stroke: #1f1d1b; stroke-width: .045; }
+  .dev .shade { fill: rgba(30, 24, 18, .22); }
+  .dev .led { fill: var(--jade); }
+  .dev .ant { fill: none; stroke: #1f1d1b; stroke-width: .06; stroke-linecap: round; }
+  .dev .ant-up { fill: #1f1d1b; }
+  .dev .vent { stroke: #6a6052; stroke-width: .02; }
+  .dev .name { font-size: var(--fs-tag); text-anchor: middle; dominant-baseline: hanging; fill: #2a2520; paint-order: stroke; stroke: var(--paper); stroke-width: calc(var(--fs-tag) * .32); stroke-linejoin: round; font-weight: 600; }
+  .mesh .body { fill: #fbf7ec; }
+  .mesh .name { fill: var(--jade-deep); }
+  .brush .hair { fill: #1b1918; }
+  .brush .ferrule { fill: #3b2a1d; }
+  .brush .handle { fill: #caa86a; stroke: #8a6a3a; stroke-width: .018; }
+  .brush .node { stroke: #8a6a3a; stroke-width: .02; }
+
+  /* Paper slips pinned to the plan (placed in % of the plan box from metres). */
+  .tag {
+    position: absolute;
+    padding: .28em .55em .32em;
+    background: #fbf6e8;
+    color: var(--ink-2);
+    font-size: clamp(11px, 1.75cqi, 14px);
+    line-height: 1.25;
+    white-space: nowrap;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, .08), 0 3px 8px rgba(60, 40, 10, .16);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .4s;
+  }
+  .tag.on { opacity: 1; }
+  .tag.on.under-lens { opacity: 0; }
+  .tag::before { content: ""; position: absolute; left: 50%; top: -3px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--red); box-shadow: 0 1px 1px rgba(0,0,0,.3); }
+  .tag.installer { translate: -100% -50%; rotate: -3deg; }
+  .tag.micro { translate: 0 -50%; rotate: 2deg; color: #8a4b0f; }
+  .tag.call { translate: -50% 0; rotate: -2deg; padding: .2em .5em; font-size: clamp(11px, 1.5cqi, 13px); opacity: 1; background: rgba(251, 246, 232, .92); }
+  .tag.call .dot { display: inline-block; width: .55em; height: .55em; margin-right: .35em; border-radius: 50%; background: var(--jade); vertical-align: .05em; }
+  .tag.call.down { color: var(--red); }
+  .tag.call.down .dot { background: var(--red); animation: blink 1s steps(2, start) infinite; }
+  .tag.call.back { color: var(--jade-deep); font-weight: 600; }
+  @keyframes blink { to { visibility: hidden; } }
+  /* Phones: the plan is too small for the laptop's slip (it lands on the seal and the labels), so the
+     study's line in the ledger carries the call instead: drops, frozen, back. */
+  .plan[data-dense="lo"] .tag.call { display: none; }
+  .bibo {
+    position: absolute;
+    translate: -50% -100%;
+    color: #1d1b19;
+    font: 500 clamp(15px, 4cqi, 34px)/1 'Noto Serif KR', serif;
+    pointer-events: none;
+    opacity: 0;
+    white-space: nowrap;
+  }
+  .bibo .kk-ink { color: #1d1b19; }
+  .bibo.on { opacity: 1; }
+  .plan[data-dense="lo"] .bibo { display: none; }
+
+  /* The 패철 (geomancer's compass): rings of Wi-Fi channels instead of directions. */
+  .compass {
+    position: absolute;
+    left: -.6%;
+    top: -1.2%;
+    width: 21%;
+    aspect-ratio: 1;
+    filter: drop-shadow(0 .35cqi .55cqi rgba(60, 40, 10, .35));
+    pointer-events: none;
+  }
+  .compass svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .compass .dial { transform-origin: 0 0; }
+  .compass text { font-family: 'Noto Serif KR', serif; text-anchor: middle; dominant-baseline: central; }
+
+  /* The red seal: 명당 (dojang) / 明堂. */
+  .seal {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: max-content;   /* near the plan's edge, shrink-to-fit would squeeze it narrower than its words */
+    padding: max(1.2cqi, 3px) max(1.4cqi, 5px);
+    border: .55cqi solid var(--red);
+    border-radius: .8cqi .5cqi 1cqi .6cqi;
+    color: var(--red);
+    rotate: -7deg;
+    translate: -50% -50%;
+    mix-blend-mode: multiply;
+    opacity: 0;
+    pointer-events: none;
+    line-height: 1;
+  }
+  .seal.on { opacity: .9; }
+  .seal .en-seal { font: 900 clamp(20px, 8cqi, 64px)/1 'Noto Serif KR', serif; letter-spacing: .04em; }
+  /* The words an English reader can read on the seals stay at 10 px or more, also on a phone. */
+  .seal .en-small { display: block; margin-top: .6cqi; font: 600 clamp(10px, 2cqi, 15px)/1 'EB Garamond', serif; letter-spacing: .14em; text-align: center; white-space: nowrap; }
+  .lang-en .seal { background: rgba(179, 38, 30, .06); }
+
+  /* The opening close-up: a detail bubble pulled out of the shoe cabinet by the front door,
+     doors swinging open on the router among the shoes, and a red 凶 / 흉 seal slammed on it. */
+  .closeup { position: absolute; inset: 0; pointer-events: none; visibility: hidden; }
+  .closeup.on { visibility: visible; }
+  .cl-line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .cl-line .lead { fill: none; stroke: var(--red); stroke-width: .04; stroke-dasharray: .12 .07; }
+  .cl-line .mark { fill: rgba(179, 38, 30, .06); stroke: var(--red); stroke-width: .045; }
+  .cl-lens {
+    position: absolute;
+    width: clamp(144px, 40%, 300px);
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: var(--paper-hi);
+    box-shadow: 0 0 0 2px #1f1d1b, 0 0 0 5px var(--paper-hi), 0 0 0 6.5px #1f1d1b, 0 8px 22px rgba(60, 40, 10, .38);
+    overflow: hidden;
+  }
+  .cl-lens svg { display: block; width: 100%; height: 100%; }
+  .cl-lens .led { animation: cl-blink .5s steps(2, start) infinite; }
+  .cl-lens .led:nth-of-type(2) { animation-delay: .17s; }
+  .cl-lens .led:nth-of-type(3) { animation-delay: .33s; }
+  @keyframes cl-blink { to { fill: #cfe8de; } }
+  .cl-seal {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: max-content;
+    padding: max(.9cqi, 3px) max(1.5cqi, 6px) max(1.1cqi, 4px);
+    border-radius: 1cqi .7cqi 1.3cqi .8cqi;
+    background: var(--red);
+    box-shadow: inset 0 0 0 .5cqi rgba(247, 240, 222, .9), inset 0 0 0 .9cqi var(--red), 0 2px 6px rgba(80, 20, 10, .3);
+    color: #f7f0de;
+    translate: -50% -50%;
+    rotate: -11deg;
+    line-height: 1;
+    opacity: 0;
+  }
+  .cl-seal.on { opacity: .95; }
+  .cl-seal .big { font: 900 clamp(28px, 11cqi, 84px)/1 'Noto Serif KR', serif; }
+  .cl-seal .small { display: block; margin-top: .5cqi; font: 700 clamp(10px, 2.1cqi, 16px)/1 'EB Garamond', serif; letter-spacing: .12em; text-align: center; white-space: nowrap; }
+
+  /* ---- Ledger ---- */
+  .sec-h {
+    display: flex;
+    align-items: center;
+    gap: .45em;
+    margin-bottom: .3em;
+    color: var(--red);
+    font-size: clamp(11px, 1.45cqmin, 14px);
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .lang-ko .sec-h { text-transform: none; letter-spacing: .12em; font-weight: 700; }
+  .sec-h::before { content: ""; width: .55em; height: .55em; background: var(--red); rotate: 45deg; flex: none; }
+  .sec-h .hz { font: 500 .95em/1 'Noto Serif KR', serif; letter-spacing: .1em; color: rgba(179, 38, 30, .7); }
+  .sec-h .l { display: none; }
+  /* Phones: section names sit at the start of their line instead of above it. */
+  .reading, .rules, .strays { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; align-items: start; }
+  .reading .sec-h, .rules .sec-h, .strays .sec-h { margin: .2em 0 0; }
+  .verdicts .sec-h { min-height: 30px; margin-bottom: 0; }
+  .lang-ko .reading .sec-h { margin-top: .35em; }
+  .reading .sec-h .t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .reading .sec-h .hz { font-size: 1.25em; color: var(--red); font-weight: 700; }
+  .reading .sec-h::before { display: none; }
+
+  .rooms { padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; border-top: 1px solid var(--rule); }
+  .room {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 6px;
+    min-height: clamp(25px, 4.4cqmin, 40px);
+    padding: 1px 4px;
+    border-bottom: 1px solid rgba(179, 38, 30, .2);
+    font-size: clamp(12.5px, 1.8cqmin, 17px);
+  }
+  .room.v0, .room.v1 { background: repeating-linear-gradient(-45deg, rgba(179, 38, 30, .13) 0 1.5px, transparent 1.5px 6px); }
+  .room.v1 { background: repeating-linear-gradient(-45deg, rgba(179, 38, 30, .08) 0 1px, transparent 1px 7px); }
+  .room .rn { font-weight: 600; min-width: 3.1em; }
+  .lang-ko .room .rn { font-weight: 700; min-width: 2.2em; }
+  .room .db { font-variant-numeric: lining-nums tabular-nums; text-align: right; white-space: nowrap; }
+  .room .db b { font-weight: 600; font-size: 1.08em; }
+  .room .db small { margin-left: .2em; font-size: .7em; color: var(--soft); letter-spacing: .04em; }
+  .room .vd { display: inline-flex; align-items: center; gap: .3em; min-width: 2.2em; justify-content: flex-end; white-space: nowrap; }
+  .room .glyph { font: 700 1.25em/1 'Noto Serif KR', serif; }
+  .room .word { font-size: .82em; font-style: italic; }
+  .room.v3 .vd, .room.v2 .vd { color: var(--jade-deep); }
+  .room.v1 .vd, .room.v0 .vd { color: var(--red); }
+  .room.v0 .db b, .room.v1 .db b { color: var(--red); }
+  .room .vd font-kku { color: var(--red); }
+  .room.v3 .vd font-kku, .room.v2 .vd font-kku { filter: hue-rotate(172deg) saturate(.5) brightness(.78); }
+  .room .nt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--red); }
+  .room .nt[hidden] { display: block; visibility: hidden; }
+  .room .nt.ok { color: var(--jade-deep); font-weight: 600; }
+  .room .nt-l, .room .nt-xs { display: none; }
+  .room .db small { display: none; }
+  .room .vd { grid-column: 4; }
+  .room.jitter .db b { color: #8a4b0f; }
+  .room .word { display: none; }
+  .sum {
+    display: flex;
+    align-items: center;
+    gap: .35em;
+    padding: 1px 4px;
+    font-size: clamp(12.5px, 1.8cqmin, 17px);
+    border-bottom: 1px solid rgba(179, 38, 30, .2);
+    visibility: hidden;
+  }
+  .sum.on { visibility: visible; }
+  .sum .sum-v { font-weight: 700; }
+  .sum .sum-v .hz { font-family: 'Noto Serif KR', serif; }
+  .sum.good .sum-v { color: var(--jade-deep); }
+  .sum.bad .sum-v { color: var(--red); }
+
+  .comment {
+    min-height: 2.64em;
+    text-wrap: pretty;   /* no lone last word ("node.") on the second line */
+    font-size: clamp(14px, 2.5cqmin, 22px);
+    line-height: 1.32;
+    font-style: italic;
+    font-weight: 500;
+    color: #1d1b19;
+  }
+  .lang-ko .comment { font-style: normal; min-height: 2.9em; line-height: 1; }
+  .comment .kk-ink { color: #1d1b19; }
+
+  .rules .list { position: relative; padding: 0; list-style: none; counter-reset: rule; }
+  .rules .item { counter-increment: rule; display: grid; grid-template-columns: 1.5em 1fr; font-size: clamp(11.5px, 1.6cqmin, 15px); line-height: 1.3; }
+  .rules .item::before { content: counter(rule, cjk-ideographic); font-family: 'Noto Serif KR', serif; color: var(--red); font-weight: 700; }
+  .rules-band { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 6px; }
+  .rules .next { display: grid; place-items: center; width: 28px; height: 26px; border: 1px solid var(--rule); border-radius: 3px; background: transparent; color: var(--red); cursor: pointer; font-size: 15px; line-height: 1; }
+  /* Narrow: the seven rules are a one-line band that turns over. */
+  .rules .item { display: none; }
+  .rules .item.on { display: grid; }
+  .rules .list { height: 2.6em; overflow: hidden; font-size: clamp(11.5px, 1.6cqmin, 15px); }
+  .rules .item { font-size: inherit; }
+
+  .strays .list { padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 0 .9em; font-size: clamp(11px, 1.45cqmin, 14px); line-height: 1.35; color: var(--ink-2); }
+  .strays .ssid { font-style: italic; }
+  .lang-ko .strays .ssid { font-style: normal; }
+  .strays .meta { margin-left: .3em; color: var(--soft); font-variant-numeric: lining-nums; white-space: nowrap; }
+  .strays .list > .stray:nth-child(n+4) { display: none; }
+  /* Opened on its own, a phone gets the kit's "? :)" (74 px) over the end of this last line. */
+  @media (max-width: 600px) { html:not(.embedded) .strays { padding-right: 84px; } }
+  .strays .needle { display: none; }
+  /* Narrow: the hint is a short line beside the remedy button, in the heading row of the rooms. */
+  .actions { display: flex; align-items: center; gap: 8px; }
+  .hint { max-width: 9.5em; font-size: 11.5px; line-height: 1.2; color: var(--ink-2); font-style: italic; text-align: right; }
+  .lang-ko .hint { font-style: normal; }
+  .hint .l { display: none; }
+  .mesh-btn {
+    position: relative;
+    padding: .36em .75em .4em;
+    border: 1.5px solid var(--red);
+    border-radius: 4px;
+    background: rgba(255, 251, 240, .7);
+    color: var(--red);
+    font-size: clamp(12.5px, 1.65cqmin, 16px);
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 1px 0 rgba(179, 38, 30, .25);
+  }
+  .mesh-btn[aria-pressed="true"] { background: var(--red); color: #fbf3e2; }
+  .mesh-btn:hover { background: rgba(179, 38, 30, .08); }
+  .mesh-btn[aria-pressed="true"]:hover { background: #9c2018; }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  /* ---- Wide: plan on the left with its reading underneath; ledger on the right ---- */
+  @container page (min-width: 700px) and (min-aspect-ratio: 21/20) {
+    .sheet {
+      grid-template-columns: minmax(0, 1fr) clamp(270px, 29.5cqw, 360px);
+      grid-template-rows: minmax(0, 1fr);
+      grid-template-areas: "main side";
+      column-gap: clamp(16px, 2.4cqw, 34px);
+      padding: calc(var(--fr) + 2.2cqh) calc(var(--fr) + 1.9cqw) calc(var(--fr) + 1.8cqh);
+    }
+    .sec-h .l { display: inline; }
+    .sec-h .s { display: none; }
+    .rules, .strays { display: block; }
+    .verdicts .sec-h { min-height: 0; margin-bottom: .3em; }
+    .foot { display: flex; }
+    .strays, .actions { grid-area: auto; }
+    .col-main { grid-area: main; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; row-gap: 1.6cqh; min-height: 0; }
+    .col-side { grid-area: side; display: flex; flex-direction: column; justify-content: space-between; gap: 1.4cqh; min-height: 0; padding-top: .4cqh; }
+    .head, .planwrap, .verdicts, .reading, .rules, .foot { grid-area: auto; }
+    .rooms { grid-template-columns: 1fr; }
+    .room { grid-template-columns: 4.6em 1fr 5.6em; padding: 0 6px; }
+    .lang-ko .room { grid-template-columns: 3.2em 1fr 4.2em; }
+    .room .vd { grid-column: 3; grid-row: 1; }
+    .room .db small { display: inline; }
+    .room .nt { grid-column: 1 / -1; grid-row: 2; margin-top: -2px; font-size: .8em; text-align: right; line-height: 1.2; }
+    .room .nt[hidden] { display: none; }
+    .room .nt-l { display: inline; }
+    .room .nt-s { display: none; }
+    .room .word { display: inline; }
+    .lang-ko .room .word { display: none; }
+    .room .vd { justify-content: flex-start; }
+    .reading { display: grid; grid-template-columns: auto 1fr; column-gap: 1em; align-items: start; }
+    .reading .sec-h { margin-top: .55em; }
+    .reading .sec-h::before { display: block; }
+    .reading .sec-h .t { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
+    .reading .sec-h .hz { font-size: .95em; color: rgba(179, 38, 30, .7); font-weight: 500; }
+    .lang-ko .reading .sec-h { margin-top: .7em; }
+    .comment { min-height: 2.7em; font-size: clamp(16px, 2.3cqmin, 24px); }
+    .compass { left: -2.8%; top: -2%; width: 23%; }
+    .lang-ko .comment { min-height: 2.5em; }
+    .rules .list { height: auto; overflow: visible; }
+    .rules .item { display: grid; margin-top: .22em; }
+    .rules .next { display: none; }
+    .rules-band { grid-template-columns: 1fr; }
+    .foot { display: flex; flex-direction: column; align-items: stretch; gap: 1.4cqh; }
+    .strays .list { display: block; }
+    .strays .list > .stray:nth-child(n+4) { display: flex; }
+    .strays .stray { display: flex; justify-content: space-between; gap: .6em; padding: .06em 0; border-bottom: 1px dotted rgba(122, 108, 88, .35); }
+    .strays .needle { display: block; margin-top: .45em; font-size: clamp(11px, 1.4cqmin, 13.5px); color: var(--red); }
+    .actions { display: flex; flex-direction: column; align-items: flex-start; gap: .5em; justify-self: auto; align-self: auto; }
+    .mesh-btn { padding: .5em .95em .55em; }
+    .hint { max-width: none; font-size: clamp(11px, 1.4cqmin, 13.5px); line-height: 1.3; text-align: left; }
+    .hint .l { display: inline; }
+    .hint .s { display: none; }
+    /* Standalone: lift the remedy button clear of the nav pill in the corner. */
+    html:not(.embedded) .col-side { padding-bottom: 36px; }
+    .lang-ko .hint { font-style: normal; }
+  }
+  /* Wide but short (e.g. 1100 × 620): tighten the ledger. */
+  @container page (min-width: 700px) and (min-aspect-ratio: 21/20) and (max-height: 700px) {
+    .room { min-height: 26px; font-size: 13.5px; }
+    .rules .item { font-size: 12px; line-height: 1.22; margin-top: .1em; }
+    .strays .list { font-size: 12px; }
+    .strays .needle { display: none; }
+    .sub { font-size: 12.5px; }
+    .title { font-size: clamp(25px, 5cqmin, 40px); }
+  }
+  /* Very short phones: the subtitle goes to one line and the comment keeps two. */
+  @container page (max-width: 699px) and (max-height: 560px) {
+    .sub { font-size: 11px; }
+    .room { min-height: 23px; }
+    .comment { font-size: 14px; min-height: 2.64em; }
+  }
+  /* The smallest stage (328 × 288 on a 360 × 520 phone): without this the plan got no height at all
+     and its slips and seal floated over the ledger. The rules and the neighbours make room. */
+  @container page (max-width: 699px) and (max-height: 340px) {
+    .rules, .strays { display: none; }
+  }
+  /* The 328 px stage (360 × 640 and 360 × 520 phones on the home page): the study's note had only
+     25–30 px and showed as "froz…" / "화…" / "잘 …", the kitchen's as "→ jitt…". The notes get
+     10 px and, where that is still too long, a shorter word (callNote[2], jitterXs). */
+  @container page (max-width: 340px) {
+    .room { column-gap: 4px; }
+    .room .nt { font-size: 10px; }
+    .room .nt-s { display: none; }
+    .room .nt-xs { display: inline; }
+    .lang-ko .room .rn { min-width: 2em; }
+  }
+
+  /* Before the show starts, the plan is blank paper. */
+  .unseen { opacity: 0 !important; }
+</style>
+</head>
+<body>
+<svg class="fibres" aria-hidden="true"></svg>
+<div class="frame" aria-hidden="true"></div>
+
+<main class="sheet">
+  <div class="col-main">
+    <header class="head">
+      <div>
+        <h1 class="title">
+          <span data-lang="en">Wi-Fi Feng Shui</span>
+          <span data-lang="ko"><font-kku class="kk-ink" font="butgeul" size="clamp(26px, 5.6cqmin, 52px)">공유기 풍수 감정서</font-kku></span>
+        </h1>
+        <p class="sub">
+          <span data-lang="en">A geomantic survey of your home's wireless energy · <span class="client">Client: the study keeps dropping video calls</span></span>
+          <span data-lang="ko">가택 무선 기운 감정 · <span class="client">의뢰인: 서재에서 화상 회의가 끊기는 집</span></span>
+        </p>
+      </div>
+      <div class="chop" aria-hidden="true">風水</div>
+    </header>
+
+    <div class="planwrap">
+      <div class="plan" data-dense="hi">
+        <svg class="map" viewBox="-0.75 -0.85 13.05 9.2" aria-hidden="true">
+          <defs>
+            <filter id="bleed" x="-2%" y="-2%" width="104%" height="104%">
+              <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="11" result="n"/>
+              <feDisplacementMap in="SourceGraphic" in2="n" scale=".22" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+            <pattern id="hatch-bad" width=".22" height=".22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2=".22" stroke="#b3261e" stroke-width=".035"/>
+            </pattern>
+            <pattern id="hatch-mixed" width=".34" height=".34" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2=".34" stroke="#b3261e" stroke-width=".022"/>
+            </pattern>
+          </defs>
+          <g class="hatches"></g>
+          <image class="wash" x="0" y="0" width="12" height="8" preserveAspectRatio="none" filter="url(#bleed)"/>
+          <g class="isos"></g>
+          <g class="sparks"></g>
+        </svg>
+        <svg class="walls" viewBox="-0.75 -0.85 13.05 9.2" aria-hidden="true"></svg>
+        <div class="compass" aria-hidden="true"></div>
+        <p class="tag installer"></p>
+        <p class="tag micro"></p>
+        <p class="tag call"><span class="dot"></span><span class="txt"></span></p>
+        <div class="bibo" aria-hidden="true"></div>
+        <svg class="layer-top" viewBox="-0.75 -0.85 13.05 9.2" role="group"></svg>
+        <div class="closeup" aria-hidden="true">
+          <svg class="cl-line" viewBox="-0.75 -0.85 13.05 9.2"><rect class="mark" x="11.3" y="0.2" width="0.68" height="2.4" rx=".12"/><path class="lead"/></svg>
+          <div class="cl-lens">
+            <svg viewBox="-82 -82 164 164">
+              <defs>
+                <clipPath id="cl-clip"><circle r="100"/></clipPath>
+                <linearGradient id="cl-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6eef0"/><stop offset=".5" stop-color="#b7c8ce"/><stop offset="1" stop-color="#eaf1f2"/></linearGradient>
+                <pattern id="cl-stripe" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="3" fill="#b3261e"/><rect y="3" width="6" height="3" fill="#f7f0de"/></pattern>
+              </defs>
+              <g clip-path="url(#cl-clip)" stroke-linejoin="round" stroke-linecap="round">
+                <rect x="-100" y="-100" width="200" height="200" fill="#efe5cf"/>
+                <rect x="-100" y="80" width="200" height="20" fill="#e0d2b4"/>
+                <path d="M-100 80 H100 M-70 80 L-80 100 M-30 80 L-34 100 M10 80 V100 M50 80 L54 100" stroke="#5a5145" stroke-width="1"/>
+                <rect x="-62" y="-76" width="124" height="156" fill="#d9c49c" stroke="#1f1d1b" stroke-width="2.6"/>
+                <rect x="-55" y="-69" width="110" height="143" fill="#f3e9d1"/>
+                <!-- the line from the telecom box, up through the shelves to the router -->
+                <path d="M32 47 C34 28 26 18 12 -6" fill="none" stroke="#1f1d1b" stroke-width="1.8"/>
+                <g fill="#c4a571" stroke="#1f1d1b" stroke-width="1.1"><rect x="-55" y="-35" width="110" height="4"/><rect x="-55" y="2" width="110" height="4"/><rect x="-55" y="39" width="110" height="4"/></g>
+                <g stroke="#1f1d1b" stroke-width="1.4">
+                  <!-- top: heels and sneakers -->
+                  <path transform="translate(-40 -35)" d="M-13 -14 Q-11 -6 -2 -5 Q8 -4 12 -1 L12 0 L1 0 Q-5 -2 -9 -4 L-10 0 L-12 0 Z" fill="#b3261e"/>
+                  <path transform="translate(-26 -35)" d="M-13 -14 Q-11 -6 -2 -5 Q8 -4 12 -1 L12 0 L1 0 Q-5 -2 -9 -4 L-10 0 L-12 0 Z" fill="#c8352b"/>
+                  <g transform="translate(18 -35)"><path d="M-14 0 V-7 Q-14 -12 -9 -12 L-2 -12 Q2 -7 8 -6 Q14 -5 14 -1 V0 Z" fill="#fbf7ec"/><path d="M-14 0 H14" stroke-width="3"/><path d="M-6 -10 L2 -5" stroke="#4f8a7a" stroke-width="2"/></g>
+                  <g transform="translate(37 -35)"><path d="M-14 0 V-7 Q-14 -12 -9 -12 L-2 -12 Q2 -7 8 -6 Q14 -5 14 -1 V0 Z" fill="#fbf7ec"/><path d="M-14 0 H14" stroke-width="3"/><path d="M-6 -10 L2 -5" stroke="#4f8a7a" stroke-width="2"/></g>
+                  <!-- middle: a boot leaning on the router, the router, a sneaker squeezed in -->
+                  <path transform="translate(-43 2) rotate(8)" d="M-9 0 V-30 H5 V-12 Q15 -10 16 -3 V0 Z" fill="#8a5a3b"/>
+                  <path d="M-21 -11 V-24 Q-21 -28 -25 -28 H-33" fill="none" stroke-width="2.6"/>
+                  <path d="M13 -11 V-29" fill="none" stroke-width="2.6"/>
+                  <path d="M9 -31 H17 V-22 Q17 -18 21 -17 L26 -16 Q29 -13 25 -11 L16 -12 Q9 -13 9 -20 Z" fill="url(#cl-stripe)" stroke-width="1.2"/>
+                  <rect x="-27" y="-11" width="45" height="13" rx="3" fill="#fbf7ec" stroke-width="1.9"/>
+                  <path d="M-3 -6.5 H13 M-3 -3 H13" stroke="#6a6052" stroke-width="1"/>
+                  <circle class="led" cx="-20" cy="-4.5" r="2" fill="#4f8a7a" stroke="none"/><circle class="led" cx="-14" cy="-4.5" r="2" fill="#4f8a7a" stroke="none"/><circle class="led" cx="-8" cy="-4.5" r="2" fill="#4f8a7a" stroke="none"/>
+                  <g transform="translate(36 2) rotate(-6)"><path d="M-14 0 V-7 Q-14 -12 -9 -12 L-2 -12 Q2 -7 8 -6 Q14 -5 14 -1 V0 Z" fill="#2b2825"/><path d="M-14 0 H14" stroke="#fbf7ec" stroke-width="2"/></g>
+                  <!-- lower: slippers and loafers -->
+                  <g transform="translate(-34 39)"><path d="M-13 0 Q-14 -5 -6 -6 Q8 -8 13 -3 Q14 0 10 0 Z" fill="#e9a6a0"/><path d="M-2 -6 Q4 -12 9 -4" fill="none" stroke-width="2.2"/></g>
+                  <g transform="translate(-20 39)"><path d="M-13 0 Q-14 -5 -6 -6 Q8 -8 13 -3 Q14 0 10 0 Z" fill="#f0b8b2"/><path d="M-2 -6 Q4 -12 9 -4" fill="none" stroke-width="2.2"/></g>
+                  <path transform="translate(22 39)" d="M-13 0 V-5 Q-12 -9 -4 -8 Q6 -9 12 -4 Q14 -1 12 0 Z" fill="#5a3a26"/>
+                  <path transform="translate(39 39)" d="M-13 0 V-5 Q-12 -9 -4 -8 Q6 -9 12 -4 Q14 -1 12 0 Z" fill="#6b4630"/>
+                  <!-- bottom: rain boots and the telecom box the router was plugged into -->
+                  <path transform="translate(-42 74)" d="M-9 0 V-26 H5 V-10 Q14 -8 15 -3 V0 Z" fill="#e8b64a"/>
+                  <path transform="translate(-27 74)" d="M-9 0 V-26 H5 V-10 Q14 -8 15 -3 V0 Z" fill="#f0c45c"/>
+                  <rect x="6" y="47" width="44" height="26" rx="2" fill="#c9c6bc" stroke-width="1.6"/>
+                  <path d="M12 54 H44 M12 59 H44 M12 64 H44" stroke="#6a6052" stroke-width="1"/>
+                </g>
+                <!-- the cabinet doors: closed at first (a mirror on the right one), then swung open -->
+                <g class="cl-door l"><rect x="-62" y="-76" width="62" height="156" fill="#d9c49c" stroke="#1f1d1b" stroke-width="2.6"/><rect x="-10" y="-6" width="4" height="18" rx="2" fill="#1f1d1b"/></g>
+                <g class="cl-door r"><rect x="0" y="-76" width="62" height="156" fill="#d9c49c" stroke="#1f1d1b" stroke-width="2.6"/><rect x="9" y="-67" width="45" height="138" rx="2" fill="url(#cl-glass)" stroke="#7e98a3" stroke-width="1.4"/><path d="M17 -48 l11 -11 M17 -32 l20 -20 M30 44 l14 -14" stroke="#fff" stroke-width="1.8" opacity=".85"/><rect x="5" y="-6" width="4" height="18" rx="2" fill="#1f1d1b"/></g>
+              </g>
+            </svg>
+          </div>
+          <div class="cl-seal"></div>
+        </div>
+        <div class="seal" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <section class="reading">
+      <h2 class="sec-h"><span class="t"><span data-lang="en">Reading</span><span data-lang="ko">평</span></span> <span class="hz" aria-hidden="true">評</span></h2>
+      <p class="comment"></p>
+    </section>
+  </div>
+
+  <div class="col-side">
+    <section class="verdicts" aria-live="polite">
+      <h2 class="sec-h"><span data-lang="en"><span class="l">Room by room</span><span class="s">Rooms</span></span><span data-lang="ko">방별 길흉</span> <span class="hz l" aria-hidden="true">吉凶</span></h2>
+      <ol class="rooms"></ol>
+    </section>
+
+    <section class="rules">
+      <h2 class="sec-h"><span data-lang="en"><span class="l">The seven rules</span><span class="s">Rules</span></span><span data-lang="ko"><span class="l">풍수 비결</span><span class="s">비결</span></span> <span class="hz l" aria-hidden="true">秘訣</span></h2>
+      <div class="rules-band">
+        <ol class="list"></ol>
+        <button class="next" type="button"></button>
+      </div>
+    </section>
+
+    <div class="foot">
+      <section class="strays">
+        <h2 class="sec-h"><span data-lang="en"><span class="l">Stray energies nearby</span><span class="s">Nearby</span></span><span data-lang="ko"><span class="l">주변의 잡기</span><span class="s">잡기</span></span> <span class="hz l" aria-hidden="true">雜氣</span></h2>
+        <ul class="list"></ul>
+        <p class="needle"></p>
+      </section>
+      <div class="actions">
+        <p class="hint"><span class="l"></span><span class="s"></span></p>
+        <button class="mesh-btn" type="button" aria-pressed="false"></button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const $ = (s, r = document) => r.querySelector(s);
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, parent) => {
+    const n = document.createElementNS(NS, tag);
+    if (attrs) for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.append(n);
+    return n;
+  };
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const ease = (k) => (k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+  const easeOut = (k) => 1 - Math.pow(1 - k, 3);
+  // A fixed little random generator, so the paper and the ink look the same on every visit.
+  const rng = (seed) => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+
+  /* ================= Words ================= */
+  const L = TTY.t({
+    en: {
+      rooms: { living: 'Living', bedroom: 'Bedroom', study: 'Study', kitchen: 'Kitchen', bath: 'Bath', entry: 'Entry' },
+      word: ['inauspicious', 'mixed', 'auspicious', 'excellent'],
+      glyph: ['凶', '小凶', '吉', '大吉'],
+      sumLabel: 'Verdict:',
+      sumWord: ['inauspicious', 'mixed', 'auspicious', 'excellent'],
+      comments: {
+        entry: 'The entrance is where energy enters, not where it stays.',
+        water: 'Water in front: good fortune for people, bad reception for routers. Water drinks 2.4 GHz.',
+        high: 'High and central: the spot.',
+        highStudy: 'High and central: the spot. Except for the study.',
+        highBut: (rooms) => `High and central: the spot. Except for the ${rooms.join(' and the ')}.`,
+        microwave: 'Kitchen fire stirs the 2.4 GHz energy.',
+        mesh: 'Where the land was weak, the ancients raised a pagoda. We buy a mesh node.',
+        metal: 'Metal turns energy away. Behind a fridge or a mirror is bad luck.',
+        wall: 'Against an outside wall, half the energy leaks outdoors. Bring it in.',
+        center: 'Central is good. Now lift it up.',
+        far: 'Too far from the middle. The far rooms go hungry.',
+        numbers: 'By the book, bad luck. By the numbers, fine. I’ll go with the numbers.',
+      },
+      roomNoun: { living: 'living room', bedroom: 'bedroom', study: 'study', kitchen: 'kitchen', bath: 'bathroom' },
+      installer: 'Where the installer left it',
+      // The laptop in the study: what the call sounds like at each level of the study's energy.
+      call: { hear: 'Can you hear me…?', frozen: 'You’re frozen.', on: 'on a video call', back: 'Oh, you’re back!' },
+      // The study's note in the ledger, [long, short, and for the 328 px stage if shorter still].
+      callNote: { hear: ['calls drop', 'drops'], frozen: ['video frozen', 'frozen'], back: ['call’s back', 'back'] },
+      jitter: '→ jittery',
+      jitterXs: 'jittery',
+      running: 'Running',
+      ding: 'Ding!',
+      rules: [
+        'Place it high and central; energy spreads in every direction.',
+        'Keep away from water and metal: fish tanks, fridges, the back of mirrors.',
+        'One concrete wall cuts the energy to under a tenth (over 10 dB).',
+        '2.4 GHz travels far but is crowded; 5 GHz is fast but weak through walls.',
+        'On 2.4 GHz, channels 1, 6 and 11 never collide.',
+        'Stand one antenna up and lay one down.',
+        'Where it falls short, build it up: mesh or a repeater.',
+      ],
+      strays: [['Pretty Fly for a WiFi', 1, -62], ['FBI Surveillance Van 3', 6, -66], ['Not the Neighbors', 6, -71], ['Password Is on the Router', 1, -78], ['Free WiFi (it isn’t)', 36, -80]],
+      ch: 'ch',
+      needle: 'Compass needle: channel 11, the quiet road.',
+      raise: 'Raise a remedy (mesh)',
+      take: 'Take it down',
+      hint: ['Drag the router to try another spot.', 'Drag the router'],
+      nextRule: 'Next rule',
+      router: 'Router',
+      mesh: 'Mesh',
+      routerAria: 'Router, move with the arrow keys',
+      meshAria: 'Mesh, move with the arrow keys',
+      planAria: 'Floor plan: study, bath, kitchen, entry, bedroom and living room, washed in ink by signal strength',
+      tank: 'fish tank', shelf: 'bookshelf', fridge: 'fridge', mirror: 'mirror', vanity: 'vanity', sofa: 'sofa',
+      dimW: '12,000', dimH: '8,000',
+    },
+    ko: {
+      rooms: { living: '거실', bedroom: '안방', study: '서재', kitchen: '주방', bath: '욕실', entry: '현관' },
+      word: ['흉', '소흉', '길', '대길'],
+      glyph: ['凶', '小凶', '吉', '大吉'],
+      sumLabel: '감정 결과:',
+      sumWord: ['흉', '소흉', '길', '대길'],
+      comments: {
+        entry: '현관은 기가 들어오는 곳이지 머무는 곳이 아니다.',
+        water: '배산임수는 사람에겐 명당, 공유기에겐 흉당. 물은 2.4GHz를 머금는다.',
+        high: '높고 한가운데다. 명당이다.',
+        highStudy: '높고 한가운데다. 명당이다. 서재만 빼고.',
+        highBut: (rooms) => `높고 한가운데다. 명당이다. ${rooms.join('·')}만 빼고.`,
+        microwave: '부엌 화기(火氣)가 2.4GHz를 흔든다.',
+        mesh: '옛사람은 기운이 모자란 땅에 탑을 세웠다. 우리는 메시를 산다.',
+        metal: '쇠는 기를 튕겨 낸다. 냉장고·거울 뒤는 흉.',
+        wall: '바깥벽에 붙이면 기의 절반이 집 밖으로 샌다. 안으로.',
+        center: '가운데는 좋다. 이제 높이 올려라.',
+        far: '가운데에서 멀다. 먼 방은 기가 모자란다.',
+        numbers: '비결로는 흉한데 숫자로는 길하다. 숫자를 따른다.',
+      },
+      roomNoun: { living: '거실', bedroom: '안방', study: '서재', kitchen: '주방', bath: '욕실' },
+      installer: '설치 기사님이 두고 간 자리',
+      call: { hear: '제 말 들리세요…?', frozen: '화면이 멈췄어요', on: '화상 회의 중', back: '잘 들려요!' },
+      callNote: { hear: ['화상 회의 끊김', '회의 끊김'], frozen: ['화면 멈춤', '화면 멈춤', '멈춤'], back: ['다시 잘 들림', '잘 들림'] },
+      jitter: '→ 흔들림',
+      jitterXs: '→ 흔들림',
+      running: '가동 중',
+      ding: '띵!',
+      rules: [
+        '높고 가운데에 둔다. 기는 사방으로 퍼진다.',
+        '물과 쇠를 멀리한다. 어항·냉장고·거울 뒤는 흉.',
+        '콘크리트 벽 하나에 기운이 열에 하나 밑으로 꺾인다(10dB 넘게).',
+        '2.4GHz는 멀리 가나 붐비고, 5GHz는 빠르나 벽에 약하다.',
+        '2.4GHz는 1·6·11 세 길이 서로 부딪히지 않는다.',
+        '안테나는 하나 세우고 하나 눕힌다.',
+        '모자란 곳은 비보한다(메시·중계기).',
+      ],
+      strays: [['옆집아님_2G', 1, -62], ['비번은공유기뒷면', 6, -66], ['5층_공유기_만지지마', 6, -71], ['FREE_WIFI_진짜무료아님', 1, -78], ['우리집아님_5G', 36, -80]],
+      ch: '',
+      needle: '패철 바늘: 11번 길(옆집이 안 쓰는 길).',
+      raise: '비보 세우기(메시)',
+      take: '비보 거두기',
+      hint: ['공유기를 끌어 자리를 옮겨 보세요.', '공유기를 끌어 옮겨 보세요'],
+      nextRule: '다음 비결',
+      router: '공유기',
+      mesh: '비보(메시)',
+      routerAria: '공유기, 화살표로 옮기기',
+      meshAria: '비보(메시), 화살표로 옮기기',
+      planAria: '평면도: 서재, 욕실, 주방, 현관, 안방, 거실. 신호 세기를 먹의 농담으로 칠함',
+      tank: '어항', shelf: '책장', fridge: '냉장고', mirror: '거울', vanity: '화장대', sofa: '소파',
+      dimW: '12,000', dimH: '8,000',
+    },
+  });
+  const minus = (n) => (n < 0 ? '−' + Math.abs(n) : String(n));
+
+  /* ================= The flat, in metres (12 × 8, north up) ================= */
+  // Walls: [x1, y1, x2, y2, kind]. ext = outer wall (never crossed: the map stops inside it),
+  // c = load-bearing concrete, p = partition. Door and window openings are simply left out.
+  const DRAW_WALLS = [
+    [0, 0, 0.7, 0, 'ext'], [2.7, 0, 5.9, 0, 'ext'], [7.0, 0, 9.9, 0, 'ext'], [10.9, 0, 12, 0, 'ext'],
+    [0, 8, 0.6, 8, 'ext'], [3.9, 8, 5.0, 8, 'ext'], [11.5, 8, 12, 8, 'ext'],
+    [0, 0, 0, 8, 'ext'], [12, 0, 12, 8, 'ext'],
+    [3.4, 0, 3.4, 2.65, 'p'],          // study | bath
+    [0, 3.4, 3.4, 3.4, 'c'],           // study | bedroom
+    [3.4, 2.6, 4.3, 2.6, 'p'],         // bath | hall (bath door 4.3–5.1)
+    [5.1, 2.6, 5.4, 2.6, 'p'],
+    [5.4, 0, 5.4, 3.4, 'c'],           // bath and hall | kitchen
+    [3.4, 3.35, 3.4, 3.4, 'c'],
+    [3.4, 3.4, 4.6, 3.4, 'c'],         // hall | bedroom
+    [4.6, 3.4, 4.6, 3.45, 'c'],
+    [4.6, 4.25, 4.6, 8, 'c'],          // bedroom | living (bedroom door 3.45–4.25)
+    [5.4, 3.4, 7.5, 3.4, 'c'],         // kitchen | living: the bookshelf wall
+    [9.4, 0, 9.4, 2.6, 'c'],           // kitchen | entry
+    [9.4, 2.6, 9.5, 2.6, 'c'],
+    [10.4, 2.6, 12, 2.6, 'c'],         // entry | living (sliding middle door 9.5–10.4)
+  ];
+  const WALL_DB = { c: 12, p: 4 };
+  const WALLS = DRAW_WALLS.filter((w) => w[4] !== 'ext');
+  // Things in the way: [x1, y1, x2, y2, dB].
+  const OBJ = {
+    tank: [5.35, 7.1, 7.05, 7.6, 10],
+    fridge: [8.62, 0.43, 9.34, 1.21, 15],
+    mirror: [11.34, 0.3, 11.42, 2.5, 6],      // on the shoe cabinet's door
+    vanity: [4.14, 4.4, 4.54, 5.4, 6],        // the bedroom's dressing table, mirror on its back
+    shelf: [5.5, 3.44, 6.9, 3.8, 3],
+  };
+  const SHELF_BONUS = 3;  // on top of the bookshelf: above the furniture
+  // Each room is judged at one seat (a 穴, where the energy should gather).
+  const ROOMS = [
+    { id: 'living', seat: [10.4, 5.35], poly: [[4.6, 3.4], [9.4, 3.4], [9.4, 2.6], [12, 2.6], [12, 8], [4.6, 8]], label: [8.3, 6.15] },
+    { id: 'bedroom', seat: [0.8, 6.33], poly: [[0, 3.4], [4.6, 3.4], [4.6, 8], [0, 8]], label: [2.3, 4.55] },
+    { id: 'study', seat: [2.76, 0.45], poly: [[0, 0], [3.4, 0], [3.4, 3.4], [0, 3.4]], label: [1.45, 2.45] },
+    { id: 'kitchen', seat: [8.4, 1.0], poly: [[5.4, 0], [9.4, 0], [9.4, 3.4], [5.4, 3.4]], label: [7.55, 2.45] },
+    { id: 'bath', seat: [5.1, 1.68], poly: [[3.4, 0], [5.4, 0], [5.4, 2.6], [3.4, 2.6]], label: [4.25, 1.15] },
+  ];
+  const ENTRY = [9.4, 0, 12, 2.6];
+  const SPOT = { closet: { x: 11.7, y: 1.66 }, tank: { x: 6.2, y: 7.8 }, shelf: { x: 6.2, y: 3.62 }, mesh: { x: 3.6, y: 3.0 } };
+  const MICROWAVE = { x: 5.81, y: 1.96 };
+  const CENTER = { x: 6, y: 4 };
+  const VB = { x: -0.75, y: -0.85, w: 13.05, h: 9.2 };
+
+  /* ================= Signal model ================= */
+  // RSSI = −30 dBm at 1 m, −10·n·log10(d) with n = 2.2, minus every wall and object the
+  // straight line from the router crosses. Mesh: the better of the two.
+  const N = 2.2;
+  const side = (ax, ay, bx, by, px, py) => (bx - ax) * (py - ay) - (by - ay) * (px - ax);
+  const crosses = (ax, ay, bx, by, w) =>
+    side(ax, ay, bx, by, w[0], w[1]) * side(ax, ay, bx, by, w[2], w[3]) < 0 &&
+    side(w[0], w[1], w[2], w[3], ax, ay) * side(w[0], w[1], w[2], w[3], bx, by) < 0;
+  function hitsBox(ax, ay, bx, by, o) {
+    let t0 = 0, t1 = 1;
+    const dx = bx - ax, dy = by - ay;
+    const p = [-dx, dx, -dy, dy], q = [ax - o[0], o[2] - ax, ay - o[1], o[3] - ay];
+    for (let i = 0; i < 4; i++) {
+      if (p[i] === 0) { if (q[i] < 0) return false; continue; }
+      const r = q[i] / p[i];
+      if (p[i] < 0) { if (r > t1) return false; if (r > t0) t0 = r; } else { if (r < t0) return false; if (r < t1) t1 = r; }
+    }
+    return t1 > t0;
+  }
+  const nearWall = (x, y, r, walls = DRAW_WALLS) => walls.some(([x1, y1, x2, y2]) => {
+    const vx = x2 - x1, vy = y2 - y1;
+    const k = clamp(((x - x1) * vx + (y - y1) * vy) / (vx * vx + vy * vy || 1), 0, 1);
+    return Math.hypot(x - (x1 + vx * k), y - (y1 + vy * k)) < r;
+  });
+  const inBox = (x, y, o, pad = 0) => x >= o[0] - pad && x <= o[2] + pad && y >= o[1] - pad && y <= o[3] + pad;
+  const OBJS = Object.values(OBJ);
+  function rssi(src, x, y) {
+    const d = Math.max(1, Math.hypot(x - src.x, y - src.y));
+    let v = -30 - 10 * N * Math.log10(d);
+    for (const w of WALLS) if (crosses(src.x, src.y, x, y, w)) v -= WALL_DB[w[4]];
+    for (const o of OBJS) if (!inBox(src.x, src.y, o) && hitsBox(src.x, src.y, x, y, o)) v -= o[4];
+    if (inBox(src.x, src.y, OBJ.shelf)) v += SHELF_BONUS;
+    return v;
+  }
+  const level = (v) => (v >= -50 ? 3 : v >= -67 ? 2 : v >= -75 ? 1 : 0);
+
+  // The map: a 60 × 40 grid of cells, 20 cm each.
+  const NX = 60, NY = 40, CELL = 0.2;
+  const target = new Float32Array(NX * NY).fill(-120);
+  const shown = new Float32Array(NX * NY).fill(-120);
+  const before = new Float32Array(NX * NY).fill(-120);
+  const sources = () => (state.mesh.on ? [state.router, state.mesh] : [state.router]);
+  function computeTarget() {
+    const src = sources();
+    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+      const x = (i + .5) * CELL, y = (j + .5) * CELL;
+      let v = -120;
+      for (const s of src) v = Math.max(v, rssi(s, x, y));
+      target[j * NX + i] = v;
+    }
+  }
+  function roomValues() {
+    const src = sources();
+    const out = {};
+    for (const r of ROOMS) out[r.id] = Math.round(Math.max(...src.map((s) => rssi(s, r.seat[0], r.seat[1]))));
+    return out;
+  }
+
+  /* ================= Paper ================= */
+  (() => {
+    const fib = $('.fibres');
+    const r = rng(1013);
+    const w = innerWidth, h = innerHeight;
+    fib.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    fib.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    let d = '';
+    for (let i = 0; i < Math.round(w * h / 9000); i++) {
+      const x = r() * w, y = r() * h, a = r() * Math.PI * 2, l = 14 + r() * 50, b = (r() - .5) * 18;
+      const ex = x + Math.cos(a) * l, ey = y + Math.sin(a) * l;
+      d += `<path stroke-width="${(.4 + r() * .7).toFixed(2)}" opacity="${(.12 + r() * .22).toFixed(2)}" d="M${x.toFixed(1)} ${y.toFixed(1)} Q${((x + ex) / 2 + b).toFixed(1)} ${((y + ey) / 2 - b).toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}"/>`;
+    }
+    fib.innerHTML = d;
+  })();
+
+  /* ================= Drawing the plan ================= */
+  const plan = $('.plan');
+  const mapSvg = $('.map');
+  const wallSvg = $('.walls');
+  const top = $('.layer-top');
+  top.setAttribute('aria-label', L.planAria);
+  const strokes = [];   // drawn with the brush at the start
+  const pieces = [];    // furniture and labels, faded in after the walls
+
+  const g = (cls, parent = wallSvg) => el('g', cls ? { class: cls } : null, parent);
+  const gWalls = g('walls-g');
+  const gWin = g('win-g');
+  const gFurn = g('furn-g');
+  const gLbl = g('lbl-g');
+  const gDim = g('dim-g');
+
+  // Windows in the outer wall: three thin lines across the opening.
+  [[0.7, 0, 2.7, 0], [5.9, 0, 7.0, 0], [0.6, 8, 3.9, 8], [5.0, 8, 11.5, 8]].forEach(([x1, y1, x2]) => {
+    for (const dy of [-.1, 0, .1]) strokes.push(el('line', { class: 'win', x1, y1: y1 + dy, x2, y2: y1 + dy, pathLength: 1 }, gWin));
+  });
+  DRAW_WALLS.forEach(([x1, y1, x2, y2, kind]) => {
+    strokes.push(el('line', { class: `w w-${kind}`, x1, y1, x2, y2, pathLength: 1 }, gWalls));
+  });
+  // Doors: leaf and swing.
+  const door = (hx, hy, lx, ly, ax, ay, sweep) => {
+    strokes.push(el('line', { class: 'door', x1: hx, y1: hy, x2: lx, y2: ly, pathLength: 1 }, gWin));
+    const r = Math.hypot(lx - hx, ly - hy);
+    strokes.push(el('path', { class: 'door-arc', d: `M${ax} ${ay} A${r} ${r} 0 0 ${sweep} ${lx} ${ly}` }, gWin));
+  };
+  door(10.9, 0, 10.9, 0.95, 9.95, 0, 0);    // front door
+  door(3.4, 3.35, 2.7, 3.35, 3.4, 2.65, 0); // study
+  door(4.3, 2.6, 4.3, 1.8, 5.1, 2.6, 0);    // bath
+  door(4.6, 4.25, 3.8, 4.25, 4.6, 3.45, 0); // bedroom
+  // Sliding glass middle door at the entry.
+  strokes.push(el('rect', { class: 'door', x: 9.5, y: 2.53, width: .5, height: .05, pathLength: 1 }, gWin));
+  strokes.push(el('rect', { class: 'door', x: 9.88, y: 2.62, width: .5, height: .05, pathLength: 1 }, gWin));
+
+  // Dimension lines, as on any drawing.
+  const dim = (x1, y1, x2, y2, text, vertical) => {
+    strokes.push(el('line', { class: 'dim', x1, y1, x2, y2, pathLength: 1 }, gDim));
+    for (const [x, y] of [[x1, y1], [x2, y2]]) el('line', { class: 'dim', x1: x - .08, y1: y + .08, x2: x + .08, y2: y - .08 }, gDim);
+    const t = el('text', { class: 'dim-t', 'text-anchor': 'middle' }, gDim);
+    t.textContent = text;
+    if (vertical) { t.setAttribute('transform', `translate(${x1 - .14} ${(y1 + y2) / 2}) rotate(-90)`); }
+    else { t.setAttribute('x', (x1 + x2) / 2); t.setAttribute('y', y1 - .12); }
+    pieces.push(t);
+  };
+  dim(0, -0.55, 12, -0.55, L.dimW);
+  dim(-0.5, 0, -0.5, 8, L.dimH, true);
+
+  // Furniture. f = filled outline, fl = line only.
+  const F = (tag, attrs, cls = 'f', parent = gFurn) => { const n = el(tag, Object.assign({ class: cls }, attrs), parent); pieces.push(n); return n; };
+  // Entry: floor tiles, shoe cabinet with the mirror on its door and the telecom box inside.
+  const tiles = g('', gFurn); pieces.push(tiles);
+  for (let x = 9.6; x < 11.3; x += .4) el('line', { class: 'tile', x1: x, y1: 0.1, x2: x, y2: 2.5 }, tiles);
+  for (let y = 0.4; y < 2.5; y += .4) el('line', { class: 'tile', x1: 9.5, y1: y, x2: 11.3, y2: y }, tiles);
+  F('rect', { x: 11.42, y: 0.3, width: .46, height: 2.2 });
+  F('path', { d: 'M11.42 0.3 L11.88 1.4 L11.42 2.5 M11.88 0.3 L11.42 1.4 L11.88 2.5' }, 'fl');
+  F('rect', { x: 11.5, y: 1.42, width: .32, height: .48 }, 'f');
+  F('line', { x1: 11.38, y1: 0.36, x2: 11.38, y2: 2.44 }, 'mirror');
+  F('path', { d: 'M11.3 0.8 l.14 -.14 M11.3 1.05 l.14 -.14 M11.3 2.0 l.14 -.14' }, 'glint');
+  // Kitchen: counters, sink, hob, microwave, table and chairs, fridge.
+  F('path', { d: 'M5.5 0.1 H7.1 V0.7 H6.1 V2.62 H5.5 Z' });
+  F('rect', { x: 5.95, y: 0.18, width: .62, height: .4, rx: .07 });
+  F('circle', { cx: 5.8, cy: 0.98, r: .13 }); F('circle', { cx: 5.8, cy: 1.36, r: .1 });
+  const mw = g('mw', gFurn); pieces.push(mw);
+  el('rect', { class: 'mw-glow', x: 5.48, y: 1.66, width: .66, height: .6, rx: .1 }, mw);
+  el('rect', { class: 'f', x: 5.56, y: 1.74, width: .5, height: .44, rx: .03 }, mw);
+  el('rect', { class: 'fl', x: 5.61, y: 1.8, width: .3, height: .32 }, mw);
+  el('rect', { class: 'mw-disp', x: 5.93, y: 1.8, width: .1, height: .16 }, mw);
+  const mwText = el('text', { class: 'mw-text', x: 5.81, y: 1.96 }, mw);
+  F('rect', { x: 7.2, y: 0.1, width: 1.3, height: .74, rx: .04 });
+  F('rect', { x: 7.36, y: 0.94, width: .36, height: .34, rx: .06 }); F('rect', { x: 8.12, y: 0.94, width: .36, height: .34, rx: .06 });
+  F('rect', { x: 8.62, y: 0.43, width: .72, height: .78, rx: .03 });
+  F('path', { d: 'M8.66 0.82 H9.3 M8.7 0.6 V0.74 M8.7 0.9 V1.04' }, 'fl');
+  // Bath: tub, basin, toilet.
+  F('rect', { x: 3.5, y: 0.1, width: 1.82, height: .7, rx: .1 });
+  F('rect', { x: 3.6, y: 0.18, width: 1.62, height: .54, rx: .22 }, 'fl');
+  F('rect', { x: 3.5, y: 1.42, width: .44, height: .5, rx: .04 });
+  F('ellipse', { cx: 3.72, cy: 1.67, rx: .14, ry: .17 }, 'fl');
+  F('rect', { x: 5.12, y: 1.42, width: .2, height: .52, rx: .03 });
+  F('ellipse', { cx: 4.95, cy: 1.68, rx: .2, ry: .17 });
+  // Study: desk with laptop, chair, plant.
+  F('rect', { x: 1.8, y: 0.1, width: 1.5, height: .58 });
+  F('rect', { x: 2.5, y: 0.2, width: .52, height: .32, rx: .02 });
+  F('line', { x1: 2.52, y1: 0.22, x2: 3.0, y2: 0.22 }, 'fl');
+  F('circle', { cx: 2.62, cy: 1.05, r: .24 });
+  F('path', { d: 'M2.38 1.12 A.26 .26 0 0 0 2.86 1.12' }, 'fl');
+  F('circle', { cx: 0.42, cy: 2.98, r: .2 });
+  F('path', { d: 'M0.42 2.98 l-.16 -.12 M0.42 2.98 l.17 -.08 M0.42 2.98 l.02 .2 M0.42 2.98 l-.12 .14' }, 'fl');
+  // Bedroom: bed with pillows, nightstand, dressing table with stool.
+  F('rect', { x: 0.1, y: 5.45, width: 2.1, height: 1.7, rx: .05 });
+  F('rect', { x: 0.2, y: 5.58, width: .42, height: .62, rx: .1 }); F('rect', { x: 0.2, y: 6.4, width: .42, height: .62, rx: .1 });
+  F('path', { d: 'M1.0 5.45 V7.15 M1.0 5.6 L1.25 5.45' }, 'fl');
+  F('rect', { x: 0.1, y: 4.95, width: .4, height: .4 });
+  F('rect', { x: 4.14, y: 4.4, width: .4, height: 1.0 });
+  F('line', { x1: 4.49, y1: 4.48, x2: 4.49, y2: 5.32 }, 'mirror');
+  F('circle', { cx: 3.86, cy: 4.9, r: .16 });
+  // Living: sofa facing the TV, low table, rug, bookshelf, fish tank, plant.
+  F('ellipse', { cx: 8.1, cy: 5.7, rx: 1.35, ry: .9 }, 'fl').setAttribute('stroke-dasharray', '.05 .06');
+  F('path', { d: 'M9.9 4.3 H10.75 V6.4 H9.9 Z M10.12 4.48 V6.22 M9.9 4.48 H10.75 M9.9 6.22 H10.75 M10.12 5.35 H10.75' });
+  F('rect', { x: 10.95, y: 4.9, width: .36, height: .9, rx: .04 });
+  F('rect', { x: 11.5, y: 4.45, width: .38, height: 1.8 });
+  F('line', { x1: 11.84, y1: 4.7, x2: 11.84, y2: 6.0 }, 'fl').setAttribute('stroke-width', '.07');
+  F('rect', { x: 5.5, y: 3.44, width: 1.4, height: .36 });
+  const books = g('', gFurn); pieces.push(books);
+  { const r = rng(7); let x = 5.56; while (x < 6.84) { const w = .03 + r() * .05; el('line', { class: 'fl', x1: x, y1: 3.5, x2: x, y2: 3.5 + .12 + r() * .16 }, books); x += w + .02; } }
+  F('rect', { x: 5.35, y: 7.1, width: 1.7, height: .5, rx: .03 });
+  F('rect', { x: 5.4, y: 7.15, width: 1.6, height: .4 }, 'water');
+  F('path', { d: 'M5.45 7.27 q.1 -.05 .2 0 t.2 0 t.2 0 t.2 0 t.2 0 t.2 0 t.2 0 t.2 0' }, 'wave');
+  const fish = (x, y, s) => F('path', { d: `M${x} ${y} q${.07 * s} ${-.05} ${.14 * s} 0 q${-.07 * s} ${.05} ${-.14 * s} 0 Z M${x + .14 * s} ${y} l${.05 * s} -.035 v.07 Z` }, 'fish');
+  fish(5.7, 7.42, 1); fish(6.35, 7.36, -1); fish(6.62, 7.47, 1);
+  F('circle', { cx: 11.62, cy: 7.58, r: .22 });
+  F('path', { d: 'M11.62 7.58 l-.17 -.1 M11.62 7.58 l.15 -.13 M11.62 7.58 l.05 .19' }, 'fl');
+
+  // Room labels and the odd object label (hidden when the plan is small).
+  const lbl = (x, y, text, cls = 'lbl') => { const t = el('text', { class: cls, x, y }, gLbl); t.textContent = text; pieces.push(t); return t; };
+  ROOMS.forEach((r) => lbl(r.label[0], r.label[1], L.rooms[r.id]));
+  lbl(10.25, 2.12, L.rooms.entry);
+  lbl(6.2, 6.9, L.tank, 'lbl-obj');
+  lbl(6.2, 4.05, L.shelf, 'lbl-obj');
+  lbl(8.98, 1.45, L.fridge, 'lbl-obj');
+  lbl(10.32, 6.62, L.sofa, 'lbl-obj');
+  lbl(11.0, 2.2, L.mirror, 'lbl-obj');
+  lbl(3.55, 5.62, L.vanity, 'lbl-obj');
+
+  // The brush draws the load-bearing walls first, then partitions, windows and doors.
+  const order = (n) => (n.classList.contains('w-ext') ? 0 : n.classList.contains('w-c') ? 1 : n.classList.contains('w-p') ? 2 : 3);
+  strokes.sort((a, b) => order(a) - order(b));
+
+  /* ---- Top layer: seats, mesh, router, brush ---- */
+  const gSeats = el('g', { class: 'seats' }, top);
+  const seatV = {};
+  ROOMS.forEach((r) => {
+    const s = el('g', { transform: `translate(${r.seat[0]} ${r.seat[1]})` }, gSeats);
+    el('circle', { class: 'seat', r: .11 }, s);
+    el('circle', { class: 'seat-dot', r: .035 }, s);
+    const t = el('text', { class: 'seat-v', x: .17, y: -.1 }, s);
+    seatV[r.id] = t;
+    pieces.push(s);
+  });
+
+  function device(cls, name, aria) {
+    const d = el('g', { class: `dev ${cls}`, tabindex: '0', role: 'button', 'aria-label': aria }, top);
+    const pop = el('g', { class: 'pop' }, d);
+    const inner = el('g', { class: 'inner' }, pop);
+    const label = el('text', { class: 'name' }, pop);
+    label.textContent = name;
+    return { el: d, pop, inner, label };
+  }
+  // The router: one antenna standing (seen from above, a dot), one lying down.
+  const routerDev = device('router', L.router, L.routerAria);
+  let routerShade;
+  {
+    const i = routerDev.inner;
+    el('circle', { class: 'hit', r: .62 }, i);
+    el('circle', { class: 'ring', r: .58 }, i);
+    routerShade = el('ellipse', { class: 'shade', cx: .05, cy: .08, rx: .44, ry: .26 }, i);
+    el('path', { class: 'ant', d: 'M.3 -.18 L.78 -.46' }, i);
+    el('rect', { class: 'body', x: -.4, y: -.21, width: .8, height: .42, rx: .08 }, i);
+    el('path', { class: 'vent', d: 'M-.26 -.08 H.26 M-.26 -.01 H.26' }, i);
+    [-.2, -.06, .08].forEach((x) => el('circle', { class: 'led', cx: x, cy: .1, r: .035 }, i));
+    el('circle', { class: 'ant-up', cx: -.3, cy: -.13, r: .065 }, i);
+    el('circle', { cx: -.3, cy: -.13, r: .11, fill: 'none', stroke: '#1f1d1b', 'stroke-width': .02 }, i);
+  }
+  // The mesh: a small white puck.
+  const meshDev = device('mesh', L.mesh, L.meshAria);
+  {
+    const i = meshDev.inner;
+    el('circle', { class: 'hit', r: .55 }, i);
+    el('circle', { class: 'ring', r: .5 }, i);
+    el('ellipse', { class: 'shade', cx: .05, cy: .08, rx: .3, ry: .22 }, i);
+    el('circle', { class: 'body', r: .26 }, i);
+    el('circle', { class: 'fl', r: .16, fill: 'none', stroke: '#6a6052', 'stroke-width': .02 }, i);
+    el('circle', { class: 'led', r: .045 }, i);
+  }
+  // The appraiser's brush, tip at the origin, leaning to the right.
+  const brush = el('g', { class: 'brush', opacity: 0 }, top);
+  {
+    const b = el('g', { transform: 'rotate(32)' }, brush);
+    el('rect', { class: 'handle', x: -.075, y: -2.7, width: .15, height: 2.0, rx: .05 }, b);
+    el('path', { class: 'node', d: 'M-.075 -1.5 H.075 M-.075 -2.25 H.075' }, b);
+    el('rect', { class: 'ferrule', x: -.1, y: -.8, width: .2, height: .16, rx: .03 }, b);
+    el('path', { class: 'hair', d: 'M0 0 C-.04 -.14 -.11 -.32 -.1 -.64 L.1 -.64 C.11 -.32 .04 -.14 0 0 Z' }, b);
+  }
+
+  /* ---- HTML slips on the plan ---- */
+  const pctX = (x) => ((x - VB.x) / VB.w * 100).toFixed(3) + '%';
+  const pctY = (y) => ((y - VB.y) / VB.h * 100).toFixed(3) + '%';
+  const at = (node, x, y) => { node.style.left = pctX(x); node.style.top = pctY(y); };
+  const tagInstaller = $('.tag.installer');
+  const tagMicro = $('.tag.micro');
+  const tagCall = $('.tag.call');
+  const bibo = $('.bibo');
+  const seal = $('.seal');
+  tagInstaller.textContent = L.installer;
+  at(tagInstaller, 11.05, 1.32);
+  at(tagMicro, 6.18, 1.96);
+  at(tagCall, 2.0, 1.48);
+  const tagCallTxt = tagCall.querySelector('.txt');
+  tagCallTxt.textContent = L.call.on;
+  pieces.push(tagCall);
+  at(bibo, 4.45, 3.32);
+  at(seal, 7.2, 0.15);
+  if (ko) {
+    bibo.innerHTML = '<font-kku class="kk-ink" font="butgeul" size="clamp(15px, 4.6cqi, 40px)">비보</font-kku>';
+    seal.innerHTML = '<font-kku font="dojang" size="clamp(19px, 7.4cqi, 60px)">명당</font-kku>';
+  } else {
+    bibo.textContent = '裨補';
+    seal.innerHTML = '<span class="en-seal">明堂</span><span class="en-small">THE SPOT</span>';
+  }
+
+  /* ---- The opening close-up of the shoe cabinet ---- */
+  const closeup = $('.closeup');
+  const lens = $('.cl-lens');
+  const clSeal = $('.cl-seal');
+  const clLine = $('.cl-line');
+  const clLead = $('.cl-line .lead');
+  const clDoors = [...closeup.querySelectorAll('.cl-door')];
+  const LENS_AT = { x: 8.15, y: 4.75 };
+  const CABINET = { x: 11.64, y: 1.4 };
+  at(lens, LENS_AT.x, LENS_AT.y);
+  clSeal.innerHTML = ko ? '<span class="big">흉</span>' : '<span class="big">凶</span><span class="small">BAD LUCK</span>';
+  // The leader line runs from the cabinet to the rim of the lens; the seal sits on its lower right.
+  function placeCloseup() {
+    const pxm = plan.getBoundingClientRect().width / VB.w;
+    if (!pxm || !lens.offsetWidth) return;
+    const r = lens.offsetWidth / 2 / pxm;
+    const dx = CABINET.x - LENS_AT.x, dy = CABINET.y - LENS_AT.y, d = Math.hypot(dx, dy);
+    const ex = LENS_AT.x + dx / d * (r + .12), ey = LENS_AT.y + dy / d * (r + .12);
+    clLead.setAttribute('d', `M${(CABINET.x - .3).toFixed(2)} ${(CABINET.y + .3).toFixed(2)} L${ex.toFixed(2)} ${ey.toFixed(2)}`);
+    const small = plan.dataset.dense === 'lo';
+    at(clSeal, LENS_AT.x + r * (small ? .5 : .42), LENS_AT.y + r * (small ? .48 : .34));
+  }
+  const doorOpen = [{ transform: 'scaleX(1)', filter: 'brightness(1)' }, { transform: 'scaleX(-.2)', filter: 'brightness(.8)' }];
+  clDoors[0].style.transformOrigin = '-62px 0px';
+  clDoors[1].style.transformOrigin = '62px 0px';
+  function hideCloseup() {
+    closeup.classList.remove('on');
+    clSeal.classList.remove('on');
+    [lens, clSeal, clLine, ...clDoors].forEach((n) => n.getAnimations().forEach((a) => a.cancel()));
+    clDoors.forEach((d) => { d.style.transform = ''; d.style.filter = ''; });
+  }
+  // The lens grows out of the cabinet (doors shut, mirror and all), the doors swing open on the
+  // router among the shoes, and the geomancer's seal comes down on it.
+  function openCloseup(mine) {
+    if (TTY.reduce) return;
+    hideCloseup();
+    placeCloseup();
+    closeup.classList.add('on');
+    // On a phone the lens would sit on the installer's slip; the lens says it better there.
+    tagInstaller.classList.toggle('under-lens', plan.dataset.dense === 'lo');
+    const pxm = plan.getBoundingClientRect().width / VB.w;
+    const fx = (CABINET.x - LENS_AT.x) * pxm, fy = (CABINET.y - LENS_AT.y) * pxm;
+    lens.animate([{ transform: `translate(${fx}px, ${fy}px) scale(.06)`, opacity: .4 }, { transform: 'scale(1.04)', opacity: 1, offset: .75 }, { transform: 'none', opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.2, .9, .3, 1.15)' });
+    clLine.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+    setTimeout(() => {
+      if (!live(mine)) return;
+      clDoors.forEach((d) => {
+        d.animate(doorOpen, { duration: 300, easing: 'cubic-bezier(.5, 0, .3, 1)' });
+        d.style.transform = 'scaleX(-.2)';
+        d.style.filter = 'brightness(.8)';
+      });
+    }, 360);
+    setTimeout(() => {
+      if (!live(mine)) return;
+      clSeal.classList.add('on');
+      clSeal.animate([
+        { transform: 'scale(2.8)', opacity: 0, filter: 'blur(2px)' },
+        { transform: 'scale(.92)', opacity: .95, filter: 'blur(0)', offset: .7 },
+        { transform: 'scale(1)', opacity: .93 },
+      ], { duration: 380, easing: 'cubic-bezier(.5, 0, .9, .4)' });
+      lens.animate([{ transform: 'none' }, { transform: 'translate(1.5%, 1%) rotate(1.2deg)' }, { transform: 'translate(-1%, -.5%)' }, { transform: 'none' }], { duration: 300, delay: 260 });
+      plan.animate([{ transform: 'none' }, { transform: 'translateY(.5%) rotate(.3deg)' }, { transform: 'none' }], { duration: 260, delay: 270 });
+    }, 860);
+  }
+  // Back into the cabinet before the brush comes for the router.
+  function closeCloseup() {
+    if (!closeup.classList.contains('on')) return;
+    const pxm = plan.getBoundingClientRect().width / VB.w;
+    const fx = (CABINET.x - LENS_AT.x) * pxm, fy = (CABINET.y - LENS_AT.y) * pxm;
+    const a = lens.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${fx}px, ${fy}px) scale(.06)`, opacity: 0 }], { duration: 380, easing: 'cubic-bezier(.5, 0, .7, .4)', fill: 'forwards' });
+    clSeal.animate([{ opacity: .93 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+    clLine.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 380, fill: 'forwards' });
+    a.onfinish = hideCloseup;
+  }
+
+  /* ---- The compass ---- */
+  const compass = $('.compass');
+  let dial, needle;
+  {
+    const s = el('svg', { viewBox: '-100 -100 200 200' }, compass);
+    const defs = el('defs', null, s);
+    const wood = el('radialGradient', { id: 'wood', cx: '.45', cy: '.4', r: '.65' }, defs);
+    el('stop', { offset: '0', 'stop-color': '#b98250' }, wood);
+    el('stop', { offset: '1', 'stop-color': '#7c4f27' }, wood);
+    const face = el('radialGradient', { id: 'face', cx: '.45', cy: '.4', r: '.7' }, defs);
+    el('stop', { offset: '0', 'stop-color': '#f1dc9f' }, face);
+    el('stop', { offset: '1', 'stop-color': '#dcbd72' }, face);
+    const pool = el('radialGradient', { id: 'pool', cx: '.4', cy: '.35', r: '.7' }, defs);
+    el('stop', { offset: '0', 'stop-color': '#f6f1e4' }, pool);
+    el('stop', { offset: '1', 'stop-color': '#c9c3ae' }, pool);
+    el('circle', { r: 99, fill: 'url(#wood)' }, s);
+    el('circle', { r: 99, fill: 'none', stroke: '#5d3a1b', 'stroke-width': 1.5 }, s);
+    dial = el('g', { class: 'dial' }, s);
+    el('circle', { r: 91, fill: 'url(#face)' }, dial);
+    for (const r of [91, 76, 58, 40, 30]) el('circle', { r, fill: 'none', stroke: '#2a2015', 'stroke-width': r === 91 ? 1.2 : .7 }, dial);
+    const ring = (n, rMid, rIn, rOut, label) => {
+      for (let i = 0; i < n; i++) {
+        const a = i * 360 / n;
+        el('line', { x1: 0, y1: -rIn, x2: 0, y2: -rOut, stroke: '#2a2015', 'stroke-width': .45, transform: `rotate(${a - 180 / n})` }, dial);
+        label(i, a);
+      }
+    };
+    const MOUNTAINS = '子癸丑艮寅甲卯乙辰巽巳丙午丁未坤申庚酉辛戌乾亥壬';
+    ring(24, 83.5, 76, 91, (i, a) => {
+      const t = el('text', { transform: `rotate(${a}) translate(0 -83.5)`, 'font-size': 9.5, 'font-weight': 700, fill: '子卯午酉'.includes(MOUNTAINS[i]) ? '#b3261e' : '#2a2015' }, dial);
+      t.textContent = MOUNTAINS[i];
+    });
+    const FIVE = [36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 149, 153, 157, 161, 165];
+    ring(FIVE.length, 67, 58, 76, (i, a) => {
+      const t = el('text', { transform: `rotate(${a}) translate(0 -67)`, 'font-size': 6.6, 'font-weight': 500, fill: FIVE[i] === 36 ? '#b3261e' : '#2a2015' }, dial);
+      t.textContent = FIVE[i];
+    });
+    ring(13, 49, 40, 58, (i, a) => {
+      const big = i === 0 || i === 5 || i === 10;
+      const t = el('text', { transform: `rotate(${a}) translate(0 -49)`, 'font-size': big ? 12 : 7.5, 'font-weight': big ? 900 : 500, fill: i === 10 ? '#b3261e' : big ? '#1b140c' : '#6e5a3c' }, dial);
+      t.textContent = i + 1;
+    });
+    // Neighbours already on channels 1, 6 and 36: little red dots of stray energy.
+    [[0, 13, 41.5, -4], [0, 13, 41.5, 4], [5, 13, 41.5, -4], [5, 13, 41.5, 4], [0, 25, 59.5, 0]].forEach(([i, n, r, off]) => {
+      el('circle', { r: 1.6, fill: '#b3261e', transform: `rotate(${i * 360 / n + off}) translate(0 -${r})` }, dial);
+    });
+    for (let i = 0; i < 36; i++) el('line', { x1: 0, y1: -30, x2: 0, y2: i % 3 ? -34 : -37, stroke: '#2a2015', 'stroke-width': .5, transform: `rotate(${i * 10})` }, dial);
+    el('circle', { r: 27, fill: 'url(#pool)', stroke: '#2a2015', 'stroke-width': .8 }, dial);
+    // Red threads across the face, as on a real 패철.
+    el('path', { d: 'M-91 0 H91 M0 -91 V91', stroke: '#b3261e', 'stroke-width': .9, opacity: .8 }, dial);
+    needle = el('g', null, dial);
+    el('path', { d: 'M0 -24 L3.4 0 L0 4 L-3.4 0 Z', fill: '#b3261e' }, needle);
+    el('path', { d: 'M0 24 L3.4 0 L0 -4 L-3.4 0 Z', fill: '#1b140c' }, needle);
+    el('circle', { r: 2.2, fill: '#d9c08a', stroke: '#1b140c', 'stroke-width': .6 }, needle);
+  }
+  const NEEDLE_TO = 10 * 360 / 13;  // channel 11
+  const setNeedle = (a) => needle.setAttribute('transform', `rotate(${a})`);
+  setNeedle(NEEDLE_TO);
+
+  /* ================= Ledger ================= */
+  const roomsList = $('.rooms');
+  const rows = {};
+  ROOMS.forEach((r) => {
+    const li = document.createElement('li');
+    li.className = 'room';
+    li.innerHTML = '<span class="rn"></span><span class="db"><b>—</b><small>dBm</small></span><span class="nt" hidden><span class="nt-l"></span><span class="nt-s"></span><span class="nt-xs"></span></span><span class="vd"></span>';
+    li.querySelector('.rn').textContent = L.rooms[r.id];
+    roomsList.append(li);
+    rows[r.id] = { li, db: li.querySelector('.db b'), vd: li.querySelector('.vd'), nt: li.querySelector('.nt'), ntL: li.querySelector('.nt-l'), ntS: li.querySelector('.nt-s'), ntXs: li.querySelector('.nt-xs'), level: -1, num: null, anim: 0 };
+  });
+  const sum = document.createElement('li');
+  sum.className = 'sum';
+  sum.innerHTML = '<span class="sum-l"></span><span class="sum-v"></span>';
+  sum.querySelector('.sum-l').textContent = L.sumLabel;
+  roomsList.append(sum);
+
+  const rulesList = $('.rules .list');
+  const ruleItems = L.rules.map((text, i) => {
+    const li = document.createElement('li');
+    li.className = 'item' + (i === 0 ? ' on' : '');
+    const s = document.createElement('span');
+    s.textContent = text;
+    li.append(s);
+    rulesList.append(li);
+    return li;
+  });
+  const nextBtn = $('.rules .next');
+  nextBtn.textContent = '›';
+  nextBtn.setAttribute('aria-label', L.nextRule);
+  let ruleAt = 0;
+  function showRule(i, animate) {
+    ruleItems[ruleAt].classList.remove('on');
+    ruleAt = (i + ruleItems.length) % ruleItems.length;
+    ruleItems[ruleAt].classList.add('on');
+    if (animate && !TTY.reduce && getComputedStyle(nextBtn).display !== 'none') {
+      ruleItems[ruleAt].animate([{ opacity: 0, transform: 'translateY(40%)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'ease-out' });
+    }
+  }
+  let ruleTimer = 0;
+  const ruleTick = () => { clearTimeout(ruleTimer); if (TTY.reduce) return; ruleTimer = setTimeout(() => { showRule(ruleAt + 1, true); ruleTick(); }, 3100); };
+  nextBtn.addEventListener('click', () => { showRule(ruleAt + 1, true); ruleTick(); });
+
+  const straysList = $('.strays .list');
+  L.strays.forEach(([name, ch, db]) => {
+    const li = document.createElement('li');
+    li.className = 'stray';
+    const a = document.createElement('span');
+    a.className = 'ssid';
+    a.textContent = `“${name}”`;
+    const b = document.createElement('span');
+    b.className = 'meta';
+    b.textContent = `${L.ch ? L.ch + ' ' : ''}${ch} · ${minus(db)}`;
+    li.append(a, b);
+    straysList.append(li);
+  });
+  $('.strays .needle').textContent = L.needle;
+  $('.hint .l').textContent = L.hint[0];
+  $('.hint .s').textContent = L.hint[1];
+  const meshBtn = $('.mesh-btn');
+  const verdictsSec = $('.verdicts');
+  const commentEl = $('.comment');
+
+  /* ================= State ================= */
+  const state = {
+    router: { x: SPOT.shelf.x, y: SPOT.shelf.y, el: routerDev.el, pop: routerDev.pop, inner: routerDev.inner, label: routerDev.label, below: .27, lift: 0 },
+    mesh: { x: SPOT.mesh.x, y: SPOT.mesh.y, on: false, el: meshDev.el, pop: meshDev.pop, inner: meshDev.inner, label: meshDev.label, below: .3, lift: 0 },
+    micro: false,
+    lastMoved: 'router',
+    final: false,      // autoplay: summary and seal allowed
+    callBack: false,   // autoplay: the study's call may say "you're back" (the tag beat)
+  };
+  let mode = 'auto';
+  let devScale = 1;
+
+  function drawDevice(d) {
+    const lift = d.lift || 0;
+    d.el.setAttribute('transform', `translate(${d.x.toFixed(3)} ${d.y.toFixed(3)})`);
+    const sc = devScale * (1 + lift * .16);
+    d.inner.setAttribute('transform', `scale(${sc.toFixed(3)})`);
+    d.label.setAttribute('y', (d.below * sc).toFixed(3));
+    if (d === state.router) {
+      routerShade.setAttribute('cx', (.05 + lift * .2).toFixed(3));
+      routerShade.setAttribute('cy', (.08 + lift * .22).toFixed(3));
+      routerShade.setAttribute('opacity', (1 - lift * .35).toFixed(2));
+    }
+  }
+  const showDevice = (d, on) => { d.el.style.display = on ? '' : 'none'; };
+
+  /* ================= Ink map ================= */
+  const wash = $('.map .wash');
+  const isos = $('.map .isos');
+  const sparks = $('.map .sparks');
+  const hatches = $('.map .hatches');
+  const canvas = document.createElement('canvas');
+  canvas.width = NX; canvas.height = NY;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(NX, NY);
+  // Strong energy is dark ink, weak is bare paper.
+  const inkAlpha = (v) => Math.pow(clamp((v + 90) / 60, 0, 1), 1.3) * .66;
+  let noise = null;   // the microwave's ripple: a dB offset per cell, or null
+  function paint() {
+    const data = img.data;
+    for (let k = 0; k < NX * NY; k++) {
+      const v = shown[k] + (noise ? noise[k] : 0);
+      const a = inkAlpha(v);
+      data[k * 4] = 30; data[k * 4 + 1] = 26; data[k * 4 + 2] = 23; data[k * 4 + 3] = Math.round(a * 255);
+    }
+    ctx.putImageData(img, 0, 0);
+    wash.setAttribute('href', canvas.toDataURL());
+    drawContours();
+  }
+  // Contour lines at −50 / −67 / −75 dBm (marching squares over cell centres).
+  const LEVELS = [[-50, 'l50'], [-67, 'l67'], [-75, 'l75']];
+  const isoPaths = LEVELS.map(([, c]) => el('path', { class: `iso ${c}` }, isos));
+  const isoLbls = LEVELS.map(([v]) => { const t = el('text', { class: 'iso-lbl', 'text-anchor': 'middle', 'dominant-baseline': 'central' }, isos); t.textContent = minus(v); return t; });
+  let showIsoLabels = true;
+  function drawContours() {
+    const anchor = state.router;
+    const toward = Math.atan2(CENTER.y - anchor.y, CENTER.x - anchor.x);
+    LEVELS.forEach(([lv], li) => {
+      let d = '';
+      let best = null, bestScore = Infinity;
+      const prefer = (Math.hypot(CENTER.x - anchor.x, CENTER.y - anchor.y) < 1 ? -0.4 : toward) + (li - 1) * .55;
+      const t = (p, q) => (lv - p) / (q - p);
+      for (let j = 0; j < NY - 1; j++) for (let i = 0; i < NX - 1; i++) {
+        const a = shown[j * NX + i], b = shown[j * NX + i + 1], c = shown[(j + 1) * NX + i + 1], e = shown[(j + 1) * NX + i];
+        const idx = (a > lv ? 8 : 0) | (b > lv ? 4 : 0) | (c > lv ? 2 : 0) | (e > lv ? 1 : 0);
+        if (idx === 0 || idx === 15) continue;
+        const x0 = (i + .5) * CELL, y0 = (j + .5) * CELL;
+        const T = [x0 + CELL * t(a, b), y0], R = [x0 + CELL, y0 + CELL * t(b, c)], B = [x0 + CELL * t(e, c), y0 + CELL], Lf = [x0, y0 + CELL * t(a, e)];
+        const segs = { 1: [[Lf, B]], 2: [[B, R]], 3: [[Lf, R]], 4: [[T, R]], 5: [[Lf, T], [B, R]], 6: [[T, B]], 7: [[Lf, T]], 8: [[Lf, T]], 9: [[T, B]], 10: [[T, R], [Lf, B]], 11: [[T, R]], 12: [[Lf, R]], 13: [[B, R]], 14: [[Lf, B]] }[idx];
+        for (const [p, q] of segs) {
+          d += `M${p[0].toFixed(2)} ${p[1].toFixed(2)}L${q[0].toFixed(2)} ${q[1].toFixed(2)}`;
+          const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2;
+          if (mx < .6 || mx > 11.4 || my < .5 || my > 7.5) continue;
+          if (ROOMS.some((r) => Math.hypot(mx - r.seat[0] - .35, my - r.seat[1]) < 1.05)) continue;
+          if (Math.hypot(mx - anchor.x, my - anchor.y) < .8 || nearWall(mx, my, .32)) continue;
+          let da = Math.abs(Math.atan2(my - anchor.y, mx - anchor.x) - prefer);
+          if (da > Math.PI) da = 2 * Math.PI - da;
+          if (da < bestScore) { bestScore = da; best = [mx, my]; }
+        }
+      }
+      isoPaths[li].setAttribute('d', d);
+      const lab = isoLbls[li];
+      if (best && showIsoLabels) { lab.setAttribute('x', best[0].toFixed(2)); lab.setAttribute('y', best[1].toFixed(2)); lab.style.display = ''; }
+      else lab.style.display = 'none';
+    });
+  }
+
+  // Ink spreading from a point: the new map replaces the old one in a widening ring.
+  let spread = null;
+  function spreadFrom(p, dur = 1100) {
+    computeTarget();
+    if (TTY.reduce) { shown.set(target); paint(); return; }
+    before.set(shown);
+    spread = { x: p.x, y: p.y, t0: performance.now(), dur };
+    kick();
+  }
+  function settleMap() {
+    computeTarget();
+    spread = null;
+    shown.set(target);
+    paint();
+  }
+  function stepSpread(now) {
+    const k = clamp((now - spread.t0) / spread.dur, 0, 1);
+    const r = easeOut(k) * 15;
+    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+      const x = (i + .5) * CELL, y = (j + .5) * CELL;
+      const m = clamp((r - Math.hypot(x - spread.x, y - spread.y)) / 1.6 + .5, 0, 1);
+      const idx = j * NX + i;
+      shown[idx] = before[idx] + (target[idx] - before[idx]) * m;
+    }
+    if (k >= 1) { shown.set(target); spread = null; }
+  }
+  function clearMap() {
+    spread = null;
+    shown.fill(-120); target.fill(-120);
+    noise = null;
+    paint();
+  }
+
+  /* ---- Rooms hatched in red when the energy there is bad ---- */
+  const hatchEls = {};
+  ROOMS.forEach((r) => {
+    hatchEls[r.id] = el('polygon', { class: 'hatch', points: r.poly.map((p) => p.join(',')).join(' '), opacity: 0 }, hatches);
+  });
+
+  /* ================= Readout ================= */
+  let lastValues = null;
+  function kk(font, size, text, cls) {
+    const n = document.createElement('font-kku');
+    n.setAttribute('font', font);
+    n.setAttribute('size', size);
+    if (cls) n.className = cls;
+    n.textContent = text;
+    return n;
+  }
+  function setStamp(row, lv) {
+    if (row.level === lv) return;
+    row.level = lv;
+    row.li.classList.remove('v0', 'v1', 'v2', 'v3');
+    row.li.classList.add('v' + lv);
+    if (ko) {
+      row.vd.replaceChildren(kk('dojang', 'clamp(18px, 2.6cqmin, 26px)', L.word[lv]));
+    } else {
+      const gl = document.createElement('b');
+      gl.className = 'glyph';
+      gl.textContent = L.glyph[lv];
+      const w = document.createElement('span');
+      w.className = 'word';
+      w.textContent = L.word[lv];
+      row.vd.replaceChildren(gl, w);
+    }
+    if (animateNow()) row.vd.animate([{ transform: 'scale(1.7)', opacity: 0 }, { transform: 'scale(.95)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }], { duration: 360, easing: 'cubic-bezier(.5,0,.9,.4)' });
+  }
+  let dragging = false;
+  const animateNow = () => !TTY.reduce && !dragging;
+  function rollNumber(row, to) {
+    cancelAnimationFrame(row.anim);
+    const from = row.num;
+    row.num = to;
+    if (from === null || !animateNow()) { row.db.textContent = minus(to); return; }
+    const t0 = performance.now();
+    const step = (now) => {
+      const k = clamp((now - t0) / 650, 0, 1);
+      row.db.textContent = minus(Math.round(from + (to - from) * easeOut(k)));
+      if (k < 1) row.anim = requestAnimationFrame(step);
+    };
+    row.anim = requestAnimationFrame(step);
+  }
+  function blankLedger() {
+    for (const r of ROOMS) {
+      const row = rows[r.id];
+      cancelAnimationFrame(row.anim);
+      row.num = null; row.level = -1;
+      row.db.textContent = '—';
+      row.vd.replaceChildren();
+      row.nt.hidden = true;
+      row.nt.classList.remove('ok');
+      row.li.classList.remove('v0', 'v1', 'v2', 'v3', 'jitter');
+      seatV[r.id].textContent = '';
+      hatchEls[r.id].setAttribute('opacity', 0);
+    }
+    lastValues = null;
+  }
+  function overall(values) { return Math.min(...Object.values(values).map(level)); }
+  // Write the values into the ledger, the plan's seat marks and the hatching.
+  // While numbers roll (or flicker under the microwave) the live region is marked busy, so a
+  // screen reader reads the settled values once instead of every frame.
+  let busyTimer = 0;
+  function quietFor(ms) {
+    verdictsSec.setAttribute('aria-busy', 'true');
+    clearTimeout(busyTimer);
+    busyTimer = setTimeout(() => { if (!dragging && !state.micro) verdictsSec.setAttribute('aria-busy', 'false'); }, ms);
+  }
+  // The client's video call in the study follows the study's energy: dropping, frozen, fine, and
+  // "back" once it has been bad and comes good again (in the show, only at the tag beat).
+  let callWasDown = false;
+  let callNow = 'on';
+  function callState(lvStudy) {
+    if (lvStudy === 0) return 'hear';
+    if (lvStudy === 1) return 'frozen';
+    return callWasDown && (mode === 'manual' || state.callBack) ? 'back' : 'on';
+  }
+  function setCall(cs) {
+    if (cs === callNow) return;
+    callNow = cs;
+    tagCallTxt.textContent = L.call[cs];
+    tagCall.classList.toggle('down', cs === 'hear' || cs === 'frozen');
+    tagCall.classList.toggle('back', cs === 'back');
+    if (cs === 'back' && animateNow()) tagCall.animate([{ transform: 'scale(1.35)' }, { transform: 'scale(.95)', offset: .6 }, { transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
+  }
+  let readGen = 0;
+  function readout(stagger = 0) {
+    const gen = ++readGen;
+    if (animateNow()) quietFor(stagger * ROOMS.length + 800);
+    const values = roomValues();
+    lastValues = values;
+    const cs = callState(level(values.study));
+    if (cs === 'hear' || cs === 'frozen') callWasDown = true;
+    ROOMS.forEach((r, i) => {
+      const v = values[r.id];
+      const lv = level(v);
+      const row = rows[r.id];
+      const apply = () => {
+        if (gen !== readGen) return;
+        rollNumber(row, v);
+        setStamp(row, lv);
+        const jitter = r.id === 'kitchen' && state.micro;
+        row.li.classList.toggle('jitter', jitter);
+        const note = jitter ? [L.jitter, L.jitter, L.jitterXs] : r.id === 'study' ? L.callNote[cs] : null;
+        const was = row.nt.hidden ? '' : row.ntS.textContent;
+        if (note) { row.ntL.textContent = note[0]; row.ntS.textContent = note[1]; row.ntXs.textContent = note[2] || note[1]; }
+        row.nt.hidden = !note;
+        row.nt.classList.toggle('ok', r.id === 'study' && cs === 'back');
+        if (note && note[1] !== was && r.id === 'study' && cs === 'back' && animateNow()) {
+          row.nt.animate([{ opacity: 0, transform: 'translateY(40%)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: 'ease-out' });
+          row.li.animate([{ backgroundColor: 'rgba(79, 138, 122, .3)' }, { backgroundColor: 'rgba(79, 138, 122, 0)' }], { duration: 1100, easing: 'ease-out' });
+        }
+        seatV[r.id].textContent = minus(v);
+        seatV[r.id].setAttribute('class', 'seat-v' + (lv <= 1 ? ' bad' : lv === 3 ? ' good' : ''));
+        hatchEls[r.id].setAttribute('fill', lv === 0 ? 'url(#hatch-bad)' : 'url(#hatch-mixed)');
+        hatchEls[r.id].setAttribute('opacity', lv === 0 ? .55 : lv === 1 ? .45 : 0);
+      };
+      if (stagger && animateNow()) setTimeout(apply, i * stagger); else apply();
+    });
+    const lvAll = overall(values);
+    setCall(cs);
+    const showSum = mode === 'manual' || state.final;
+    sum.classList.toggle('on', showSum);
+    sum.classList.toggle('good', lvAll >= 2);
+    sum.classList.toggle('bad', lvAll < 2);
+    const sv = sum.querySelector('.sum-v');
+    sv.innerHTML = '';
+    sv.append(L.sumWord[lvAll] + (ko ? '' : ' '));
+    const hz = document.createElement('span');
+    hz.className = 'hz';
+    hz.textContent = `(${L.glyph[lvAll]})`;
+    sv.append(hz);
+    setSeal(showSum && lvAll >= 2);
+  }
+  let sealOn = false;
+  function setSeal(on) {
+    if (on === sealOn) return;
+    sealOn = on;
+    seal.classList.toggle('on', on);
+    if (on && animateNow()) {
+      seal.animate([
+        { transform: 'scale(2.6)', opacity: 0, filter: 'blur(2px)' },
+        { transform: 'scale(.94)', opacity: .95, filter: 'blur(0)', offset: .7 },
+        { transform: 'scale(1)', opacity: .9 },
+      ], { duration: 420, easing: 'cubic-bezier(.5, 0, .9, .4)' });
+      plan.animate([{ transform: 'none' }, { transform: 'translateY(.4%) rotate(.25deg)' }, { transform: 'none' }], { duration: 260, delay: 300 });
+    }
+  }
+
+  // The geomancer's comment, brushed in. Korean is written in butgeul.
+  // A key is a comment name, or 'highBut:study,bath' for "the spot, except for those rooms".
+  let commentKey = null;
+  function commentText(key) {
+    const [name, rooms] = key.split(':');
+    if (name !== 'highBut') return L.comments[name];
+    // Mostly the study alone (about 79% of the shelf on a 0.01 m grid). Near the bookshelf wall (y ≤ 3.43) and at
+    // the right end (x ≥ 6.91) the bedroom falls short too; along the front edge (y ≥ 3.81, x 5.51–5.80) the
+    // bathroom does; the left-front corner (x < 5.75) suits every room. One arrow press up from the show's spot
+    // (6.2, 3.62) already gives "the bedroom and the study".
+    return rooms === 'study' ? L.comments.highStudy : L.comments.highBut(rooms.split(',').map((id) => L.roomNoun[id]));
+  }
+  function setComment(key) {
+    if (key === commentKey) return;
+    commentKey = key;
+    if (!key) { commentEl.replaceChildren(); return; }
+    const text = commentText(key);
+    if (ko) commentEl.replaceChildren(kk('butgeul', 'clamp(15px, 2.6cqmin, 24px)', text, 'kk-ink'));
+    else commentEl.textContent = text;
+    if (!TTY.reduce) commentEl.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 900, easing: 'cubic-bezier(.4, 0, .3, 1)' });
+  }
+  // What the old rules say about where the router sits.
+  const OUTER = DRAW_WALLS.filter((w) => w[4] === 'ext');
+  function spotKind(p) {
+    if (inBox(p.x, p.y, ENTRY)) return 'entry';
+    if (inBox(p.x, p.y, OBJ.tank, .7)) return 'water';
+    if (inBox(p.x, p.y, OBJ.fridge, .6) || inBox(p.x, p.y, OBJ.mirror, .5) || inBox(p.x, p.y, OBJ.vanity, .5)) return 'metal';
+    if (inBox(p.x, p.y, OBJ.shelf, .05)) return 'high';
+    if (nearWall(p.x, p.y, .45, OUTER)) return 'wall';
+    if (Math.hypot(p.x - CENTER.x, p.y - CENTER.y) < 2.4) return 'center';
+    return 'far';
+  }
+  // ...and what the numbers say. The rules and the numbers never contradict each other on the page:
+  // a spot the rules call bad but every room likes gets "by the numbers, fine"; the bookshelf is
+  // "the spot" only for the rooms it actually reaches.
+  const BAD_BY_THE_BOOK = ['entry', 'water', 'metal', 'wall', 'far'];
+  function commentFor(p, values) {
+    const kind = spotKind(p);
+    const lvAll = overall(values);
+    if (BAD_BY_THE_BOOK.includes(kind) && lvAll >= 2) return 'numbers';
+    if (kind === 'high' && lvAll < 2) return 'highBut:' + ROOMS.map((r) => r.id).filter((id) => level(values[id]) < 2).join(',');
+    return kind;
+  }
+
+  function setMeshButton() {
+    meshBtn.textContent = state.mesh.on ? L.take : L.raise;
+    meshBtn.setAttribute('aria-pressed', String(state.mesh.on));
+  }
+
+  /* ================= Microwave ================= */
+  const sparkDots = [];
+  for (let i = 0; i < 46; i++) sparkDots.push(el('circle', { class: 'spark', r: .028, opacity: 0 }, sparks));
+  const sparkRnd = rng(245);
+  // Someone warms up the last two seconds of a coffee: 0:02, 0:01, ding.
+  let microTimer = 0, dingTimer = 0, microLeft = 2;
+  const clock = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  function microOn() {
+    state.micro = true;
+    microLeft = 2;
+    mw.classList.add('mw-on');
+    mwText.textContent = clock(microLeft);
+    tagMicro.textContent = `${L.running} ${clock(microLeft)}`;
+    tagMicro.classList.add('on');
+    clearInterval(microTimer);
+    clearTimeout(dingTimer);
+    microTimer = setInterval(() => {
+      microLeft--;
+      mwText.textContent = clock(microLeft);
+      if (microLeft > 0) { tagMicro.textContent = `${L.running} ${clock(microLeft)}`; return; }
+      clearInterval(microTimer);
+      tagMicro.textContent = L.ding;
+      if (!TTY.reduce) tagMicro.animate([{ transform: 'scale(1.3)' }, { transform: 'none' }], { duration: 260, easing: 'ease-out' });
+      dingTimer = setTimeout(microOff, 400);
+    }, 1000);
+    noise = new Float32Array(NX * NY);
+    readout();
+    kick();
+  }
+  function microOff() {
+    clearTimeout(dingTimer);
+    if (!state.micro) return;
+    state.micro = false;
+    clearInterval(microTimer);
+    mw.classList.remove('mw-on');
+    tagMicro.classList.remove('on');
+    noise = null;
+    sparkDots.forEach((s) => s.setAttribute('opacity', 0));
+    paint();
+    readout();
+    quietFor(800);
+  }
+  function stepMicro() {
+    // Static on the 2.4 GHz energy around the kitchen: the ink flickers, specks jump.
+    const r = sparkRnd;
+    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+      const x = (i + .5) * CELL, y = (j + .5) * CELL;
+      const w = Math.exp(-Math.hypot(x - MICROWAVE.x, y - MICROWAVE.y) / 1.7);
+      noise[j * NX + i] = (r() - .5) * 14 * w;
+    }
+    sparkDots.forEach((s) => {
+      const a = r() * Math.PI * 2, d = Math.pow(r(), .7) * 2.6;
+      const x = clamp(MICROWAVE.x + .5 + Math.cos(a) * d * 1.3, 5.5, 9.3), y = clamp(MICROWAVE.y + Math.sin(a) * d * .8, .2, 3.3);
+      s.setAttribute('cx', x.toFixed(2)); s.setAttribute('cy', y.toFixed(2));
+      s.setAttribute('r', (.02 + r() * .035).toFixed(3));
+      s.setAttribute('opacity', (r() * .8).toFixed(2));
+    });
+    // The kitchen's number wavers too.
+    const row = rows.kitchen;
+    if (row.num !== null) row.db.textContent = minus(row.num - Math.round(r() * 9));
+  }
+
+  /* ================= Frame loop ================= */
+  let raf = 0, lastMicro = 0;
+  function frame(now) {
+    raf = 0;
+    let busy = false;
+    if (spread) { stepSpread(now); busy = true; }
+    if (state.micro) {
+      busy = true;
+      if (now - lastMicro > 70) { lastMicro = now; stepMicro(); if (!spread) paint(); }
+    }
+    if (spread) paint();
+    if (carry) { stepCarry(now); busy = true; }
+    if (busy) kick();
+  }
+  function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+
+  /* ================= The brush carries the router ================= */
+  let carry = null;
+  function carryTo(to, { lift = 0, dur = 1500 } = {}) {
+    return new Promise((resolve) => {
+      const d = state.router;
+      carry = { from: { x: d.x, y: d.y, lift: d.lift }, to, lift, t0: performance.now(), dur, resolve };
+      brush.setAttribute('opacity', 0);
+      kick();
+    });
+  }
+  function stepCarry(now) {
+    const c = carry, d = state.router;
+    const k = clamp((now - c.t0) / c.dur, 0, 1);
+    // 0–.22 brush comes in; .22–.82 router travels in an arc, lifted; .82–1 set down, brush away.
+    const kin = clamp(k / .22, 0, 1), kmove = clamp((k - .22) / .6, 0, 1), kout = clamp((k - .82) / .18, 0, 1);
+    const m = ease(kmove);
+    const dx = c.to.x - c.from.x, dy = c.to.y - c.from.y;
+    const mx = (c.from.x + c.to.x) / 2 + dy * .18, my = (c.from.y + c.to.y) / 2 - dx * .18;
+    d.x = (1 - m) * (1 - m) * c.from.x + 2 * (1 - m) * m * mx + m * m * c.to.x;
+    d.y = (1 - m) * (1 - m) * c.from.y + 2 * (1 - m) * m * my + m * m * c.to.y;
+    // Lifted while it travels (bigger, longer shadow); on the shelf it stays a little up.
+    d.lift = c.from.lift + (c.lift - c.from.lift) * m + Math.sin(Math.PI * kmove) * .9;
+    drawDevice(d);
+    // The brush tip rests on the router's back while it carries.
+    const bx = d.x + .02, by = d.y - .16 * devScale;
+    const reach = kin < 1 ? 1 - easeOut(kin) : kout > 0 ? easeOut(kout) : 0;
+    brush.setAttribute('transform', `translate(${(bx + reach * 1.6).toFixed(3)} ${(by - reach * 2.4).toFixed(3)}) scale(${devScale.toFixed(3)})`);
+    brush.setAttribute('opacity', (1 - reach).toFixed(2));
+    if (k >= 1) {
+      brush.setAttribute('opacity', 0);
+      carry = null;
+      c.resolve();
+    }
+  }
+  function cancelCarry() {
+    if (!carry) return;
+    const c = carry;
+    carry = null;
+    brush.setAttribute('opacity', 0);
+    state.router.lift = inBox(state.router.x, state.router.y, OBJ.shelf) ? 1 : 0;
+    drawDevice(state.router);
+    c.resolve();
+  }
+
+  /* ================= Drawing the plan in (and wiping it for the next round) ================= */
+  function drawIn() {
+    strokes.forEach((s, i) => {
+      s.style.opacity = '';
+      if (TTY.reduce) return;
+      const isPath = s.tagName === 'path';
+      const len = isPath && !s.hasAttribute('pathLength') ? s.getTotalLength() : 1;
+      s.animate([{ strokeDasharray: `${len} ${len}`, strokeDashoffset: len, opacity: 0 }, { opacity: 1, offset: .04 }, { strokeDasharray: `${len} ${len}`, strokeDashoffset: 0, opacity: 1 }],
+        { duration: 440, delay: 40 + i * 19, easing: 'cubic-bezier(.6, 0, .3, 1)', fill: 'backwards' });
+    });
+    // Everything settles by about 1.6 s, before the close-up opens: the seal at 2.46 s lands alone.
+    const after = 40 + strokes.length * 19 + 120;
+    pieces.forEach((p, i) => {
+      p.classList.remove('unseen');
+      if (!TTY.reduce) p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: after + (i % 24) * 9, fill: 'backwards' });
+    });
+    if (!TTY.reduce) {
+      dial.animate([{ transform: 'rotate(-400deg)' }, { transform: 'rotate(12deg)', offset: .78 }, { transform: 'rotate(-4deg)', offset: .9 }, { transform: 'rotate(0deg)' }], { duration: 1450, easing: 'cubic-bezier(.25, .7, .3, 1)' });
+      needle.animate([{ transform: `rotate(${NEEDLE_TO + 140}deg)` }, { transform: `rotate(${NEEDLE_TO - 30}deg)`, offset: .55 }, { transform: `rotate(${NEEDLE_TO + 12}deg)`, offset: .8 }, { transform: `rotate(${NEEDLE_TO}deg)` }], { duration: 1550, easing: 'ease-out' });
+      compass.animate([{ opacity: 0, scale: .85 }, { opacity: 1, scale: 1 }], { duration: 500, easing: 'ease-out' });
+    }
+  }
+
+  /* ================= Autoplay ================= */
+  let run = 0;
+  let resumeTimer = 0;
+  let loopStart = 0;
+  const live = (mine) => run === mine;
+  const until = async (ms, mine) => { const d = loopStart + ms - performance.now(); if (d > 0) await wait(d); return live(mine); };
+
+  function resetScene() {
+    cancelCarry();
+    microOff();
+    hideCloseup();
+    tagInstaller.classList.remove('under-lens');
+    state.final = false;
+    state.callBack = false;
+    callWasDown = false;
+    setCall('on');
+    state.mesh.on = false;
+    showDevice(state.mesh, false);
+    setMeshButton();
+    state.router.x = SPOT.closet.x; state.router.y = SPOT.closet.y; state.router.lift = 0;
+    drawDevice(state.router);
+    showDevice(state.router, false);
+    tagInstaller.classList.remove('on');
+    bibo.classList.remove('on');
+    setSeal(false);
+    sum.classList.remove('on');
+    setComment(null);
+    blankLedger();
+    clearMap();
+  }
+  const pop = (node) => { if (!TTY.reduce) node.animate([{ opacity: 0, transform: 'translateY(-6%) scale(1.25)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1.2)' }); };
+
+  async function play() {
+    clearTimeout(resumeTimer);
+    const mine = ++run;
+    mode = 'auto';
+    // Wipe the previous round, if there was one, then brush the plan in again.
+    if (lastValues && !TTY.reduce) {
+      await Promise.all([plan, commentEl, roomsList].map((n) => n.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 380, fill: 'forwards' }).finished));
+      if (!live(mine)) return;
+    }
+    resetScene();
+    [plan, commentEl, roomsList].forEach((n) => n.getAnimations().forEach((a) => a.cancel()));
+    loopStart = performance.now();
+    drawIn();
+
+    // 1.6 s: before anything else, a close-up of the shoe cabinet: the router among the shoes,
+    // and at 2.46 s a big red 凶 / 흉 seal on it. Until 2.9 s that seal is the only thing that lands.
+    if (!await until(1600, mine)) return;
+    openCloseup(mine);
+
+    // 1.8 s: the router turns up in the telecom box by the front door, where it was left.
+    if (!await until(1800, mine)) return;
+    showDevice(state.router, true);
+    drawDevice(state.router);
+    pop(state.router.pop);
+    tagInstaller.classList.add('on');
+
+    // 2.9 s: once the seal has settled, the ink spreads and the verdicts follow it in.
+    if (!await until(2900, mine)) return;
+    spreadFrom(state.router);
+    setComment('entry');
+    if (!await until(3200, mine)) return;
+    readout(140);
+
+    // 4.5 s: the close-up goes back into the cabinet. 4.95 s: behind the fish tank (6.25 s), so the
+    // entrance line has its 3.3 s (10 words) and the water line its 5 s (15 words) before 11.3 s.
+    if (!await until(4500, mine)) return;
+    closeCloseup();
+    if (!await until(4950, mine)) return;
+    tagInstaller.classList.remove('on');
+    await carryTo(SPOT.tank, { dur: 1300 });
+    if (!live(mine)) return;
+    spreadFrom(state.router);
+    readout(90);
+    setComment('water');
+
+    // 10.0 s: up on the bookshelf, in the middle of the flat (11.3 s). The spot, but for the study.
+    if (!await until(10000, mine)) return;
+    await carryTo(SPOT.shelf, { lift: 1, dur: 1300 });
+    if (!live(mine)) return;
+    spreadFrom(state.router);
+    readout(90);
+    chooseComment();
+
+    // 14.45 s: someone warms up a coffee for two seconds; ding at 16.45.
+    if (!await until(14450, mine)) return;
+    microOn();
+    setComment('microwave');
+
+    // 17.0 s: a remedy in the study doorway; 17.6 s the seal.
+    if (!await until(17000, mine)) return;
+    microOff();
+    state.mesh.on = true;
+    state.mesh.x = SPOT.mesh.x; state.mesh.y = SPOT.mesh.y;
+    showDevice(state.mesh, true);
+    drawDevice(state.mesh);
+    pop(state.mesh.pop);
+    setMeshButton();
+    bibo.classList.add('on');
+    if (!TTY.reduce) bibo.animate([{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 700, easing: 'ease-out' });
+    spreadFrom(state.mesh, 900);
+    readout(60);
+    setComment('mesh');
+    if (!await until(17600, mine)) return;
+    state.final = true;
+    readout();
+
+    // 19.0 s (tag): the client's call comes back.
+    if (!await until(19000, mine)) return;
+    state.callBack = true;
+    readout();
+
+    if (!await until(22000, mine)) return;
+    play();
+  }
+
+  // Someone took the router: the show stops, and starts over 12 s after the last touch.
+  function takeOver() {
+    if (mode === 'auto') {
+      run++;
+      cancelCarry();
+      microOff();
+      closeCloseup();
+      tagInstaller.classList.remove('on');
+      [plan, commentEl, roomsList].forEach((n) => n.getAnimations().forEach((a) => a.cancel()));
+      if (!lastValues) {
+        // Grabbed before the router even appeared: put the finished scene down to play with.
+        finalScene();
+      }
+    }
+    mode = 'manual';
+    showDevice(state.router, true);
+    clearTimeout(resumeTimer);
+    if (!TTY.reduce) resumeTimer = setTimeout(play, 12000);
+  }
+
+  // The last scene, with nothing moving: used for reduced motion.
+  function finalScene() {
+    run++;
+    microOff();
+    pieces.forEach((p) => p.classList.remove('unseen'));
+    state.router.x = SPOT.shelf.x; state.router.y = SPOT.shelf.y; state.router.lift = 1;
+    state.mesh.x = SPOT.mesh.x; state.mesh.y = SPOT.mesh.y; state.mesh.on = true;
+    showDevice(state.router, true);
+    showDevice(state.mesh, true);
+    drawDevice(state.router); drawDevice(state.mesh);
+    setMeshButton();
+    state.final = true;
+    // The study was down before the remedy; the last scene is the call coming back.
+    state.callBack = true;
+    callWasDown = true;
+    bibo.classList.add('on');
+    settleMap();
+    readout();
+    commentKey = null;
+    setComment('mesh');
+  }
+
+  /* ================= Moving things by hand ================= */
+  function moved(d, { spreadIt = false } = {}) {
+    state.lastMoved = d === state.mesh ? 'mesh' : 'router';
+    d.lift = d === state.router && inBox(d.x, d.y, OBJ.shelf) ? 1 : 0;
+    drawDevice(d);
+    if (spreadIt && !TTY.reduce) spreadFrom(d, 700); else settleMap();
+    readout();
+    chooseComment();
+  }
+  function chooseComment() {
+    if (state.mesh.on && state.lastMoved === 'mesh') setComment('mesh');
+    else setComment(commentFor(state.router, lastValues || roomValues()));
+  }
+  function toPlan(e) {
+    const r = plan.getBoundingClientRect();
+    return { x: VB.x + (e.clientX - r.left) / r.width * VB.w, y: VB.y + (e.clientY - r.top) / r.height * VB.h };
+  }
+  function draggable(d) {
+    let grab = null;
+    d.el.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      takeOver();
+      d.el.focus({ preventScroll: true });
+      const p = toPlan(e);
+      grab = { dx: d.x - p.x, dy: d.y - p.y, id: e.pointerId };
+      d.el.setPointerCapture(e.pointerId);
+      dragging = true;
+      verdictsSec.setAttribute('aria-busy', 'true');
+      bibo.classList.remove('on');
+    });
+    d.el.addEventListener('pointermove', (e) => {
+      if (!grab || e.pointerId !== grab.id) return;
+      const p = toPlan(e);
+      d.x = clamp(p.x + grab.dx, .15, 11.85);
+      d.y = clamp(p.y + grab.dy, .15, 7.85);
+      moved(d);
+      takeOver();
+    });
+    const end = (e) => {
+      if (!grab || e.pointerId !== grab.id) return;
+      grab = null;
+      dragging = false;
+      verdictsSec.setAttribute('aria-busy', 'false');
+      moved(d);
+    };
+    d.el.addEventListener('pointerup', end);
+    d.el.addEventListener('pointercancel', end);
+    d.el.addEventListener('keydown', (e) => {
+      const step = e.shiftKey ? 1 : CELL;
+      const dir = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+      if (!dir) return;
+      e.preventDefault();
+      takeOver();
+      bibo.classList.remove('on');
+      d.x = clamp(d.x + dir[0] * step, .15, 11.85);
+      d.y = clamp(d.y + dir[1] * step, .15, 7.85);
+      moved(d);
+    });
+  }
+  draggable(state.router);
+  draggable(state.mesh);
+
+  meshBtn.addEventListener('click', () => {
+    const want = !state.mesh.on;
+    takeOver();
+    state.mesh.on = want;
+    if (state.mesh.on) { state.mesh.x = SPOT.mesh.x; state.mesh.y = SPOT.mesh.y; pop(state.mesh.pop); }
+    bibo.classList.remove('on');
+    showDevice(state.mesh, state.mesh.on);
+    setMeshButton();
+    state.lastMoved = state.mesh.on ? 'mesh' : 'router';
+    if (state.mesh.on) moved(state.mesh, { spreadIt: true });
+    else { settleMap(); readout(); chooseComment(); }
+  });
+
+  /* ================= Sizes that follow the plan's size on screen ================= */
+  function fit() {
+    const w = plan.getBoundingClientRect().width;
+    if (!w) { plan.dataset.dense = 'lo'; return; }
+    const pxm = w / VB.w;               // screen px per metre
+    const u = (px) => (px / pxm).toFixed(4) + 'px';
+    const vars = {
+      '--fs-room': u(clamp(.3 * pxm, 12, 17)),
+      '--fs-tag': u(clamp(.21 * pxm, 11, 13.5)),
+      '--fs-small': u(clamp(.2 * pxm, 11, 13)),
+      '--fs-dim': u(clamp(.2 * pxm, 11, 12.5)),
+    };
+    for (const svg of [mapSvg, wallSvg, top]) for (const k in vars) svg.style.setProperty(k, vars[k]);
+    plan.dataset.dense = pxm < 40 ? 'lo' : 'hi';
+    showIsoLabels = pxm >= 30;
+    devScale = clamp(30 / (.8 * pxm), 1, 1.7);
+    drawDevice(state.router);
+    drawDevice(state.mesh);
+    paint();
+    placeCloseup();
+  }
+  new ResizeObserver(fit).observe(plan);
+
+  /* ================= Start ================= */
+  setMeshButton();
+  showDevice(state.mesh, false);
+  if (TTY.reduce) {
+    finalScene();
+    mode = 'manual';
+  } else {
+    pieces.forEach((p) => p.classList.add('unseen'));
+    strokes.forEach((s) => { s.style.opacity = 0; });
+    showDevice(state.router, false);
+    compass.style.opacity = 0;
+    TTY.onShow(() => { compass.style.opacity = ''; play(); ruleTick(); });
+  }
+  fit();
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

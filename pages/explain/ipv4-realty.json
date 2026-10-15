@@ -1,0 +1,148 @@
+{
+  "id": "ipv4-realty",
+  "title": {
+    "en": "IPv4 Realty",
+    "ko": "IPv4 부동산"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "인터넷 주소(IPv4)를 부동산처럼 팔아 보니 2011년에 이미 완판됐고, 1995년에 분양을 시작한 넓은 새 동네(IPv6)로는 30년이 넘도록 사람들이 절반쯤만 옮겨 왔다는 이야기다.",
+    "points": [
+      "유리창 전단마다 붙는 빨간 계약 완료 스티커 → IPv4 주소는 약 43억 개뿐이라 세계 인구(80억 명)보다도 적다. 2011년 2월에 주소를 나눠 주는 중앙 창고(IANA)가 바닥났고, 대륙별 창고 다섯 곳도 2019년까지 차례로 비었다.",
+      "127.0.0.1 전단의 \"방 1,677만 개, 1인 가구\" → 127로 시작하는 주소 1,677만 개가 전부 '이 컴퓨터 자신'을 가리키는 데 쓰인다(루프백). 방이 1,677만 개인 집에 혼자 살고, 그나마 보통은 표준 루프백 주소인 127.0.0.1 한 칸만 쓴다. 이 전단에서 편지 한 통이 문 앞까지 나갔다가 그대로 돌아오는 것도 같은 이야기다. 이 주소로 보낸 것은 컴퓨터 밖으로 나가지 않는다.",
+      "192.168.0.1 전단의 \"옆집도 같은 번지\" → 집 공유기 안쪽 주소는 집집마다 똑같아도 된다. 바깥 인터넷에서는 쓰지 않는 '단지 내 전용' 주소라서다.",
+      "이사 트럭과 \"두 집 살림\" 현수막 → IPv6는 IPv4와 직접 통하지 않는다. IPv4밖에 모르는 프린터 하나만 있어도 옛집을 못 빼서, 결국 두 체계를 같이 쓰게 된다(듀얼 스택). 그래서 새집 유리에도 \"반만 입주\" 스티커가 붙는다. 실제로도 IPv6로 옮긴 사람 대부분이 IPv4를 그대로 함께 쓴다.",
+      "(이사하기 버튼을 누를 때만) 누를 때마다 옛집 문 앞에 짐이 하나씩 더 남는다 → 단골 사이트는 IPv6 주소를 아직 \"검토 중\"(AAAA 레코드가 없다), 공유기는 관리자 페이지가 192.168.0.1에서만 열리고, 설정 파일은 10.0.0.5로 하드코딩돼 있다. 마지막 짐은 IPv6 주소를 하나도 못 외우는 나 자신이다."
+    ],
+    "terms": [
+      {
+        "term": "IP 주소",
+        "plain": "인터넷에서 기기를 찾아가는 번지수. IPv4는 192.168.0.1처럼 숫자 넷으로 쓴다."
+      },
+      {
+        "term": "IPv6",
+        "plain": "주소가 2¹²⁸개(약 3.4×10³⁸)인 새 주소 체계. 1995년에 처음 규격이 나왔다. 주소는 2001:db8::1처럼 길어서 외우기 어렵다."
+      },
+      {
+        "term": "NAT",
+        "plain": "집 안 여러 기기가 공유기의 바깥 주소 하나를 나눠 쓰게 하는 기술. 통신사가 여러 집을 묶어 한 번 더 하면 CGNAT."
+      },
+      {
+        "term": "듀얼 스택",
+        "plain": "한 기기나 네트워크가 IPv4와 IPv6를 둘 다 쓰는 것."
+      },
+      {
+        "term": "AAAA 레코드",
+        "plain": "사이트 이름에 IPv6 주소를 적어 두는 DNS 기록. 없으면 그 사이트는 IPv4로만 찾아갈 수 있다."
+      }
+    ],
+    "links": [
+      {
+        "title": "IPv4 주소 고갈 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/IPv4_주소_고갈",
+        "note": "주소가 언제 어떻게 바닥났는지와 NAT·IPv6 같은 대처",
+        "lang": "ko"
+      },
+      {
+        "title": "사설망 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/사설망",
+        "note": "10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 사설 주소와 RFC 1918",
+        "lang": "ko"
+      },
+      {
+        "title": "네트워크 주소 변환 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/네트워크_주소_변환",
+        "note": "공인 주소 하나를 여럿이 나눠 쓰는 NAT의 원리",
+        "lang": "ko"
+      },
+      {
+        "title": "Google IPv6 통계",
+        "url": "https://www.google.com/intl/en/ipv6/statistics.html",
+        "note": "구글에 IPv6로 접속하는 사용자 비율 그래프와 나라별 지도",
+        "lang": "en"
+      },
+      {
+        "title": "Free Pool of IPv4 Address Space Depleted - NRO",
+        "url": "https://www.nro.net/ipv4-free-pool-depleted/",
+        "note": "2011년 2월 3일 IANA 주소가 바닥났다는 발표문",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "급매 전단의 주소 203.0.113.0/24 → 문서에 예시로만 쓰라고 떼어 둔 주소(RFC 5737)라 실제로는 아무도 못 산다. 진짜 허위 매물이다. 카드의 거래 칸 \"계약 완료 · 아직 광고 중\"도 이미 팔린 집을 계속 걸어 두는 흔한 허위 매물 수법이다.",
+      "셰어하우스 전단의 100.64.0.0/10 → 통신사 CGNAT용으로 2012년에 떼어 준 주소(RFC 6598)다. 그 문서에는 \"IESG와 IETF는 여전히 IPv6 보급에 힘쓴다\"는 노트가 붙어 있다.",
+      "개발 제한 전단의 240.0.0.0/4 → 특수 주소 공식 목록(RFC 6890)은 이 땅을 1989년 8월 RFC 1112가 '앞으로 쓸 주소 방식'을 위해 예약했다고 적고, 지금도 인터넷에서 전달하지 않는다고 적는다. 그래서 \"1989년부터 '나중에'\"다. 사실 같은 문장은 1986년 RFC 988에 이미 있었다. '나중에'는 생각보다 더 오래됐다.",
+      "견본주택 게이지의 약 48% → 구글에 IPv6로 접속하는 사용자 비율이다(2026년 10월 둘째 주 평균). 신도시의 집이 절반 찼다는 뜻은 아니다. IPv6 주소는 거의 전부 비어 있다.",
+      "매물 번호 IPv4-0000·0127·0192·0100·0240·0203 → 각 주소의 첫 숫자다. 넓은 화면에서 간판 옆에 붙는 \"1981년 개업\"은 IPv4 규격(RFC 791)이 나온 해이고, 견본주택의 \"31년째\"는 첫 IPv6 규격(RFC 1883, 1995년 12월)부터 오늘 날짜로 센다."
+    ]
+  },
+  "en": {
+    "line": "It sells internet addresses like real estate: the IPv4 neighborhood sold out in 2011, and only about half the people have moved to the huge IPv6 new town next door, leasing since 1995.",
+    "points": [
+      "A red SOLD sticker on every listing → IPv4 has only about 4.3 billion addresses, fewer than there are people. The central pool that hands them out (IANA) ran dry in February 2011, and the five regional registries followed one by one by 2019. The window is styled after a Korean neighborhood real-estate office, whose glass is papered from edge to edge with listing sheets.",
+      "\"There's no place like 127.0.0.1\" on the 127.0.0.1 listing → Dorothy's \"There's no place like home\" from The Wizard of Oz, with home swapped for 127.0.0.1, the address a computer uses to reach itself (loopback). In fact every address that starts with 127 points back at the same computer: 16,777,216 rooms for one occupant, who mostly uses just 127.0.0.1. That is also why the letter that flies out of this listing turns around on the doorstep and goes straight back in: nothing sent to loopback ever leaves the machine.",
+      "\"Same address as next door\" at 192.168.0.1 → home routers everywhere reuse the same private addresses. They only mean something inside your own home, so nobody minds.",
+      "The moving truck and \"Welcome home. Both of them.\" → IPv6 cannot talk to IPv4 directly, so one old printer that only speaks IPv4 is enough to keep you living in both (dual stack). So the new home gets a sticker too: \"HALF MOVED IN\". In real life, most people who moved to IPv6 still keep IPv4 running alongside it.",
+      "(Only when you press \"Move to IPv6\") each move leaves one more thing at the old door → the favorite site whose IPv6 is still \"on the roadmap\" (it has no AAAA record), the router whose admin page only lives at 192.168.0.1, the config file hardcoded to 10.0.0.5, and last of all you, who can't remember a single IPv6 address."
+    ],
+    "terms": [
+      {
+        "term": "IP address",
+        "plain": "the street address the internet uses to find a device. IPv4 is written as four numbers, like 192.168.0.1."
+      },
+      {
+        "term": "IPv6",
+        "plain": "the newer system with 2¹²⁸ (about 3.4×10³⁸) addresses, first specified in 1995. Its addresses look like 2001:db8::1 and are hard to memorize."
+      },
+      {
+        "term": "NAT",
+        "plain": "lets the devices in a home share the router's one public address. When the internet provider does it again for many homes, it is carrier-grade NAT (CGNAT)."
+      },
+      {
+        "term": "Dual stack",
+        "plain": "a device or network running IPv4 and IPv6 at the same time."
+      },
+      {
+        "term": "AAAA record",
+        "plain": "the DNS entry that gives a site's name an IPv6 address. Without one, the site can only be reached over IPv4."
+      }
+    ],
+    "links": [
+      {
+        "title": "IPv4 address exhaustion - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/IPv4_address_exhaustion",
+        "note": "when and how the addresses ran out, region by region",
+        "lang": "en"
+      },
+      {
+        "title": "Private network - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Private_network",
+        "note": "the 10/8, 172.16/12 and 192.168/16 ranges every home reuses",
+        "lang": "en"
+      },
+      {
+        "title": "Carrier-grade NAT - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Carrier-grade_NAT",
+        "note": "NAT run by the provider, and the shared 100.64.0.0/10 block",
+        "lang": "en"
+      },
+      {
+        "title": "Google IPv6 statistics",
+        "url": "https://www.google.com/intl/en/ipv6/statistics.html",
+        "note": "the share of users reaching Google over IPv6, with a map by country"
+      },
+      {
+        "title": "Free Pool of IPv4 Address Space Depleted - NRO",
+        "url": "https://www.nro.net/ipv4-free-pool-depleted/",
+        "note": "the February 3, 2011 announcement"
+      }
+    ],
+    "deep": [
+      "The motivated seller's 203.0.113.0/24 → that block is reserved for documentation examples (RFC 5737), so nobody can actually buy it. The listing really is fake. Its card's status, \"Sold · still advertised\", is the classic fake-listing trick: keep a sold home up to bring in calls.",
+      "The shared-housing listing's 100.64.0.0/10 → set aside for carrier-grade NAT in 2012 (RFC 6598), with a note that \"the IESG and the IETF remain committed to the deployment of IPv6.\"",
+      "The reserved lot 240.0.0.0/4 → the official list of special addresses (RFC 6890) dates it to August 1989, when RFC 1112 reserved it \"for future addressing modes\", and still marks it as not forwarded on the internet. Hence \"Saved for later since 1989.\" The same sentence was actually already in RFC 988 in 1986, so \"later\" is even older than the sign says.",
+      "The model home's 48% → the share of users who reach Google over IPv6 (average for the second week of October 2026). It does not mean the new town is half full: almost every IPv6 address is still empty.",
+      "Listing numbers IPv4-0000, 0127, 0192, 0100, 0240, 0203 → the first number of each address. \"Est. 1981\", next to the sign on wide screens, is the year of the IPv4 specification (RFC 791), and \"year 31\" on the banner counts from the first IPv6 specification (RFC 1883, December 1995) to today."
+    ]
+  }
+}

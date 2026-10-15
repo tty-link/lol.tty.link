@@ -1,0 +1,169 @@
+{
+  "id": "cable-entropy",
+  "title": {
+    "en": "Cable Entropy",
+    "ko": "선 정리의 엔트로피"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "서버 랙의 케이블을 완벽하게 정리한 날부터 1년 동안 저절로 엉망이 되어 가는 과정을, '무질서(엔트로피)는 저절로 줄어들지 않는다'는 열역학 제2법칙 탓으로 돌리는 타임랩스다.",
+    "points": [
+      "1일차에 카메라가 랙을 잡자 다발이 숨을 참듯 홀쭉해지고, 플래시가 터진 뒤 반듯한 사진이 걷히는 자리에서 다발이 불룩하게 숨을 내쉰다 → 선 정리는 사진을 찍는 그 순간이 가장 깨끗하다(\"위키에 올릴 사진도 찍었어요.\").",
+      "\"오늘만 쓸게요\" 하던 흰 임시 케이블 → 인쇄한 라벨은 1년 사이 다 떨어지는데, 마스킹 테이프에 손으로 쓴 '임시'만 끝까지 붙어 있다. 임시가 제일 오래간다.",
+      "회색 선에 붙은 노란 경고표 \"뽑지 마세요. 내력벽일 수도 있어요.\" → 정체를 아무도 모르는 선은 무서워서 아무도 못 뽑는다. 아파트 내력벽처럼 함부로 못 허무는 선(영어로 load-bearing)이 되어 버렸다.",
+      "365일차 \"스파게티. 위키는 아직 1일차예요.\" → 랙 모서리에는 1일차에 찍은 반듯한 사진이 그대로 붙어 있다. 현실은 1년을 살았는데 문서는 사진 찍은 날에 멈춰 있다. 처음 3초의 사진 장면이 이 한 줄의 밑밥이었다.",
+      "366일차에 도착한 케이블 타이 100개 상자와 \"희망은 재생 에너지니까요.\" → 무질서는 저절로 줄지 않지만, 희망은 재생 에너지처럼 다시 차오른다는 말장난이다.",
+      "2초쯤 뒤 상자 글씨가 ×100에서 ×99로 바뀌고, 새 케이블 타이 한 개가 날아가 임시 케이블을 랙 기둥에 단단히 묶는다 → 새 희망으로 처음 한 일이 '오늘만' 쓴다던 임시 케이블을 아예 고정하는 것이다. 다시 정리하는 게 아니라 임시가 정식이 됐다. (자동 재생에서는 늘 나온다. 슬라이더로 366일차에 갔다면 2초쯤 머물러야 보이고, 동작 줄이기에서는 처음부터 ×99에 묶여 있다.)"
+    ],
+    "terms": [
+      {
+        "term": "엔트로피",
+        "plain": "흔히 '무질서한 정도'로 풀이하는 물리량. 열역학 제2법칙에 따르면 바깥과 아무것도 주고받지 않는 계(고립계)의 엔트로피는 저절로 줄어들지 않는다. 물론 랙은 고립계가 아니다. 엉망을 만든 건 '오늘만' 꽂은 사람들인데, 욕은 물리 법칙이 먹는다."
+      },
+      {
+        "term": "내력벽",
+        "plain": "건물 무게를 받치는 벽. 리모델링 때 \"내력벽이라 못 허물어요\"라는 말을 듣는다. 영어권 개발자는 뭘 받치는지 몰라서 못 건드리는 코드나 선을 load-bearing(하중을 받치는)이라고 부른다."
+      },
+      {
+        "term": "랙",
+        "plain": "서버와 네트워크 장비를 층층이 끼워 넣는 철제 선반."
+      },
+      {
+        "term": "패치 패널",
+        "plain": "케이블을 꽂는 구멍이 줄지어 있는 판. 여기서 스위치까지 짧은 선으로 잇는다."
+      },
+      {
+        "term": "스위치",
+        "plain": "여러 장비를 하나의 네트워크로 이어 주는 장치. 포트 옆 불이 깜빡이면 데이터가 오가고 있다는 뜻이다."
+      },
+      {
+        "term": "케이블 스파게티",
+        "plain": "선이 국수처럼 엉킨 상태를 실제로 이렇게 부른다. 엉킨 선 하나를 옮기다 엉뚱한 장비가 뽑히기도 해서, 아무도 함부로 손대지 못한다."
+      },
+      {
+        "term": "케이블 타이",
+        "plain": "선을 묶는 플라스틱 끈. 이 랙에서는 1년 사이 하나는 끊어지고 하나는 미끄러져 내려간다."
+      }
+    ],
+    "links": [
+      {
+        "title": "엔트로피 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/엔트로피",
+        "note": "열역학과 정보 이론에서 말하는 엔트로피",
+        "lang": "ko"
+      },
+      {
+        "title": "열역학 제2법칙 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/열역학_제2법칙",
+        "note": "고립된 계의 엔트로피는 줄어드는 쪽으로 가지 않는다는 법칙",
+        "lang": "ko"
+      },
+      {
+        "title": "패치 패널 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/패치_패널",
+        "note": "회선을 모아 꽂고 바꿔 잇는 단자판",
+        "lang": "ko"
+      },
+      {
+        "title": "Cable management - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Cable_management",
+        "note": "선 정리 방법과, 엉킨 선을 정말 '케이블 스파게티'라고 부른다는 것",
+        "lang": "en"
+      },
+      {
+        "title": "xkcd 2347: Dependency",
+        "url": "https://xkcd.com/2347/",
+        "note": "'현대 디지털 인프라 전체'라는 블록 탑이 누군가 2003년부터 알아주는 이 없이 관리해 온 작은 블록 하나에 기대고 있는 그림. 내력벽 같은 선과 같은 농담이다",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "사진 속 다발 → 카메라 앞에서 숨을 참은 모습이 찍혀서, 실제 1일차보다도 허리가 홀쭉하다. 위키 사진은 원래 그렇다. (동작 줄이기를 켜 두면 사진 찍는 장면 없이 반듯한 1일차 사진만 모서리에 붙어 있다.)",
+      "90일차 캡션 \"케이블 타이 하나가 포기했어요. 아무도 몰랐고요.\" → 캡션이 뜰 때 끊어진 타이 두 조각은 이미 스위치 위에 떨어져 있다. 떨어지는 순간에는 아무 말도 없었다.",
+      "180일차 캡션 \"보라색 선이 뭐 하는 건지 아무도 몰라요\" → 보라색 선의 라벨(VPN)만 다른 라벨보다 두 배 빨리 떨어져서, 그날이면 정말 라벨이 없다.",
+      "임시 케이블과 회색 선이 꽂히는 곳 → 1일차에 비어 있던 양 끝 포트(9번과 0번)다. 꽂히는 순간 그 포트 불이 켜진다. 다른 선끼리 자리를 바꿀 때도 하루 만에 뽑아서 맞바꿔 꽂아서(DB와 VPN은 140일차쯤, MAIL과 NAS는 231일차쯤) 한 포트에 두 가닥이 꽂히는 날은 없다.",
+      "슬라이더 눈금 1·30·90·180·365 → 같은 간격이 아니라 1년 위의 실제 날짜 자리에 있다(30일차는 왼쪽에서 7.9%).",
+      "365일차에 남은 라벨 → 인쇄한 라벨은 하나도 없고 '오늘만' 쓴다던 임시 케이블의 손글씨 테이프만 붙어 있다."
+    ]
+  },
+  "en": {
+    "line": "This time-lapse follows one server rack from perfect cable management on day 1 to spaghetti on day 365, and blames the second law of thermodynamics: left alone, disorder never goes down.",
+    "points": [
+      "On day 1 the camera frames the rack and the bundle sucks its waist in; the flash goes off, and as the neat photo comes off the rack the bundle under it lets its breath out → cabling is never tidier than the moment it's photographed (\"Photo taken for the wiki.\").",
+      "The white temporary cable, \"Just for today.\" → every printed label peels off during the year, but the hand-written masking tape \"TEMP\" is still there on day 365. Nothing lasts like a temporary fix.",
+      "The yellow tag on the grey cable, \"Do not unplug. It might be load-bearing.\" → nobody knows what it does, so nobody dares to touch it. Like a wall that holds up the building, it has become \"load-bearing\".",
+      "Day 365, \"Spaghetti. The wiki still says Day 1.\" → the neat photo from day 1 is still taped to the rack's corner. The rack lived through a year; the docs stopped on the day they were written. The photo in the first three seconds was the setup for this line.",
+      "Day 366: a box of 100 zip ties and \"Hope is renewable.\" → disorder never shrinks by itself, but hope, like renewable energy, comes back.",
+      "A couple of seconds later the box goes from ×100 to ×99, and the first new zip tie flies up and straps the temporary cable to the rack post → the first thing the fresh hope gets spent on is making the \"just for today\" cable official. Nobody starts tidying up; the temporary fix is now permanent. (Autoplay always gets there. Dragged to day 366 by hand, it takes about two seconds on that day; with reduced motion the box already says ×99 and the cable is already strapped.)"
+    ],
+    "terms": [
+      {
+        "term": "Entropy",
+        "plain": "roughly, how disordered something is. The second law of thermodynamics says the entropy of an isolated system (one that swaps nothing with the outside) never goes down by itself. Of course a rack isn't an isolated system: people made this mess, and physics takes the blame."
+      },
+      {
+        "term": "Load-bearing",
+        "plain": "holding up part of a building, like a wall you can't knock down. Developers use it for code or cables nobody understands but nobody dares to remove, in case something falls."
+      },
+      {
+        "term": "Rack",
+        "plain": "a metal frame that holds servers and network gear stacked on top of each other."
+      },
+      {
+        "term": "Patch panel",
+        "plain": "a row of sockets where cables end up, so short cables can link them to the switch."
+      },
+      {
+        "term": "Switch",
+        "plain": "the box that joins devices into one network; a blinking light next to a port means data is flowing."
+      },
+      {
+        "term": "Cable spaghetti",
+        "plain": "the real name for a tangle like this. Moving one cable can unplug something else, which is why nobody touches it."
+      },
+      {
+        "term": "Zip tie",
+        "plain": "a plastic strap for bundling cables. In this rack one snaps and one slides off within the year."
+      }
+    ],
+    "links": [
+      {
+        "title": "Entropy - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Entropy",
+        "note": "entropy in thermodynamics and beyond",
+        "lang": "en"
+      },
+      {
+        "title": "Second law of thermodynamics - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Second_law_of_thermodynamics",
+        "note": "why an isolated system's entropy doesn't go down",
+        "lang": "en"
+      },
+      {
+        "title": "Cable management - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Cable_management",
+        "note": "how cables get organized, and where \"cable spaghetti\" is the actual term",
+        "lang": "en"
+      },
+      {
+        "title": "Patch panel - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Patch_panel",
+        "note": "the panel of jacks where the cables start, at the top of this rack",
+        "lang": "en"
+      },
+      {
+        "title": "xkcd 2347: Dependency",
+        "url": "https://xkcd.com/2347/",
+        "note": "a tower labelled \"All modern digital infrastructure\" resting on one tiny block someone has been thanklessly maintaining since 2003, the same joke as the load-bearing cable"
+      }
+    ],
+    "deep": [
+      "The bundle in the photo → it was caught holding its breath, so its waist is even slimmer than the real day 1. Wiki photos are like that. (With reduced motion on, there is no photo shoot: a plain day-1 photo is simply taped to the corner.)",
+      "Day 90, \"A zip tie gave up. Nobody noticed.\" → by the time the caption appears, the two halves of the snapped tie are already lying on the switch. Nothing was said when it fell.",
+      "Day 180, \"Nobody remembers what the purple one does\" → the purple cable's label (VPN) peels twice as fast as the others, so by then it really is gone.",
+      "Where the temporary cable and the grey cable plug in → the two ports at the ends (9 and 0) that were empty on day 1, and a port's light comes on the moment something is plugged in. When two cables trade places, it happens in one day, unplug and plug (DB and VPN around day 140, MAIL and NAS around day 231), so no port ever takes two cables.",
+      "The slider ticks 1, 30, 90, 180, 365 → not evenly spaced: each sits where its day falls in the year (day 30 is 7.9% from the left).",
+      "The labels left on day 365 → not one printed label, only the hand-written tape on the \"just for today\" cable."
+    ]
+  }
+}

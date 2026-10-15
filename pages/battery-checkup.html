@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Battery Health Checkup | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Kalam:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="sticker pilgi"></script>
+<style>
+  /* A phone battery's annual checkup. The report is printed, the results are typed in and
+     stickered, the X-ray and the day's charge chart come back, and the doctor writes the
+     one piece of advice that works for batteries and people alike. */
+  :root {
+    --bg: #d9e6e6;
+    --paper: #fbfcfd;
+    --teal: #0f7c80;
+    --teal-ink: #0a5457;
+    --teal-tint: #e6f2f2;
+    --rule: #c9d6dc;
+    --ink: #1c2a31;
+    --soft: #5b6d75;
+    --ok: #2e9d5b;
+    --warn: #e3a008;
+    --bad: #d64545;
+    --myst: #7a5af5;
+    --xray: #0d1b24;
+    --xglow: #8fe3ff;
+    --wall: #e6f0ee;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container: page / size;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(90cqmax 70cqmax at 70% 30%, #e6efef, var(--bg) 70%);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', 'IBM Plex Sans KR', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', 'IBM Plex Sans', system-ui, sans-serif; word-break: keep-all; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid #f2b705; outline-offset: 2px; border-radius: 6px; }
+  .mono { font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', ui-monospace, monospace; }
+
+  .layout {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+    gap: clamp(10px, 2.2cqmin, 24px);
+    padding: clamp(10px, 2.4cqmin, 26px);
+  }
+
+  /* Opened on its own, the kit puts two links at the bottom right; keep them off the paper. */
+  html:not(.embedded) .layout { padding-bottom: max(clamp(10px, 2.4cqmin, 26px), 48px); }
+
+  /* ---------- The exam room ---------- */
+  .ward {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 1.2cqh;
+    min-height: 0;
+    border-radius: 16px;
+    background: var(--wall);
+    box-shadow: inset 0 0 0 1px rgba(15, 124, 128, .12), 0 10px 30px rgba(20, 50, 55, .12);
+    overflow: hidden;
+  }
+  .stage { container-type: size; display: grid; place-items: center; min-height: 0; }
+  .scene { position: relative; width: min(100cqi, calc(100cqb * 300 / 520)); aspect-ratio: 300 / 520; }
+  .patient { position: absolute; inset: 0; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .patient:focus-visible { outline-offset: -4px; }
+  .room { display: block; width: 100%; height: 100%; overflow: visible; }
+  .room text { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+  /* phone face and state */
+  .room .happy, .room .brow, .room .m-wavy, .room .sweat, .room .bolt-on, .room .drip { opacity: 0; transition: opacity .25s; }
+  .room.resting .happy { opacity: 1; }
+  .room.resting .eye-open { opacity: 0; }
+  .room.worried .brow, .room.worried .m-wavy, .room.worried .sweat { opacity: 1; }
+  .room.worried .m-smile { opacity: 0; }
+  .room.plugged .bolt-on { opacity: 1; }
+  .room.charging .drip { opacity: 1; }
+  .room .eye-open, .room .m-smile { transition: opacity .25s; }
+  .room .cable { transform-box: view-box; transform-origin: 42px 160px; rotate: 7deg; transition: rotate .45s cubic-bezier(.3, .8, .3, 1.2); }
+  .room.plugged .cable { rotate: 0deg; }
+  .room .blinker { transform-box: fill-box; transform-origin: 50% 55%; animation: blink 4.6s infinite; }
+  @keyframes blink { 0%, 93%, 100% { transform: none; } 95% { transform: scaleY(.1); } }
+  .room .ecg { animation: ecg 1.4s linear infinite; }
+  @keyframes ecg { to { transform: translateX(-40px); } }
+  .room .beat { transform-box: fill-box; transform-origin: center; animation: beat 1.4s ease-out infinite; }
+  @keyframes beat { 0%, 30%, 100% { transform: none; } 12% { transform: scale(1.35); } }
+  .room .drip { stroke-dasharray: 2 7; animation: drip .7s linear infinite; }
+  @keyframes drip { to { stroke-dashoffset: -9; } }
+  /* the phone strip's own drip bag and monitor (the wide room's are outside its crop) */
+  .room .mini { display: none; }
+  .room .mini-cable { transform-box: view-box; transform-origin: 87px 282px; rotate: 26deg; transition: rotate .45s cubic-bezier(.3, .8, .3, 1.2); }
+  .room.plugged .mini-cable { rotate: 0deg; }
+  .room .mini .drip { stroke-dasharray: 1.6 4.4; animation-name: mini-drip; }
+  @keyframes mini-drip { to { stroke-dashoffset: -6; } }
+  .room .mini-ecg { animation: mini-ecg 1.4s linear infinite; }
+  @keyframes mini-ecg { to { transform: translateX(-10px); } }
+
+  .say {
+    position: absolute;
+    left: 6%;
+    right: 4%;
+    bottom: 51%;
+    padding: .55em .8em .6em;
+    border-radius: 14px;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 0 0 1.5px var(--teal), 0 6px 16px rgba(10, 60, 64, .18);
+    font-size: clamp(12px, 5.2cqi, 16px);
+    font-weight: 500;
+    line-height: 1.35;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .say.on { opacity: 1; }
+  .say::after {
+    content: "";
+    position: absolute;
+    left: 56%;
+    top: 100%;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    box-shadow: 1.5px 1.5px 0 var(--teal);
+    translate: -50% -50%;
+    rotate: 45deg;
+  }
+  .say.low { box-shadow: 0 0 0 1.5px var(--bad), 0 6px 16px rgba(90, 20, 20, .18); }
+  .say.low::after { box-shadow: 1.5px 1.5px 0 var(--bad); }
+  .side { position: relative; z-index: 1; display: grid; padding: .4cqh 1.6cqh 1.8cqh; background: #cfdddb; }
+  .side > * { grid-area: 1 / 1; }
+  .say-narrow { display: none; }
+  .hint { align-self: end; color: var(--soft); font-size: clamp(12px, 1.5cqmin, 14px); line-height: 1.4; text-align: center; transition: opacity .3s; }
+
+  /* ---------- The report ---------- */
+  .tray { position: relative; min-height: 0; padding-top: 10px; }
+  /* the printer's mouth the paper comes out of */
+  .tray::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    right: -6px;
+    top: 0;
+    height: 12px;
+    border-radius: 8px;
+    background: linear-gradient(#5d6d73, #33434a);
+    box-shadow: 0 2px 4px rgba(0,0,0,.25);
+    z-index: 2;
+  }
+  .paper {
+    container: report / size;
+    position: relative;
+    height: 100%;
+    background: var(--paper);
+    box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 14px 34px rgba(20, 50, 55, .18);
+  }
+  .sheet {
+    --fs: clamp(11px, min(2.15cqi, 2.25cqb), 16.5px);
+    display: flex;
+    flex-direction: column;
+    gap: .55em;
+    height: 100%;
+    padding: 0 1.4em 1em;
+    font-size: var(--fs);
+    line-height: 1.3;
+  }
+  .head, .pbox, .lower { flex: none; }
+  .head { display: grid; gap: .55em; }
+  .band {
+    display: flex;
+    align-items: center;
+    gap: .6em;
+    margin: 0 -1.4em;
+    padding: .55em 1.4em .5em;
+    background: var(--teal);
+    color: #fff;
+  }
+  .logo { flex: none; width: 1.9em; height: 1.9em; }
+  .hosp { font-weight: 700; font-size: 1.12em; letter-spacing: .01em; }
+  .hosp small { display: block; font-weight: 500; font-size: max(11px, .72em); letter-spacing: .12em; text-transform: uppercase; opacity: .82; }
+  .lang-ko .hosp small { letter-spacing: .04em; }
+  .barcode { margin-left: auto; flex: none; height: 2em; padding: .25em .4em; border-radius: 3px; background: #fff; }
+  .barcode svg { display: block; height: 100%; width: auto; }
+  .title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1em;
+    padding: .15em 0 .35em;
+    border-bottom: 3px double var(--teal);
+    color: var(--teal-ink);
+    font-size: 1.5em;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -.01em;
+  }
+  .title .page-no { flex: none; font-size: max(11px, .5em); font-weight: 500; color: var(--soft); letter-spacing: .04em; }
+
+  .pbox { display: grid; grid-template-columns: repeat(5, auto); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+  .pbox > div { padding: .3em .6em .35em; border-left: 1px solid var(--rule); min-width: 0; }
+  .pbox > div:first-child { border-left: 0; }
+  .pbox dt { font-size: max(11px, .76em); color: var(--soft); letter-spacing: .02em; }
+  .pbox dd { font-weight: 600; white-space: nowrap; }
+  .pbox dd.mono { font-weight: 500; }
+
+  .results { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .results { --cols: minmax(0, 1.25fr) minmax(0, 1.5fr) minmax(0, .95fr) 8.4em; }
+  .lang-ko .results { --cols: minmax(0, 1.1fr) minmax(0, 1.45fr) minmax(0, .9fr) 9.4em; }
+  .thead, .row { display: grid; grid-template-columns: var(--cols); align-items: center; column-gap: .9em; padding: 0 .6em; }
+  .thead { padding-block: .32em; border-top: 2px solid var(--teal); border-bottom: 1px solid var(--teal); background: var(--teal-tint); color: var(--teal-ink); font-size: max(11px, .8em); font-weight: 600; letter-spacing: .03em; }
+  .thead > :last-child, .c-find { justify-self: center; }
+  .rows { display: grid; grid-auto-rows: minmax(min-content, 1fr); flex: 1 1 auto; min-height: 0; padding: 0; list-style: none; }
+  .rows > li { display: grid; border-bottom: 1px solid var(--rule); }
+  .row {
+    position: relative;
+    width: 100%;
+    min-height: 2.05em;
+    padding-block: .2em;
+    border: 0;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color .2s;
+  }
+  .row:hover { background: #f1f7f7; }
+  .row.on { background: #e3f1f1; box-shadow: inset 4px 0 0 var(--teal); }
+  .c-test { font-weight: 600; }
+  .c-res { position: relative; color: var(--ink); }
+  .c-res .full { visibility: hidden; }
+  .c-res.done .full { visibility: visible; }
+  .c-res .typed { position: absolute; inset: 0; }
+  .c-res.done .typed { display: none; }
+  .c-res .aside { color: var(--soft); }
+  /* Hangul has no Plex Mono; with mono spaces Korean results look gappy */
+  .lang-ko .c-res { font-family: 'IBM Plex Sans KR', sans-serif; font-variant-numeric: tabular-nums; font-weight: 500; }
+  .c-ref { color: var(--soft); font-size: .92em; }
+  .c-find { display: flex; align-items: center; gap: .4em; }
+  .c-find .pre { font-size: max(11px, .78em); color: var(--soft); white-space: nowrap; }
+  /* Findings are stickers. English: a round badge. Korean: font-kku sticker on the finding colour. */
+  .stk {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 4.6em;
+    padding: .2em .65em .22em;
+    border-radius: 999px;
+    background: var(--tone);
+    color: var(--tone-text, #fff);
+    font-size: max(11px, .84em);
+    font-weight: 700;
+    letter-spacing: .02em;
+    line-height: 1.2;
+    white-space: nowrap;
+    rotate: -3deg;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .55), 0 1px 2px rgba(0, 0, 0, .22);
+    opacity: 0;
+  }
+  .stk.on { opacity: 1; }
+  /* font-kku draws sticker ink above its own box; the extra top padding centres it */
+  .lang-ko .stk { min-width: 0; padding: .36em .5em .04em; border-radius: .55em; }
+  .stk { --kku-stk: max(14px, 1.32em); }
+  .stk > font-kku { color: var(--tone-ink); }
+  .stk-plain { display: none; }
+  .stk [part~="jamo"] { color: var(--tone-ink); }
+  .row:nth-child(odd) .stk { rotate: 2deg; }
+  .tone-ok { --tone: var(--ok); --tone-ink: #0f4a28; }
+  .tone-warn { --tone: var(--warn); --tone-text: #3b2a00; --tone-ink: #5a3d00; }
+  .tone-bad { --tone: var(--bad); --tone-ink: #5c1414; }
+  .tone-mystery { --tone: var(--myst); --tone-ink: #241066; }
+
+  /* The doctor's note for a row: below the row (above it for the last rows); on phones it
+     covers the X-ray and chart instead. Placed by placeNote(). */
+  .note {
+    position: absolute;
+    z-index: 3;
+    left: 20%;
+    width: min(62%, 30em);
+    padding: .6em .85em .7em;
+    border-radius: 10px;
+    background: #fffef4;
+    color: var(--ink);
+    box-shadow: 0 0 0 1.5px var(--teal), 0 10px 24px rgba(10, 60, 64, .22);
+    font-size: max(12px, .95em);
+    line-height: 1.45;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .note.on { opacity: 1; }
+  .note b { display: block; margin-bottom: .15em; color: var(--teal-ink); font-size: max(11px, .86em); letter-spacing: .02em; }
+  .note::before {
+    content: "";
+    position: absolute;
+    left: var(--tip, 2em);
+    top: 0;
+    width: 12px;
+    height: 12px;
+    background: #fffef4;
+    box-shadow: -1.5px -1.5px 0 var(--teal);
+    translate: -50% -50%;
+    rotate: 45deg;
+  }
+  .note.up::before { top: 100%; rotate: 225deg; }
+
+  .lower { display: grid; gap: .7em; }
+  .panels { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.5fr); gap: .8em; height: 8.6em; }
+  figure { position: relative; min-width: 0; min-height: 0; }
+  figcaption { font-size: max(11px, .78em); font-weight: 600; letter-spacing: .03em; }
+
+  .xray { display: flex; flex-direction: column; padding: .45em .55em .5em; border-radius: 6px; background: radial-gradient(120% 120% at 50% 40%, #16303d, var(--xray) 70%); color: var(--xglow); overflow: hidden; }
+  .xray svg { flex: 1 1 auto; min-height: 0; width: 100%; }
+  .xray .film { clip-path: inset(0 0 100% 0); }
+  .xray.scanned .film { clip-path: none; }
+  .xray .scan { opacity: 0; }
+  .xr-tag { position: absolute; right: .5em; bottom: .45em; padding: .05em .45em .1em; border: 1px solid #7dffb0; border-radius: 99px; background: rgba(13, 27, 36, .8); color: #9dffc4; font-size: max(11px, .76em); font-weight: 600; opacity: 0; }
+  .xr-tag.on { opacity: 1; }
+
+  .chart { display: flex; flex-direction: column; padding: .45em .6em .2em; border: 1px solid var(--rule); border-radius: 6px; background: #fff; }
+  .chart figcaption { color: var(--teal-ink); }
+  .plot { position: relative; flex: 1 1 auto; min-height: 0; margin: .3em .2em 1.25em 2em; }
+  .plot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .plot .band { transform-box: fill-box; transform-origin: 0 50%; }
+  .plot .band.hi, .plot .band.lo { fill: rgba(214, 69, 69, .13); }
+  .plot .band.ok { fill: rgba(46, 157, 91, .2); }
+  .plot .grid { stroke: var(--rule); stroke-width: 1; vector-effect: non-scaling-stroke; fill: none; }
+  .plot .grid.dash { stroke-dasharray: 3 3; }
+  .plot .area { fill: rgba(15, 124, 128, .08); }
+  .plot .curve { fill: none; stroke: var(--teal); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+  .plot .lbl { position: absolute; font-size: max(11px, .7em); color: var(--soft); line-height: 1; white-space: nowrap; }
+  .plot .yl { left: -.45em; translate: -100% -50%; }
+  .plot .xl { top: calc(100% + .35em); translate: -50% 0; }
+  /* bottom-left of the green band: the one corner the day's curve never crosses */
+  .plot .band-label { position: absolute; left: .35em; bottom: 22%; max-width: 62%; padding: .05em .3em; border-radius: 3px; background: rgba(244, 250, 246, .78); color: #1f7343; font-size: max(11px, .76em); font-weight: 600; line-height: 1.1; }
+  .plot .nw { white-space: nowrap; }
+  .plot .low-dot { position: absolute; width: .5em; height: .5em; border-radius: 50%; background: var(--bad); box-shadow: 0 0 0 2px #fff; translate: -50% -50%; }
+  .plot .low-dot i { position: absolute; right: calc(100% + .3em); top: 50%; translate: 0 -50%; color: var(--bad); font: 600 max(11px, .7em)/1 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; font-style: normal; white-space: nowrap; }
+  .reveal-band, .curve-wrap, .plot .low-dot, .band-label { opacity: 0; }
+  .plot.drawn .curve-wrap, .plot.drawn .low-dot, .plot.banded .reveal-band, .plot.banded .band-label { opacity: 1; }
+
+  .summary { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: 1em; padding: .5em .8em .55em; border: 1px solid var(--rule); border-left: 4px solid var(--teal); border-radius: 4px; background: #fcfdfd; }
+  .summary h2 { grid-column: 1 / -1; font-size: max(11px, .78em); font-weight: 600; letter-spacing: .03em; color: var(--teal-ink); }
+  .hand { min-height: 2.6em; color: #1d3a7a; font-family: 'Kalam', cursive; font-size: 1.22em; line-height: 1.32; }
+  .hand > font-kku { color: #1d3a7a; }
+  .hand .ch { display: inline; }
+  .sig { position: relative; display: grid; justify-items: center; min-width: 7.5em; padding-top: .2em; }
+  .sig svg { display: block; width: 7.5em; height: 1.9em; overflow: visible; }
+  .sig path { fill: none; stroke: #1d3a7a; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .sig .who { display: block; padding-top: .1em; border-top: 1px solid var(--soft); width: 100%; text-align: center; font-family: 'Kalam', cursive; font-weight: 700; font-size: 1.02em; color: var(--ink); white-space: nowrap; }
+  .lang-ko .sig .who { font-family: inherit; font-weight: 500; font-size: max(11px, .8em); display: flex; align-items: center; justify-content: center; gap: .35em; }
+  .seal { position: absolute; right: -.4em; top: -.5em; width: 2.6em; height: 2.6em; rotate: 9deg; opacity: 0; mix-blend-mode: multiply; }
+  .seal.on { opacity: .85; }
+  .write { opacity: 0; }
+  .write.on { opacity: 1; }
+
+  /* Wide but short report (1100×620 and the like): summary beside the X-ray and chart. */
+  @container report (min-aspect-ratio: 6/5) {
+    .lower { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); align-items: stretch; }
+    .panels { height: auto; min-height: 8em; }
+    .summary { grid-template-columns: 1fr; align-content: space-between; }
+    .sig { justify-self: end; }
+    .hand { font-size: 1.12em; }
+  }
+
+  /* ---------- Phones and portrait screens: the phone in a strip on top ---------- */
+  @container page (max-width: 699px) or (max-aspect-ratio: 11/10) {
+    .layout, html:not(.embedded) .layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: clamp(58px, 12.5cqh, 150px) minmax(0, 1fr); gap: 7px; padding: 8px; }
+    .ward { grid-template-rows: none; grid-template-columns: auto minmax(0, 1fr); gap: 6px; border-radius: 12px; }
+    .stage { container-type: normal; display: block; height: 100%; aspect-ratio: 222 / 106; }
+    .scene { width: 100%; height: 100%; aspect-ratio: auto; }
+    .room { overflow: hidden; }
+    /* in the strip: a small drip bag on the left and a monitor on the right, so the charger is
+       still the drip and the battery still the vital sign; the percent on the phone grows to
+       stay readable (10 px at the 58 px strip of the 358×396 stage) */
+    .room .mini { display: inline; }
+    .room .cable { display: none; }
+    .room .ph-pct { font-size: 19px; }
+    .say-wide { display: none; }
+    .say-narrow { display: block; position: relative; left: auto; right: auto; bottom: auto; align-self: center; font-size: clamp(11.5px, 3.3cqi, 15px); padding: .4em .6em .45em; margin-right: 2px; }
+    .say-narrow::after { left: 0; top: 50%; box-shadow: -1.5px 1.5px 0 var(--teal); }
+    .say-narrow.low::after { box-shadow: -1.5px 1.5px 0 var(--bad); }
+    .side { padding: 4px 8px 4px 2px; align-items: center; background: none; }
+    .hint { align-self: center; text-align: left; font-size: clamp(11px, 3cqi, 14px); }
+    .side.talking .hint { opacity: 0; }
+    .tray { padding-top: 7px; }
+    .tray::before { height: 9px; left: -4px; right: -4px; }
+    .sheet { --fs: clamp(11px, min(3.3cqi, 2.5cqb), 15px); gap: .45em; padding: 0 .75em .6em; }
+    /* letterhead and title share one teal band */
+    .head { grid-template-columns: auto minmax(0, 1fr); column-gap: .5em; row-gap: 0; align-items: center; margin: 0 -.75em; padding: .4em .75em .42em; background: var(--teal); }
+    .band { display: contents; }
+    .logo { grid-row: 1 / 3; width: 2.1em; height: 2.1em; }
+    .hosp { font-size: max(11px, .9em); line-height: 1.15; }
+    .barcode, .title .page-no { display: none; }
+    .title { grid-column: 2; padding: 0; border: 0; color: #fff; font-size: 1.12em; }
+    /* the patient box becomes one or two lines of values */
+    .pbox { display: flex; flex-wrap: wrap; column-gap: .45em; padding: .15em .5em .2em; border: 0; border-radius: 4px; background: var(--teal-tint); }
+    .pbox > div { padding: 0; border: 0; }
+    .pbox > div + div::before { content: "·"; margin-right: .45em; color: var(--soft); }
+    .pbox > div { display: flex; }
+    .pbox dt { display: none; }
+    .pbox dd { font-weight: 500; font-size: max(11px, .92em); }
+    .results { --cols: minmax(0, 1.1fr) minmax(0, 1.25fr) 6.7em; }
+    .lang-ko .results { --cols: minmax(0, 1.1fr) minmax(0, 1.3fr) 4.6em; }
+    .thead, .row { column-gap: .6em; padding: 0 .3em; }
+    .thead { padding-block: .2em; }
+    .thead > .h-ref, .c-ref, .c-find .pre, .c-res .aside { display: none; }
+    .rows { grid-auto-rows: minmax(min-content, 1fr); }
+    .row { min-height: 0; padding-block: .16em; line-height: 1.18; }
+    .c-test { font-weight: 500; }
+    .c-res { font-family: 'IBM Plex Sans', 'IBM Plex Sans KR', sans-serif; font-variant-numeric: tabular-nums; font-weight: 500; }
+    .stk { min-width: 0; padding: .12em .5em .14em; }
+    .lang-ko .stk { --kku-stk: 13px; padding: .34em .42em .06em; }
+    /* phones need every line; taller portrait screens give the spare height to the pictures */
+    .panels { height: max(5.3em, calc(5.3em + (100cqb - 40em) * .55)); gap: .5em; grid-template-columns: minmax(0, .92fr) minmax(0, 1.5fr); }
+    .xray figcaption { white-space: nowrap; }
+    .xray { padding: .3em .4em .35em; }
+    .xr-tag { right: .35em; bottom: .3em; }
+    .chart { padding: .3em .45em .1em; }
+    .plot { margin: .2em .1em 1.15em 1.7em; }
+    .plot .xl.minor, .plot .yl.minor { display: none; }
+    .plot .band-label { max-width: 86%; bottom: 50%; translate: 0 50%; white-space: nowrap; }
+    .plot .low-dot i { display: none; }
+    /* the signature moves up beside the heading, so the advice gets the full width */
+    .summary { grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: .3em .6em .4em; }
+    .summary h2 { grid-column: 1; grid-row: 1; }
+    .hand { grid-column: 1 / -1; grid-row: 2; min-height: 0; font-size: 1.1em; line-height: 1.25; }
+    .sig { grid-column: 2; grid-row: 1; display: flex; align-items: center; gap: .3em; min-width: 0; padding: 0; }
+    .sig svg { width: 3.6em; height: 1.1em; }
+    .sig .who { width: auto; padding: 0; border: 0; font-size: max(11px, .95em); }
+    .seal { position: static; width: 1.6em; height: 1.6em; }
+  }
+
+  /* Korean findings on a narrow report: font-kku sticker ink under 14 px reads as thin outlines,
+     so a small report (phones) gets plain bold badges like the English ones, and a roomier one
+     (the 648×732 home stage) gets bigger sticker ink. */
+  @container report (max-width: 479.98px) {
+    .lang-ko .stk > font-kku { display: none; }
+    .lang-ko .stk .stk-plain { display: inline; }
+    .lang-ko .stk { padding: .12em .5em .14em; border-radius: 999px; color: var(--tone-text, #fff); font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 700; letter-spacing: 0; }
+  }
+  /* (only in the phone/portrait layout, whose table has three columns: the wide layout keeps
+     its four, Reference included, and its own sticker size) */
+  @container page (max-width: 699px) or (max-aspect-ratio: 11/10) {
+    @container report (min-width: 480px) and (max-aspect-ratio: 6/5) {
+      .lang-ko .stk { --kku-stk: 17px; }
+      /* room for the small word before the sticker too: 보호자 상담, 생활 습관 개선 */
+      .lang-ko .results { --cols: minmax(0, 1.1fr) minmax(0, 1.3fr) 9em; }
+      .lang-ko .c-find .pre { display: inline; }
+      .lang-ko .c-find { justify-self: end; }
+    }
+  }
+  /* A short report: rows and the summary tighten a little first (360×520 opened on its own)... */
+  @container report (max-height: 440px) and (max-aspect-ratio: 6/5) {
+    .thead { padding-block: .12em; }
+    .row { padding-block: .1em; }
+    .summary { padding-block: .2em .3em; }
+    .hand { line-height: 1.16; }
+  }
+  /* ...and on the shortest (the 358×396 and 328×408 phone stages) all eight rows come first:
+     the X-ray and chart step out, and so do the patient line and the hospital's name over the
+     title. A row's note then opens beside the row, as on wide screens (placeNote). */
+  @container report (max-height: 400px) and (max-aspect-ratio: 6/5) {
+    .panels, .pbox, .hosp { display: none; }
+    .logo { grid-row: auto; width: 1.7em; height: 1.7em; }
+  }
+
+  /* tablets opened on their own get the kit's two full links too */
+  @container page (min-width: 601px) and ((max-width: 699px) or (max-aspect-ratio: 11/10)) {
+    html:not(.embedded) .layout { padding-bottom: 48px; }
+  }
+
+  /* Opened on its own on a phone, the kit's "?" and ":)" (about 84×50 px) sit in the bottom
+     right corner, over the end of the summary's lines: the handwriting stops short of them. */
+  @media (max-width: 600px) {
+    html:not(.embedded) .hand { padding-right: 60px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .room .blinker, .room .ecg, .room .mini-ecg, .room .beat, .room .drip, .room .mini .drip { animation: none; }
+    .room .cable, .room .mini-cable { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main class="layout">
+  <section class="ward">
+    <div class="stage">
+      <div class="scene">
+        <button class="patient" type="button" aria-pressed="false">
+          <svg class="room" viewBox="0 0 300 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+            <defs>
+              <clipPath id="mon-clip"><rect x="172" y="58" width="108" height="74" rx="3"/></clipPath>
+              <clipPath id="mini-clip"><rect x="264.5" y="249.5" width="26" height="19" rx="1.5"/></clipPath>
+              <linearGradient id="sheet-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d6f0ae"/><stop offset="1" stop-color="#b3db82"/></linearGradient>
+              <linearGradient id="pole-g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c3cfd3"/><stop offset=".5" stop-color="#eef3f4"/><stop offset="1" stop-color="#9eacb1"/></linearGradient>
+            </defs>
+            <!-- wall, rail, floor -->
+            <rect x="-400" y="-600" width="1100" height="1010" fill="#e6f0ee"/>
+            <rect x="-400" y="226" width="1100" height="6" fill="#d5e5e2"/>
+            <rect x="-400" y="410" width="1100" height="700" fill="#cfdddb"/>
+            <path d="M-400 410 H700" stroke="#b5c8c6" stroke-width="3"/>
+            <path d="M-90 410 L-160 620 M-15 410 L-60 620 M60 410 L28 620 M135 410 L128 620 M210 410 L228 620 M282 410 L330 620 M360 410 L440 620 M-400 456 H700 M-400 530 H700" stroke="#bfd0ce" stroke-width="1.5" fill="none"/>
+            <!-- a wall clock above the scene, on the visitor's time (seen when the room is tall) -->
+            <g class="clock" transform="translate(150 -62)">
+              <circle r="27" fill="#fff" stroke="#0f7c80" stroke-width="4"/>
+              <path d="M0 -21 V-17 M21 0 H17 M0 21 V17 M-21 0 H-17" stroke="#1c2a31" stroke-width="2.4" stroke-linecap="round"/>
+              <path class="hour-hand" d="M0 3 V-12" stroke="#1c2a31" stroke-width="3" stroke-linecap="round"/>
+              <path class="minute-hand" d="M0 4 V-18" stroke="#1c2a31" stroke-width="2" stroke-linecap="round"/>
+              <circle r="2.4" fill="#d64545"/>
+            </g>
+            <!-- eye chart, in batteries -->
+            <g transform="translate(96 46)">
+              <rect width="58" height="112" rx="3" fill="#fff" stroke="#c4d3d1" stroke-width="1.5"/>
+              <rect x="6" y="6" width="46" height="8" rx="2" fill="#0f7c80"/>
+              <g fill="none" stroke="#1c2a31" stroke-width="2">
+                <rect x="15" y="22" width="26" height="12" rx="2.5"/>
+              </g>
+              <rect x="41.5" y="25.5" width="2.5" height="5" fill="#1c2a31"/>
+              <rect x="17.5" y="24.5" width="15" height="7" fill="#2e9d5b"/>
+              <g fill="#1c2a31">
+                <rect x="9" y="44" width="15" height="7" rx="1.5"/><rect x="33" y="44" width="15" height="7" rx="1.5"/>
+                <rect x="7" y="61" width="10" height="5" rx="1"/><rect x="24" y="61" width="10" height="5" rx="1"/><rect x="41" y="61" width="10" height="5" rx="1"/>
+                <rect x="7" y="75" width="7" height="3.5" rx=".8"/><rect x="18.5" y="75" width="7" height="3.5" rx=".8"/><rect x="30" y="75" width="7" height="3.5" rx=".8"/><rect x="41.5" y="75" width="7" height="3.5" rx=".8"/>
+                <rect x="7" y="88" width="5" height="2.4" rx=".5"/><rect x="16" y="88" width="5" height="2.4" rx=".5"/><rect x="25" y="88" width="5" height="2.4" rx=".5"/><rect x="34" y="88" width="5" height="2.4" rx=".5"/><rect x="43" y="88" width="5" height="2.4" rx=".5"/>
+                <rect x="9" y="99" width="40" height="1.2" fill="#c4d3d1"/>
+              </g>
+            </g>
+            <!-- vital-signs monitor on a wall arm -->
+            <rect x="212" y="22" width="28" height="7" rx="2" fill="#a9b8bc"/>
+            <rect x="222" y="28" width="8" height="24" fill="#b7c4c8"/>
+            <rect x="166" y="52" width="120" height="86" rx="8" fill="#2b3a41"/>
+            <rect x="172" y="58" width="108" height="74" rx="3" fill="#0d1b24"/>
+            <g clip-path="url(#mon-clip)">
+              <g class="ecg">
+                <path d="M160 82 h14 l3 -3 l3 3 h4 l2 6 l3 -24 l3 24 l2 -6 h6 l3 -3 l3 3 h-2 h14 l3 -3 l3 3 h4 l2 6 l3 -24 l3 24 l2 -6 h6 l3 -3 l3 3 h-2 h14 l3 -3 l3 3 h4 l2 6 l3 -24 l3 24 l2 -6 h6 l3 -3 l3 3 h-2 h14 l3 -3 l3 3 h4 l2 6 l3 -24 l3 24 l2 -6 h6 l3 -3 l3 3 h-2 h20" fill="none" stroke="#47e08a" stroke-width="1.6" stroke-linejoin="round"/>
+              </g>
+            </g>
+            <path class="beat" d="M180 66 c-2.4 -3 -6 -1 -4 2 l4 4 l4 -4 c2 -3 -1.6 -5 -4 -2 z" fill="#ff6b81"/>
+            <g transform="translate(180 106)">
+              <rect width="26" height="13" rx="3" fill="none" stroke="#8fe3ff" stroke-width="1.6"/>
+              <rect x="26.5" y="4" width="2.4" height="5" rx="1" fill="#8fe3ff"/>
+              <rect class="mon-fill" x="2" y="2" width="13.6" height="9" rx="1.4" fill="#47e08a"/>
+              <path class="bolt-on" d="M14.5 1.5 L9.5 7.3 H13 L11.5 11.5 L16.8 5.6 H13.2 Z" fill="#ffd84a" stroke="#0d1b24" stroke-width=".8"/>
+            </g>
+            <text class="mon-pct" x="274" y="126" text-anchor="end" font-size="27" font-weight="600" fill="#8fe3ff">62%</text>
+            <!-- IV pole, with the charger hung where the drip would be -->
+            <rect x="38.5" y="98" width="5" height="392" rx="2.5" fill="url(#pole-g)"/>
+            <path d="M41 100 C 41 90, 56 90, 56 100" fill="none" stroke="#9eacb1" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M56 100 L 50 112" stroke="#9eacb1" stroke-width="1.6"/>
+            <path d="M41 488 L 14 502 M41 488 L 68 502 M41 488 L 41 506" stroke="#8d9ca1" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="14" cy="505" r="4.5" fill="#56656b"/><circle cx="68" cy="505" r="4.5" fill="#56656b"/><circle cx="41" cy="509" r="4.5" fill="#56656b"/>
+            <g class="cable">
+              <path d="M44 160 C 42 226, 46 282, 78 293 L 90 295" fill="none" stroke="#f4f7f8" stroke-width="5" stroke-linecap="round"/>
+              <path d="M44 160 C 42 226, 46 282, 78 293 L 90 295" fill="none" stroke="#b9c7cc" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 9999" />
+              <path d="M44 160 C 42 226, 46 282, 78 293 L 90 295" fill="none" stroke="#c9d5d9" stroke-width="1.2" stroke-linecap="round" transform="translate(-1.6 0)"/>
+              <path class="drip" d="M44 160 C 42 226, 46 282, 78 293 L 90 295" fill="none" stroke="#f2b705" stroke-width="2.4" stroke-linecap="round"/>
+              <rect x="86" y="289.5" width="15" height="11" rx="2.5" fill="#f4f7f8" stroke="#a4b4b9" stroke-width="1.4"/>
+              <rect x="100.5" y="292" width="9" height="6" rx="1.5" fill="#aab6ba"/>
+            </g>
+            <g transform="translate(26 110)">
+              <path d="M4 4 Q 16 -2 28 4 L 30 40 Q 16 52 2 40 Z" fill="#fff" stroke="#a9b9be" stroke-width="2"/>
+              <path d="M18 12 L 10 26 H 16 L 13 37 L 23 21 H 17 L 20 12 Z" fill="#f2b705" stroke="#c99400" stroke-width=".8" stroke-linejoin="round"/>
+              <rect x="13" y="45" width="8" height="8" rx="2" fill="#dde6e8" stroke="#a9b9be" stroke-width="1.4"/>
+            </g>
+            <!-- the phone strip (viewBox 72 244 222 106) crops all of that out: there a small drip
+                 bag hangs on the left with its own line to the phone, and a monitor on the right -->
+            <g class="mini">
+              <path d="M87 236 V 250" stroke="#9eacb1" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M78 252 Q 87 246.5 96 252 L 97 272 Q 87 280 77 272 Z" fill="#fff" stroke="#a9b9be" stroke-width="1.5"/>
+              <path d="M89.5 254.5 L 82.5 265 H 87 L 84.5 274 L 92.5 262 H 88 L 91 254.5 Z" fill="#f2b705" stroke="#c99400" stroke-width=".6" stroke-linejoin="round"/>
+              <rect x="84.3" y="276.5" width="5.4" height="6" rx="1.5" fill="#dde6e8" stroke="#a9b9be" stroke-width="1"/>
+              <g class="mini-cable">
+                <path d="M87 282 Q 87 295, 95 295" fill="none" stroke="#b9c7cc" stroke-width="4.4" stroke-linecap="round"/>
+                <path d="M87 282 Q 87 295, 95 295" fill="none" stroke="#f4f7f8" stroke-width="2.8" stroke-linecap="round"/>
+                <path class="drip" d="M87 282 Q 87 295, 95 295" fill="none" stroke="#f2b705" stroke-width="1.8" stroke-linecap="round"/>
+                <rect x="94.5" y="290.5" width="9.5" height="9" rx="2.2" fill="#f4f7f8" stroke="#a4b4b9" stroke-width="1.2"/>
+                <rect x="103.5" y="292.6" width="6.5" height="4.8" rx="1.2" fill="#aab6ba"/>
+              </g>
+              <rect x="276" y="236" width="4" height="12" fill="#b7c4c8"/>
+              <rect x="262" y="247" width="31" height="24" rx="3.5" fill="#2b3a41"/>
+              <rect x="264.5" y="249.5" width="26" height="19" rx="1.5" fill="#0d1b24"/>
+              <g clip-path="url(#mini-clip)">
+                <path class="mini-ecg" d="M258 257.5 h2.5 l1 -1.2 l1 1.2 h.8 l.6 1.6 l.9 -6.5 l.9 6.5 l.6 -1.6 h1.7 h2.5 l1 -1.2 l1 1.2 h.8 l.6 1.6 l.9 -6.5 l.9 6.5 l.6 -1.6 h1.7 h2.5 l1 -1.2 l1 1.2 h.8 l.6 1.6 l.9 -6.5 l.9 6.5 l.6 -1.6 h1.7 h2.5 l1 -1.2 l1 1.2 h.8 l.6 1.6 l.9 -6.5 l.9 6.5 l.6 -1.6 h1.7 h2.5 l1 -1.2 l1 1.2 h.8 l.6 1.6 l.9 -6.5 l.9 6.5 l.6 -1.6 h1.7" fill="none" stroke="#47e08a" stroke-width="1.1" stroke-linejoin="round"/>
+              </g>
+              <g transform="translate(267.5 261)">
+                <rect width="14.5" height="6.6" rx="1.6" fill="none" stroke="#8fe3ff" stroke-width="1.1"/>
+                <rect x="14.9" y="2" width="1.4" height="2.6" rx=".5" fill="#8fe3ff"/>
+                <rect class="mini-fill" x="1.2" y="1.2" width="7.4" height="4.2" rx=".8" fill="#47e08a"/>
+              </g>
+              <path class="beat" d="M287 262.6 c-1.1 -1.4 -2.8 -.5 -1.9 .9 l1.9 1.9 l1.9 -1.9 c.9 -1.4 -.8 -2.3 -1.9 -.9 z" fill="#ff6b81"/>
+            </g>
+            <!-- exam table -->
+            <rect x="222" y="306" width="64" height="24" rx="11" fill="#fff" stroke="#c7d6d3" stroke-width="1.6"/>
+            <rect x="74" y="326" width="216" height="20" rx="7" fill="url(#sheet-g)" stroke="#94c062" stroke-width="1.4"/>
+            <path d="M84 331 H 280" stroke="#e9f8d2" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+            <rect x="82" y="346" width="200" height="10" rx="3" fill="#8f9ca2"/>
+            <rect x="96" y="356" width="9" height="90" fill="#a3afb4"/><rect x="258" y="356" width="9" height="90" fill="#a3afb4"/>
+            <rect x="96" y="420" width="171" height="6" rx="2" fill="#97a4a9"/>
+            <rect x="88" y="444" width="25" height="7" rx="3" fill="#7c898e"/><rect x="250" y="444" width="25" height="7" rx="3" fill="#7c898e"/>
+            <!-- the patient -->
+            <g class="phone">
+              <rect x="150" y="259" width="20" height="4" rx="1.5" fill="#1b2430"/>
+              <rect x="106" y="262" width="140" height="66" rx="13" fill="#263140"/>
+              <rect x="113" y="268" width="126" height="54" rx="8" fill="#e8f6ff"/>
+              <circle cx="233" cy="295" r="2.6" fill="#1b2430"/>
+              <!-- status: battery and percent -->
+              <g transform="translate(200 272)">
+                <rect width="21" height="10.5" rx="2.6" fill="none" stroke="#263140" stroke-width="1.5"/>
+                <rect x="21.6" y="3.3" width="2" height="4" rx=".8" fill="#263140"/>
+                <rect class="ph-fill" x="1.8" y="1.8" width="10.7" height="6.9" rx="1.2" fill="#2e9d5b"/>
+                <path class="bolt-on" d="M11.8 .4 L7.6 5.6 H10.6 L9.4 10 L14 4.6 H10.8 Z" fill="#ffd84a" stroke="#263140" stroke-width=".7"/>
+              </g>
+              <text class="ph-pct" x="197" y="282.5" text-anchor="end" font-size="12.5" font-weight="600" fill="#263140">62%</text>
+              <!-- face -->
+              <g class="eyes">
+                <g class="eye-open">
+                  <g class="blinker">
+                    <ellipse cx="163" cy="299" rx="6.6" ry="7.6" fill="#fff" stroke="#263140" stroke-width="1.3"/>
+                    <ellipse cx="189" cy="299" rx="6.6" ry="7.6" fill="#fff" stroke="#263140" stroke-width="1.3"/>
+                    <g class="pupils">
+                      <circle cx="163.6" cy="300.4" r="3.6" fill="#1f2933"/><circle cx="189.6" cy="300.4" r="3.6" fill="#1f2933"/>
+                      <circle cx="164.9" cy="299" r="1.2" fill="#fff"/><circle cx="190.9" cy="299" r="1.2" fill="#fff"/>
+                    </g>
+                  </g>
+                </g>
+                <path class="happy" d="M157 301 q 6 -7.5 12 0 M183 301 q 6 -7.5 12 0" fill="none" stroke="#263140" stroke-width="2.2" stroke-linecap="round"/>
+                <path class="brow" d="M156 289.5 L 168 286 M196 289.5 L 184 286" fill="none" stroke="#263140" stroke-width="1.8" stroke-linecap="round"/>
+              </g>
+              <ellipse cx="153" cy="310" rx="5" ry="2.6" fill="#ff8fa3" opacity=".55"/>
+              <ellipse cx="199" cy="310" rx="5" ry="2.6" fill="#ff8fa3" opacity=".55"/>
+              <path class="m-smile" d="M171 310 q 5 4.6 10 0" fill="none" stroke="#263140" stroke-width="1.8" stroke-linecap="round"/>
+              <path class="m-wavy" d="M168.5 312 q 2.5 -2.6 5 0 t 5 0 t 5 0" fill="none" stroke="#263140" stroke-width="1.6" stroke-linecap="round"/>
+              <g class="sweat" fill="#6cc4ff" stroke="#3f9ad6" stroke-width=".8">
+                <path class="drop" d="M252 266 q -4 6 0 8.5 q 4 -2.5 0 -8.5 z"/>
+                <path class="drop" d="M258 281 q -3.4 5 0 7.2 q 3.4 -2.2 0 -7.2 z"/>
+              </g>
+            </g>
+            <!-- the stethoscope, draped over the patient -->
+            <g class="stetho" fill="none" stroke-linecap="round">
+              <path d="M128 252 C 126 258, 130 262, 136 262 M148 250 C 150 258, 146 262, 140 262" stroke="#9aa7ad" stroke-width="2.2"/>
+              <circle cx="128" cy="251" r="2.2" fill="#2b3a41" stroke="none"/><circle cx="148" cy="249" r="2.2" fill="#2b3a41" stroke="none"/>
+              <path d="M138 262 C 136 278, 122 286, 124 306 C 125 320, 132 330, 140 338" stroke="#2f4858" stroke-width="3.2"/>
+              <circle cx="143" cy="341" r="7" fill="#d9e1e4" stroke="#8d9ca1" stroke-width="2"/>
+              <circle cx="143" cy="341" r="3.4" fill="#b7c4c8" stroke="none"/>
+            </g>
+          </svg>
+        </button>
+        <p class="say say-wide" aria-live="polite"></p>
+      </div>
+    </div>
+    <div class="side">
+      <p class="say say-narrow" aria-live="polite"></p>
+      <p class="hint">
+        <span data-lang="en">Tap the phone to plug it in or out. Tap a row for the doctor's note.</span>
+        <span data-lang="ko">휴대폰을 누르면 충전기를 꽂고 뽑아요. 검사 줄을 누르면 의사 설명이 나와요.</span>
+      </p>
+    </div>
+  </section>
+
+  <div class="tray">
+    <article class="paper" aria-labelledby="doc-title">
+      <div class="sheet">
+        <header class="head">
+          <div class="band">
+          <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+            <rect x="1" y="1" width="38" height="38" rx="10" fill="#fff"/>
+            <path d="M23 5 L 10 22 H 18.5 L 15.5 35 L 30 17 H 21.5 L 25 5 Z" fill="#0f7c80"/>
+          </svg>
+          <p class="hosp">
+            <span data-lang="en">tty General Hospital</span>
+            <span data-lang="ko">tty 종합병원</span>
+          </p>
+          <div class="barcode" aria-hidden="true"><svg viewBox="0 0 64 20" preserveAspectRatio="none"></svg></div>
+          </div>
+          <h1 class="title" id="doc-title">
+            <span data-lang="en">Battery Health Checkup Report</span>
+            <span data-lang="ko">배터리 건강검진 결과 통보서</span>
+            <span class="page-no mono" aria-hidden="true">No. 0062-0081</span>
+          </h1>
+        </header>
+
+        <dl class="pbox">
+          <div><dt data-lang="en">Name</dt><dt data-lang="ko">이름</dt><dd data-lang="en">phone battery</dd><dd data-lang="ko">휴대폰 배터리</dd></div>
+          <div><dt data-lang="en">Type</dt><dt data-lang="ko">종류</dt><dd data-lang="en">lithium-ion</dd><dd data-lang="ko">리튬 이온</dd></div>
+          <div><dt data-lang="en">In service</dt><dt data-lang="ko">사용 기간</dt><dd data-lang="en">3 years</dd><dd data-lang="ko">3년</dd></div>
+          <div><dt data-lang="en">Design capacity</dt><dt data-lang="ko">설계 용량</dt><dd class="mono" data-lang="en">4,000 mAh</dd><dd class="mono" data-lang="ko">4,000mAh</dd></div>
+          <div><dt data-lang="en">Date</dt><dt data-lang="ko">수검일</dt><dd class="mono" data-date></dd></div>
+        </dl>
+
+        <section class="results">
+          <div class="thead" aria-hidden="true">
+            <span data-lang="en">Test</span><span data-lang="ko">검사 항목</span>
+            <span data-lang="en">Result</span><span data-lang="ko">결과</span>
+            <span class="h-ref" data-lang="en">Reference</span><span class="h-ref" data-lang="ko">참고치</span>
+            <span data-lang="en">Finding</span><span data-lang="ko">판정</span>
+          </div>
+          <ol class="rows"></ol>
+        </section>
+
+        <div class="lower">
+          <div class="panels">
+            <figure class="xray">
+              <figcaption><span data-lang="en">Cell cross-section</span><span data-lang="ko">배터리 단면</span></figcaption>
+              <svg viewBox="0 0 160 100" aria-hidden="true">
+                <g class="film">
+                  <rect x="34" y="11" width="13" height="13" rx="1.5" fill="none" stroke="#8fe3ff" stroke-width="1.3"/>
+                  <rect x="113" y="11" width="13" height="13" rx="1.5" fill="none" stroke="#8fe3ff" stroke-width="1.3"/>
+                  <path d="M37.5 17.5 h6 M40.5 14.5 v6 M116.5 17.5 h6" stroke="#cff4ff" stroke-width="1.4"/>
+                  <rect x="20" y="23" width="120" height="56" rx="7" fill="rgba(143,227,255,.07)" stroke="#8fe3ff" stroke-width="1.5"/>
+                  <g class="layers"></g>
+                  <g transform="translate(8 82)"><rect width="11" height="11" rx="1.5" fill="none" stroke="#8fe3ff" stroke-width=".9" opacity=".8"/><path d="M3.6 8.6 V2.4 h2.4 a1.8 1.8 0 0 1 0 3.6 h-2.4 M5.6 6 L7.8 8.6" fill="none" stroke="#8fe3ff" stroke-width=".9" opacity=".8"/></g>
+                </g>
+                <g class="scan">
+                  <rect x="0" y="-5" width="160" height="10" fill="url(#scan-g)"/>
+                  <rect x="0" y="-.6" width="160" height="1.2" fill="#e6fbff"/>
+                </g>
+                <defs><linearGradient id="scan-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fe3ff" stop-opacity="0"/><stop offset=".5" stop-color="#8fe3ff" stop-opacity=".55"/><stop offset="1" stop-color="#8fe3ff" stop-opacity="0"/></linearGradient></defs>
+              </svg>
+              <span class="xr-tag"><span data-lang="en">No swelling ✓</span><span data-lang="ko">부풂 없음 ✓</span></span>
+            </figure>
+            <figure class="chart">
+              <figcaption><span data-lang="en">Charge over one day</span><span data-lang="ko">하루 충전량</span></figcaption>
+              <div class="plot">
+                <svg viewBox="0 0 240 100" preserveAspectRatio="none" aria-hidden="true">
+                  <g class="reveal-band">
+                    <rect class="band hi" x="0" y="0" width="240" height="20"/>
+                    <rect class="band ok" x="0" y="20" width="240" height="60"/>
+                    <rect class="band lo" x="0" y="80" width="240" height="20"/>
+                  </g>
+                  <path class="grid" d="M60 0 V100 M120 0 V100 M180 0 V100"/>
+                  <path class="grid dash" d="M0 20 H240 M0 80 H240"/>
+                  <path class="grid" d="M0 0 V100 H240"/>
+                  <g class="curve-wrap">
+                    <path class="area"/>
+                    <path class="curve"/>
+                  </g>
+                </svg>
+                <span class="lbl yl mono minor" style="top:0%">100</span>
+                <span class="lbl yl mono" style="top:20%">80</span>
+                <span class="lbl yl mono" style="top:80%">20</span>
+                <span class="lbl yl mono minor" style="top:100%">0</span>
+                <span class="lbl xl mono" style="left:0%">0</span>
+                <span class="lbl xl mono minor" style="left:25%">6</span>
+                <span class="lbl xl mono" style="left:50%">12</span>
+                <span class="lbl xl mono minor" style="left:75%">18</span>
+                <span class="lbl xl mono" style="left:100%">24</span>
+                <span class="low-dot" style="left:75%; top:91%"><i><span data-lang="en">commute 9%</span><span data-lang="ko">퇴근길 9%</span></i></span>
+                <span class="band-label"><span data-lang="en">healthy range <span class="nw">20–80%</span></span><span data-lang="ko">건강 구간 <span class="nw">20~80%</span></span></span>
+              </div>
+            </figure>
+          </div>
+
+          <section class="summary">
+            <h2><span data-lang="en">Doctor's summary</span><span data-lang="ko">종합 소견</span></h2>
+            <p class="hand write"></p>
+            <div class="sig">
+              <svg viewBox="0 0 120 30" aria-hidden="true"><path class="scribble" pathLength="1" d="M4 22 C 12 4, 18 26, 26 14 S 38 6, 40 18 C 42 28, 52 6, 60 16 S 72 26, 80 12 C 84 6, 90 24, 98 16 L 116 12"/></svg>
+              <span class="who write"></span>
+              <svg class="seal" viewBox="0 0 40 40" aria-hidden="true">
+                <rect x="3" y="3" width="34" height="34" rx="5" fill="none" stroke="#d23b3b" stroke-width="2.6"/>
+                <rect x="7" y="7" width="26" height="26" rx="3" fill="none" stroke="#d23b3b" stroke-width="1.2"/>
+                <path d="M22.5 9.5 L 13 21 H 19 L 16.5 30.5 L 27 18 H 21 L 24 9.5 Z" fill="#d23b3b"/>
+              </svg>
+            </div>
+          </section>
+        </div>
+        <div class="note" id="note" aria-live="polite"></div>
+      </div>
+    </article>
+  </div>
+</main>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const reduce = TTY.reduce;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  /* ---- The results: one table for the rows and for the doctor's notes ---- */
+  // tone: ok (green) · warn (yellow) · bad (red) · mystery (purple). pre: the part of a
+  // long Korean finding that sits beside the sticker (the sticker keeps the short word).
+  // aside: the part of a result that phones leave out.
+  const ROWS = TTY.t({
+    en: [
+      { test: 'Maximum capacity', result: '81%', ref: '80% or more', finding: 'Normal B', tone: 'ok',
+        note: 'Batteries are usually designed to keep about 80% after 500 full cycles (1,000 on newer models). Remarkably spry for its age.' },
+      { test: 'Charge cycles', result: '1,042', ref: '—', finding: 'Normal A', tone: 'ok',
+        note: '0 to 100% counts as one cycle. Two halves make one.' },
+      { test: '1% endurance', result: '23 min', ref: '—', finding: 'Mystery', tone: 'mystery',
+        note: 'Even at 0% a little is kept in reserve for protection. The display and reality differ a bit.' },
+      { test: 'Cold response', result: '31% at −5 °C → shut down', ref: '—', finding: 'Caution', tone: 'warn',
+        note: "Lithium-ion's internal resistance rises in the cold and the voltage drops suddenly. Keep it in an inside pocket." },
+      { test: 'Temperature while charging', result: '46 °C', aside: ' (gaming while charging)', ref: '45 °C or lower', finding: 'Caution', tone: 'warn',
+        note: "Heat can shrink a battery's capacity for good. Let it rest while it charges." },
+      { test: 'Swelling', result: 'none', ref: 'none', finding: 'Normal A', tone: 'ok',
+        note: "If it swells, come in at once. Known online as a 'spicy pillow'. Do not press." },
+      { test: 'Overnight charging', result: '100% every night', ref: 'wait at 80%', finding: 'Fix habits', tone: 'warn',
+        note: 'With optimized charging on, it waits at 80% and finishes just before you usually unplug.' },
+      { test: "Owner's battery anxiety", result: 'uneasy at 20%', ref: '—', finding: 'Treat owner', tone: 'bad',
+        note: "20% is still a whole fifth. You're fine." },
+    ],
+    ko: [
+      { test: '최대 용량', result: '81%', ref: '80% 이상', finding: '정상B', tone: 'ok',
+        note: '보통 충전 500회에 80% 안팎으로 설계합니다(최근 기종은 1,000회). 연세에 비해 정정하십니다.' },
+      { test: '충전 횟수', result: '1,042회', ref: '—', finding: '정상A', tone: 'ok',
+        note: '0→100%를 한 번으로 셉니다. 50%씩 두 번이면 한 번.' },
+      { test: '1% 지구력', result: '23분', ref: '—', finding: '미스터리', tone: 'mystery',
+        note: '0%가 돼도 보호를 위해 조금 남겨 둡니다. 표시와 실제가 조금 다릅니다.' },
+      { test: '추위 반응', result: '영하 5도에서 31% → 꺼짐', ref: '—', finding: '주의', tone: 'warn',
+        note: '리튬 이온은 추우면 내부 저항이 커져 전압이 뚝 떨어집니다. 안주머니에 넣어 주세요.' },
+      { test: '충전 중 체온', result: '46°C', aside: ' (충전하며 게임)', ref: '45°C 이하', finding: '주의', tone: 'warn',
+        note: '배터리도 열받으면 늙습니다. 한번 줄어든 용량은 돌아오지 않습니다. 충전 중에는 쉬게 해 주세요.' },
+      { test: '배 부풂', result: '없음', ref: '없음', finding: '정상A', tone: 'ok',
+        note: "부풀었다면 바로 내원하세요. 흔히 '배터리 배부름'이라고 하죠. 절대 누르지 마세요." },
+      { test: '밤샘 충전 습관', result: '매일 100%', ref: '80%에서 대기', finding: '개선', pre: '생활 습관', tone: 'warn',
+        note: "'최적화된 충전'을 켜면 80%에서 기다렸다가 평소 뽑는 시각 전에 마저 채웁니다." },
+      { test: '주인 배터리 불안', result: '20%에서 초조함', ref: '—', finding: '상담', pre: '보호자', tone: 'bad',
+        note: '20%면 아직 5분의 1이나 남았습니다. 괜찮아요.' },
+    ],
+  });
+  const L = TTY.t({
+    en: {
+      summary: "Don't fill all the way up. Don't run all the way down. Between 20 and 80, it lasts. So do people.",
+      doctor: 'Dr. Lithium',
+      guardian: 'The doctor will see you now.',
+      // (a no-break space keeps the last two words of the bubble on one line)
+      rest: "Stopping at 80%. Any more and I'll\u00a0bloat.",
+      low: "I'm fine. I can do 23 minutes on 1%.",
+      // the owner's row once the phone has stopped at 80% (the beat after the summary)
+      fret: 'uneasy even at 80%',
+      fretNote: "Stopping at 80% is a feature, not a bug. You're fine.",
+      ref: 'reference', finding: 'Finding',
+      plugIn: 'Phone on the exam table: plug the charger in',
+      plugOut: 'Phone on the exam table: unplug the charger',
+    },
+    ko: {
+      summary: '꽉 채우지도, 바닥까지 쓰지도 마세요. 20~80% 사이에서 오래 갑니다. 사람도 그렇습니다.',
+      doctor: '리튬 박사',
+      doctorRole: '담당의',
+      guardian: '보호자분, 들어오시래요.',
+      rest: '80%에서 멈출게요. 과식하면 배\u00a0나와요.',
+      low: '괜찮아요. 저 1%로도 23분 버텨요.',
+      fret: '80%에서도 초조함',
+      fretNote: '80%에서 멈추는 건 버그가 아니라 기능입니다. 괜찮아요.',
+      ref: '참고치', finding: '판정',
+      plugIn: '진찰대 위 휴대폰: 충전기 꽂기',
+      plugOut: '진찰대 위 휴대폰: 충전기 뽑기',
+    },
+  });
+
+  // Exam date: the visitor's today.
+  const today = new Date();
+  $('[data-date]').textContent = ko
+    ? `${today.getFullYear()}. ${today.getMonth() + 1}. ${today.getDate()}.`
+    : today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  // A barcode for the letterhead (any fixed pattern will do).
+  (() => {
+    const svg = $('.barcode svg');
+    let x = 0; let s = 7;
+    let bars = '';
+    while (x < 62) {
+      s = (s * 37 + 11) % 97;
+      const w = 0.8 + (s % 3) * 0.9;
+      bars += `<rect x="${x.toFixed(1)}" y="0" width="${w.toFixed(1)}" height="20" fill="#1c2a31"/>`;
+      x += w + 0.9 + (s % 4) * 0.5;
+    }
+    svg.innerHTML = bars;
+  })();
+
+  /* ---- Build the table ---- */
+  const rowsEl = $('.rows');
+  const rows = ROWS.map((r, i) => {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'row tone-' + r.tone;
+    b.innerHTML = '<span class="c-test"></span><span class="c-res mono"><span class="full"></span><span class="typed" aria-hidden="true"></span></span><span class="c-ref"></span><span class="c-find"></span>';
+    $('.c-test', b).textContent = r.test;
+    const full = $('.full', b);
+    full.textContent = r.result;
+    if (r.aside) {
+      const a = document.createElement('span');
+      a.className = 'aside';
+      a.textContent = r.aside;
+      full.append(a);
+    }
+    $('.c-ref', b).textContent = r.ref;
+    const find = $('.c-find', b);
+    if (r.pre) {
+      const pre = document.createElement('span');
+      pre.className = 'pre';
+      pre.textContent = r.pre;
+      find.append(pre);
+    }
+    const stk = document.createElement('span');
+    stk.className = 'stk';
+    if (ko) {
+      const kku = document.createElement('font-kku');
+      kku.setAttribute('font', 'sticker');
+      kku.setAttribute('size', 'var(--kku-stk, 14px)');
+      kku.textContent = r.finding;
+      // where the sticker ink would come out small (a narrow report), a plain bold badge instead
+      const plain = document.createElement('span');
+      plain.className = 'stk-plain';
+      plain.textContent = r.finding;
+      stk.append(kku, plain);
+    } else {
+      stk.textContent = r.finding;
+    }
+    find.append(stk);
+    // spoken as one sentence; the visible cells are separate boxes
+    b.setAttribute('aria-label', rowLabel(r, r.result));
+    b.setAttribute('aria-expanded', 'false');
+    b.setAttribute('aria-controls', 'note');
+    b.addEventListener('click', () => { takeOver(); toggleNote(i); });
+    li.append(b);
+    rowsEl.append(li);
+    return { b, res: $('.c-res', b), full, typed: $('.typed', b), stk, aside: $('.aside', b), result: r.result, more: r.aside || '' };
+  });
+  function rowLabel(r, result) {
+    return `${r.test}: ${result}${r.aside || ''}${r.ref !== '—' ? ` (${L.ref} ${r.ref})` : ''}. ${L.finding}: ${r.pre ? r.pre + ' ' : ''}${r.finding}`;
+  }
+
+  /* ---- The X-ray: cathode, separator, anode, separator, ... ---- */
+  (() => {
+    const g = $('.xray .layers');
+    let y = 28;
+    let out = '';
+    for (let k = 0; k < 5; k++) {
+      out += `<rect x="25" y="${y}" width="110" height="4.2" rx="1" fill="#8fe3ff" opacity=".9"/>`; y += 4.2;
+      out += `<path d="M25 ${y + .7} H135" stroke="#e6fbff" stroke-width=".7" stroke-dasharray="2 1.6" opacity=".7"/>`; y += 1.4;
+      if (k < 4) {
+        out += `<rect x="25" y="${y}" width="110" height="3.2" rx="1" fill="#8fe3ff" opacity=".42"/>`; y += 3.2;
+        out += `<path d="M25 ${y + .7} H135" stroke="#e6fbff" stroke-width=".7" stroke-dasharray="2 1.6" opacity=".7"/>`; y += 1.4;
+      }
+    }
+    g.innerHTML = out;
+  })();
+
+  /* ---- The day's charge: twelve points, joined smoothly without overshooting ---- */
+  const DAY = [[0, 100], [7, 100], [9, 87], [11, 70], [13, 55], [15, 36], [17, 18], [18, 9], [19, 30], [21, 72], [23, 100], [24, 100]];
+  function monotonePath(pts) {
+    const xs = pts.map((p) => p[0] * 10);
+    const ys = pts.map((p) => 100 - p[1]);
+    const n = pts.length;
+    const d = [];
+    const m = [];
+    for (let i = 0; i < n - 1; i++) d[i] = (ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]);
+    m[0] = d[0]; m[n - 1] = d[n - 2];
+    for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+    for (let i = 0; i < n - 1; i++) {
+      if (d[i] === 0) { m[i] = 0; m[i + 1] = 0; continue; }
+      const a = m[i] / d[i];
+      const b = m[i + 1] / d[i];
+      const s = a * a + b * b;
+      if (s > 9) { const t = 3 / Math.sqrt(s); m[i] = t * a * d[i]; m[i + 1] = t * b * d[i]; }
+    }
+    let p = `M${xs[0]} ${ys[0]}`;
+    for (let i = 0; i < n - 1; i++) {
+      const h = (xs[i + 1] - xs[i]) / 3;
+      p += ` C${(xs[i] + h).toFixed(2)} ${(ys[i] + m[i] * h).toFixed(2)} ${(xs[i + 1] - h).toFixed(2)} ${(ys[i + 1] - m[i + 1] * h).toFixed(2)} ${xs[i + 1]} ${ys[i + 1]}`;
+    }
+    return p;
+  }
+  const dayPath = monotonePath(DAY);
+  $('.plot .curve').setAttribute('d', dayPath);
+  $('.plot .area').setAttribute('d', dayPath + ' L240 100 L0 100 Z');
+
+  /* ---- The summary, written once; the timeline only reveals it ---- */
+  const hand = $('.hand');
+  const who = $('.sig .who');
+  let handBits = [];
+  if (ko) {
+    const el = document.createElement('font-kku');
+    el.setAttribute('font', 'pilgi');
+    el.setAttribute('size', '1em');
+    el.setAttribute('wrap-unit', 'word');
+    el.textContent = L.summary;
+    hand.append(el);
+    const role = document.createElement('span');
+    role.textContent = L.doctorRole;
+    const name = document.createElement('font-kku');
+    name.setAttribute('font', 'pilgi');
+    name.setAttribute('size', 'max(14px, 1.15em)');
+    name.textContent = L.doctor;
+    who.append(role, name);
+  } else {
+    // one span per letter, kept inside word spans so lines still break between words
+    L.summary.split(' ').forEach((word, k, all) => {
+      const w = document.createElement('span');
+      w.className = 'wd';
+      w.style.whiteSpace = 'nowrap';
+      [...word].forEach((c) => { const s = document.createElement('span'); s.className = 'ch'; s.textContent = c; w.append(s); });
+      hand.append(w);
+      if (k < all.length - 1) hand.append(' ');
+    });
+    who.textContent = L.doctor;
+  }
+  // font-kku draws its glyphs after load; look them up when writing, not now.
+  const writingUnits = () => (ko ? $$('[part="glyph"]', hand) : $$('.ch', hand));
+
+  /* ---- The patient ---- */
+  const room = $('.room');
+  const patient = $('.patient');
+  const phPct = $('.ph-pct', room);
+  const phFill = $('.ph-fill', room);
+  const monPct = $('.mon-pct', room);
+  const monFill = $('.mon-fill', room);
+  const miniFill = $('.mini-fill', room);
+  const sayEls = $$('.say');
+  const side = $('.side');
+  const battery = { level: 62, plugged: false };
+  let mode = 'idle'; // idle · charging · resting · draining · low
+  let worried = false;
+  let fretted = false; // the owner's row has gone from 20% to 80% (ownerFrets)
+  let fretTimer = 0;
+  let raf = 0;
+  let lastTs = 0;
+
+  function drawBattery() {
+    const lv = Math.round(battery.level);
+    phPct.textContent = lv + '%';
+    monPct.textContent = lv + '%';
+    phFill.setAttribute('width', (17.4 * battery.level / 100).toFixed(2));
+    monFill.setAttribute('width', (22 * battery.level / 100).toFixed(2));
+    miniFill.setAttribute('width', (12.1 * battery.level / 100).toFixed(2));
+    const c = battery.level < 20 ? '#d64545' : '#2e9d5b';
+    phFill.setAttribute('fill', c);
+    monFill.setAttribute('fill', battery.level < 20 ? '#ff6b6b' : '#47e08a');
+    miniFill.setAttribute('fill', battery.level < 20 ? '#ff6b6b' : '#47e08a');
+  }
+  function say(text, low) {
+    sayEls.forEach((el) => {
+      el.textContent = text || '';
+      el.classList.toggle('on', !!text);
+      el.classList.toggle('low', !!low);
+      if (text && !reduce) el.animate([{ opacity: 0, transform: 'translateY(8px) scale(.94)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
+    });
+    side.classList.toggle('talking', !!text);
+  }
+  function setRoom() {
+    room.classList.toggle('plugged', battery.plugged);
+    room.classList.toggle('charging', mode === 'charging');
+    room.classList.toggle('resting', mode === 'resting');
+    room.classList.toggle('worried', worried);
+    patient.setAttribute('aria-pressed', String(battery.plugged));
+    patient.setAttribute('aria-label', battery.plugged ? L.plugOut : L.plugIn);
+  }
+  function rest() {
+    mode = 'resting';
+    battery.level = 80;
+    say(L.rest);
+    settled();
+    // a visitor who charged it gets the owner's row too (the autoplay's comes after the summary)
+    clearTimeout(fretTimer);
+    if (held) fretTimer = setTimeout(() => ownerFrets(!reduce), 1200);
+  }
+  function worry() {
+    worried = true;
+    say(L.low, true);
+    if (!reduce) $$('.sweat .drop', room).forEach((d, k) => d.animate([{ transform: 'translateY(-3px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1, offset: .3 }, { transform: 'translateY(9px)', opacity: 0 }], { duration: 1300, delay: k * 450, iterations: Infinity }));
+  }
+  function calm() {
+    worried = false;
+    $$('.sweat .drop', room).forEach((d) => d.getAnimations().forEach((a) => a.cancel()));
+  }
+  // Charging: 6% a second up to 80, then wait. Unplugged: drifts down 7% a second, and
+  // below 20 the phone sweats (and settles at 18).
+  function step(ts) {
+    const dt = lastTs ? Math.min(.1, (ts - lastTs) / 1000) : 0;
+    lastTs = ts;
+    if (mode === 'charging') {
+      battery.level = Math.min(80, battery.level + 6 * dt);
+      if (battery.level >= 80) rest();
+    } else if (mode === 'draining') {
+      battery.level = Math.max(18, battery.level - 7 * dt);
+      if (battery.level < 20 && !worried) worry();
+      if (battery.level <= 18) { mode = 'low'; settled(); }
+    }
+    drawBattery();
+    setRoom();
+    raf = mode === 'charging' || mode === 'draining' ? requestAnimationFrame(step) : 0;
+  }
+  function run() {
+    cancelAnimationFrame(raf);
+    lastTs = 0;
+    raf = requestAnimationFrame(step);
+  }
+  function plug(on) {
+    battery.plugged = on;
+    clearTimeout(fretTimer);
+    if (on) {
+      calm();
+      if (battery.level >= 80) rest();
+      else { mode = 'charging'; say(''); }
+    } else {
+      mode = 'draining';
+      say('');
+      if (battery.level < 20) worry();
+    }
+    if (reduce) {
+      // no motion: jump straight to where it would settle
+      if (mode === 'charging') rest();
+      if (mode === 'draining') { battery.level = 18; mode = 'low'; if (!worried) worry(); }
+      cancelAnimationFrame(raf);
+      raf = 0;
+    } else {
+      run();
+    }
+    drawBattery();
+    setRoom();
+  }
+  function resetPatient() {
+    cancelAnimationFrame(raf);
+    raf = 0;
+    battery.level = 62;
+    battery.plugged = false;
+    mode = 'idle';
+    calm();
+    say('');
+    drawBattery();
+    setRoom();
+  }
+  function rollEyes() {
+    if (reduce) return;
+    $('.pupils', room).animate([
+      { transform: 'none' },
+      { transform: 'translate(-2.6px, -2.4px)', offset: .25 },
+      { transform: 'translate(0, -3.6px)', offset: .5 },
+      { transform: 'translate(2.6px, -2.4px)', offset: .75 },
+      { transform: 'none' },
+    ], { duration: 1100, easing: 'ease-in-out' });
+  }
+  patient.addEventListener('click', () => { takeOver(); plug(!battery.plugged); });
+
+  // The wall clock keeps the visitor's time.
+  function tickClock() {
+    const d = new Date();
+    const m = d.getMinutes();
+    $('.hour-hand', room).setAttribute('transform', `rotate(${((d.getHours() % 12) + m / 60) * 30})`);
+    $('.minute-hand', room).setAttribute('transform', `rotate(${m * 6})`);
+  }
+  tickClock();
+  setInterval(tickClock, 30000);
+
+  /* ---- The doctor's note for one row ---- */
+  const paper = $('.paper');
+  const note = $('.note');
+  const panels = $('.panels');
+  const wideMQ = matchMedia('(min-width: 700px) and (min-aspect-ratio: 11/10)');
+  let noteFor = -1;
+  // Wide: the whole exam room. Phones: just the table and the patient, in a strip.
+  function applyLayout() {
+    room.setAttribute('viewBox', wideMQ.matches ? '0 0 300 520' : '72 244 222 106');
+    placeNote();
+  }
+  wideMQ.addEventListener('change', applyLayout);
+  function placeNote() {
+    if (noteFor < 0) return;
+    const pr = paper.getBoundingClientRect();
+    const rr = rows[noteFor].b.getBoundingClientRect();
+    const test = $('.c-test', rows[noteFor].b).getBoundingClientRect();
+    note.classList.remove('up');
+    note.style.top = note.style.bottom = '';
+    const pn = panels.getBoundingClientRect();
+    if (wideMQ.matches || !pn.height) {
+      // beside the row: just under it, or just over it for the last rows (also on a short phone
+      // report, where the X-ray and chart are not shown: then across the whole table)
+      const left = wideMQ.matches ? test.left - pr.left + 10 : rr.left - pr.left;
+      note.style.left = left + 'px';
+      note.style.width = wideMQ.matches ? '' : rr.width + 'px';
+      const tip = Math.min(test.width / 2, 60);
+      note.style.setProperty('--tip', tip + 'px');
+      if (noteFor >= 5) {
+        note.classList.add('up');
+        note.style.bottom = (pr.bottom - rr.top + 8) + 'px';
+      } else {
+        note.style.top = (rr.bottom - pr.top + 8) + 'px';
+      }
+    } else {
+      // phones: over the X-ray and chart, pointing up at the row's test name
+      note.style.left = (pn.left - pr.left) + 'px';
+      note.style.width = pn.width + 'px';
+      note.style.top = (pn.top - pr.top + 2) + 'px';
+      note.style.setProperty('--tip', Math.max(16, test.left - pn.left + Math.min(test.width / 2, 40)) + 'px');
+    }
+  }
+  function showNote(i) {
+    noteFor = i;
+    rows.forEach((r, k) => { r.b.classList.toggle('on', k === i); r.b.setAttribute('aria-expanded', String(k === i)); });
+    note.innerHTML = '';
+    const head = document.createElement('b');
+    head.textContent = ROWS[i].test;
+    note.append(head, i === rows.length - 1 && fretted ? L.fretNote : ROWS[i].note);
+    note.classList.add('on');
+    placeNote();
+    if (!reduce) note.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' });
+  }
+  function hideNote() {
+    noteFor = -1;
+    rows.forEach((r) => { r.b.classList.remove('on'); r.b.setAttribute('aria-expanded', 'false'); });
+    note.classList.remove('on');
+    note.textContent = '';
+  }
+  function toggleNote(i) { if (noteFor === i) hideNote(); else showNote(i); }
+  new ResizeObserver(placeNote).observe(paper);
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') hideNote(); });
+
+  /* ---- The report, piece by piece ---- */
+  const xray = $('.xray');
+  const xr = { film: $('.xray .film'), scan: $('.xray .scan'), tag: $('.xr-tag') };
+  const plot = $('.plot');
+  const curveWrap = $('.plot .curve-wrap');
+  const bands = $$('.plot .band');
+  const scribble = $('.sig .scribble');
+  const seal = $('.seal');
+  const writes = $$('.write');
+
+  function cancelAll(els) { els.forEach((el) => el.getAnimations().forEach((a) => a.cancel())); }
+
+  function fillRow(i, animate) {
+    const r = rows[i];
+    if (!animate) {
+      r.res.classList.add('done');
+      r.typed.textContent = '';
+      r.stk.classList.add('on');
+      return;
+    }
+    const shown = r.aside && getComputedStyle(r.aside).display !== 'none';
+    const chars = [...(r.result + (shown ? r.more : ''))];
+    const per = Math.min(45, 420 / chars.length);
+    chars.forEach((_, k) => at(k * per, () => { r.typed.textContent = chars.slice(0, k + 1).join(''); }));
+    at(chars.length * per + 10, () => { r.res.classList.add('done'); r.typed.textContent = ''; });
+    r.b.animate([{ backgroundColor: 'rgba(15, 124, 128, .14)' }, { backgroundColor: 'rgba(15, 124, 128, 0)' }], { duration: 900, easing: 'ease-out' });
+    at(470, () => {
+      r.stk.classList.add('on');
+      r.stk.animate([
+        { transform: 'scale(2) rotate(-16deg)', opacity: 0 },
+        { transform: 'scale(.9) rotate(2deg)', opacity: 1, offset: .65 },
+        { transform: 'none', opacity: 1 },
+      ], { duration: 340, easing: 'cubic-bezier(.4, 0, .6, 1)' });
+      if (i === rows.length - 1) at(200, rollEyes);
+    });
+  }
+  // The tag after the summary: the battery took the advice and stopped at 80%, and the owner's
+  // row is typed over, from uneasy at 20% to uneasy even at 80%, and stamped again.
+  function ownerFrets(animate) {
+    if (fretted) return;
+    fretted = true;
+    const i = rows.length - 1;
+    const r = rows[i];
+    r.full.textContent = L.fret;
+    r.b.setAttribute('aria-label', rowLabel(ROWS[i], L.fret));
+    if (noteFor === i) showNote(i);
+    if (!animate) return;
+    const chars = [...L.fret];
+    const per = Math.min(45, 420 / chars.length);
+    r.res.classList.remove('done');
+    r.typed.textContent = '';
+    chars.forEach((_, k) => at(k * per, () => { r.typed.textContent = chars.slice(0, k + 1).join(''); }));
+    at(chars.length * per + 10, () => { r.res.classList.add('done'); r.typed.textContent = ''; });
+    r.b.animate([{ backgroundColor: 'rgba(214, 69, 69, .22)' }, { backgroundColor: 'rgba(214, 69, 69, .22)', offset: .5 }, { backgroundColor: 'rgba(214, 69, 69, 0)' }], { duration: 1800, easing: 'ease-out' });
+    at(chars.length * per + 120, () => r.stk.animate([
+      { transform: 'scale(1.7) rotate(-14deg)', opacity: .3 },
+      { transform: 'scale(.92) rotate(3deg)', opacity: 1, offset: .65 },
+      { transform: 'none', opacity: 1 },
+    ], { duration: 340, easing: 'cubic-bezier(.4, 0, .6, 1)' }));
+  }
+  function scanXray(animate) {
+    if (!animate) {
+      xray.classList.add('scanned');
+      xr.tag.classList.add('on');
+      return;
+    }
+    // the film is clipped to its own box (y 11 to 93), so the line sweeps that span
+    const dur = 1500;
+    xr.film.animate([{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)' }], { duration: dur, easing: 'linear', fill: 'forwards' });
+    xr.scan.animate([{ transform: 'translateY(11px)', opacity: 1 }, { transform: 'translateY(93px)', opacity: 1, offset: .96 }, { transform: 'translateY(93px)', opacity: 0 }], { duration: dur, easing: 'linear' });
+    at(dur + 80, () => {
+      xray.classList.add('scanned');
+      xr.tag.classList.add('on');
+      xr.tag.animate([{ transform: 'scale(1.4)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 300, easing: 'cubic-bezier(.3,.8,.4,1.3)' });
+    });
+  }
+  function drawChart(animate) {
+    if (!animate) { plot.classList.add('drawn', 'banded'); return; }
+    plot.classList.add('drawn');
+    curveWrap.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 1400, easing: 'cubic-bezier(.4, 0, .4, 1)' });
+    $('.plot .low-dot').animate([{ opacity: 0 }, { opacity: 0, offset: .7 }, { opacity: 1 }], { duration: 1400 });
+    at(1400, () => {
+      plot.classList.add('banded');
+      // the two warning bands first, then the healthy one
+      [bands[0], bands[2], bands[1]].forEach((b, k) => b.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: 520, delay: k * 220, easing: 'cubic-bezier(.3, .7, .3, 1)', fill: 'backwards' }));
+      $('.band-label').animate([{ opacity: 0 }, { opacity: 0, offset: .6 }, { opacity: 1 }], { duration: 1100 });
+    });
+  }
+  function writeSummary(animate) {
+    writes.forEach((el) => el.classList.add('on'));
+    if (!animate) {
+      scribble.style.strokeDasharray = '';
+      seal.classList.add('on');
+      return;
+    }
+    const units = writingUnits();
+    // about 2.2 s of writing, then the signature and the seal (about 19.0 s), then the owner's row
+    const per = Math.min(ko ? 60 : 28, 2200 / Math.max(1, units.length));
+    units.forEach((u, k) => u.animate([{ opacity: 0, transform: 'translateY(.08em)' }, { opacity: 1, transform: 'none' }], { duration: 160, delay: k * per, easing: 'ease-out', fill: 'backwards' }));
+    const signAt = units.length * per + 200;
+    who.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: signAt + 400, fill: 'backwards' });
+    at(signAt + 950 + T.fret, () => ownerFrets(true));
+    scribble.animate([{ strokeDasharray: '1', strokeDashoffset: 1 }, { strokeDasharray: '1', strokeDashoffset: 0 }], { duration: 700, delay: signAt, easing: 'ease-in-out', fill: 'both' });
+    at(signAt + 950, () => {
+      seal.classList.add('on');
+      seal.animate([{ transform: 'scale(2.2)', opacity: 0 }, { transform: 'scale(.94)', opacity: .9, offset: .7 }, { transform: 'none', opacity: .85 }], { duration: 380, easing: 'cubic-bezier(.5, 0, .9, .4)' });
+    });
+  }
+  function resetReport() {
+    hideNote();
+    rows.forEach((r) => { r.res.classList.remove('done'); r.typed.textContent = ''; r.stk.classList.remove('on'); });
+    cancelAll([...rows.map((r) => r.stk), ...rows.map((r) => r.b), xr.film, xr.scan, xr.tag, curveWrap, ...bands, $('.plot .low-dot'), $('.band-label'), scribble, who, seal, paper, ...writingUnits()]);
+    xray.classList.remove('scanned');
+    xr.tag.classList.remove('on');
+    plot.classList.remove('drawn', 'banded');
+    writes.forEach((el) => el.classList.remove('on'));
+    scribble.style.strokeDasharray = '1';
+    scribble.style.strokeDashoffset = '1';
+    seal.classList.remove('on');
+    fretted = false;
+    clearTimeout(fretTimer);
+    const last = rows[rows.length - 1];
+    last.full.textContent = last.result;
+    last.b.setAttribute('aria-label', rowLabel(ROWS[rows.length - 1], last.result));
+  }
+  function completeReport() {
+    // finish whatever was on its way, without motion
+    const own = [...rows.map((r) => r.stk), ...rows.map((r) => r.b), xr.film, xr.scan, xr.tag, curveWrap, ...bands, $('.plot .low-dot'), $('.band-label'), scribble, who, seal, paper, ...writingUnits()];
+    cancelAll(own);
+    rows.forEach((_, i) => fillRow(i, false));
+    scanXray(false);
+    drawChart(false);
+    writeSummary(false);
+    scribble.style.strokeDasharray = '';
+    scribble.style.strokeDashoffset = '';
+    // the phone already resting at 80% means the owner's beat was on its way too
+    if (mode === 'resting') ownerFrets(false);
+  }
+
+  /* ---- The timeline (22 s). Times in ms; change them here. ---- */
+  // guardian: the phone's line after row 8 (until the plug clears it); fret: the owner's row, after the seal
+  const T = { print: 0, rows: 1500, rowGap: 900, guardian: 8700, xray: 9500, plug: 11000, chart: 11500, summary: 15600, fret: 500, loop: 22000 };
+  let timers = [];
+  function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
+  function stopTimeline() { timers.forEach(clearTimeout); timers = []; }
+
+  function printPaper() {
+    // the report comes out of the printer, top first, in a few jerks
+    paper.animate([
+      { clipPath: 'inset(0 0 100% 0)' },
+      { clipPath: 'inset(0 0 72% 0)', offset: .3 },
+      { clipPath: 'inset(0 0 68% 0)', offset: .38 },
+      { clipPath: 'inset(0 0 30% 0)', offset: .7 },
+      { clipPath: 'inset(0 0 26% 0)', offset: .78 },
+      { clipPath: 'inset(0 0 0 0)' },
+    ], { duration: 1300, easing: 'linear' });
+  }
+  function play() {
+    stopTimeline();
+    resetReport();
+    resetPatient();
+    printPaper();
+    rows.forEach((_, i) => at(T.rows + i * T.rowGap, () => fillRow(i, true)));
+    at(T.guardian, () => say(L.guardian));
+    at(T.xray, () => scanXray(true));
+    at(T.chart, () => drawChart(true));
+    at(T.plug, () => plug(true));
+    at(T.summary, () => writeSummary(true));
+    at(T.loop, play);
+  }
+
+  // The first touch stops the autoplay (and finishes the report, so every row can be read);
+  // twelve seconds after the last touch it starts over from the top.
+  let held = false;
+  let idle = 0;
+  function bump() {
+    clearTimeout(idle);
+    if (reduce) return;
+    idle = setTimeout(() => { held = false; play(); }, 12000);
+  }
+  // A visitor's phone that is still charging or draining counts as activity: the wait
+  // restarts when it settles, so the whole slide to 80 (or below 20) is seen.
+  function settled() { if (held) bump(); }
+  function takeOver() {
+    if (!held) {
+      held = true;
+      stopTimeline();
+      completeReport();
+      if (mode === 'idle') say(''); // the phone's line to the guardian
+    }
+    bump();
+  }
+  ['pointerdown', 'keydown'].forEach((type) => addEventListener(type, () => { if (held) bump(); }, { passive: true }));
+
+  /* ---- Start ---- */
+  function finalScene() {
+    completeReport();
+    battery.level = 62;
+    plug(true); // reduced motion: straight to 80% and the resting bubble
+    ownerFrets(false);
+  }
+  applyLayout();
+  drawBattery();
+  setRoom();
+  if (reduce) {
+    finalScene();
+  } else {
+    resetReport();
+    // before the page is shown, the paper is still inside the printer
+    paper.style.clipPath = 'inset(0 0 100% 0)';
+    TTY.onShow(() => { paper.style.clipPath = ''; play(); });
+  }
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

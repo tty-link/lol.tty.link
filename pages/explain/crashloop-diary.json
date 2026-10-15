@@ -1,0 +1,162 @@
+{
+  "id": "crashloop-diary",
+  "title": {
+    "en": "A Pod's Picture Diary",
+    "ko": "파드의 그림일기"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "켜지자마자 꺼지기를 되풀이하는 서버 프로그램(쿠버네티스의 'CrashLoopBackOff')을, 일어나자마자 쓰러지는 아이의 그림일기로 그렸다.",
+    "points": [
+      "일어나자마자 '쿵!' 쓰러지고 또 일어나는 막대 사람 → 설정 하나가 틀린 서버 프로그램(파드)이 켜지자마자 죽고, 쿠버네티스가 끈질기게 다시 켜 주는 모습 그대로다.",
+      "낮잠이 10초, 20초, 40초, 80초, 160초로 두 배씩 늘다가 5분에서 멈춘다 → 쿠버네티스가 다시 켜기 전에 실제로 기다리는 시간(기본 설정)이다. 너무 자주 다시 켜서 시스템을 괴롭히지 않으려고 기다림을 두 배씩 늘리고, 5분에서 더 늘리지 않는다.",
+      "범인은 알림장의 오타 `DATABSE_URL` → A 한 글자가 빠져서 데이터베이스 주소를 못 찾았다. 누가 파란 볼펜으로 A를 끼워 넣어도 아이는 바로 안 일어나고 \"그래도 마저 잤다.\" 고친 설정은 다음에 켜질 때 읽으니, 그때까지는 정해 둔 대기 시간을 다 기다려야 한다. 고쳐 놓고 화면만 보며 기다리는 바로 그 몇 분이다. 일어나서는 37번 내내 그랬듯 알림장을 보고 고개를 갸웃하며 휘청하는데, 이번엔 쿵이 안 온다.",
+      "\"낮잠은 없던 일이 됐다\" 다음 \"그런데 쓰러진 37번은 생활기록부에 남는대요.\" → 실제로 10분 동안 문제없이 돌면 기다리는 시간은 처음으로 돌아가지만, 다시 켠 횟수(RESTARTS)는 지워지지 않는다. 지우개로 문질러도 안 지워지는 크레용 正 자처럼. 그래서 다 고친 뒤에도 파드 목록에는 Running 옆에 RESTARTS 37이 그대로 떠 있고, 다음 날 아침 누군가 꼭 이게 왜 37이냐고 묻는다. 지금은 멀쩡한데 기록만 남아서 해명해야 하는 그 민망함이 이 결말이다. 선생님은 빨간 펜으로 그 37에 동그라미까지 친다."
+    ],
+    "terms": [
+      {
+        "term": "쿠버네티스",
+        "plain": "서버 프로그램 수백 개를 대신 켜 두고, 죽으면 다시 켜 주는 관리 프로그램."
+      },
+      {
+        "term": "파드",
+        "plain": "쿠버네티스가 돌리는 프로그램 한 덩어리. 이 일기를 쓴 아이."
+      },
+      {
+        "term": "CrashLoopBackOff",
+        "plain": "'켜자마자 죽기를 되풀이해서, 다시 켜기 전에 기다리는 중'이라는 상태 이름."
+      },
+      {
+        "term": "RESTARTS",
+        "plain": "지금까지 다시 켠 횟수. `kubectl get pods` 명령을 치면 상태(STATUS) 바로 옆 칸에 나온다."
+      },
+      {
+        "term": "환경 변수·컨피그맵",
+        "plain": "프로그램이 켜질 때 읽는 설정 쪽지. 그림 속 알림장이다."
+      },
+      {
+        "term": "OOM",
+        "plain": "메모리가 모자라 프로그램이 강제로 꺼지는 일(Out Of Memory). 그래서 날씨가 '가끔 OOM'."
+      }
+    ],
+    "links": [
+      {
+        "title": "파드 라이프사이클 - 쿠버네티스 문서",
+        "url": "https://kubernetes.io/ko/docs/concepts/workloads/pods/pod-lifecycle/",
+        "note": "10초, 20초, 40초 … 5분까지 늘어나는 재시작 대기와 10분 뒤 초기화"
+      },
+      {
+        "title": "컨피그맵 - 쿠버네티스 문서",
+        "url": "https://kubernetes.io/ko/docs/concepts/configuration/configmap/",
+        "note": "kubelet이 컨테이너를 시작할 때 읽어 주는 설정, DATABASE_HOST 환경 변수 예"
+      },
+      {
+        "title": "쿠버네티스 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/쿠버네티스",
+        "note": "쿠버네티스가 무엇인지",
+        "lang": "ko"
+      },
+      {
+        "title": "메모리 부족 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/메모리_부족",
+        "note": "날씨 칸의 OOM",
+        "lang": "ko"
+      },
+      {
+        "title": "원고지 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/원고지",
+        "note": "한 칸에 한 글자, 그리고 이 일기장과 같은 15자×10행짜리 150자 원고지",
+        "lang": "ko"
+      }
+    ],
+    "deep": [
+      "첫 번째로 쓰러진 뒤에는 낮잠 없이 바로 일어난다 → 쿠버네티스는 첫 충돌은 곧바로 다시 켜고, 두 번째부터 10초, 20초 … 기다린다. 그래서 37번째로 다시 일어나기까지 바로, 10, 20, 40, 80, 160초에 5분 낮잠 31번을 더해 약 2시간 40분. 오전 내내 쓰러진 셈이다.",
+      "아래 빨간 펜이 STATUS ContainerCreating → Running → Error → CrashLoopBackOff로 바뀌고 RESTARTS가 하나씩 오른다 → `kubectl get pods`의 STATUS와 RESTARTS 칸 그대로다. 끝에는 Running인데 RESTARTS 37.",
+      "'노드1반', '담임: 큐블릿' → 파드는 노드(서버 한 대)에 배정되고, 그 노드의 kubelet이 컨테이너를 다시 켜고 기다림을 세고 재시작 횟수를 적는다. 알림장을 고친 손은 담임이 아니라 바깥 어른, 곧 설정을 고치는 사람이다. kubelet은 다시 켜고 세기만 한다. 그래서 고치는 펜은 파란 볼펜이고, 빨간 펜은 선생님 기록에만 쓴다.",
+      "고친 것이 아이가 아니라 벽의 알림장 → kubelet은 컨테이너를 켤 때마다 컨피그맵을 새로 읽으므로, 같은 파드가 다음에 켜질 때 고친 값을 읽고 RESTARTS도 이어진다. 파드 정의(디플로이먼트)를 고치면 새 파드가 생겨 RESTARTS가 0부터라 이 결말이 안 나온다. 컨피그맵 문서에는 환경 변수로 쓴 값은 다시 시작해야 반영된다고 적혀 있는데, 그건 계속 돌고 있는 컨테이너 이야기다. 이 아이는 몇 분마다 새로 일어나니 그때마다 고친 값을 읽는다.",
+      "(직접 누를 때만) 자동 수리 전에 그림을 누르면 내가 고친다. 이미 옛 알림장을 읽고 일어난 차례라면 한 번 더 쓰러지고 낮잠도 마저 자며, 마지막 문장의 숫자는 그때까지 쓰러진 횟수가 된다. 처음 서 있을 때 바로 고치면 낮잠을 한 번도 안 자서 지울 낮잠이 없다. 그때 일기는 \"10분 동안 한 번도 안 쓰러졌다.\" 다음에 \"그런데 쓰러진 한 번은 생활기록부에 남는대요.\"",
+      "학교에서 배우는 원고지 쓰는 법을 지켰다 → 문단 첫 칸 비우기, 숫자는 한 칸에 두 자(10, 20, 37), 마침표 뒤 칸 안 비우기, 줄 첫 칸에 올 마침표는 앞 줄 끝 칸에 붙이기. 160은 두 자씩 끊으면 '16|0'으로 갈라져서 '2분 40초'라고 풀어 썼다."
+    ]
+  },
+  "en": {
+    "line": "A Kubernetes program stuck in \"CrashLoopBackOff\", dying the moment it starts, over and over, writes up its day as a first-grader's picture diary.",
+    "points": [
+      "A crayon stick figure gets up and falls flat at once, then again → a server program (a pod) with one wrong setting crashes right after it starts, and Kubernetes keeps starting it again.",
+      "The naps double, 10 seconds, 20, 40, 80, 160, then stop at 5 minutes → the real wait Kubernetes adds before each restart (by default), so a broken program doesn't hammer the system. It doubles each time and never goes past 5 minutes.",
+      "The culprit is a typo on the note: `DATABSE_URL`, one missing A, so the program can't find its database. A grown-up adds the A in blue pen, and the kid still doesn't get up: \"I finished my nap anyway.\" A fixed setting is only read at the next start, so the wait has to run out first. That's the few minutes you spend staring at the screen after pushing the fix. Then the kid looks at the note and tilts its head, just like before each of the 37 falls, wobbles, and this time there's no bonk.",
+      "\"My naps don't count anymore\", then \"But all 37 falls go on my permanent record.\" → after 10 trouble-free minutes Kubernetes really does forget the waiting time, but the restart count (RESTARTS) stays. Like crayon tally marks that an eraser can't rub out. So even after the fix, the pod list still says Running, RESTARTS 37, and the next morning someone always asks why it says 37. You're fine now. Your record isn't. The teacher even circles the 37 in red."
+    ],
+    "terms": [
+      {
+        "term": "Kubernetes",
+        "plain": "software that keeps hundreds of server programs running and restarts them when they die."
+      },
+      {
+        "term": "Pod",
+        "plain": "one running program in Kubernetes. The kid who writes this diary."
+      },
+      {
+        "term": "CrashLoopBackOff",
+        "plain": "the status that means \"it keeps crashing, so I'm waiting a bit before starting it again\"."
+      },
+      {
+        "term": "RESTARTS",
+        "plain": "how many times it has been restarted, shown in the column right after STATUS by the command `kubectl get pods`."
+      },
+      {
+        "term": "Environment variable / ConfigMap",
+        "plain": "a settings note a program reads when it starts. The note on the wall."
+      },
+      {
+        "term": "OOM",
+        "plain": "Out Of Memory, a program killed for using too much memory. Hence \"chance of OOM\" in the weather box."
+      },
+      {
+        "term": "그림일기 (picture diary)",
+        "plain": "a classic homework for young Korean schoolchildren: boxes for the date and the weather, a crayon picture, and the day written one letter per square on squared manuscript paper (원고지). The Korean version of this page is one."
+      },
+      {
+        "term": "생활기록부 (school record)",
+        "plain": "the official record a Korean school keeps on each pupil. \"It goes on your 생활기록부\" is the Korean school threat, just like the American \"this will go on your permanent record\". Korean kids also tally in fives with the character 正, which has exactly five strokes."
+      }
+    ],
+    "links": [
+      {
+        "title": "Pod Lifecycle - Kubernetes docs",
+        "url": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/",
+        "note": "the restart back-off (10 s, 20 s, 40 s … capped at 5 minutes, reset after 10 minutes)"
+      },
+      {
+        "title": "ConfigMaps - Kubernetes docs",
+        "url": "https://kubernetes.io/docs/concepts/configuration/configmap/",
+        "note": "settings the kubelet gives a container when it starts, with a DATABASE_HOST example"
+      },
+      {
+        "title": "Kubernetes - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Kubernetes",
+        "note": "what Kubernetes is",
+        "lang": "en"
+      },
+      {
+        "title": "Exponential backoff - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Exponential_backoff",
+        "note": "waiting twice as long after each failure",
+        "lang": "en"
+      },
+      {
+        "title": "Genkō yōshi - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Genk%C5%8D_y%C5%8Dshi",
+        "note": "squared manuscript paper, which Korea adopted as wongoji (원고지)",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "No nap after the first fall → Kubernetes restarts a container at once after its first crash; the waits begin with the second. So getting to the 37th restart takes: right away, then 10, 20, 40, 80 and 160 seconds, then 31 naps of 5 minutes, about 2 h 40 min. The whole morning.",
+      "The teacher's red line goes ContainerCreating → Running → Error → CrashLoopBackOff while RESTARTS ticks up → the STATUS and RESTARTS columns of `kubectl get pods`. At the end: Running, RESTARTS 37.",
+      "\"Class: node-1\", \"Teacher: Ms. Kubelet\" → a pod is assigned to a node (one server), and that node's kubelet restarts its containers, times the back-off and keeps the restart count. The hand that fixes the note isn't the teacher: the kubelet only restarts and counts; a person fixes the config. That's why the fix is in blue pen and only the teacher writes in red.",
+      "What gets fixed is the note on the wall, not the kid → the kubelet reads the ConfigMap again every time it starts the container, so the same pod picks up the fix at its next start and the count carries on. Fixing the pod's own definition (a Deployment's template) would make a new pod with RESTARTS 0, and there would be no punchline. The ConfigMap page says env values only change on a restart; this pod restarts every few minutes anyway, and each fresh start reads the fixed value.",
+      "(Only if you tap) Tap before the grown-up does and you fix it yourself. If the kid already got up with the old note, it falls once more and finishes its nap, and the last sentence counts the falls so far. Fix it during the very first stand and there's no nap to forget: \"I stayed up 10 whole minutes.\" then \"But that one fall goes on my permanent record.\"",
+      "The tally marks → the Korean page counts with 正, five strokes per character; the English page uses four bars and a slash."
+    ]
+  }
+}

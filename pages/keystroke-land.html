@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keystroke Land | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Gowun+Dodum&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="saekdong sebul"></script>
+<style>
+  /* A theme-park map of one keystroke: from the key switch to the pixel, every stage is a
+     ride with a wait-time sign. A lap is about 30 ms, so the park runs 300 times slower. */
+  :root {
+    --grass: #9fd67f;
+    --grass-deep: #84c266;
+    --path: #f1dfb6;
+    --path-edge: #d9bf8a;
+    --sky: #c4e9ff;
+    --red: #ff6b6b;
+    --yellow: #ffd166;
+    --teal: #4ecdc4;
+    --indigo: #6c7ae0;
+    --pink: #ffd1dc;
+    --ink: #2b2d42;
+    --cream: #fffaf0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    container: page / size;
+    overflow: hidden;
+    background: var(--grass);
+    color: var(--ink);
+    font-family: 'Fredoka', 'Gowun Dodum', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .lang-ko body { font-family: 'Gowun Dodum', 'Fredoka', sans-serif; word-break: keep-all; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--indigo); outline-offset: 3px; }
+  .mono { font-family: 'Space Mono', ui-monospace, monospace; }
+
+  /* ---- Page frame: sky band, map, ticket, the big key ---- */
+  .park {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template: "sky" auto "map" minmax(0, 1fr) "tickets" auto "keybar" auto / minmax(0, 1fr);
+    row-gap: 6px;
+    padding-bottom: 8px;
+    /* Cards slide in from off-screen and the hall-of-fame text pops in at 1.6×; keep that (and
+       the finger coming in from the left) from widening the page for a moment. */
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(255, 255, 255, .55) 0 1.3px, transparent 1.8px) 0 0 / 47px 41px,
+      radial-gradient(circle at 70% 70%, rgba(255, 209, 102, .85) 0 1.4px, transparent 1.9px) 0 0 / 61px 53px,
+      radial-gradient(circle at 50% 20%, rgba(255, 107, 107, .5) 0 1.2px, transparent 1.7px) 0 0 / 83px 71px,
+      repeating-linear-gradient(112deg, rgba(255, 255, 255, .07) 0 34px, transparent 34px 68px),
+      var(--grass);
+  }
+
+  .sky {
+    grid-area: sky;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 10px;
+    padding: clamp(16px, 3.4cqmin, 30px) clamp(12px, 3cqw, 32px) clamp(12px, 2.2cqmin, 20px);
+    background:
+      radial-gradient(60px 18px at 78% 62%, rgba(255, 255, 255, .85), transparent 70%),
+      radial-gradient(90px 22px at 58% 30%, rgba(255, 255, 255, .7), transparent 70%),
+      linear-gradient(#ade0ff, var(--sky) 70%);
+  }
+  /* The lawn's scalloped edge where the sky stops. */
+  .sky::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 10px;
+    background: radial-gradient(circle at 9px 10px, var(--grass) 8.6px, transparent 9.2px) 0 0 / 18px 10px repeat-x;
+  }
+  .bunting { position: absolute; left: 0; top: 0; width: 100%; height: clamp(16px, 3.6cqmin, 30px); pointer-events: none; }
+  .name { line-height: 1; font-weight: 700; }
+  .logo {
+    display: inline-block;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: clamp(25px, 5.4cqmin, 52px);
+    letter-spacing: .01em;
+    -webkit-text-stroke: .05em var(--ink);
+    paint-order: stroke fill;
+    text-shadow: 0 .07em 0 var(--ink);
+  }
+  .logo .ch { display: inline-block; font-style: normal; }
+  .logo .ch:nth-child(4n+1) { color: var(--red); rotate: -3deg; }
+  .logo .ch:nth-child(4n+2) { color: var(--yellow); translate: 0 -.04em; }
+  .logo .ch:nth-child(4n+3) { color: var(--teal); rotate: 2deg; }
+  .logo .ch:nth-child(4n) { color: var(--indigo); translate: 0 .02em; }
+  .sub { grid-column: 1 / -1; grid-row: 2; margin-top: clamp(4px, 1cqmin, 9px); font-size: clamp(12px, 1.9cqmin, 17px); font-weight: 500; line-height: 1.3; }
+  .lang-ko .sub { font-weight: 400; }
+  .badge {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: .4em;
+    padding: .35em .75em .35em .45em;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: var(--indigo);
+    color: #fff;
+    font-size: clamp(11.5px, 1.7cqmin, 16px);
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 3px 0 var(--ink);
+    rotate: 2deg;
+  }
+  .badge svg { width: 1.9em; height: 1.4em; flex: none; }
+  .badge .mono { font-weight: 700; color: var(--yellow); }
+
+  /* ---- The map: one SVG drawn for the box it gets, with HTML signs on top ---- */
+  .map { grid-area: map; position: relative; min-width: 0; min-height: 0; margin: 0 clamp(4px, 1.4cqw, 18px); }
+  /* The camera: the first seconds of a lap are a close-up of the press pad and the bridge (the
+     finger and the first rider, big), then it pulls back to the whole park. While it is close,
+     the map is cut at its own edges (on the left, at the screen's) so the sky and the key stay
+     as they are. */
+  .camclip { position: absolute; inset: 0 0 0 -20px; }
+  .map.close .camclip { overflow: clip; }
+  .cam { position: absolute; inset: 0 0 0 20px; transform-origin: 0 0; }
+  .art { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .o { stroke: var(--ink); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+  .overlay { position: absolute; inset: 0; pointer-events: none; }
+
+  .sign {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-align: center;
+    font-size: var(--fs, 13px);
+    line-height: 1.2;
+  }
+  .sign.left { align-items: flex-end; text-align: right; }
+  .sign-head {
+    display: inline-flex;
+    align-items: center;
+    gap: .35em;
+    max-width: 100%;
+    padding: .18em .55em .18em .2em;
+    border: 1.5px solid var(--ink);
+    border-radius: .55em;
+    background: var(--cream);
+    box-shadow: 0 2px 0 rgba(43, 45, 66, .3);
+    font-weight: 600;
+  }
+  .lang-ko .sign-head { font-weight: 400; }
+  .flag {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 1.55em;
+    height: 1.3em;
+    padding-right: .18em;
+    background: var(--c);
+    color: var(--fc, #fff);
+    font: 700 max(10px, .86em)/1 'Fredoka', sans-serif;
+    clip-path: polygon(0 0, 100% 0, 78% 50%, 100% 100%, 0 100%);
+    border-radius: .2em 0 0 .2em;
+  }
+  .sign-head.plain { padding-left: .55em; }
+  .sign-sub { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 2px 5px; }
+  .sign.left .sign-sub { justify-content: flex-end; }
+  .wait {
+    display: inline-flex;
+    align-items: center;
+    gap: .3em;
+    padding: .1em .45em;
+    border-radius: .35em;
+    background: var(--ink);
+    color: var(--yellow);
+    font: 700 max(11px, .82em)/1.25 'Space Mono', monospace;
+    white-space: nowrap;
+  }
+  .lang-ko .wait { font-family: 'Space Mono', 'Gowun Dodum', monospace; }
+  .wait svg { width: 1em; height: 1em; }
+  .note {
+    font-size: max(11px, .84em);
+    font-style: normal;
+    color: #24263a;
+    text-shadow: 0 0 3px rgba(214, 240, 196, .95), 0 0 1px rgba(214, 240, 196, 1);
+  }
+
+  /* Workbench in the Hangul hall: syllables set in font-kku sebul, the one still being
+     composed is underlined, as an input method shows it. */
+  .bench { position: absolute; display: flex; align-items: center; justify-content: center; }
+  .cells { display: flex; align-items: flex-end; justify-content: center; }
+  .cell { position: relative; display: inline-flex; justify-content: center; color: var(--ink); }
+  .cell.space { width: .35em; }
+  .cell.composing::after {
+    content: "";
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    bottom: -.12em;
+    height: max(2px, .07em);
+    border-radius: 2px;
+    background: var(--red);
+  }
+  .cell.hidden { opacity: 0; }
+  .bench-en { display: flex; align-items: center; gap: .1em; color: var(--ink); white-space: nowrap; }
+  .bench-en .op { font: 600 max(10px, .6em) 'Fredoka', sans-serif; color: var(--indigo); padding: 0 .08em; }
+  .bubble {
+    position: absolute;
+    padding: .25em .6em .3em;
+    border: 2px solid var(--ink);
+    border-radius: .8em;
+    background: #fff;
+    box-shadow: 0 3px 0 rgba(43, 45, 66, .25);
+    white-space: nowrap;
+    translate: -18% -100%;
+    opacity: 0;
+  }
+  .bubble::after {
+    content: "";
+    position: absolute;
+    left: 18%;
+    bottom: -7px;
+    width: 10px;
+    height: 10px;
+    margin-left: -5px;
+    background: #fff;
+    border-right: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    rotate: 45deg;
+  }
+  .bubble > font-kku { color: var(--ink); }
+  .bubble .say { display: block; font: 600 1em/1.15 'Fredoka', sans-serif; color: var(--ink); }
+  /* 도깨비불: the final consonant leaves with a blue-green flame for a tail. */
+  .spark { position: absolute; left: 0; top: 0; display: grid; place-items: center; color: #0d6e74; }
+  .spark::before {
+    content: "";
+    position: absolute;
+    right: 40%;
+    top: 22%;
+    width: 160%;
+    height: 56%;
+    border-radius: 50% 0 0 50% / 50%;
+    background: radial-gradient(ellipse at 90% 50%, rgba(160, 255, 240, .95), rgba(78, 205, 196, .7) 40%, rgba(108, 122, 224, 0) 75%);
+    filter: blur(1px);
+    transform-origin: 100% 50%;
+    rotate: var(--tail, 20deg);
+  }
+  .spark > font-kku { position: relative; color: #0d6e74; filter: drop-shadow(0 0 3px #9ffcf0) drop-shadow(0 0 7px rgba(78, 205, 196, .9)); }
+
+  /* Exit screen: an LED board. */
+  .board {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 3px;
+    background:
+      radial-gradient(circle, rgba(255, 255, 255, .07) 0 .9px, transparent 1.3px) 0 0 / 5px 5px,
+      linear-gradient(#171a30, #0e1022);
+  }
+  .board-text { color: #ffe08a; white-space: nowrap; }
+  .board-text [part="glyph"] { filter: drop-shadow(0 0 .05em #ffb703) drop-shadow(0 0 .18em rgba(255, 183, 3, .55)); }
+  .board-text.en { font: 600 1em/1 'Fredoka', sans-serif; text-shadow: 0 0 .06em #ffb703, 0 0 .22em rgba(255, 183, 3, .6); }
+  .board-idle { color: rgba(255, 224, 138, .35); font: 700 .5em/1 'Space Mono', monospace; letter-spacing: .1em; }
+  .board::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(transparent 0 2px, rgba(0, 0, 0, .18) 2px 3px);
+    pointer-events: none;
+  }
+
+  /* ---- Tickets: the admission ticket, then today's lap with a hall-of-fame stub ---- */
+  .tickets { grid-area: tickets; position: relative; display: grid; container-type: inline-size; margin: 0 12px; }
+  .tickets > .admit, .tickets > .record { grid-area: 1 / 1; }
+  .tickets > .admit { align-self: end; }
+  .admit, .record { filter: drop-shadow(0 3px 0 rgba(43, 45, 66, .35)) drop-shadow(0 8px 14px rgba(43, 45, 66, .16)); }
+  .paper { background: var(--pink); }
+  .admit {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 4px 12px;
+    padding: 10px 14px;
+    -webkit-mask: radial-gradient(circle 8px at 0 50%, #0000 98%, #000) , radial-gradient(circle 8px at 100% 50%, #0000 98%, #000);
+    -webkit-mask-composite: source-in;
+    mask: radial-gradient(circle 8px at 0 50%, #0000 98%, #000) intersect, radial-gradient(circle 8px at 100% 50%, #0000 98%, #000);
+    border-radius: 10px;
+    rotate: -1deg;
+  }
+  .admit-big { font: 700 clamp(20px, 7cqi, 30px)/1 'Fredoka', sans-serif; letter-spacing: .04em; }
+  .admit-small { margin-top: 4px; font-size: 12.5px; line-height: 1.3; }
+  .barcode {
+    width: 64px;
+    height: 34px;
+    background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px, var(--ink) 8px 11px, transparent 11px 12px);
+  }
+  .serial { grid-column: 2; font: 700 10.5px/1 'Space Mono', monospace; text-align: center; opacity: .7; }
+
+  .record { display: flex; flex-direction: column; visibility: hidden; }
+  .record.on { visibility: visible; }
+  .rec-main {
+    position: relative;
+    padding: 12px 16px 12px;
+    border-radius: 12px 12px 0 0;
+    -webkit-mask: radial-gradient(circle 9px at 0 100%, #0000 98%, #000), radial-gradient(circle 9px at 100% 100%, #0000 98%, #000);
+    -webkit-mask-composite: source-in;
+    mask: radial-gradient(circle 9px at 0 100%, #0000 98%, #000) intersect, radial-gradient(circle 9px at 100% 100%, #0000 98%, #000);
+  }
+  .rec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .rec-label { font-size: 15px; font-weight: 600; }
+  .lang-ko .rec-label { font-weight: 400; }
+  .rec-total { font: 700 clamp(24px, 11cqi, 36px)/1 'Space Mono', monospace; letter-spacing: -.02em; }
+  .bars { list-style: none; margin-top: 8px; display: grid; gap: 3px; }
+  .bar { --bf: 12.5px; display: grid; grid-template-columns: 1.5em minmax(0, 1fr) 24% 2.3em; align-items: center; gap: 6px; font-size: var(--bf); line-height: 1.15; }
+  /* The badge keeps its size in the row; only its digit has a 10 px floor (9.4 px on short wide stages). */
+  .bar .bn { display: grid; place-items: center; width: calc(1.15 * var(--bf)); height: calc(1.15 * var(--bf)); border-radius: 50%; background: var(--c); color: var(--fc, #fff); font: 700 max(10px, calc(.82 * var(--bf)))/1 'Fredoka', sans-serif; border: 1.2px solid var(--ink); }
+  .bar .bl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar .bt { height: 9px; border-radius: 5px; background: rgba(43, 45, 66, .1); }
+  .bar .bt > i { display: block; height: 100%; width: calc(var(--v) / 8 * 100%); min-width: 4px; border-radius: 5px; background: var(--c); box-shadow: inset 0 0 0 1.3px var(--ink); transform-origin: 0 50%; }
+  .bar .bv { font: 700 .95em/1 'Space Mono', monospace; text-align: right; }
+  /* A narrow ticket (the 1280×720 stage) gives the names the room, not the bars. */
+  @container (max-width: 270px) { .bar { grid-template-columns: 1.5em minmax(0, 1fr) 17% 2.3em; } }
+  .stack { display: none; height: 11px; margin-top: 6px; border: 1.5px solid var(--ink); border-radius: 6px; overflow: hidden; }
+  .stack > i { flex: var(--v) 0 0; background: var(--c); border-right: 1px solid rgba(43, 45, 66, .55); transform-origin: 0 50%; }
+  .stack > i:last-child { border-right: 0; }
+  .blink { display: flex; align-items: center; gap: 6px; margin-top: 9px; font-size: 14px; font-weight: 500; line-height: 1.3; }
+  .lang-ko .blink { font-weight: 400; }
+  .blink svg { width: 22px; height: 14px; flex: none; }
+  .fine, .yours { margin-top: 5px; font-size: 12px; line-height: 1.35; color: rgba(43, 45, 66, .8); }
+  .yours { display: none; color: var(--ink); }
+  .record.visitor .yours { display: block; }
+  .yours .y-short { display: none; }
+  /* The tag after the hall of fame: a rubber stamp on today's lap. */
+  /* It lands on the bar chart, in the gap between the first rows' names and their numbers (right:
+     36px clears the one-digit numbers by 10 px or more and the longest English name, "USB Door
+     (avg)", by 8 px on the narrow 868×633 ticket); on a phone, on the folded strip. */
+  .verdict {
+    position: absolute;
+    right: 36px;
+    top: 50px;
+    z-index: 1;
+    padding: .12em .45em .08em;
+    border: 2.5px solid #d62839;
+    border-radius: 6px;
+    background: rgba(255, 244, 246, .92);
+    color: #d62839;
+    font: 700 15px/1.12 'Space Mono', monospace;
+    letter-spacing: -.02em;
+    text-align: center;
+    white-space: nowrap;
+    rotate: -8deg;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .verdict .w { display: block; }
+  .lang-ko .verdict { font: 400 17px/1.12 'Gowun Dodum', 'Space Mono', sans-serif; letter-spacing: 0; }
+  .record.stamped .verdict { visibility: visible; }
+  .stamp {
+    display: inline-block;
+    padding: 0 .3em;
+    border: 2px solid #d62839;
+    border-radius: 4px;
+    color: #d62839;
+    font: 700 1.25em/1.25 'Space Mono', monospace;
+    rotate: -4deg;
+    background: rgba(255, 255, 255, .35);
+  }
+  .rec-stub {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 2px 10px;
+    align-items: center;
+    padding: 11px 16px 12px;
+    border-radius: 0 0 12px 12px;
+    background: #ffbfd0;
+    background-image: linear-gradient(90deg, var(--ink) 55%, transparent 0);
+    background-size: 9px 2px;
+    background-repeat: repeat-x;
+    background-position: 10px 0;
+    -webkit-mask: radial-gradient(circle 9px at 0 0, #0000 98%, #000), radial-gradient(circle 9px at 100% 0, #0000 98%, #000);
+    -webkit-mask-composite: source-in;
+    mask: radial-gradient(circle 9px at 0 0, #0000 98%, #000) intersect, radial-gradient(circle 9px at 100% 0, #0000 98%, #000);
+  }
+  .trophy { grid-row: 1 / span 4; width: 34px; height: 40px; }
+  .hof-tag { font: 700 10.5px/1 'Fredoka', sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #8a5a00; }
+  .lang-ko .hof-tag { font-family: 'Gowun Dodum', sans-serif; letter-spacing: .06em; }
+  .hof1 { font-size: 13px; font-weight: 600; line-height: 1.3; }
+  .lang-ko .hof1 { font-weight: 400; }
+  .hof1 .mono { font-weight: 700; }
+  .hof1 .nw { white-space: nowrap; }
+  /* The punchline is the biggest line on the stub; who measured it, the smallest. */
+  .hof2 { font-size: 15px; font-weight: 600; line-height: 1.25; color: var(--ink); }
+  .lang-ko .hof2 { font-weight: 400; font-size: 15.5px; }
+  .hof-src { font-size: 11px; line-height: 1.3; color: rgba(43, 45, 66, .78); }
+  .hof { opacity: 0; }
+  .rec-stub.on .hof { opacity: 1; }
+
+  /* ---- The big key ---- */
+  .keybar { grid-area: keybar; display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 12px; }
+  .bigkey {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 132px;
+    height: 46px;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    background: linear-gradient(#fffdf8, #f1e8d6);
+    box-shadow: inset 0 -5px 0 #dccfb7, 0 5px 0 var(--ink);
+    cursor: pointer;
+    transition: transform .06s, box-shadow .06s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    flex: none;
+  }
+  .bigkey:active, .bigkey.down { transform: translateY(4px); box-shadow: inset 0 -3px 0 #dccfb7, 0 1px 0 var(--ink); }
+  .cap-legend { position: absolute; left: 10px; top: 5px; font: 700 15px/1 'Fredoka', 'Gowun Dodum', sans-serif; color: var(--indigo); }
+  .cap-label { font-weight: 600; font-size: 16px; }
+  .lang-ko .cap-label { font-weight: 400; }
+  .hint { max-width: 22em; font-size: 12.5px; line-height: 1.3; }
+
+  /* Wide stage: map on the left, the key and the ticket on the right. */
+  @container page (min-width: 640px) and (min-aspect-ratio: 1/1) {
+    .park {
+      grid-template: "sky sky" auto "map keybar" auto "map tickets" minmax(0, 1fr) / minmax(0, 1fr) clamp(250px, 29cqw, 330px);
+      column-gap: 4px;
+      padding-bottom: clamp(10px, 2cqh, 22px);
+    }
+    .keybar { flex-direction: column; gap: 12px; margin: clamp(10px, 2.4cqh, 26px) clamp(14px, 2cqw, 26px) 0 0; }
+    .bigkey { width: clamp(90px, 11cqmin, 116px); height: clamp(90px, 11cqmin, 116px); border-radius: 18px; box-shadow: inset 0 -8px 0 #dccfb7, 0 7px 0 var(--ink); }
+    .bigkey:active, .bigkey.down { transform: translateY(6px); box-shadow: inset 0 -4px 0 #dccfb7, 0 1px 0 var(--ink); }
+    .cap-legend { left: 14px; top: 11px; font-size: 20px; }
+    .cap-label { font-size: 19px; margin-top: 14px; }
+    .hint { text-align: center; font-size: 13.5px; }
+    .tickets { align-self: end; margin: 0 clamp(14px, 2cqw, 26px) 0 0; }
+    .admit { grid-template-columns: 1fr; text-align: center; padding: 18px 16px; rotate: 1.5deg; }
+    .admit .barcode { justify-self: center; width: 120px; }
+    .serial { grid-column: 1; }
+  }
+  /* Short wide stages: the ticket keeps its rows but tightens. */
+  @container page (min-width: 640px) and (min-aspect-ratio: 1/1) and (max-height: 700px) {
+    .bar { --bf: 11.5px; }
+    .bars { gap: 1px; margin-top: 5px; }
+    .rec-main { padding: 9px 14px; }
+    .blink { margin-top: 5px; font-size: 13px; }
+    .rec-stub { padding: 8px 14px 9px; grid-template-columns: minmax(0, 1fr); }
+    /* The stub's lines get the trophy's room, so the card still clears the key above it. */
+    .trophy { display: none; }
+    .hof2, .lang-ko .hof2 { font-size: 14px; }
+    .keybar { gap: 8px; }
+    /* Someone typing: their own measured key, in its short form, takes the blink line's place. */
+    .record.visitor .blink { display: none; }
+    .yours .y-long { display: none; }
+    .yours .y-short { display: inline; }
+  }
+  /* Short wide stages: the key steps aside for the ticket; the shortest fold the bars. */
+  @container page (min-width: 640px) and (min-aspect-ratio: 1/1) and (max-height: 660px) {
+    .keybar { flex-direction: row; gap: 12px; }
+    .bigkey { width: 74px; height: 74px; border-radius: 15px; }
+    .cap-legend { left: 10px; top: 7px; font-size: 16px; }
+    .cap-label { font-size: 16px; margin-top: 10px; }
+    .hint { text-align: left; font-size: 12.5px; }
+  }
+  @container page (min-width: 640px) and (min-aspect-ratio: 1/1) and (max-height: 580px) {
+    .bars { display: none; }
+    .stack { display: flex; }
+    .rec-total { font-size: 28px; }
+    .verdict { top: 36px; right: 14px; rotate: -3deg; font-size: 14px; line-height: 1.2; }
+    .verdict .w { display: inline; }
+    .lang-ko .verdict { font-size: 15px; }
+  }
+  /* Phones: the ticket lies on its side, stub to the right; the bars fold into one strip. */
+  @container page (max-width: 639px), (max-aspect-ratio: 1/1) {
+    .record { flex-direction: row; }
+    .rec-main {
+      flex: 1.25 1 0;
+      min-width: 0;
+      padding: 8px 10px 8px 12px;
+      border-radius: 12px 0 0 12px;
+      -webkit-mask: radial-gradient(circle 8px at 100% 0, #0000 98%, #000), radial-gradient(circle 8px at 100% 100%, #0000 98%, #000);
+      -webkit-mask-composite: source-in;
+      mask: radial-gradient(circle 8px at 100% 0, #0000 98%, #000) intersect, radial-gradient(circle 8px at 100% 100%, #0000 98%, #000);
+    }
+    .rec-stub {
+      flex: 1 1 0;
+      min-width: 0;
+      grid-template-columns: minmax(0, 1fr);
+      align-content: center;
+      padding: 7px 10px 7px 12px;
+      border-radius: 0 12px 12px 0;
+      background-image: linear-gradient(var(--ink) 55%, transparent 0);
+      background-size: 2px 9px;
+      background-repeat: repeat-y;
+      background-position: 0 6px;
+      -webkit-mask: radial-gradient(circle 8px at 0 0, #0000 98%, #000), radial-gradient(circle 8px at 0 100%, #0000 98%, #000);
+      -webkit-mask-composite: source-in;
+      mask: radial-gradient(circle 8px at 0 0, #0000 98%, #000) intersect, radial-gradient(circle 8px at 0 100%, #0000 98%, #000);
+    }
+    .trophy { display: none; }
+    .rec-label { font-size: 12.5px; }
+    .rec-total { font-size: 21px; }
+    .bars { display: none; }
+    .stack { display: flex; }
+    .blink { margin-top: 5px; font-size: 12px; gap: 4px; }
+    .blink svg { width: 17px; height: 11px; }
+    .fine, .yours { margin-top: 3px; font-size: 11px; line-height: 1.3; }
+    .verdict { top: 29px; right: 7px; font-size: 12.5px; line-height: 1.2; border-width: 2px; rotate: -3deg; }
+    .verdict .w { display: inline; }
+    .lang-ko .verdict { font-size: 13.5px; }
+    .hof-tag { font-size: 10px; }
+    .hof1 { font-size: 11px; line-height: 1.25; }
+    .hof2 { font-size: 12.5px; line-height: 1.22; }
+    .lang-ko .hof2 { font-size: 13px; }
+    .hof-src { font-size: 10px; line-height: 1.25; }
+    .admit-big { font-size: 22px; }
+    .admit-small { font-size: 11.5px; }
+  }
+  /* A tall stage with room across (648×732): the lying ticket is wide, so its words can grow. */
+  @container page (max-width: 639px), (max-aspect-ratio: 1/1) {
+    @container (min-width: 540px) {
+      .rec-label { font-size: 14px; }
+      .blink { font-size: 13px; }
+      .fine { font-size: 12px; }
+      .hof1 { font-size: 12.5px; }
+      .hof2 { font-size: 15px; }
+      .lang-ko .hof2 { font-size: 15.5px; }
+      .hof-src { font-size: 11px; }
+      .verdict { font-size: 14px; }
+      .lang-ko .verdict { font-size: 15px; }
+    }
+  }
+  /* Opened on its own, the page gets the kit's "? :)" in the bottom-right corner (74 px wide on a
+     phone): the key and its hint keep clear of it. */
+  html:not(.embedded) .tickets { margin-bottom: 40px; }
+  @container page (max-width: 639px), (max-aspect-ratio: 1/1) {
+    html:not(.embedded) .tickets { margin-bottom: 0; }
+    html:not(.embedded) .keybar { padding-right: 84px; gap: 10px; }
+    html:not(.embedded) .bigkey { width: 112px; }
+  }
+  /* (Wider than 600 px the nav also shows its two links, about 260 px.) */
+  @media (min-width: 601px) {
+    @container page (max-width: 639px), (max-aspect-ratio: 1/1) {
+      html:not(.embedded) .keybar { padding-right: 280px; }
+    }
+  }
+  /* The hint says what this device can do: type (inside the home page's frame, after a tap on the
+     map), or tap the key. */
+  .hint .tap { display: none; }
+  html:not(.embedded) .hint .first { display: none; }
+  @media (hover: none) {
+    .hint .kb { display: none; }
+    .hint .tap { display: inline; }
+  }
+  /* Phones, with motion: the map gets the room; the ticket drops over the map's first row
+     (idle by then) at the end of the lap, and a visitor's measured key shows by the key. */
+  .hint-yours { display: none; max-width: 22em; font-size: 11.5px; line-height: 1.3; }
+  .hint-yours .stamp { font-size: 1.15em; }
+  @container page (max-width: 639px), (max-aspect-ratio: 1/1) {
+    html.motion .park { grid-template: "sky" auto "map" minmax(0, 1fr) "keybar" auto / minmax(0, 1fr); }
+    html.motion .tickets { grid-area: map; align-self: start; z-index: 3; margin: 2px 10px 0; }
+    html.motion .admit { display: none; }
+    html.motion.visitor .keybar .hint { display: none; }
+    html.motion.visitor .hint-yours { display: block; }
+  }
+  /* Less motion on a short phone stage (358×396): with a row of its own the record card would
+     squeeze the map into a strip of piled-up signs, so it lies over the map's first row, as it
+     does at the end of the animated lap. */
+  @container page ((max-width: 639px) or (max-aspect-ratio: 1/1)) and (max-height: 470px) {
+    html:not(.motion) .park { grid-template: "sky" auto "map" minmax(0, 1fr) "keybar" auto / minmax(0, 1fr); }
+    html:not(.motion) .tickets { grid-area: map; align-self: start; z-index: 3; margin: 2px 10px 0; }
+    html:not(.motion) .admit { display: none; }
+  }
+  @container page (max-height: 560px) and (max-width: 639px) {
+    .sky { padding-top: 15px; padding-bottom: 9px; }
+    .sub { font-size: 11.5px; margin-top: 3px; }
+    .bigkey { height: 40px; }
+    .park { row-gap: 5px; padding-bottom: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="park">
+  <header class="sky">
+    <svg class="bunting" aria-hidden="true"></svg>
+      <h1 class="name">
+        <span data-lang="en" class="logo"><i class="ch">K</i><i class="ch">e</i><i class="ch">y</i><i class="ch">s</i><i class="ch">t</i><i class="ch">r</i><i class="ch">o</i><i class="ch">k</i><i class="ch">e</i> <i class="ch">L</i><i class="ch">a</i><i class="ch">n</i><i class="ch">d</i></span>
+        <span data-lang="ko"><font-kku font="saekdong" size="clamp(25px, 5.2cqmin, 50px)">키스트로크 랜드</font-kku></span>
+      </h1>
+      <p class="sub">
+        <span data-lang="en">From the moment you press to the moment it shows. About 30 ms a lap.</span>
+        <span data-lang="ko">누른 순간부터 화면에 뜨기까지, 한 바퀴 약 30ms</span>
+      </p>
+    <p class="badge">
+      <svg viewBox="0 0 38 26" aria-hidden="true"><path d="M3 22 H30 Q35 22 35 17" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="17" cy="13" r="8.5" fill="#ffd166" stroke="#2b2d42" stroke-width="2"/><path d="M17 13 m0 -4 a4 4 0 1 1 -4 4 a2 2 0 1 1 2 -2" fill="none" stroke="#2b2d42" stroke-width="1.6" stroke-linecap="round"/><path d="M27 20 Q31 12 30 6 M30 6 l-2 -3 M30 6 l2.5 -2.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <span data-lang="en">Slow motion <span class="mono">×300</span></span>
+      <span data-lang="ko">느린 화면 <span class="mono">×300</span></span>
+    </p>
+  </header>
+
+  <div class="map">
+    <div class="camclip"><div class="cam">
+      <svg class="art" aria-hidden="true"></svg>
+      <div class="overlay signs"></div>
+      <div class="overlay benchlayer"></div>
+    </div></div>
+  </div>
+
+  <div class="tickets">
+    <div class="admit paper" aria-hidden="true">
+      <div>
+        <p class="admit-big">
+          <span data-lang="en">ADMIT ONE</span>
+          <span data-lang="ko"><font-kku font="sebul" size="clamp(20px, 6.4cqi, 28px)">입장권</font-kku></span>
+        </p>
+        <p class="admit-small">
+          <span data-lang="en">Keystroke Land · one key, one rider</span>
+          <span data-lang="ko">키스트로크 랜드 · 키 하나에 손님 한 명</span>
+        </p>
+      </div>
+      <div class="barcode"></div>
+      <p class="serial">No. 000001</p>
+    </div>
+
+    <section class="record">
+      <div class="rec-main paper">
+        <div class="rec-head">
+          <h2 class="rec-label">
+            <span data-lang="en">Today's lap*</span>
+            <span data-lang="ko">오늘의 한 바퀴*</span>
+          </h2>
+          <b class="rec-total"><span class="tot">29.5</span><small style="font-size:.55em"> ms</small></b>
+        </div>
+        <p class="verdict">
+          <span data-lang="en"><span class="w">Barely</span> <span class="w">a tie*</span></span>
+          <span data-lang="ko"><span class="w">겨우</span> <span class="w">무승부*</span></span>
+        </p>
+        <ol class="bars"></ol>
+        <div class="stack" aria-hidden="true"></div>
+        <p class="blink">
+          <svg viewBox="0 0 22 14" aria-hidden="true"><path class="eye-lid" d="M1 7 Q11 -2 21 7 Q11 16 1 7 Z" fill="#fff" stroke="#2b2d42" stroke-width="1.6"/><circle class="eye-ball" cx="11" cy="7" r="3.2" fill="#2b2d42"/></svg>
+          <span data-lang="en">Over three laps in the blink of an eye.</span>
+          <span data-lang="ko">눈 한 번 깜빡이는 사이 세 바퀴 넘게</span>
+        </p>
+        <p class="fine">
+          <span data-lang="en">* Press Pad not counted. On a quiet day at the park.</span>
+          <span data-lang="ko">* 꾹 발판은 빼고 쟀어요. 공원이 한산한 날 기준.</span>
+        </p>
+        <p class="yours" aria-live="polite"></p>
+      </div>
+      <div class="rec-stub paper">
+        <svg class="trophy hof" viewBox="0 0 34 40" aria-hidden="true"><path d="M8 4 H26 V14 Q26 24 17 25 Q8 24 8 14 Z" fill="#ffd166" stroke="#2b2d42" stroke-width="2" stroke-linejoin="round"/><path d="M8 7 H3 Q2 15 9 17 M26 7 H31 Q32 15 25 17" fill="none" stroke="#2b2d42" stroke-width="2" stroke-linecap="round"/><path d="M14 25 H20 V31 H14 Z M9 31 H25 V37 H9 Z" fill="#c98f2b" stroke="#2b2d42" stroke-width="2" stroke-linejoin="round"/><path d="M13 9 V17" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".7"/></svg>
+        <p class="hof-tag">
+          <span data-lang="en">Hall of fame</span>
+          <span data-lang="ko">명예의 전당</span>
+        </p>
+        <p class="hof1 hof">
+          <span data-lang="en">Record holder · 1983 <span class="nw">Apple IIe · <span class="mono">30 ms</span></span></span>
+          <span data-lang="ko">기록 보유 · 1983년 <span class="nw">Apple IIe · <span class="mono">30ms</span></span></span>
+        </p>
+        <p class="hof2 hof">
+          <span data-lang="en">A 1 MHz machine, Press Pad and all.</span>
+          <span data-lang="ko">클럭 1MHz짜리가 꾹 발판까지 타고 세운 기록</span>
+        </p>
+        <p class="hof-src hof">
+          <span data-lang="en">Measured by Dan Luu, 2017. Plenty of today's machines were slower.</span>
+          <span data-lang="ko">Dan Luu, 2017년 측정 · 요즘 기기 상당수는 더 느렸어요</span>
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <div class="keybar">
+    <button class="bigkey" type="button"><span class="cap-legend" aria-hidden="true"></span><span class="cap-label"><span data-lang="en">Press</span><span data-lang="ko">누르기</span></span></button>
+    <p class="hint">
+      <span data-lang="en"><span class="kb">Type on your keyboard<span class="first"> (tap the map first)</span></span><span class="tap">Tap the key to send in a rider</span></span>
+      <span data-lang="ko"><span class="kb">키보드로 쳐 보세요<span class="first"> (지도를 먼저 한 번 눌러 주세요)</span></span><span class="tap">키를 누르면 손님이 입장해요</span></span>
+    </p>
+    <p class="hint-yours" aria-live="polite"></p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const reduce = TTY.reduce;
+  document.documentElement.classList.toggle('motion', !reduce);
+  const $ = (s, root = document) => root.querySelector(s);
+  document.title = TTY.t({ en: 'Keystroke Land', ko: '키스트로크 랜드' }) + ' | tty.link';
+
+  /* ---- The rides. ms is the table's typical value; the door and the frame queue open on a
+     clock (8 ms, 16.7 ms), so what a rider actually waits there depends on when it arrives:
+     the table's 4 and 8 ms are the average, half a period. Slow motion: 1 ms = 0.3 s. ---- */
+  const SLOW = 300;
+  const DOOR_P = 8 * SLOW / 1000;        // 2.4 s
+  const QUEUE_P = 16.7 * SLOW / 1000;    // 5.01 s
+  const DOOR0 = 1.9;                     // clock phases, picked so the autoplay's last rider
+  const QUEUE0 = 0.32;                   // leaves the park at about 17 s
+  const WALK = 0.18;                     // between two rides (wire time, not counted)
+  const LOOP = 24;
+  // The ending: the exit screen lights at about 17.1 s, then today's lap, the hall of fame
+  // (the punchline) and the stamp on today's lap (the tag), each read before the next arrives.
+  const REC_AT = 17.5;
+  const HOF_AT = 18.6;
+  const STAMP_AT = 20.3;
+  const IDLE = 12000;                    // a visitor's park starts over 12 s after the last key,
+  const HOLD = 6000;                     // and never before their word has had 6 s on the screen
+  const ORDER = ['pad', 'bridge', 'wheel', 'door', 'rapids', 'carousel', 'hall', 'glyphs', 'queue', 'exit'];
+  const C = { red: '#ff6b6b', yellow: '#ffd166', teal: '#4ecdc4', indigo: '#6c7ae0', ink: '#2b2d42' };
+  const RIDE = {
+    pad: { n: 0, c: C.indigo, dwell: 0.66 },   // the finger presses, the rider is flung out
+    bridge: { n: 1, c: C.red, ms: 5, dwell: 1.5 },
+    wheel: { n: 2, c: C.yellow, ms: 1, dwell: 0.3 },
+    door: { n: 3, c: C.teal, ms: 4, dwell: 0.25 },
+    rapids: { n: 4, c: C.indigo, ms: 1, dwell: 0.3 },
+    carousel: { n: 5, c: C.red, ms: 2, dwell: 0.6 },
+    hall: { n: 6, c: C.yellow, ms: ko ? 0.5 : 0, dwell: ko ? 0.15 : 0 },   // English riders skip it
+    glyphs: { n: 7, c: C.teal, ms: 3, dwell: 0.9 },
+    queue: { n: 8, c: C.indigo, ms: 8, dwell: 0.05 },
+    exit: { n: 9, c: C.red, ms: 5, dwell: 1.5 },
+  };
+
+  // Sign text: name, wait tag, note; short forms for small maps (ns: a note that stays on them).
+  const SIGN = TTY.t({
+    en: {
+      pad: { name: 'Press Pad', note: 'You must be 1 key tall to ride', ns: '1 key tall to ride' },
+      bridge: { name: 'Bounce Bridge', wait: 'wait 5 ms', note: 'bounce all you like, it counts as one ride', short: 'Bridge', ws: 'wait 5 ms' },
+      wheel: { name: 'Matrix Wheel', wait: '1 ms', note: 'every row, in turn', short: 'Wheel', ws: '1 ms' },
+      door: { name: 'USB Revolving Door', wait: 'opens every 8 ms', short: 'USB Door', ws: 'every 8 ms' },
+      rapids: { name: 'Kernel Rapids', wait: '1 ms', short: 'Rapids', ws: '1 ms' },
+      carousel: { name: 'Event Loop Carousel', wait: '2 ms', note: 'board after the rider in front gets off', short: 'Carousel', ws: '2 ms' },
+      hall: { name: 'Hangul Assembly Hall', wait: '0 ms', note: 'English riders skip the line', short: 'Hangul Hall', ws: '0 ms' },
+      glyphs: { name: 'Hall of Glyphs', wait: '3 ms', short: 'Glyphs', ws: '3 ms' },
+      queue: { name: 'Frame Queue', wait: 'wait up to 16.7 ms', note: 'departs every 16.7 ms, all at once', short: 'Frame Queue', ws: 'up to 16.7 ms' },
+      exit: { name: 'Pixel Exit', wait: '5 ms', short: 'Exit', ws: '5 ms' },
+    },
+    ko: {
+      pad: { name: '꾹 발판', note: '키 1개 이상 탑승 가능', ns: '키 1개 이상' },
+      bridge: { name: '덜컹 흔들다리', wait: '대기 5ms', note: '몇 번 튀어도 한 번 탄 걸로 칩니다', short: '흔들다리', ws: '대기 5ms' },
+      wheel: { name: '매트릭스 관람차', wait: '1ms', note: '줄마다 차례로', short: '관람차', ws: '1ms' },
+      door: { name: 'USB 회전문', wait: '8ms마다 한 번 열림', short: '회전문', ws: '8ms마다' },
+      rapids: { name: '커널 급류', wait: '1ms', short: '급류', ws: '1ms' },
+      carousel: { name: '이벤트 루프 회전목마', wait: '2ms', note: '앞 손님이 내려야 탑니다', short: '회전목마', ws: '2ms' },
+      hall: { name: '한글 조합 공방', wait: '0.5ms', note: '주의: 받침이 옆 글자로 튈 수 있습니다', short: '조합 공방', ws: '0.5ms' },
+      glyphs: { name: '글꼴 거울의 방', wait: '3ms', short: '거울의 방', ws: '3ms' },
+      queue: { name: '프레임 대기줄', wait: '대기 최대 16.7ms', note: '16.7ms마다 한꺼번에 출발', short: '대기줄', ws: '최대 16.7ms' },
+      exit: { name: '화면 출구', wait: '5ms', short: '화면 출구', ws: '5ms' },
+    },
+  });
+  // Rows on the ticket (door and queue: the average wait).
+  const BARS = TTY.t({
+    en: { bridge: 'Bounce Bridge', wheel: 'Matrix Wheel', door: 'USB Door (avg)', rapids: 'Kernel Rapids', carousel: 'Event Loop', hall: 'Hangul (skipped)', glyphs: 'Hall of Glyphs', queue: 'Frame Queue (avg)', exit: 'Pixel Exit' },
+    ko: { bridge: '흔들다리', wheel: '관람차', door: '회전문(평균)', rapids: '커널 급류', carousel: '회전목마', hall: '조합 공방', glyphs: '거울의 방', queue: '대기줄(평균)', exit: '화면 출구' },
+  });
+  const TXT = TTY.t({
+    // yours: on the record card; mine: the one line by the key on phones. The browser can time
+    // only from the key event to the next frame's callback; the rest happens out of its sight.
+    en: { goblin: 'Dokkaebi fire!', skip: 'No assembly required!', yours: (ms) => `Your key: <span class="stamp">${ms} ms</span> from the key event to the next frame (the browser can't see the rest)`, mine: (ms) => `Your key: <span class="stamp">${ms} ms</span> to the next frame`, next: (c) => `Press: the next rider is ${c}` },
+    ko: { goblin: '도깨비불!', bear: '곰?', yours: (ms) => `방금 누른 키: 키 이벤트부터 다음 프레임까지 <span class="stamp">${ms}ms</span> (그 앞뒤는 브라우저가 못 봐요)`, mine: (ms) => `방금 누른 키: 다음 프레임까지 <span class="stamp">${ms}ms</span>`, next: (c) => `누르기: 다음 손님 ${c}` },
+  });
+
+  // ---- 두벌식 automaton ----
+  const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+  const JUNG = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ';
+  const JONG = '_ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ';
+  const VV = { 'ㅗㅏ': 'ㅘ', 'ㅗㅐ': 'ㅙ', 'ㅗㅣ': 'ㅚ', 'ㅜㅓ': 'ㅝ', 'ㅜㅔ': 'ㅞ', 'ㅜㅣ': 'ㅟ', 'ㅡㅣ': 'ㅢ' };
+  const CC = { 'ㄱㅅ': 'ㄳ', 'ㄴㅈ': 'ㄵ', 'ㄴㅎ': 'ㄶ', 'ㄹㄱ': 'ㄺ', 'ㄹㅁ': 'ㄻ', 'ㄹㅂ': 'ㄼ', 'ㄹㅅ': 'ㄽ', 'ㄹㅌ': 'ㄾ', 'ㄹㅍ': 'ㄿ', 'ㄹㅎ': 'ㅀ', 'ㅂㅅ': 'ㅄ' };
+  const SPLIT = Object.fromEntries(Object.entries(CC).map(([k, v]) => [v, [...k]]));
+  const isVowel = (j) => JUNG.includes(j);
+  const syllable = (s) => (s.cho && s.jung
+    ? String.fromCharCode(0xAC00 + (CHO.indexOf(s.cho) * 21 + JUNG.indexOf(s.jung)) * 28 + (s.jong ? JONG.indexOf(s.jong) : 0))
+    : s.cho || s.jung || '');
+  // Keys: physical key (e.code) to jamo, [plain, with Shift].
+  const DUBEOL = { KeyQ: 'ㅂㅃ', KeyW: 'ㅈㅉ', KeyE: 'ㄷㄸ', KeyR: 'ㄱㄲ', KeyT: 'ㅅㅆ', KeyY: 'ㅛ', KeyU: 'ㅕ', KeyI: 'ㅑ', KeyO: 'ㅐㅒ', KeyP: 'ㅔㅖ',
+    KeyA: 'ㅁ', KeyS: 'ㄴ', KeyD: 'ㅇ', KeyF: 'ㄹ', KeyG: 'ㅎ', KeyH: 'ㅗ', KeyJ: 'ㅓ', KeyK: 'ㅏ', KeyL: 'ㅣ',
+    KeyZ: 'ㅋ', KeyX: 'ㅌ', KeyC: 'ㅊ', KeyV: 'ㅍ', KeyB: 'ㅠ', KeyN: 'ㅜ', KeyM: 'ㅡ' };
+  const jamoFor = (code, shift) => { const k = DUBEOL[code]; return k ? (shift && k[1]) || k[0] : null; };
+
+  // Committed syllables plus the one being composed. feed() says what happened, so the
+  // workbench can show it: 'jump' when a final consonant leaves for the next syllable
+  // (도깨비불), 'combo' when two vowels become one.
+  function createIME() {
+    let done = [];
+    let cur = null;
+    const fresh = (j) => (isVowel(j) ? { cho: null, jung: j, jong: null, keys: [j] } : { cho: j, jung: null, jong: null, keys: [j] });
+    const commit = () => { if (cur) done.push(syllable(cur)); cur = null; };
+    function feed(j) {
+      if (!cur) { cur = fresh(j); return { kind: 'start' }; }
+      if (!isVowel(j)) {
+        if (cur.cho && cur.jung && !cur.jong && JONG.indexOf(j) > 0) { cur.jong = j; cur.keys.push(j); return { kind: 'add' }; }
+        if (cur.jong && CC[cur.jong + j]) { cur.jong = CC[cur.jong + j]; cur.keys.push(j); return { kind: 'add' }; }
+        commit(); cur = fresh(j); return { kind: 'start' };
+      }
+      if (cur.jong) {
+        let moved;
+        if (SPLIT[cur.jong]) { moved = SPLIT[cur.jong][1]; cur.jong = SPLIT[cur.jong][0]; } else { moved = cur.jong; cur.jong = null; }
+        cur.keys.pop();
+        commit();
+        cur = { cho: moved, jung: j, jong: null, keys: [moved, j] };
+        return { kind: 'jump', moved };
+      }
+      if (cur.jung) {
+        const c = VV[cur.jung + j];
+        if (c) { const a = cur.jung; cur.jung = c; cur.keys.push(j); return { kind: 'combo', a, b: j, c }; }
+        commit(); cur = fresh(j); return { kind: 'start' };
+      }
+      cur.jung = j; cur.keys.push(j); return { kind: 'add' };
+    }
+    function back() {
+      if (cur) {
+        const keys = cur.keys.slice(0, -1);
+        cur = null;
+        if (keys.length) { const t = createIME(); keys.forEach(t.feed); cur = t.state().cur; }
+        return true;
+      }
+      return done.pop() !== undefined;
+    }
+    const space = () => { commit(); done.push(' '); };
+    const clear = () => { done = []; cur = null; };
+    const state = () => ({ done: done.slice(), cur: cur && { ...cur, keys: cur.keys.slice() } });
+    const cells = () => done.concat(cur ? [syllable(cur)] : []);
+    const text = () => cells().join('');
+    const composing = () => !!cur;
+    return { feed, back, space, clear, state, cells, text, composing };
+  }
+
+  // Demo words: the autoplay's riders, and what the big key sends, one key at a time.
+  const KEYS = { 고마워: 'ㄱㅗㅁㅏㅇㅜㅓ', 사랑해: 'ㅅㅏㄹㅏㅇㅎㅐ', 괜찮아: 'ㄱㅗㅐㄴㅊㅏㄴㅎㅇㅏ' };
+  const WORDS = ko ? ['고마워', '사랑해', '괜찮아'] : ['thanks', 'hello', 'yay'];
+  const ridersOf = (word) => [...(ko ? KEYS[word] : word)];
+
+  // English needs no assembly: the text is the letters.
+  function createPlain() {
+    let chars = [];
+    return {
+      feed: (c) => { chars.push(c); return { kind: 'add' }; },
+      back: () => chars.pop() !== undefined,
+      space: () => { chars.push(' '); },
+      clear: () => { chars = []; },
+      cells: () => chars.slice(),
+      text: () => chars.join(''),
+      composing: () => false,
+    };
+  }
+  const ime = ko ? createIME() : createPlain();
+
+  /* ---- The map. It is drawn for the box it gets (viewBox = its size in px), so signs and
+     riders keep a readable size on a phone. Stops sit in rows that alternate direction;
+     the rapids run down the bend between the first two rows. ---- */
+  const NS = 'http://www.w3.org/2000/svg';
+  const art = $('.art');
+  const mapEl = $('.map');
+  const signsEl = $('.signs');
+  const benchLayer = $('.benchlayer');
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const TEMPLATES = {
+    A: { rows: 2, cu: 6.6, stops: { pad: [0, .06], bridge: [0, .25], wheel: [0, .44], door: [0, .63], rapids: [0, .82], carousel: [1, .87], hall: [1, .67], glyphs: [1, .47], queue: [1, .29], exit: [1, .11] }, via: { after: 'rapids', right: true } },
+    B: { rows: 3, cu: 4.4, stops: { pad: [0, .09], bridge: [0, .34], wheel: [0, .6], door: [0, .84], rapids: ['turn', 0], carousel: [1, .6], hall: [1, .27], glyphs: [2, .13], queue: [2, .44], exit: [2, .79] }, via: { after: 'hall', right: false } },
+  };
+  // The hall and the screen are drawn a little smaller than their sketches.
+  const RS = { hall: .86, exit: .84 };
+  // How far each drawing reaches around its stop, in hundredths of u: [left, top, right, bottom].
+  const BOX = {
+    pad: [-36, -80, 36, 8], bridge: [-50, -36, 50, 18], wheel: [-44, -88, 44, 6], door: [-34, -92, 34, 8], rapids: [-30, -30, 30, 30],
+    carousel: [-48, -98, 48, 6], hall: [-80, -102, 80, 6], glyphs: [-50, -82, 50, 6], queue: [-48, -88, 48, 8], exit: [-82, -108, 82, 8],
+  };
+  const WIGGLE = { pad: 0, bridge: -.05, wheel: .03, door: -.03, rapids: 0, carousel: .04, hall: 0, glyphs: -.03, queue: .03, exit: 0 };
+
+  let L = null;   // the current layout
+
+  // labelH: the tallest sign under a row (measured on a second pass).
+  function computeLayout(W, H, labelH) {
+    const short = W < 560 || H < 330;
+    labelH = labelH || (short ? 44 : 76);
+    const cand = Object.entries(TEMPLATES).map(([key, tp]) => {
+      const u = Math.min(W / tp.cu, (H - tp.rows * labelH - (tp.rows - 1) * 8 - 8) / (.95 + (tp.rows - 1) * .98));
+      return { key, tp, u };
+    });
+    const pick = W >= 600 && W / H >= 1.4 && cand[0].u >= cand[1].u * 1.04 ? cand[0] : cand[1];
+    const tp = pick.tp;
+    const u = Math.max(40, Math.min(pick.u, 190));
+    const top = .95 * u + 2;
+    const pitch = tp.rows > 1 ? (H - top - labelH - 6) / (tp.rows - 1) : 0;
+    const rowY = (r) => top + r * pitch;
+    const fs = short ? 11 : clamp(u * .088, 12, 14.5);
+    const stops = {};
+    const pts = [];
+    ORDER.forEach((id) => {
+      const [row, fx] = tp.stops[id];
+      let x, y, dir, turn = false;
+      if (row === 'turn') {
+        x = W - .3 * u;
+        y = (rowY(0) + rowY(1)) / 2;
+        dir = 1;
+        turn = true;
+      } else {
+        x = fx * W;
+        y = rowY(row) + WIGGLE[id] * u;
+        dir = row % 2 ? -1 : 1;
+      }
+      stops[id] = { id, x, y, dir, row, turn };
+      pts.push({ x, y, id });
+      if (tp.via && tp.via.after === id) pts.push({ x: tp.via.right ? W - .26 * u : .26 * u, y: (rowY(row) + rowY(row + 1)) / 2 + .04 * u, via: true });
+    });
+    // Sign room: from halfway to the left neighbour to halfway to the right one (or the edge).
+    ORDER.forEach((id) => {
+      const s = stops[id];
+      if (s.turn) { s.signW = clamp(1.1 * u, 90, 190); return; }
+      const xs = ORDER.filter((o) => stops[o].row === s.row && o !== id).map((o) => stops[o].x);
+      const left = xs.filter((x) => x < s.x), right = xs.filter((x) => x > s.x);
+      s.lo = left.length ? (Math.max(...left) + s.x) / 2 + 3 : 2;
+      s.hi = right.length ? (Math.min(...right) + s.x) / 2 - 3 : W - 2;
+      s.signW = Math.min(s.hi - s.lo, Math.max(2 * Math.min(s.x - s.lo, s.hi - s.x), short ? 76 : 96));
+    });
+    return { W, H, u, short, labelH, fs, stops, pts, key: pick.key, rows: tp.rows, rowY };
+  }
+
+  // Catmull-Rom through the stops, as cubic Béziers; lengths of each stop along it.
+  function buildPath(pts) {
+    const P = (i) => pts[clamp(i, 0, pts.length - 1)];
+    const segs = [];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+      const c1 = { x: p1.x + (p2.x - p0.x) / 6, y: p1.y + (p2.y - p0.y) / 6 };
+      const c2 = { x: p2.x - (p3.x - p1.x) / 6, y: p2.y - (p3.y - p1.y) / 6 };
+      segs.push(`C${c1.x.toFixed(1)} ${c1.y.toFixed(1)} ${c2.x.toFixed(1)} ${c2.y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`);
+    }
+    const start = `M${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+    const probe = document.createElementNS(NS, 'path');
+    art.append(probe);
+    const lens = [0];
+    for (let i = 1; i < pts.length; i++) {
+      probe.setAttribute('d', start + segs.slice(0, i).join(''));
+      lens.push(probe.getTotalLength());
+    }
+    const d = start + segs.join('');
+    probe.setAttribute('d', d);
+    return { d, lens, probe };
+  }
+
+  /* ---- Drawings, in hundredths of u around the stop (path point at 0,0) ---- */
+  const svgOf = {
+    pad: () => `
+      <ellipse cx="0" cy="4" rx="36" ry="7" fill="rgba(43,45,66,.18)"/>
+      <path class="o" d="M-32 2 L-25 -30 Q-24 -34 -19 -34 H19 Q24 -34 25 -30 L32 2 Z" fill="#dfd1b8"/>
+      <g class="cap-top">
+        <rect class="o" x="-21" y="-42" width="42" height="30" rx="7" fill="#fffaf0"/>
+        <path d="M-14 -37 H14" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path class="o" d="M0 -35 V-21 M-6 -27 L0 -20 L6 -27" fill="none" stroke-width="2.6" style="stroke:${C.indigo}"/>
+      </g>`,
+    bridge: () => `
+      <ellipse class="o" cx="0" cy="8" rx="36" ry="9" fill="#7cc6f2" stroke-width="1.6"/>
+      <path d="M-26 8 q5 -3 10 0 t10 0 M4 9 q5 -3 10 0 t10 0" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
+      <rect class="o" x="-50" y="-32" width="8" height="36" rx="2" fill="#a0704c"/>
+      <rect class="o" x="42" y="-32" width="8" height="36" rx="2" fill="#a0704c"/>
+      <path class="o rope" d="M-46 -28 Q0 -12 46 -28" fill="none" stroke-width="1.8"/>
+      <path class="deck-ol" d="M-46 0 Q0 8 46 0" fill="none" stroke="${C.ink}" stroke-width="10" stroke-linecap="round"/>
+      <path class="deck" d="M-46 0 Q0 8 46 0" fill="none" stroke="#c48a5a" stroke-width="6.4" stroke-dasharray="6 2.4"/>
+      <circle cx="-46" cy="-32" r="3" fill="${C.red}" class="o" stroke-width="1.4"/>
+      <circle cx="46" cy="-32" r="3" fill="${C.red}" class="o" stroke-width="1.4"/>`,
+    wheel: () => {
+      let spokes = '', cars = '';
+      for (let k = 0; k < 8; k++) {
+        const a = k * Math.PI / 4;
+        spokes += `M0 0 L${(34 * Math.cos(a)).toFixed(1)} ${(34 * Math.sin(a)).toFixed(1)} `;
+        cars += `<rect class="o car" x="${(34 * Math.cos(a) - 5.5).toFixed(1)}" y="${(34 * Math.sin(a) - 5.5).toFixed(1)}" width="11" height="11" rx="2.5" fill="${[C.red, C.yellow, C.teal, C.indigo][k % 4]}" stroke-width="1.6"/>`;
+      }
+      return `
+      <ellipse cx="0" cy="3" rx="30" ry="5" fill="rgba(43,45,66,.18)"/>
+      <path class="o" d="M-26 2 L0 -46 L26 2" fill="none" stroke-width="3.2"/>
+      <g class="wheel-rot" transform="translate(0 -46)">
+        <circle class="o" r="34" fill="none" stroke-width="3"/>
+        <circle r="24" fill="none" stroke="${C.ink}" stroke-width="1.3" stroke-dasharray="2.5 3"/>
+        <path d="${spokes}" stroke="${C.ink}" stroke-width="1.4"/>
+        ${cars}
+      </g>
+      <circle class="o" cx="0" cy="-46" r="5" fill="${C.yellow}"/>`;
+    },
+    door: () => `
+      <ellipse class="o" cx="0" cy="1" rx="30" ry="6" fill="#bfeee9" stroke-width="1.6"/>
+      <rect x="-27" y="-54" width="54" height="55" fill="rgba(206,244,240,.75)"/>
+      <g class="wings"></g>
+      <path class="o" d="M-27 1 V-54 M27 1 V-54" fill="none"/>
+      <rect class="o" x="-32" y="-64" width="64" height="12" rx="3" fill="${C.teal}"/>
+      <circle class="o lamp" cx="25" cy="-58" r="3.2" fill="#d7dbe8" stroke-width="1.4"/>
+      <g transform="translate(0 -79)">
+        <circle class="o" r="12" fill="#fffaf0"/>
+        <path class="timer" d="" fill="rgba(78,205,196,.45)"/>
+        <path d="M0 7 V-6 M-2.6 -3.6 L0 -7.4 L2.6 -3.6 M0 3 L-5 -1 V-3 M0 1 L5 -3 V-5" fill="none" stroke="${C.ink}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="-5" cy="-4.4" r="1.6" fill="${C.ink}"/><rect x="3.6" y="-7" width="2.8" height="2.8" fill="${C.ink}"/>
+        <circle cx="0" cy="7.4" r="1.9" fill="${C.ink}"/>
+      </g>`,
+    carousel: () => {
+      let stripes = '';
+      for (let k = 0; k < 8; k++) if (k % 2) stripes += `<path d="M0 -84 L${-46 + k * 11.5} -56 L${-46 + (k + 1) * 11.5} -56 Z" fill="#fff"/>`;
+      let brim = 'M-46 -56';
+      for (let k = 0; k < 8; k++) brim += ' q5.75 8 11.5 0';
+      return `
+      <ellipse cx="0" cy="2" rx="44" ry="7" fill="rgba(43,45,66,.18)"/>
+      <ellipse class="o" cx="0" cy="-6" rx="42" ry="10" fill="${C.yellow}"/>
+      <path d="M-42 -6 v4 a42 10 0 0 0 84 0 v-4" fill="#e9b949" class="o"/>
+      <rect class="o" x="-3" y="-58" width="6" height="52" fill="#c9b6f2"/>
+      <g class="horses"></g>
+      <path class="o" d="M-46 -56 L0 -84 L46 -56 Z" fill="${C.red}"/>
+      ${stripes}
+      <path class="o" d="M-46 -56 L0 -84 L46 -56" fill="none"/>
+      <path class="o" d="${brim} Z" fill="#fff"/>
+      <path class="o" d="M0 -84 V-97" fill="none"/>
+      <path class="o" d="M0 -97 L11 -93.5 L0 -90 Z" fill="${C.teal}" stroke-width="1.6"/>`;
+    },
+    hall: () => `
+      <ellipse cx="0" cy="4" rx="78" ry="7" fill="rgba(43,45,66,.18)"/>
+      <rect class="o" x="-64" y="-82" width="128" height="84" fill="#fff1d2"/>
+      <rect class="o" x="-64" y="-82" width="9" height="84" fill="#c08552"/>
+      <rect class="o" x="55" y="-82" width="9" height="84" fill="#c08552"/>
+      <rect class="o" x="-55" y="-78" width="110" height="44" rx="4" fill="#fffdf6"/>
+      <rect class="o" x="-52" y="-38" width="104" height="5" rx="2" fill="#c08552" stroke-width="1.6"/>
+      <path class="o hall-door" d="M-12 2 V-17 Q0 -29 12 -17 V2 Z" fill="#8d5a3b"/>
+      <path class="o" d="M-80 -78 Q-64 -84 -54 -96 H54 Q64 -84 80 -78 Q40 -86 0 -86 Q-40 -86 -80 -78 Z" fill="${C.indigo}"/>
+      <path d="M-50 -92 H50" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+      <rect class="o" x="-40" y="-102" width="80" height="7" rx="3.5" fill="${C.ink}"/>`,
+    glyphs: () => `
+      <defs><linearGradient id="mirror" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4fbff"/><stop offset=".45" stop-color="#cfe0ef"/><stop offset=".5" stop-color="#fff"/><stop offset="1" stop-color="#a9bfd6"/></linearGradient></defs>
+      <ellipse cx="0" cy="4" rx="48" ry="6" fill="rgba(43,45,66,.18)"/>
+      <rect class="o" x="-44" y="-54" width="88" height="56" fill="#effaf9"/>
+      <path class="o" d="M-50 -52 Q-25 -74 0 -80 Q25 -74 50 -52 Z" fill="${C.teal}"/>
+      <path d="M-25 -66 Q-12 -76 0 -80 L-8 -54 Z M8 -54 L0 -80 Q12 -76 25 -66 L25 -54 Z" fill="#fff" opacity=".85"/>
+      <path class="o" d="M-50 -52 Q-25 -74 0 -80 Q25 -74 50 -52" fill="none"/>
+      <g class="mirrors">
+        <ellipse class="o" cx="-26" cy="-30" rx="11" ry="16" fill="url(#mirror)"/>
+        <ellipse class="o" cx="0" cy="-30" rx="11" ry="16" fill="url(#mirror)"/>
+        <ellipse class="o" cx="26" cy="-30" rx="11" ry="16" fill="url(#mirror)"/>
+        <text class="mt" x="-26" y="-29" transform-origin="-26 -29"></text>
+        <text class="mt" x="0" y="-29" transform-origin="0 -29"></text>
+        <text class="mt" x="26" y="-29" transform-origin="26 -29"></text>
+      </g>
+      <path class="o" d="M-7 2 V-8 Q0 -14 7 -8 V2 Z" fill="${C.ink}"/>`,
+    queue: () => `
+      <ellipse cx="-8" cy="-26" rx="44" ry="20" fill="rgba(241,223,182,.75)"/>
+      ${[[-36, -2], [-36, -26], [-36, -50], [12, -2], [12, -26], [12, -50]].map(([x, y]) => `<rect class="o" x="${x - 2}" y="${y - 12}" width="4" height="13" rx="1.5" fill="#c9cfe0" stroke-width="1.4"/>`).join('')}
+      <path d="M-36 -12 Q-12 -4 12 -12 M-36 -36 Q-12 -28 12 -36 M-36 -60 Q-12 -52 12 -60" fill="none" stroke="${C.red}" stroke-width="2.4" stroke-linecap="round"/>
+      <rect class="o" x="32" y="-60" width="4" height="62" fill="#9aa1b8"/>
+      <rect class="o" x="25" y="-88" width="18" height="32" rx="5" fill="${C.ink}"/>
+      <circle class="q-red" cx="34" cy="-79" r="5.4" fill="${C.red}"/>
+      <circle class="q-green" cx="34" cy="-65" r="5.4" fill="#2f5b3a"/>`,
+    exit: () => {
+      let bulbs = '';
+      for (let k = 0; k <= 12; k++) bulbs += `<circle class="bulb" cx="${-72 + k * 12}" cy="-104" r="2.6"/>`;
+      return `
+      <ellipse cx="0" cy="4" rx="46" ry="6" fill="rgba(43,45,66,.18)"/>
+      <path class="o" d="M-12 -14 L-16 -1 H16 L12 -14 Z" fill="#c9cfe0"/>
+      <rect class="o" x="-32" y="-3" width="64" height="7" rx="3.5" fill="#c9cfe0"/>
+      <rect class="o" x="-80" y="-108" width="160" height="96" rx="9" fill="#3b3f5c"/>
+      <rect x="-72" y="-99" width="144" height="74" rx="3" fill="#14162a"/>
+      <g class="bulbs">${bulbs}</g>
+      <circle cx="0" cy="-18" r="2" fill="#7c83a8"/>`;
+    },
+  };
+
+  // The pointing glove, tip at 0,0 and the hand above it (rotated in place by buildScene).
+  const GLOVE = '#fffdf8';
+  const FINGER = `
+      <rect class="o" x="-19" y="-82" width="15" height="25" rx="7.5" fill="${GLOVE}" transform="rotate(18 -11 -70)"/>
+      <rect class="o" x="-12" y="-116" width="47" height="17" rx="5" fill="${GLOVE}"/>
+      <path d="M-10 -106 H33" stroke="${C.ink}" stroke-width="1.5" opacity=".5"/>
+      <rect class="o" x="-9" y="-102" width="41" height="54" rx="12" fill="${GLOVE}"/>
+      <rect class="o" x="7" y="-58" width="9" height="15" rx="4.5" fill="${GLOVE}"/>
+      <rect class="o" x="15.5" y="-58" width="9" height="13" rx="4.5" fill="${GLOVE}"/>
+      <rect class="o" x="24" y="-58" width="8.5" height="10.5" rx="4.2" fill="${GLOVE}"/>
+      <path d="M-7 -62 V-7 A7 7 0 0 0 7 -7 V-62 Z" fill="${GLOVE}"/>
+      <path class="o" d="M-7 -49 V-7 A7 7 0 0 0 7 -7 V-49" fill="none"/>
+      <path d="M-3.5 -30 q3.5 1.8 7 0 M-3.5 -35 q3.5 1.8 7 0" fill="none" stroke="${C.ink}" stroke-width="1.3" stroke-linecap="round" opacity=".7"/>
+      <path d="M5 -93 V-79 M13 -93 V-79 M21 -93 V-79" stroke="${C.ink}" stroke-width="1.5" stroke-linecap="round" opacity=".55"/>`;
+
+  // Trees, bushes and flower beds wherever nothing else is.
+  function decorate(Lay, obstacles, pathPts) {
+    const { W, H, u } = Lay;
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const step = .3 * u;
+    const spots = [];
+    for (let y = .2 * u; y < H - .1 * u; y += step) for (let x = .2 * u; x < W - .15 * u; x += step) spots.push({ x: x + (rnd() - .5) * step * .6, y: y + (rnd() - .5) * step * .6, k: rnd() });
+    spots.sort((a, b) => a.k - b.k);
+    const placed = [];
+    const out = [];
+    for (const s of spots) {
+      if (placed.length >= 14) break;
+      const r = (.13 + s.k * .1) * u;
+      // Trees reach 2.3r above their foot (the pine's tip), a flower bed 0.7r.
+      const kind = (placed.length + 1) % 3;
+      const up = kind ? 2.35 * r : .7 * r;
+      if (s.x - r < 0 || s.x + r > W || s.y - up < 0 || s.y + .4 * r > H) continue;
+      if (obstacles.some((o) => s.x + r > o[0] && s.x - r < o[2] && s.y + .4 * r > o[1] && s.y - up < o[3])) continue;
+      if (pathPts.some((p) => Math.hypot(p.x - s.x, p.y - s.y) < .2 * u + r)) continue;
+      if (placed.some((p) => Math.hypot(p.x - s.x, p.y - s.y) < (p.r + r) * 1.5)) continue;
+      placed.push({ x: s.x, y: s.y, r });
+      const g = (inner) => `<g transform="translate(${s.x.toFixed(1)} ${s.y.toFixed(1)}) scale(${(r / 20).toFixed(3)})">${inner}</g>`;
+      if (kind === 1) out.push(g(`<ellipse cx="0" cy="2" rx="18" ry="5" fill="rgba(43,45,66,.16)"/><rect class="o" x="-3" y="-14" width="6" height="16" fill="#9a6a45" stroke-width="2"/><circle class="o" cx="-8" cy="-20" r="12" fill="#5fae4a" stroke-width="2"/><circle class="o" cx="8" cy="-22" r="13" fill="#6dbb55" stroke-width="2"/><circle class="o" cx="0" cy="-32" r="12" fill="#7cc85f" stroke-width="2"/><circle cx="-4" cy="-35" r="3" fill="#fff" opacity=".35"/>`));
+      else if (kind === 2) out.push(g(`<ellipse cx="0" cy="2" rx="16" ry="4" fill="rgba(43,45,66,.16)"/><rect class="o" x="-2.5" y="-8" width="5" height="10" fill="#9a6a45" stroke-width="2"/><path class="o" d="M0 -46 L15 -8 H-15 Z" fill="#4f9e44" stroke-width="2"/><path class="o" d="M0 -46 L10 -22 H-10 Z" fill="#62b052" stroke-width="2"/>`));
+      else out.push(g(`<ellipse class="o" cx="0" cy="-4" rx="18" ry="9" fill="#7cc85f" stroke-width="2"/>${[[-9, -7, C.red], [-1, -9, C.yellow], [7, -6, '#fff'], [2, -2, C.indigo], [-6, -1, C.yellow], [11, -1, C.red]].map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="2.6" fill="${c}" stroke="${C.ink}" stroke-width=".9"/>`).join('')}`));
+    }
+    return out.join('');
+  }
+
+  /* ---- Building the map for the current size ---- */
+  let refs = {};
+  const kku = (text, px, font = 'sebul') => {
+    const el = document.createElement('font-kku');
+    el.setAttribute('font', font);
+    el.setAttribute('size', px.toFixed(1) + 'px');
+    el.textContent = text;
+    return el;
+  };
+  const CLOCK = '<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 3 V6 L8 7.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+
+  function buildScene(labelH) {
+    const W = Math.round(mapEl.clientWidth);
+    const H = Math.round(mapEl.clientHeight);
+    if (W < 60 || H < 60) return false;
+    L = computeLayout(W, H, labelH);
+    const { u, stops } = L;
+    art.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    art.replaceChildren();
+    const path = buildPath(L.pts);
+    L.pts.forEach((p, i) => { if (p.id) stops[p.id].len = path.lens[i]; });
+    L.total = path.lens[path.lens.length - 1];
+    path.probe.setAttribute('fill', 'none');
+    refs = { path: path.probe };
+    const tangent = (len) => {
+      const a = path.probe.getPointAtLength(Math.max(0, len - 2)), b = path.probe.getPointAtLength(Math.min(L.total, len + 2));
+      return Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+    };
+
+    const pw = Math.max(12, .2 * u);
+    L.pw = pw;
+    const [r0, r1] = span('rapids');
+    const k = u / 100;
+    let html = '<g class="deco"></g>';
+    html += `<path d="${path.d}" fill="none" stroke="#d9bf8a" stroke-width="${pw + 5}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    html += `<path d="${path.d}" fill="none" stroke="#f1dfb6" stroke-width="${pw}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    html += `<path d="${path.d}" fill="none" stroke="#fff" stroke-width="${Math.max(1.6, .022 * u)}" stroke-dasharray="${(.05 * u).toFixed(1)} ${(.075 * u).toFixed(1)}" stroke-linecap="round" opacity=".9"/>`;
+    // The rapids: water laid along the bend, foam running down it.
+    const water = (w, c, extra = '') => `<path d="${path.d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-dasharray="${(r1 - r0).toFixed(1)} ${L.total + 10}" stroke-dashoffset="${(-r0).toFixed(1)}" ${extra}/>`;
+    const fw = pw + .16 * u;
+    html += `<defs><mask id="rapids-m" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}">${water(fw, '#fff')}</mask></defs>`;
+    html += water(fw + 5, '#2f7fb8', 'stroke-linecap="butt"') + water(fw, '#5bc0eb', 'stroke-linecap="butt"');
+    const fl = (.07 * u).toFixed(1), fg = (.11 * u).toFixed(1);
+    html += `<g mask="url(#rapids-m)"><path class="foam" d="${path.d}" fill="none" stroke="#e8fbff" stroke-width="${Math.max(2, .03 * u)}" stroke-dasharray="${fl} ${fg}" stroke-linecap="round" />`;
+    html += `<path class="foam slow" d="${path.d}" fill="none" stroke="#bfefff" stroke-width="${Math.max(1.5, .02 * u)}" stroke-dasharray="${(.03 * u).toFixed(1)} ${(.15 * u).toFixed(1)}" transform="translate(${(.05 * u).toFixed(1)} ${(-.04 * u).toFixed(1)})" stroke-linecap="round"/></g>`;
+    // rocks at both ends of the rapids
+    [[r0, 1], [r0 + 8, -1], [r1, -1], [r1 - 10, 1]].forEach(([len, side], i) => {
+      const p = path.probe.getPointAtLength(len), a = tangent(len) * Math.PI / 180;
+      const off = (fw / 2 + .05 * u) * side;
+      const x = p.x - Math.sin(a) * off, y = p.y + Math.cos(a) * off;
+      const rr = (.05 + (i % 2) * .025) * u;
+      html += `<ellipse class="o" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${rr.toFixed(1)}" ry="${(rr * .72).toFixed(1)}" fill="#b9bfcf" stroke-width="1.6"/>`;
+    });
+
+    ORDER.forEach((id) => {
+      if (id === 'rapids') return;
+      const s = stops[id];
+      const rot = id === 'bridge' || id === 'rapids' ? ` rotate(${tangent(s.len).toFixed(1)})` : '';
+      const flip = id === 'queue' && s.dir < 0 ? ' scale(-1 1)' : '';
+      html += `<g class="ride ride-${id}" transform="translate(${s.x.toFixed(1)} ${s.y.toFixed(1)})${rot} scale(${(k * (RS[id] || 1)).toFixed(4)})${flip}">${svgOf[id]()}</g>`;
+    });
+    html += '<g class="riders"></g><g class="fx"></g>';
+    // The visitor's finger: a white cartoon glove (the old pointing-hand cursor) that comes in
+    // from off the left edge and presses the keycap once per rider.
+    html += `<g class="finger" opacity="0"><g class="finger-k" transform="scale(${k.toFixed(4)}) rotate(-62)">${FINGER}</g></g>`;
+    art.insertAdjacentHTML('beforeend', html);
+    const q = (s) => art.querySelector(s);
+    Object.assign(refs, {
+      riders: q('.riders'), fx: q('.fx'), deco: q('.deco'), finger: q('.finger'),
+      capTop: q('.cap-top'), deck: q('.deck'), deckOl: q('.deck-ol'), rope: q('.rope'),
+      wheelRot: q('.wheel-rot'), wings: q('.wings'), lamp: q('.lamp'), timer: q('.timer'), horses: q('.horses'),
+      hallDoor: q('.hall-door'), mirrors: [...art.querySelectorAll('.mt')], qRed: q('.q-red'), qGreen: q('.q-green'),
+      bulbs: [...art.querySelectorAll('.bulb')], foam: [...art.querySelectorAll('.foam')],
+    });
+    // Revolving door wings and carousel horses are redrawn every frame; make their parts once.
+    refs.wings.innerHTML = [0, 1, 2, 3].map(() => `<rect x="-1.6" y="-52" width="3.2" height="50" rx="1" fill="${C.ink}"/>`).join('');
+    refs.wingEls = [...refs.wings.children];
+    refs.horses.innerHTML = [0, 1, 2, 3].map((i) => `<g><path d="M0 -54 V-8" stroke="#b08a2e" stroke-width="2"/><g class="horse"><path d="M-6 3 l-3 6 M-2 4 l-1 6 M4 4 l2 6 M7 3 l4 5" stroke="${C.ink}" stroke-width="1.6" stroke-linecap="round"/><path d="M-9 -1 q-5 1 -5 6" fill="none" stroke="${C.ink}" stroke-width="2" stroke-linecap="round"/><ellipse class="o" cx="0" cy="0" rx="9.5" ry="5" fill="${[C.teal, '#fff', C.indigo, C.yellow][i]}" stroke-width="1.6"/><path class="o" d="M5 -2 L8 -10 Q9 -13 13 -12 L16 -9 L13 -7 L11 -1 Z" fill="${[C.teal, '#fff', C.indigo, C.yellow][i]}" stroke-width="1.6"/></g></g>`).join('');
+    refs.horseEls = [...refs.horses.children];
+
+    const tallest = buildSigns();
+    if (!labelH && tallest > L.labelH + 1) return buildScene(tallest);
+    buildOverlays();
+    // Decoration avoids the path, the rides and the signs.
+    const obstacles = ORDER.map((id) => {
+      const s = stops[id], b = BOX[id].map((v) => v * (RS[id] || 1));
+      return [Math.min(s.x + b[0] * k, s.x - b[2] * k), s.y + b[1] * k, Math.max(s.x + b[2] * k, s.x - b[0] * k), s.y + b[3] * k];
+    });
+    // (layout boxes, not screen boxes: the camera may be holding the map close)
+    signsEl.querySelectorAll('.sign').forEach((el) => {
+      const x = el.offsetLeft, y = el.offsetTop;
+      obstacles.push([x - 6, y - 6, x + el.offsetWidth + 6, y + el.offsetHeight + 4]);
+    });
+    const pathPts = [];
+    for (let l = 0; l <= L.total; l += 7) pathPts.push(path.probe.getPointAtLength(l));
+    refs.deco.innerHTML = decorate(L, obstacles, pathPts);
+    buildBunting();
+    L.cam = camFor();
+    return true;
+  }
+
+  /* ---- The camera: the opening close-up ----
+     For the first seconds of each lap the map is held close on the press pad and the bridge, so
+     the finger, the rider flung out of the keycap and its three bounces are big even on a phone
+     (and the glove, which reaches in from up and to the left, is on screen); then it pulls back
+     to the whole park. Small maps get up to 2.2x, big ones a little (1.15x) and the shift. */
+  function camFor() {
+    const { W, H, u, stops } = L;
+    const pad = stops.pad, br = stops.bridge;
+    const x0 = pad.x - 1.15 * u;
+    // The bridge and its whole sign: the wait tag ("wait 5 ms") is part of the joke.
+    let x1 = br.x + .6 * u;
+    const bs = signsEl.children[ORDER.indexOf('bridge')];
+    if (bs) bs.querySelectorAll('.sign-head, .wait').forEach((c) => { x1 = Math.max(x1, bs.offsetLeft + c.offsetLeft + c.offsetWidth + 4); });
+    const y1 = Math.max(pad.y, br.y) + L.labelH;
+    const s = Math.max(1.15, Math.min(2.2, 130 / u, W / (x1 - x0), H / y1));
+    // Far enough right that the whole glove shows; down a little, for the rider's high arc.
+    const tx = Math.max(W - s * W, s * (1.15 * u - pad.x));
+    const ty = clamp(H / 2 - s * y1 / 2, H - s * H, .3 * u * s);
+    return { s, tx, ty };
+  }
+  const camEl = $('.cam');
+  let camA = 0;
+  let camOn = false;
+  function camera(dt) {
+    // 0-0.6 s in, held until 3.6 s (the first rider's bounces end at about 3.5 s), out by 4.6 s.
+    if (mode === 'auto') camA = T < .6 ? ease(T / .6) : T < 3.6 ? 1 : T < 4.6 ? 1 - ease(T - 3.6) : 0;
+    else camA = Math.max(0, camA - dt / .4);   // someone typed: back to the whole park
+    const c = L && L.cam;
+    if (!c || camA <= 0) {
+      if (camOn) { camEl.style.transform = ''; mapEl.classList.remove('close'); camOn = false; }
+      return;
+    }
+    camOn = true;
+    mapEl.classList.add('close');
+    camEl.style.transform = `translate(${(c.tx * camA).toFixed(1)}px, ${(c.ty * camA).toFixed(1)}px) scale(${(1 + (c.s - 1) * camA).toFixed(4)})`;
+  }
+
+  function span(id) {
+    const s = L.stops[id];
+    // A rider flung off the pad lands a little way down the path.
+    if (id === 'pad') return [s.len, s.len + .36 * L.u];
+    const h = id === 'bridge' ? .4 * L.u : id === 'rapids' ? .46 * L.u : 0;
+    return [s.len - h, s.len + h];
+  }
+
+  function buildSigns() {
+    const { u, short, fs, stops } = L;
+    signsEl.replaceChildren();
+    signsEl.style.setProperty('--fs', fs.toFixed(1) + 'px');
+    let tallest = 0;
+    ORDER.forEach((id) => {
+      const s = stops[id], t = SIGN[id], r = RIDE[id];
+      const el = document.createElement('div');
+      el.className = 'sign' + (s.turn ? ' left' : '');
+      el.style.width = s.signW.toFixed(0) + 'px';
+      const flag = id === 'pad' ? '' : `<span class="flag" style="--c:${r.c};--fc:${r.c === C.yellow ? C.ink : '#fff'}">${r.n}</span>`;
+      const name = short ? (t.short || t.name) : t.name;
+      let sub = '';
+      const wait = short ? t.ws : t.wait;
+      if (wait) sub += `<span class="wait">${CLOCK}${wait}</span>`;
+      const note = short ? t.ns : t.note;
+      if (note) sub += `<i class="note">${note}</i>`;
+      el.innerHTML = `<p class="sign-head${id === 'pad' ? ' plain' : ''}">${flag}<span class="sign-name">${name}</span></p>${sub ? `<p class="sign-sub">${sub}</p>` : ''}`;
+      signsEl.append(el);
+      const w = s.signW;
+      const below = Math.max(.17 * u, L.pw * .5 + 4);
+      if (s.turn) {
+        // On the bend: the sign stands under the foot of the rapids.
+        el.style.left = clamp(L.W - .62 * u - w / 2, 2, L.W - w - 2).toFixed(1) + 'px';
+        el.style.top = (L.rowY(1) + below).toFixed(1) + 'px';
+      } else {
+        el.style.left = clamp(s.x - w / 2, s.lo, s.hi - w).toFixed(1) + 'px';
+        el.style.top = (s.y + below).toFixed(1) + 'px';
+      }
+      tallest = Math.max(tallest, el.offsetHeight + below);
+    });
+    return tallest;
+  }
+
+  /* ---- Workbench (in the hall) and the exit screen ---- */
+  function buildOverlays() {
+    const { u, stops } = L;
+    benchLayer.replaceChildren();
+    const h = stops.hall, x = stops.exit;
+    const hu = u * RS.hall, xu = u * RS.exit;
+    const bench = document.createElement('div');
+    bench.className = 'bench';
+    Object.assign(bench.style, { left: (h.x - .53 * hu) + 'px', top: (h.y - .77 * hu) + 'px', width: (1.06 * hu) + 'px', height: (.39 * hu) + 'px' });
+    const board = document.createElement('div');
+    board.className = 'board';
+    Object.assign(board.style, { left: (x.x - .72 * xu) + 'px', top: (x.y - .99 * xu) + 'px', width: (1.44 * xu) + 'px', height: (.74 * xu) + 'px' });
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    Object.assign(bubble.style, { left: (h.x + .62 * hu) + 'px', top: (h.y - .86 * hu) + 'px' });
+    benchLayer.append(bench, board, bubble);
+    Object.assign(refs, { bench, board, bubble, benchW: 1.0 * hu, boardW: 1.32 * xu, hu, xu });
+    if (ko) {
+      refs.cells = document.createElement('div');
+      refs.cells.className = 'cells';
+      bench.append(refs.cells);
+      benchCells = [];
+      benchFs = 0;
+      renderBench(null);
+    } else {
+      // English riders skip the line; the hall just shows what it would do (on a map where the sum
+      // would drop under 13 px, such as 358×640 phones, only what it makes; 13 px keeps the whole
+      // sum on the 868×633 home stage of a 1280×720 window and on 390×844).
+      const sum = Math.min(.3 * hu, refs.benchW / 5.4);
+      const fsz = sum >= 13 ? sum : Math.max(12, .3 * hu);
+      const en = document.createElement('div');
+      en.className = 'bench-en';
+      en.style.fontSize = fsz.toFixed(1) + 'px';
+      const parts = sum >= 13 ? ['ㅎ', '+', 'ㅐ', '+', 'ㅇ', '=', '행'] : ['행'];
+      parts.forEach((p) => {
+        if (p === '+' || p === '=') { const o = document.createElement('b'); o.className = 'op'; o.textContent = p; en.append(o); } else en.append(kku(p, fsz));
+      });
+      bench.append(en);
+    }
+    renderBoard(boardText, false);
+  }
+
+  let benchCells = [];
+  let benchFs = 0;
+  function renderBench(ev) {
+    if (!ko || !refs.cells) return;
+    const all = ime.cells();
+    const view = all.slice(-6);
+    const fs = Math.max(14, Math.min(.3 * refs.hu, refs.benchW / (Math.max(view.length, 3) * 1.08)));
+    if (Math.abs(fs - benchFs) > .5) { refs.cells.replaceChildren(); benchCells = []; benchFs = fs; }
+    view.forEach((t, i) => {
+      let c = benchCells[i];
+      if (!c) {
+        c = { el: document.createElement('span'), text: null };
+        c.el.className = 'cell';
+        refs.cells.append(c.el);
+        benchCells[i] = c;
+      }
+      if (c.text !== t) {
+        c.text = t;
+        c.el.classList.toggle('space', t === ' ');
+        c.el.replaceChildren(...(t === ' ' ? [] : [kku(t, fs)]));
+      }
+      c.el.classList.toggle('composing', ime.composing() && i === view.length - 1);
+      c.el.classList.remove('hidden');
+    });
+    while (benchCells.length > view.length) benchCells.pop().el.remove();
+    if (!ev || reduce) return;
+    const last = benchCells[view.length - 1];
+    if (last && (ev.kind === 'start' || ev.kind === 'add' || ev.kind === 'combo')) last.el.animate([{ transform: 'translateY(-14%) scale(1.1)' }, { transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.3,1.6,.5,1)' });
+    if (ev.kind === 'combo') showBubble(`${ev.a}+${ev.b} = ${ev.c}`);
+    // 고마워 passes through 곰 on its way: the bait before the final consonant jumps.
+    if (ev.kind === 'add' && ime.text() === '곰') showBubble(TXT.bear, 1300);
+    if (ev.kind === 'jump' && view.length >= 2) {
+      const from = benchCells[view.length - 2], to = last;
+      to.el.classList.add('hidden');
+      showBubble(TXT.goblin);
+      requestAnimationFrame(() => flyJamo(ev.moved, from.el, to.el, fs));
+    }
+  }
+
+  function flyJamo(jamo, fromEl, toEl, fs) {
+    const base = benchLayer.getBoundingClientRect();
+    const z = base.width / (benchLayer.offsetWidth || base.width || 1);   // the camera's scale
+    const lay = (r) => ({ left: (r.left - base.left) / z + base.left, top: (r.top - base.top) / z + base.top, width: r.width / z, height: r.height / z });
+    const a = lay(fromEl.getBoundingClientRect()), b = lay(toEl.getBoundingClientRect());
+    const spark = document.createElement('div');
+    spark.className = 'spark';
+    spark.append(kku(jamo, fs * .85));
+    benchLayer.append(spark);
+    const sx = a.left + a.width * .62 - base.left, sy = a.top + a.height * .62 - base.top;
+    const ex = b.left + b.width * .32 - base.left, ey = b.top + b.height * .32 - base.top;
+    const mx = (sx + ex) / 2, my = Math.min(sy, ey) - .2 * refs.hu;
+    const pos = (x, y, s = 1) => `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -50%) scale(${s})`;
+    const anim = spark.animate([
+      { transform: pos(sx, sy, .7), opacity: 0 },
+      { transform: pos(sx + (mx - sx) * .3, sy - .12 * refs.hu, 1.05), opacity: 1, offset: .2 },
+      { transform: pos(mx, my, 1.15), opacity: 1, offset: .55 },
+      { transform: pos(ex, ey, 1), opacity: 1 },
+    ], { duration: 720, easing: 'cubic-bezier(.4,0,.4,1)' });
+    anim.onfinish = () => {
+      spark.remove();
+      toEl.classList.remove('hidden');
+      toEl.animate([{ transform: 'scale(1.25)', filter: 'drop-shadow(0 0 6px #7ff5e8)' }, { transform: 'none', filter: 'none' }], { duration: 380, easing: 'ease-out' });
+    };
+  }
+
+  let bubbleTimer = 0;
+  function showBubble(text, ms = 1500) {
+    const b = refs.bubble;
+    const px = Math.max(14, .15 * L.u);
+    if (ko) b.replaceChildren(kku(text, px));
+    else {
+      // English lines in the park's own type (font-kku sebul is for the Korean letters).
+      const say = document.createElement('span');
+      say.className = 'say';
+      say.style.fontSize = px.toFixed(1) + 'px';
+      say.textContent = text;
+      b.replaceChildren(say);
+    }
+    clearTimeout(bubbleTimer);
+    b.animate([{ opacity: 0, transform: 'scale(.5) rotate(-8deg)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.3,1.5,.5,1)', fill: 'forwards' });
+    bubbleTimer = setTimeout(() => b.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }), ms);
+  }
+
+  let boardText = '';
+  function renderBoard(text, flash = true) {
+    boardText = text || '';
+    const b = refs.board;
+    if (!b) return;
+    b.replaceChildren();
+    const div = document.createElement('div');
+    if (!boardText) {
+      div.className = 'board-idle';
+      div.style.fontSize = (.3 * refs.xu).toFixed(1) + 'px';
+      div.textContent = '_';
+      b.append(div);
+      return;
+    }
+    const shown = [...boardText].slice(ko ? -6 : -9).join('');
+    const n = [...shown].length;
+    div.className = 'board-text' + (ko ? '' : ' en');
+    if (ko) div.append(kku(shown, Math.min(.4 * refs.xu, refs.boardW / (n * 1.04))));
+    else { div.style.fontSize = Math.min(.4 * refs.xu, refs.boardW / (n * .6)).toFixed(1) + 'px'; div.textContent = shown; }
+    b.append(div);
+    if (flash && !reduce) {
+      div.animate([{ opacity: 0, filter: 'brightness(2.2)' }, { opacity: 1, filter: 'brightness(1.6)', offset: .3 }, { opacity: 1, filter: 'none' }], { duration: 700, easing: 'ease-out' });
+      bulbsUntil = T + 1.6;
+    }
+  }
+  let bulbsUntil = 0;
+
+  function buildBunting() {
+    const svg = $('.bunting');
+    const w = Math.round(svg.clientWidth || 1000), h = Math.round(svg.clientHeight || 24);
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    const swags = Math.max(2, Math.round(w / 340));
+    const sw = w / swags;
+    const sag = h * .38;
+    const y = (x) => { const t = (x % sw) / sw; return 2 + 4 * sag * t * (1 - t) * .9; };
+    const cols = [C.red, C.yellow, C.teal, C.indigo, '#fff'];
+    let line = '', flags = '';
+    for (let s = 0; s < swags; s++) line += `M${s * sw} 2 Q${s * sw + sw / 2} ${2 + 2 * sag * .9} ${(s + 1) * sw} 2 `;
+    const fwid = Math.max(12, h * .55);
+    let i = 0;
+    for (let x = fwid * .7; x < w - fwid * .3; x += fwid * 1.45) {
+      const y0 = y(x), y1 = y(x + fwid);
+      flags += `<path d="M${x.toFixed(1)} ${y0.toFixed(1)} L${(x + fwid).toFixed(1)} ${y1.toFixed(1)} L${(x + fwid / 2).toFixed(1)} ${((y0 + y1) / 2 + h * .62).toFixed(1)} Z" fill="${cols[i++ % cols.length]}" stroke="${C.ink}" stroke-width="1.3" stroke-linejoin="round"/>`;
+    }
+    svg.innerHTML = `<path d="${line}" fill="none" stroke="${C.ink}" stroke-width="1.4"/>${flags}`;
+  }
+
+  /* ---- The ticket ---- */
+  const record = $('.record');
+  const admit = $('.admit');
+  const stub = $('.rec-stub');
+  const yours = $('.yours');
+  const hintYours = $('.hint-yours');
+  const verdict = $('.verdict');
+  // Today's lap is the sum of the rides after the Press Pad (29.5 ms; 29 for English riders,
+  // who skip the Hangul hall).
+  $('.tot').textContent = String(Math.round(ORDER.slice(1).reduce((a, id) => a + RIDE[id].ms, 0) * 10) / 10);
+  $('.bars').innerHTML = ORDER.slice(1).map((id) => `<li class="bar" style="--c:${RIDE[id].c};--v:${RIDE[id].ms};--fc:${RIDE[id].c === C.yellow ? C.ink : '#fff'}"><span class="bn">${RIDE[id].n}</span><span class="bl">${BARS[id]}</span><span class="bt"><i></i></span><span class="bv">${RIDE[id].ms}</span></li>`).join('');
+  $('.stack').innerHTML = ORDER.slice(1).map((id) => `<i style="--c:${RIDE[id].c};--v:${RIDE[id].ms}"></i>`).join('');
+  let shownRecord = false;
+  let shownHof = false;
+  let shownStamp = false;
+  const wide = () => matchMedia('(min-width: 640px) and (min-aspect-ratio: 1/1)').matches;
+  const overlayTicket = () => !reduce && !wide();
+  function showRecord(instant) {
+    if (shownRecord) return;
+    shownRecord = true;
+    record.classList.add('on');
+    if (instant || reduce) { admit.style.visibility = 'hidden'; return; }
+    const from = wide() ? 'translate(115%, 4%) rotate(8deg)' : 'translate(0, -125%) rotate(-3deg)';
+    record.animate([{ transform: from }, { transform: 'rotate(-1.2deg)', offset: .75 }, { transform: 'none' }], { duration: 750, easing: 'cubic-bezier(.2,.9,.3,1)' });
+    admit.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, delay: 300, fill: 'forwards' }).onfinish = () => { admit.style.visibility = 'hidden'; };
+    // (the bars are done growing about 1 s in, before the hall of fame)
+    record.querySelectorAll('.bt > i, .stack > i').forEach((el, i) => el.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }], { duration: 360, delay: 300 + (i % 9) * 45, easing: 'cubic-bezier(.3,1.3,.5,1)', fill: 'backwards' }));
+  }
+  function showHof(instant) {
+    if (shownHof) return;
+    shownHof = true;
+    stub.classList.add('on');
+    if (instant || reduce) return;
+    stub.querySelectorAll('.hof').forEach((el, i) => el.animate([{ opacity: 0, transform: 'scale(1.6) rotate(-6deg)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: i * 140, easing: 'cubic-bezier(.5,0,.9,.4)', fill: 'backwards' }));
+    stub.animate([{ transform: 'none' }, { transform: 'translateY(3px)' }, { transform: 'none' }], { duration: 260, delay: 400 });
+  }
+  // The tag: the referee's stamp lands on today's lap.
+  function showStamp(instant) {
+    if (shownStamp) return;
+    shownStamp = true;
+    record.classList.add('stamped');
+    if (instant || reduce) return;
+    verdict.animate([{ opacity: 0, transform: 'scale(2.6)' }, { opacity: 1, transform: 'scale(.94)', offset: .72 }, { opacity: 1, transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.55,0,.9,.45)' });
+    record.animate([{ transform: 'none' }, { transform: 'translateY(4px)' }, { transform: 'none' }], { duration: 220, delay: 240 });
+  }
+  function hideTicket() {
+    shownRecord = shownHof = shownStamp = false;
+    record.classList.remove('on', 'visitor', 'stamped');
+    stub.classList.remove('on');
+    record.getAnimations().forEach((a) => a.cancel());
+    verdict.getAnimations().forEach((a) => a.cancel());
+    admit.getAnimations().forEach((a) => a.cancel());
+    admit.style.visibility = '';
+    yours.textContent = '';
+  }
+
+  /* ---- Riders. Each one's whole lap is scheduled when it enters: walk, wait (the door and
+     the frame queue run on their clocks; the carousel takes one rider at a time), ride. ---- */
+  let riders = [];
+  let particles = [];
+  let T = 0;               // park clock in (slow-motion) seconds since the loop began
+  let carouselFree = 0;
+  let lastEnter = -1;
+  let mode = 'auto';       // 'auto' until someone types, then 'visitor'
+  let started = false;
+  let seq = 0;
+  let boardSeq = 0;
+  let riderCount = 0;
+  let lastInput = 0;
+  let lastExit = 0;        // when the visitor's last rider left the park (performance.now())
+  let fingerIn = 0;        // 0 = the finger is off-screen, 1 = hovering over the keycap
+  let skipSaid = false;    // English: "No assembly required!" said this lap
+  const BODY =['#ffb3b3', '#ffe29a', '#a8ece7', '#c3c9f7'];
+  const SLOTS = [[22, -12], [0, -12], [-22, -12], [-22, -36], [0, -36], [22, -36]];
+  const ease = (p) => (p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const nextTick = (t, t0, period) => (t <= t0 ? t0 : t0 + Math.ceil((t - t0) / period - 1e-9) * period);
+  const riderR = () => Math.max(9.5, .12 * L.u);
+  const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+  function schedule(r) {
+    const legs = {};
+    let t = r.enter;
+    for (const id of ORDER) {
+      const a = t;
+      let s = a;
+      if (id === 'door') s = nextTick(a, DOOR0, DOOR_P);
+      if (id === 'queue') s = nextTick(a, QUEUE0, QUEUE_P);
+      if (id === 'carousel') s = Math.max(a, carouselFree);
+      const e = s + RIDE[id].dwell;
+      if (id === 'carousel') carouselFree = e;
+      legs[id] = { a, s, e };
+      t = e + WALK;
+    }
+    r.legs = legs;
+    r.end = legs.exit.e;
+  }
+
+  function drawRider(r) {
+    const R = riderR();
+    const sw = Math.max(1.5, R * .12).toFixed(2);
+    r.el.innerHTML = `<ellipse cx="0" cy="${(R * .98).toFixed(1)}" rx="${(R * .85).toFixed(1)}" ry="${(R * .26).toFixed(1)}" fill="rgba(43,45,66,.22)"/>
+      <g class="r-body">
+        <ellipse class="r-log" cx="0" cy="${(R * .78).toFixed(1)}" rx="${(R * 1.55).toFixed(1)}" ry="${(R * .48).toFixed(1)}" fill="#a0704c" stroke="${C.ink}" stroke-width="${sw}" opacity="0"/>
+        <ellipse cx="${(-R * .42).toFixed(1)}" cy="${(R * .93).toFixed(1)}" rx="${(R * .3).toFixed(1)}" ry="${(R * .18).toFixed(1)}" fill="${C.ink}"/>
+        <ellipse cx="${(R * .42).toFixed(1)}" cy="${(R * .93).toFixed(1)}" rx="${(R * .3).toFixed(1)}" ry="${(R * .18).toFixed(1)}" fill="${C.ink}"/>
+        <rect x="${(R * .45).toFixed(1)}" y="${(-R * .02).toFixed(1)}" width="${(R * .78).toFixed(1)}" height="${(R * .52).toFixed(1)}" rx="1.5" fill="#ffd1dc" stroke="${C.ink}" stroke-width="1.2" transform="rotate(-22 ${(R * .8).toFixed(1)} ${(R * .25).toFixed(1)})"/>
+        <g class="r-arms" opacity="0"><path d="M${(-R * .72).toFixed(1)} ${(-R * .35).toFixed(1)} L${(-R * 1.28).toFixed(1)} ${(-R * 1.2).toFixed(1)} M${(R * .72).toFixed(1)} ${(-R * .35).toFixed(1)} L${(R * 1.28).toFixed(1)} ${(-R * 1.2).toFixed(1)}" stroke="${C.ink}" stroke-width="${(+sw * 1.25).toFixed(2)}" stroke-linecap="round"/><circle cx="${(-R * 1.32).toFixed(1)}" cy="${(-R * 1.27).toFixed(1)}" r="${(R * .2).toFixed(1)}" fill="#fff" stroke="${C.ink}" stroke-width="${(sw * .8).toFixed(2)}"/><circle cx="${(R * 1.32).toFixed(1)}" cy="${(-R * 1.27).toFixed(1)}" r="${(R * .2).toFixed(1)}" fill="#fff" stroke="${C.ink}" stroke-width="${(sw * .8).toFixed(2)}"/></g>
+        <circle r="${R.toFixed(1)}" fill="${r.color}" stroke="${C.ink}" stroke-width="${sw}"/>
+        <text text-anchor="middle" dominant-baseline="central" y="${(R * .05).toFixed(1)}" font-size="${(R * (r.cmd ? .95 : 1.18)).toFixed(1)}" fill="${C.ink}" style="font-family:${ko ? "'Gowun Dodum'" : "'Fredoka'"},sans-serif;font-weight:${ko ? 400 : 600}">${esc(r.ch)}</text>
+      </g>`;
+    r.body = r.el.querySelector('.r-body');
+    r.log = r.el.querySelector('.r-log');
+    r.arms = r.el.querySelector('.r-arms');
+  }
+
+  function makeRider(item, enter) {
+    const r = Object.assign({}, item, { enter, idx: riderCount++, done: false, processed: false });
+    r.color = BODY[r.idx % BODY.length];
+    schedule(r);
+    r.el = document.createElementNS(NS, 'g');
+    r.el.setAttribute('class', 'rider');
+    r.el.style.display = 'none';
+    drawRider(r);
+    refs.riders.append(r.el);
+    riders.push(r);
+    return r;
+  }
+
+  const pt = (len) => refs.path.getPointAtLength(clamp(len, 0, L.total));
+  // Where a rider is at the park clock T: {x, y, len, free (on the path, keeps its distance), ...}
+  function place(r) {
+    const { u, stops } = L;
+    const R = riderR();
+    const lift = R * .78;
+    const onPath = (len, state) => { const p = pt(len); return { x: p.x, y: p.y - lift, len, free: true, state }; };
+    for (let k = 0; k < ORDER.length; k++) {
+      const id = ORDER[k], g = r.legs[id], s = stops[id];
+      if (T < g.a) {
+        const prev = ORDER[k - 1], gp = r.legs[prev];
+        const f = clamp((T - gp.e) / WALK, 0, 1);
+        const l0 = span(prev)[1], l1 = span(id)[0];
+        return onPath(l0 + (l1 - l0) * f, 'walk');
+      }
+      if (T < g.s) {
+        if (id === 'queue') {
+          const waiting = riders.filter((o) => !o.done && o.legs.queue.a <= T && T < o.legs.queue.s && o.idx < r.idx).length;
+          if (waiting < SLOTS.length) {
+            const [sx, sy] = SLOTS[waiting];
+            return { x: s.x + sx * s.dir * u / 100, y: s.y + sy * u / 100 - R * .35, len: s.len, free: false, state: 'slot' };
+          }
+          return onPath(s.len - (.5 + .26 * (waiting - SLOTS.length)) * u, 'wait');
+        }
+        return onPath(span(id)[0], 'wait');
+      }
+      if (T < g.e) {
+        const p = (T - g.s) / (g.e - g.s);
+        const o = { len: s.len, free: false, state: id, p };
+        if (id === 'pad') {
+          // The finger holds the key down; the rider shoots out of the keycap, arms up, in a
+          // high arc, and lands on the path a little way along.
+          const capY = s.y - .42 * u - R * .5;
+          const land = pt(span('pad')[1]);
+          if (p < .14) return Object.assign(o, { x: s.x + .08 * u, y: capY, op: 0, sc: .5, hop: true });
+          const q = (p - .14) / .86;
+          const x0 = s.x + .08 * u, y1 = land.y - lift;
+          const hi = Math.min(.78 * u, capY + .15 * u);   // high, but not far into the sky band
+          const y = capY + (y1 - capY) * q - 4 * hi * q * (1 - q);
+          return Object.assign(o, { x: x0 + (land.x - x0) * q, y, op: Math.min(1, q * 7), sc: q > .93 ? .88 : 1, hop: true, arms: q < .95, tilt: -30 + 75 * q });
+        }
+        if (id === 'bridge' || id === 'rapids') {
+          const [a, b] = span(id);
+          const q = id === 'rapids' ? Math.pow(p, 1.5) : p;
+          const base = onPath(a + (b - a) * q, id);
+          // The contacts bounce: the bridge bounces the rider like a trampoline, three times.
+          base.dy = id === 'bridge' ? -Math.abs(Math.sin(3 * Math.PI * p)) * .2 * u : Math.sin(p * Math.PI * 7) * .025 * u;
+          base.y += base.dy;
+          return Object.assign(base, { p, arms: id === 'rapids' || base.dy < -.04 * u });
+        }
+        if (id === 'wheel') {
+          const th = Math.PI / 2 + 2 * Math.PI * ease(p);
+          return Object.assign(o, { x: s.x + .34 * u * Math.cos(th), y: s.y - .46 * u + .34 * u * Math.sin(th) - R * .25, orbit: true });
+        }
+        if (id === 'carousel') {
+          const th = 2 * Math.PI * ease(p);
+          const behind = Math.cos(th) < 0;
+          return Object.assign(o, { x: s.x + .32 * u * Math.sin(th), y: s.y - .2 * u + .07 * u * Math.cos(th) - R * .3, orbit: true, op: behind ? .55 : 1, sc: behind ? .86 : 1 });
+        }
+        if (id === 'door') return Object.assign(onPath(s.len - .04 * u + .08 * u * p, 'door'), { free: false, len: s.len });
+        if (id === 'hall' || id === 'glyphs') {
+          const inside = id === 'hall' ? Math.sin(p * Math.PI) : (p < .15 ? p / .15 : p > .85 ? (1 - p) / .15 : 1);
+          return Object.assign(onPath(s.len, id), { free: false, op: 1 - .8 * inside, sc: 1 - .3 * inside, p });
+        }
+        if (id === 'queue') return onPath(s.len, 'queue');
+        if (id === 'exit') {
+          const q = ease(p);
+          return Object.assign(o, { x: s.x, y: s.y - lift - q * .1 * u, sc: 1 - .8 * q, op: p < .55 ? 1 : 1 - (p - .55) / .45 });
+        }
+      }
+    }
+    return null;
+  }
+
+  function applyItem(item) {
+    let ev = null;
+    if (item.clearFirst) ime.clear();
+    if (item.cmd === 'back') ime.back();
+    else if (item.cmd === 'space') ime.space();
+    else ev = ime.feed(ko ? item.jamo : item.char);
+    return ev;
+  }
+
+  function spawnPixels(r, s) {
+    const { u } = L;
+    const n = 3;
+    for (let i = 0; i < n; i++) {
+      const el = document.createElementNS(NS, 'rect');
+      const size = Math.max(3, .045 * u);
+      el.setAttribute('width', size); el.setAttribute('height', size);
+      el.setAttribute('fill', i % 2 ? r.color : '#ffe08a');
+      refs.fx.append(el);
+      const xu = u * RS.exit;
+      particles.push({ el, x0: s.x + (Math.random() - .5) * .14 * u, y0: s.y - .2 * u, x1: s.x + (Math.random() - .5) * 1.2 * xu, y1: s.y - (.35 + Math.random() * .5) * xu, t0: T, d: .55 + Math.random() * .3 });
+    }
+  }
+
+  /* ---- One frame of the park ---- */
+  function step(dt) {
+    const { u, stops } = L;
+    // Hall: riders reach the input method in order (they never overtake).
+    for (const r of riders) {
+      if (r.processed) continue;
+      const g = r.legs.hall;
+      if (T < (ko ? g.s : g.a)) break;
+      r.processed = true;
+      const ev = applyItem(r);
+      renderBench(ev);
+      r.snap = ime.text();
+      r.snapSeq = ++seq;
+      if (refs.hallDoor && !reduce) refs.hallDoor.animate([{ fill: '#ffd166' }, { fill: '#8d5a3b' }], { duration: 500 });
+      // The first English rider of a lap walks straight past the workbench.
+      if (!ko && !skipSaid && !r.cmd) { skipSaid = true; showBubble(TXT.skip, 2000); }
+    }
+    // Exit: the screen shows what was composed by the last rider of the frame.
+    for (const r of riders) {
+      if (r.done || T < r.end) continue;
+      r.done = true;
+      r.el.remove();
+      if (mode === 'visitor') lastExit = performance.now();
+      if (r.snapSeq > boardSeq) { boardSeq = r.snapSeq; renderBoard(r.snap); }
+    }
+    riders = riders.filter((r) => !r.done);
+
+    // Ride machinery on its clocks.
+    const dk = Math.floor((T - DOOR0) / DOOR_P);
+    const dl = T - (DOOR0 + dk * DOOR_P);
+    const spin = dl < .32 ? ease(dl / .32) : 1;
+    const phi = (dk + spin) * Math.PI / 2;
+    refs.wingEls.forEach((w, i) => {
+      const a = phi + i * Math.PI / 2;
+      w.setAttribute('x', (24 * Math.sin(a) - 1.6).toFixed(2));
+      w.setAttribute('opacity', (Math.cos(a) > 0 ? .95 : .28).toFixed(2));
+    });
+    refs.lamp.setAttribute('fill', dl < .4 ? '#6ff08f' : '#d7dbe8');
+    const fr = clamp(dl / DOOR_P, 0, .999), ang = fr * 2 * Math.PI;
+    refs.timer.setAttribute('d', `M0 0 L0 -12 A12 12 0 ${fr > .5 ? 1 : 0} 1 ${(12 * Math.sin(ang)).toFixed(2)} ${(-12 * Math.cos(ang)).toFixed(2)} Z`);
+    const ql = T < QUEUE0 ? 99 : (T - QUEUE0) % QUEUE_P;
+    const green = ql < .45;
+    refs.qRed.setAttribute('fill', green ? '#5a2a30' : C.red);
+    refs.qGreen.setAttribute('fill', green ? '#5ef08a' : '#2f5b3a');
+
+    let wheel = T * 8, horses = 0, sag = 0, press = 0, mirror = null;
+    for (const r of riders) {
+      const lg = r.legs;
+      const prog = (id) => clamp((T - lg[id].s) / (lg[id].e - lg[id].s), 0, 1);
+      if (T >= lg.wheel.s) wheel += 360 * ease(prog('wheel'));
+      if (T >= lg.carousel.s) horses += 2 * Math.PI * ease(prog('carousel'));
+      if (T >= lg.bridge.s && T < lg.bridge.e) sag = Math.max(sag, Math.abs(Math.sin(3 * Math.PI * prog('bridge'))));
+      if (T >= lg.glyphs.s && T < lg.glyphs.e) mirror = { r, p: prog('glyphs') };
+    }
+    // The finger: in while presses are due, down for each rider as it enters.
+    let dip = 0, due = false;
+    for (const r of riders) {
+      const x = T - r.enter;
+      if (x > -1 && x < .45) due = true;
+      dip = Math.max(dip, x < -.16 || x > .3 ? 0 : x < 0 ? ease((x + .16) / .16) : x < .1 ? 1 : 1 - ease((x - .1) / .2));
+    }
+    fingerIn += ((due ? 1 : 0) - fingerIn) * (1 - Math.exp(-dt / .12));
+    if (fingerIn < .002) fingerIn = 0;
+    press = dip;
+    if (refs.finger) {
+      const s = stops.pad;
+      const off = (1.8 - 1.64 * fingerIn - .22 * dip) * u;   // along the finger, up and to the left
+      const tx = s.x + .02 * u - .883 * off, ty = s.y - .42 * u - .469 * off;
+      refs.finger.setAttribute('transform', `translate(${tx.toFixed(1)} ${ty.toFixed(1)})`);
+      refs.finger.setAttribute('opacity', fingerIn > 0 ? 1 : 0);
+    }
+    refs.wheelRot.setAttribute('transform', `translate(0 -46) rotate(${(wheel % 360).toFixed(1)})`);
+    refs.horseEls.forEach((h, i) => {
+      const a = horses + i * Math.PI / 2;
+      const x = 32 * Math.sin(a), d = Math.cos(a);
+      h.setAttribute('transform', `translate(${x.toFixed(1)} ${(-24 + d * 4 + Math.sin(a * 2) * 2).toFixed(1)})`);
+      h.setAttribute('opacity', d > 0 ? 1 : .5);
+    });
+    const sg = 7 + sag * 9;
+    refs.deck.setAttribute('d', `M-46 0 Q0 ${sg.toFixed(1)} 46 0`);
+    refs.deckOl.setAttribute('d', `M-46 0 Q0 ${sg.toFixed(1)} 46 0`);
+    refs.rope.setAttribute('d', `M-46 -28 Q0 ${(-12 + sag * 6).toFixed(1)} 46 -28`);
+    refs.capTop.setAttribute('transform', `translate(0 ${press * 6})`);
+    refs.foam.forEach((f, i) => f.setAttribute('stroke-dashoffset', (-T * u * (i ? .5 : .9)).toFixed(1)));
+    // Korean riders leave the hall as part of a syllable: the mirrors draw that syllable (마, 워),
+    // the glyph the screen will actually show, not the loose letter.
+    const glyph = mirror && (ko && !mirror.r.cmd && mirror.r.snap ? [...mirror.r.snap].pop() : mirror.r.ch);
+    refs.mirrors.forEach((m, i) => {
+      if (!mirror) { m.textContent = ''; return; }
+      if (m.textContent !== glyph) {
+        m.textContent = glyph;
+        m.setAttribute('style', `font-size:17px;font-family:${['', "Georgia,'Times New Roman',serif", "'Space Mono',monospace"][i] || (ko ? "'Gowun Dodum'" : "'Fredoka'")}${ko ? ",'Gowun Dodum'" : ''},sans-serif;font-weight:700;fill:${C.ink};text-anchor:middle;dominant-baseline:central;transform-box:fill-box;transform-origin:center;transform:${['scale(1,1.45)', 'none', 'scale(1.5,.75)'][i]}`);
+      }
+      m.setAttribute('opacity', Math.min(1, Math.sin(Math.PI * mirror.p) * 2.2).toFixed(2));
+    });
+    refs.bulbs.forEach((b, i) => b.setAttribute('fill', T < bulbsUntil ? ((Math.floor(T * 10) + i) % 3 ? '#ffd166' : '#fff6cf') : (i % 2 ? '#6e6a4a' : '#7c7650')));
+
+    // Riders, in the order they entered; a rider on the path keeps a step behind the one ahead.
+    const R = riderR();
+    const gap = 2.25 * R;
+    let ahead = null;
+    const kf = 1 - Math.exp(-dt / .05);
+    for (const r of riders) {
+      if (T < r.enter) { r.el.style.display = 'none'; continue; }
+      const p = place(r);
+      if (!p) continue;
+      if (p.free && ahead !== null && p.len > ahead - gap) {
+        const q = pt(ahead - gap);
+        p.len = ahead - gap; p.x = q.x; p.y = q.y - R * .78 + (p.dy || 0);
+      }
+      if (p.state !== 'slot') ahead = p.len;
+      if (r.x === undefined || p.hop) { r.x = p.x; r.y = p.y; }
+      else if (p.orbit) {
+        if (r.mode !== p.state) r.from = { x: r.x, y: r.y };
+        const b = ease(clamp(p.p / .18, 0, 1));
+        r.x = r.from.x + (p.x - r.from.x) * b; r.y = r.from.y + (p.y - r.from.y) * b;
+      } else if (p.state === 'bridge' || p.state === 'rapids' || p.state === 'exit') { r.x += (p.x - r.x) * Math.max(kf, .5); r.y += (p.y - r.y) * Math.max(kf, .5); }
+      else { r.x += (p.x - r.x) * kf; r.y += (p.y - r.y) * kf; }
+      r.mode = p.state;
+      r.el.style.display = '';
+      r.el.setAttribute('transform', `translate(${r.x.toFixed(1)} ${r.y.toFixed(1)})`);
+      r.el.setAttribute('opacity', (p.op ?? 1).toFixed(2));
+      const walking = p.state === 'walk';
+      const tilt = p.tilt ?? (walking ? Math.sin(T * 17 + r.idx) * 7 : p.state === 'rapids' ? Math.sin(T * 20) * 9 : 0);
+      r.body.setAttribute('transform', `rotate(${tilt.toFixed(1)}) scale(${(p.sc ?? 1).toFixed(3)})`);
+      r.log.setAttribute('opacity', p.state === 'rapids' ? 1 : 0);
+      r.arms.setAttribute('opacity', p.arms ? 1 : 0);
+      if (p.state === 'exit' && p.p > .08 && p.p < .7 && (!r.lastPix || T - r.lastPix > .09)) { r.lastPix = T; spawnPixels(r, stops.exit); }
+    }
+    particles = particles.filter((q) => {
+      const f = (T - q.t0) / q.d;
+      if (f >= 1 || f < 0) { q.el.remove(); return false; }
+      const e = ease(f);
+      q.el.setAttribute('x', (q.x0 + (q.x1 - q.x0) * e).toFixed(1));
+      q.el.setAttribute('y', (q.y0 + (q.y1 - q.y0) * e).toFixed(1));
+      q.el.setAttribute('opacity', (1 - f * f).toFixed(2));
+      return true;
+    });
+  }
+
+  /* ---- Timeline and taking over ---- */
+  let demoWord = 0, demoPos = 0, demoLapped = false;
+  const capLegend = $('.cap-legend');
+  const bigkey = $('.bigkey');
+  function updateKey() {
+    const c = ridersOf(WORDS[demoWord])[demoPos];
+    capLegend.textContent = c;
+    bigkey.setAttribute('aria-label', TXT.next(c));
+  }
+
+  function clearRiders() {
+    riders.forEach((r) => r.el.remove());
+    riders = [];
+    particles.forEach((q) => q.el.remove());
+    particles = [];
+  }
+
+  function popSigns() {
+    if (reduce) return;
+    signsEl.querySelectorAll('.sign').forEach((el, i) => el.animate([{ opacity: 0, transform: 'translateY(30%) scale(.4)' }, { opacity: 1, transform: 'none' }], { duration: 380, delay: 500 + i * 100, easing: 'cubic-bezier(.3,1.6,.5,1)', fill: 'backwards' }));
+  }
+
+  function restart() {
+    mode = 'auto';
+    document.documentElement.classList.remove('visitor');
+    hintYours.textContent = '';
+    T = 0;
+    carouselFree = 0;
+    lastEnter = -1;
+    seq = boardSeq = 0;
+    finaleDone = false;
+    skipSaid = false;
+    demoWord = demoPos = 0;
+    demoLapped = false;
+    updateKey();
+    clearRiders();
+    ime.clear();
+    renderBench(null);
+    renderBoard('', false);
+    hideTicket();
+    popSigns();
+    // The finger comes in at about 0.3 s and presses the first key at 1.2 s; every rider then
+    // lands on the path at 1.86 + 1.2·i s, as the door and frame-queue phases expect.
+    ridersOf(WORDS[0]).forEach((c, i) => makeRider(ko ? { jamo: c, ch: c } : { char: c, ch: c }, 1.2 + 1.2 * i));
+  }
+
+  // The final scene, without motion: the word on the bench and the screen, the ticket, the record.
+  function finalScene() {
+    clearRiders();
+    mode = 'auto';
+    ime.clear();
+    ridersOf(WORDS[0]).forEach((c) => applyItem(ko ? { jamo: c } : { char: c }));
+    renderBench(null);
+    renderBoard(ime.text(), false);
+    showRecord(true);
+    showHof(true);
+    showStamp(true);
+  }
+
+  function takeOver() {
+    if (mode === 'visitor') return;
+    mode = 'visitor';
+    riders.forEach((r) => {
+      if (reduce) return r.el.remove();
+      r.el.animate([{ opacity: 1 }, { opacity: 0, transform: r.el.getAttribute('transform') + ' translate(0 -12px)' }], { duration: 300, fill: 'forwards' }).onfinish = () => r.el.remove();
+    });
+    riders = [];
+    ime.clear();
+    renderBench(null);
+    renderBoard('', false);
+    boardSeq = seq;
+    carouselFree = T;
+    lastEnter = T - 1;
+    skipSaid = false;
+    document.documentElement.classList.add('visitor');
+    if (overlayTicket()) hideTicket();
+    else { showRecord(false); showHof(true); showStamp(true); }
+  }
+
+  let idleTimer = 0;
+  function input(item, t0) {
+    lastInput = performance.now();
+    takeOver();
+    if (reduce || !started) {
+      renderBench(applyItem(item));
+      renderBoard(ime.text(), false);
+    } else if (riders.length < 40) {
+      const enter = Math.max(T, lastEnter + .42);
+      lastEnter = enter;
+      const r = makeRider(item, enter);
+      // On the home stage, stay up until this rider is out and its word has been on the screen.
+      TTY.hold(Math.ceil((r.end - T) * 1000) + HOLD);
+    }
+    record.classList.add('visitor');
+    // What this browser can see of it: from the key event to the frame that shows the change.
+    requestAnimationFrame(() => {
+      const ms = (performance.now() - t0).toFixed(1);
+      // (the card's short stages take the one-line form, as phones do by the key)
+      yours.innerHTML = `<span class="y-long">${TXT.yours(ms)}</span><span class="y-short">${TXT.mine(ms)}</span>`;
+      hintYours.innerHTML = TXT.mine(ms);
+    });
+    if (reduce) { clearTimeout(idleTimer); idleTimer = setTimeout(resetReduced, IDLE); }
+  }
+  function resetReduced() { document.documentElement.classList.remove('visitor'); hideTicket(); finalScene(); demoWord = demoPos = 0; demoLapped = false; updateKey(); }
+
+  addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('button, a')) return;
+    let item = null;
+    if (e.key === 'Backspace') item = { cmd: 'back', ch: '⌫' };
+    else if (e.code === 'Space') item = { cmd: 'space', ch: '␣' };
+    else if (ko) { const j = jamoFor(e.code, e.shiftKey); if (j) item = { jamo: j, ch: j }; }
+    else if (e.key.length === 1 && /\S/.test(e.key)) item = { char: e.key, ch: e.key };
+    if (!item) return;
+    e.preventDefault();
+    input(item, e.timeStamp);
+  });
+  addEventListener('pointerdown', () => { if (mode === 'visitor') lastInput = performance.now(); }, { passive: true });
+
+  bigkey.addEventListener('click', (e) => {
+    const seqs = ridersOf(WORDS[demoWord]);
+    const c = seqs[demoPos];
+    const item = ko ? { jamo: c, ch: c } : { char: c, ch: c };
+    if (demoPos === 0 && demoLapped) item.clearFirst = true;
+    if (++demoPos >= seqs.length) { demoPos = 0; demoWord = (demoWord + 1) % WORDS.length; demoLapped = true; }
+    updateKey();
+    input(item, e.timeStamp);
+  });
+
+  let finaleDone = false;
+  let lastNow = 0;
+  function frame(now) {
+    const dt = Math.min(.1, Math.max(0, (now - lastNow) / 1000));
+    lastNow = now;
+    T += dt;
+    if (mode === 'auto') {
+      if (!finaleDone && T > 3 && riders.length === 0) { finaleDone = true; bulbsUntil = T + 2.4; }
+      if (T >= REC_AT) showRecord();
+      if (T >= HOF_AT) showHof();
+      if (T >= STAMP_AT) showStamp();
+      if (T >= LOOP) restart();
+    } else if (!riders.length && now - lastInput > IDLE && now - lastExit > HOLD) restart();
+    if (L) step(dt);
+    camera(dt);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---- Start ---- */
+  let pending = 0;
+  new ResizeObserver(() => {
+    cancelAnimationFrame(pending);
+    pending = requestAnimationFrame(() => {
+      if (L && L.W === Math.round(mapEl.clientWidth) && L.H === Math.round(mapEl.clientHeight)) return;
+      if (!buildScene()) return;
+      riders.forEach((r) => { drawRider(r); refs.riders.append(r.el); r.x = undefined; });
+      step(0);
+    });
+  }).observe(mapEl);
+
+  buildScene();
+  updateKey();
+  if (reduce) finalScene();
+  step(0);
+  TTY.onShow(() => {
+    if (reduce) return;
+    started = true;
+    restart();
+    lastNow = performance.now();
+    requestAnimationFrame(frame);
+  });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

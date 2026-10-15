@@ -1,0 +1,144 @@
+{
+  "id": "signup-stamp-rally",
+  "title": {
+    "en": "The Sign-Up Stamp Rally",
+    "ko": "회원 가입 스탬프 투어"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "양말 한 켤레 사려고 쇼핑몰에 가입하는데 동의, 인증, 확인이 끝없이 이어지는 것을, 도장 모으는 관광 코스로 놀린다.",
+    "points": [
+      "접힌 카드가 화면 밖까지 펼쳐짐 → 양말 한 켤레(3,900원) 사려는 가입이 관광 코스처럼 길다. 표지 깨알 글씨는 소요 약 40분, 난이도 ★★★★★. 완주 기념품도 '회원 가입 1개', 양말은 별매.",
+      "지점마다 진지한 관광 안내와 도장 문구 → 안내는 \"잊지 못할 비밀번호를 만들어 보세요.\"라는데 도장은 '벌써 잊음'. 메일은 받은편지함에서 기다린다더니 '스팸함에서 찾음', 양말 사러 왔는데 보안 프로그램 '설치 완료', 약관은 '안 읽고 동의'. 모두가 해 본 일이다.",
+      "3:00이 0:00이 되자마자 도착하는 인증 문자 → 안내 줄은 \"제한 시간 3분. 넉넉합니다.\"였다. 3분은 1초 만에 지나가고, 문자는 꼭 시간이 끝나야 온다. 그래서 도장도 '재전송 끝에 본인 맞음'.",
+      "일곱 개를 다 모으자 건네받은 제2코스 카드 \"가입 완료! 이제 본인인증을 해 주세요.\" → 본인인증은 4번 지점에서 이미 했다. 카드 깨알 글씨의 목표는 여전히 양말 한 켤레, 도장은 12곳에 약 2시간. 끝난 줄 알았는데 또 처음부터, 카드도 또 화면 밖까지.",
+      "맨 아래 안내 줄 \"세션이 만료되었어요. 누르면 처음부터.\" → 그 긴 가입을 하는 사이 세션까지 만료됐다. 4번 지점의 인증번호처럼."
+    ],
+    "terms": [
+      {
+        "term": "스탬프 투어(스탬프 랠리)",
+        "plain": "역이나 관광지 여러 곳을 돌며 지점마다 도장을 모으는 행사. 다 모으면 기념품을 주기도 한다."
+      },
+      {
+        "term": "휴대폰 본인인증",
+        "plain": "통신사를 고르고 휴대폰 번호를 넣은 뒤, 문자로 온 인증번호를 입력해 '이 휴대폰 주인이 나'임을 확인하는 절차."
+      },
+      {
+        "term": "자동입력 방지 문자(캡차)",
+        "plain": "사람만 읽을 수 있게 비뚤게 그린 글자를 따라 쳐서 로봇이 아님을 보이는 장치."
+      },
+      {
+        "term": "보안 프로그램",
+        "plain": "키보드 입력을 지켜 준다는 프로그램처럼, 사이트가 로그인·결제 전에 따로 깔라고 하는 프로그램. 한국 금융 서비스는 10년 넘게 이런 프로그램을 요구해 왔고, 2025년 연구에서 48명의 PC를 살펴보니 한 사람에 평균 9개가 깔려 있었다. 양말상회의 세 개는 양반이다."
+      },
+      {
+        "term": "세션 만료",
+        "plain": "사이트가 로그인이나 입력 중인 상태를 기억해 두는 시간이 끝난 것. 너무 오래 머뭇거리면 처음부터 다시 해야 한다."
+      }
+    ],
+    "links": [
+      {
+        "title": "스탬프 랠리 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/스탬프_랠리",
+        "note": "일본의 역·관광지에서 도장을 모으는 기획",
+        "lang": "ko"
+      },
+      {
+        "title": "캡차 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/캡차",
+        "note": "사람과 컴퓨터를 가려내는 시험, 회원 가입 때 뜨는 '자동가입방지'",
+        "lang": "ko"
+      },
+      {
+        "title": "액티브X - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/액티브X",
+        "note": "2012년 조사에서 한국 주요 사이트 200곳 중 168곳(84%)이 이 기술을 썼고, 민간은 결제·인증, 행정기관은 보안에 가장 많이 썼다",
+        "lang": "ko"
+      },
+      {
+        "title": "Too Much of a Good Thing - USENIX Security 2025",
+        "url": "https://www.usenix.org/conference/usenixsecurity25/presentation/yun",
+        "note": "한국 금융 필수 보안 프로그램을 조사한 논문. 은행 이용자 97%가 깔았고 59%는 무슨 일을 하는지 몰랐다",
+        "lang": "en"
+      },
+      {
+        "title": "NIST SP 800-63B-4",
+        "url": "https://pages.nist.gov/800-63-4/sp800-63b.html",
+        "note": "미국 표준 지침. 비밀번호에 문자 종류를 섞으라는 규칙을 두지 말라고 한다",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "인증 문자는 타이머가 0:00이 되고 0.45초 뒤, 칸이 흔들리다 멈춘 다음에 온다 → 일부러 '만료 직후'에 맞춰 보낸다. 진짜 도장보다 먼저 회청색 작은 '만료' 도장이 찍히는 것도 이 지점뿐이다. 카운트다운 중에 카드를 눌러 건너뛰어도 만료 장면과 늦게 온 문자를 0.7초 보여 주고 재전송한다(누를 때만).",
+      "비밀번호 미로의 규칙 '영문 대·소문자, 숫자, 특수문자 포함'과 '단, < > ( ) ' \" ; 는 사용 불가' → 미국 NIST 지침(SP 800-63B-4, 2025)은 문자 종류를 섞으라는 규칙을 두지 말라고(SHALL NOT) 하고, 인쇄 가능한 ASCII 문자와 공백은 모두 받으라고(SHOULD) 한다. 미로의 두 규칙이 둘 다 표준과 반대다.",
+      "약관 광장의 '[필수] 만 14세 이상입니다' → 개인정보 보호법(제22조의2)은 만 14세 미만 아이의 개인정보를 받으려면 법정대리인(보통 부모)의 동의를 받게 한다. 그래서 한국 가입 화면에는 이 칸이 따로 있다.",
+      "기념품 교환소의 작은 고리 일곱 개는 지점마다 찍힌 도장 잉크 색과 같고, 제2코스로 넘어가면 맨 위 띠의 도장 수가 0/12로 돌아간다. 제2코스 카드의 도장 칸 1 다음 빈 지점은 2번부터 이어지고, 8번부터는 화면 밖이다.",
+      "영어판은 지점이 다르다: 개인정보 동의 팝업, 신호등 캡차(\"the pole??\"), 2단계 인증 앱과 백업 코드, 그리고 7번에서 사람인지 한 번 더 확인한다(\"You proved it at stop 5. Once more.\"). 제2코스 문구도 \"Now please verify it's you.\"라서 4번 도장 \"IT'S ME\"를 그대로 되받는다."
+    ]
+  },
+  "en": {
+    "line": "Signing up for one small shop takes so many consents, codes and checks that it feels like a sightseeing tour, so here it is as a stamp rally.",
+    "points": [
+      "The folded card unfolds right off the edge of the screen → signing up to buy one $4.99 pair of socks is as long as a walking tour (small print on the cover: about 40 minutes, five stars). Even the prize is an account; socks sold separately.",
+      "The leaflet's earnest one-liners against the stamps → the guide says \"Make it unforgettable.\" and the stamp says \"ALREADY / FORGOTTEN\". Your link awaits in your inbox, and the stamp is \"FOUND IN / SPAM\". The privacy pop-up with 847 partners gets \"READ NONE / ACCEPTED\", the traffic-light test \"PROBABLY / HUMAN\". Everyone has done every one of them.",
+      "The SMS code arrives right after the timer hits 0:00 → the guide promised \"3-minute limit. Plenty of time.\" The three minutes take one second, and the text only comes once the code has expired. Hence \"AFTER RESEND / IT'S ME\".",
+      "The prize → all seven stamps collected, the prize desk hands you Course 2: \"Welcome aboard! Now please verify it's you.\" You already did at stop 4 (\"AFTER RESEND / IT'S ME\"), and proved you were human twice. The goal in its small print is still one pair of socks, now 12 stamps and about 2 hours away, and its card unfolds off the screen too.",
+      "The last line under the card: \"Session expired. Tap to start over.\" → the sign-up took so long that the session timed out anyway, just like the code at stop 4."
+    ],
+    "terms": [
+      {
+        "term": "Stamp rally",
+        "plain": "a Japanese favourite: you visit stations, sights or shops, collect a rubber stamp at each stop, and a full card often wins a prize."
+      },
+      {
+        "term": "Consent pop-up",
+        "plain": "the \"We value your privacy\" box many sites open with. \"Accept all\" agrees to share your data with every partner on the list, which can run to hundreds."
+      },
+      {
+        "term": "CAPTCHA",
+        "plain": "a little test like \"select all squares with traffic lights\" that is meant to tell people from bots."
+      },
+      {
+        "term": "Two-factor authentication",
+        "plain": "a second proof after your password, such as a code from an authenticator app. The backup codes are for the day you lose the phone."
+      }
+    ],
+    "links": [
+      {
+        "title": "Stamp rally - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Stamp_rally",
+        "note": "the Japanese tradition of collecting themed stamps at stations and sights",
+        "lang": "en"
+      },
+      {
+        "title": "CAPTCHA - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/CAPTCHA",
+        "note": "what these tests are for, and the suggestion that image-labelling ones double as free AI training data",
+        "lang": "en"
+      },
+      {
+        "title": "Multi-factor authentication - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Multi-factor_authentication",
+        "note": "SMS codes, authenticator apps (TOTP) and why there is a second step",
+        "lang": "en"
+      },
+      {
+        "title": "NIST SP 800-63B-4",
+        "url": "https://pages.nist.gov/800-63-4/sp800-63b.html",
+        "note": "the US guideline that says not to impose composition rules on passwords"
+      },
+      {
+        "title": "xkcd 1897: Self Driving",
+        "url": "https://xkcd.com/1897/",
+        "note": "\"To complete your registration, please tell us whether or not this image contains a stop sign\""
+      }
+    ],
+    "deep": [
+      "The text arrives 0.45 seconds after the timer reads 0:00, once the field has stopped shaking → timed that way on purpose. It is also the only stop where a small grey-blue \"EXPIRED\" stamp lands before the real one. If you tap to skip the countdown, the expired screen and the late text still stay up for 0.7 seconds before the resend (only when you tap).",
+      "The Password Rules Maze demands \"an uppercase letter, a number, a symbol\" and then forbids \"< > ' \" ; or &\" → NIST's SP 800-63B-4 (2025) says verifiers SHALL NOT impose such composition rules and SHOULD accept every printing ASCII character and the space, so both rules go against the standard. And \"Not one of your last 5 passwords\" is asked of a brand-new account.",
+      "Stop 7 is the second human check: \"You proved it at stop 5. Once more.\" → the prize for all seven is \"one (1) account\", and on Course 2 the header counter resets to 0/12. Its stamp slot 1 is on the cover, so the blank stops start at 2; stop 8 onwards is off the screen.",
+      "The Korean edition has its own stops → a required box saying you are 14 or older (Korean privacy law needs a parent's consent to collect a child's personal data under 14, so Korean sign-up forms ask), a username that is taken three times, and a sixth stop that makes you install three \"security programs\" before buying socks (Korean online banking has required programs like these for over a decade; a 2025 study that looked at 48 people's PCs found nine of them installed on average).",
+      "Its stop 4 is the Korean phone identity check (본인인증): pick your mobile carrier, enter your number, then type in the code that arrives by text before the countdown ends. So in Korean, Course 2 is literally the Identity Check Stamp Rally for a check you just did."
+    ]
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "id": "dev-cafe",
+  "title": {
+    "en": "Dev Café",
+    "ko": "개발자 카페"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "프로그래밍 개념으로 이름 붙인 음료를 파는 카페에서 바리스타는 그 개념대로 정직하게 굴고, 계산대는 자바스크립트처럼 더하다가 합계를 NaN원으로 만든다.",
+    "points": [
+      "계산대 표시창의 `합계: NaN원` → NaN은 '숫자가 아님'이라는 값이다. 계산대가 가격을 하나씩 숫자로 바꿔 더하는데, 비동기 라테의 `Promise<4500>`은 나중에 4,500원을 주겠다는 약속이지 돈이 아니다. 숫자로 바꾸면 NaN이 되고, NaN은 무엇을 더해도 NaN이라 그 뒤에 4,000원짜리 핫초코를 더해도 계산서는 계속 NaN원이다. (누를 때만) 계산대를 눌러 계산하려 하면 카드가 승인 거절되고, 사유는 \"NaN은 숫자가 아님\"이다.",
+      "오늘의 추천 → 분홍 동그라미를 친 추천 메뉴가 하필 핫픽스 핫초코이고, 도장은 '고객 검증'이다(큰 화면에서는 메뉴 설명 '테스트 없음, 마시멜로 추가.'도 보인다). 핫픽스는 급해서 테스트를 건너뛰고 바로 내보내는 긴급 수정이다. 그러니 검증은 손님이 마시면서 한다. 단골이 이걸 시키면 바리스타가 \"테이블로 바로 배포했습니다. 테스트는 안 했지만 따뜻해요.\" 하고 내주고, 한 번 더 시키면(누를 때만) 쏟았다는 손님에게 \"다음 핫픽스에서 고칠게요.\"라고 한다.",
+      "비동기 라테와 컵의 로딩 스피너 → 칠판 구석 커피잔에서 김 대신 컴퓨터의 로딩 표시가 돌고 있다. 단골이 라테를 시키자 바리스타는 \"진동벨 울리면 오세요\" 하고, 5초 남짓 지나 나중에 시킨 핫초코까지 먼저 나간 뒤에야 라테가 바리스타 줄을 차지하며 나온다. 그제야 스피너가 진짜 김으로 바뀐다. 줄 서서 기다리지 않고 다 되면 불려 가는 것이 비동기라서, 먼저 시킨 라테가 나중에 나온다. 그런데 \"…손님?\" 하고 불러도 손님은 이미 없다. 아무도 안 찾아간 라테는 결국 바리스타가 \"(홀짝)\" 마신다.",
+      "같은 메뉴를 또 시키면(누를 때만) → 대답이 한 단계 더 간다. 에스프레소는 바리스타와 그라인더가 서로를 기다리는 교착 상태다. 널 티는 null이 0으로 바뀌어 공짜인데, 한 잔 더 시키면 바리스타가 우유를 권하다가 크롬과 Node.js가 실제로 내는 오류 문구 \"Cannot read properties of null\"을 그대로 낸다. 개발자라면 질리도록 본 문장이다. 재귀 리필은 \"Maximum cup stack size exceeded\", 콜드브루 캐시는 새로 내려도 또 어제 것, 머지 충돌 모카는 git 충돌 표시(`<<<<<<<`)가 그대로 나온다."
+    ],
+    "terms": [
+      {
+        "term": "로딩 스피너",
+        "plain": "컴퓨터가 일을 끝낼 때까지 빙글빙글 도는 표시. 기다리는 중이라는 뜻이다."
+      },
+      {
+        "term": "동기·비동기",
+        "plain": "동기는 앞 일이 끝날 때까지 줄 서서 기다리는 방식, 비동기는 주문만 받아 두고 다 되면 불러 주는 방식(카페 진동벨)."
+      },
+      {
+        "term": "Promise",
+        "plain": "자바스크립트에서 '값은 나중에 줄게'라는 약속 객체. 약속은 숫자가 아니어서 숫자로 바꾸면 NaN이다."
+      },
+      {
+        "term": "null",
+        "plain": "'아무것도 없음'을 뜻하는 값. 숫자로 바꾸면 0이 된다."
+      },
+      {
+        "term": "NaN",
+        "plain": "Not a Number(숫자 아님). 말이 안 되는 계산에서 나오고, 한 번 섞이면 그 뒤 계산이 모두 NaN이 된다."
+      },
+      {
+        "term": "재귀·스택 넘침",
+        "plain": "재귀는 자기 자신을 다시 부르는 것. 멈추는 조건이 없으면 호출 기록(스택)이 넘쳐 프로그램이 멈춘다."
+      },
+      {
+        "term": "핫픽스",
+        "plain": "테스트 같은 절차를 건너뛰고 급히 내보내는 긴급 수정."
+      },
+      {
+        "term": "캐시·강력 새로고침",
+        "plain": "캐시는 한 번 받은 것을 저장해 두었다가 다시 주는 것. 빠르지만 옛것일 수 있다. 강력 새로고침은 저장본을 무시하고 새로 받아 오라는 브라우저 명령."
+      },
+      {
+        "term": "머지 충돌",
+        "plain": "두 사람이 같은 줄을 다르게 고쳐서 git이 `<<<<<<<`, `=======`, `>>>>>>>` 사이에 두 버전을 나란히 적어 두고 고르라고 하는 상태."
+      },
+      {
+        "term": "교착 상태",
+        "plain": "둘이 서로 상대가 끝나기를 기다려 아무도 움직이지 못하는 상태."
+      }
+    ],
+    "links": [
+      {
+        "title": "NaN - MDN",
+        "url": "https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/NaN",
+        "note": "NaN이 무엇이고, 계산에 섞이면 왜 결과도 NaN이 되는지('전염성')"
+      },
+      {
+        "title": "Number - MDN",
+        "url": "https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Number",
+        "note": "값을 숫자로 바꾸는 규칙(`Number(null)`은 0, 숫자로 못 읽으면 NaN)"
+      },
+      {
+        "title": "Promise - MDN",
+        "url": "https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+        "note": "'나중에 줄 값'을 다루는 약속 객체와 대기·이행·거부 세 상태"
+      },
+      {
+        "title": "Wat",
+        "url": "https://www.destroyallsoftware.com/talks/wat",
+        "note": "Ruby와 자바스크립트의 이상한 동작(배열과 객체를 더하면 생기는 일 같은 것)을 모은 4분쯤 되는 유명한 짧은 발표(Gary Bernhardt, CodeMash 2012)",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "합계는 진짜 자바스크립트가 계산한다. 가격이 실제 값(숫자 3000, `Promise.resolve(4500)`, `null`, 글자 `n + 1`, 글자 `4,500 | 5,000`)으로 들어 있고 주문마다 `total += Number(price)`를 한다. 에스프레소 → 널 티 → 콜드브루 순서면 3,000 → 3,000 → 5,000원, 거기에 재귀 리필을 더하면 NaN원이다.",
+      "머지 충돌 모카도 NaN이다. 가격 `4,500 | 5,000`이 글자라서 숫자로 못 바꾼다. 맛도 가격도 둘 중 하나를 못 고른 채로 계산대에 온다.",
+      "숫자로 바꾸지 않고 그냥 `+`로 이으면 NaN이 아니라 글자가 붙는다: 약속, null, 글자 `n + 1`을 이으면 `[object Promise]nulln + 1`. 한쪽이 글자면 `+`가 이어 붙이기 때문이다. 그래서 계산대는 `Number()`로 바꾸는 계산대로 그렸다.",
+      "라테가 도착해도 합계는 그대로다. 약속이 지켜져도(이행) 그 약속 객체는 여전히 숫자가 아니고, 도착은 새 주문이 아니다.",
+      "컵의 스피너는 라테의 Promise 상태를 따라간다. 대기(pending) 중에는 돌고, 이행되면 김이 되며, 라테를 새로 시키면 다시 돈다. 기다리는 중에 또 시키면 그대로 돈다. 새 주문이 아니라 같은 약속을 한 번 더 await하는 것이라서다.",
+      "카드 거절 사유 'NaN은 숫자가 아님'은 이름 그대로(Not a Number)지만, 정작 자바스크립트에서 `typeof NaN`은 `number`다. 숫자 타입인데 숫자가 아닌 값이다.",
+      "\"Maximum cup stack size exceeded\"는 재귀가 너무 깊을 때 크롬과 Node.js가 내는 실제 오류 `RangeError: Maximum call stack size exceeded`에서 call 한 낱말만 cup으로 바꾼 것이다.",
+      "아무도 안 찾아간 라테를 바리스타가 마셔 버리는 것은 가비지 컬렉션과 같다. 아무도 붙잡고 있지 않은(참조가 없는) 값은 언젠가 치워진다."
+    ]
+  },
+  "en": {
+    "line": "A café where every drink is a programming idea, the barista acts each one out honestly, and the till adds up prices the way JavaScript does until the bill reads \"Total: NaN\".",
+    "points": [
+      "\"Total: NaN\" on the till → NaN means **Not a Number**. The till turns each price into a number and adds it. The Async Latte costs `Promise<4.50>`, a promise of 4.50 later, not money. As a number it is NaN, and NaN plus anything is NaN, so the 4.00 hot chocolate after it leaves the bill at NaN too. (Tap only) Try to pay at the till and the card is declined: \"Reason: NaN is not a number.\"",
+      "Today's special → the drink ringed in pink chalk is Hotfix Hot Chocolate, stamped \"Tested in prod\" (on bigger screens its menu line also says \"No tests. Extra marshmallows.\"). A hotfix is an emergency patch shipped in a hurry with the tests skipped, so the testing happens at your table. The regulars order it: \"Deployed straight to your table. Untested, but warm.\" Order it again (tap only) and it's \"Spilled? We'll fix that in the next hotfix.\"",
+      "The Async Latte and the cup's loading spinner → the pink cup on the board has a loading spinner where its steam should be: the coffee is still loading. The regulars order a latte, the barista says \"We'll call you back\", and five and a half seconds later, after a drink ordered later has already gone out, the latte really does turn up and takes over the barista's line; only then does the spinner turn into real steam. \"We'll call you back\" is a callback, and \"…Hello?\" is that callback firing after the caller has wandered off. Nobody comes for it, so the barista has a sip: \"(Sips it.)\"",
+      "Order the same drink again (tap only) → each answer goes one step further. The espresso deadlocks: the barista waits for the grinder, the grinder waits for the barista. The Null Tea is free, since null counts as 0; order another and the barista offers milk, then hits the exact error Chrome and Node.js print, one every developer has seen far too often: \"Cannot read properties of null\". The refill ends in \"Maximum cup stack size exceeded\", the cold brew is \"Yesterday's again\" even freshly made, and the mocha comes with git's conflict markers (`<<<<<<<`)."
+    ],
+    "terms": [
+      {
+        "term": "Loading spinner",
+        "plain": "the little wheel a computer spins while it is still working on something. It means \"wait\"."
+      },
+      {
+        "term": "Synchronous / asynchronous",
+        "plain": "synchronous means waiting in line until the job ahead is done; asynchronous means taking the order and calling you when it is ready."
+      },
+      {
+        "term": "Promise",
+        "plain": "JavaScript's \"I'll give you the value later\" object. A promise is not a number, so turning it into one gives NaN."
+      },
+      {
+        "term": "null",
+        "plain": "a value meaning \"nothing here\". As a number it becomes 0."
+      },
+      {
+        "term": "NaN",
+        "plain": "\"Not a Number\", the result of arithmetic that makes no sense. Once it gets into a sum, the whole sum stays NaN."
+      },
+      {
+        "term": "Recursion / stack overflow",
+        "plain": "recursion is something calling itself. Without a stopping point the record of calls (the stack) overflows and the program stops."
+      },
+      {
+        "term": "Hotfix",
+        "plain": "an urgent fix shipped in a hurry, usually skipping the tests."
+      },
+      {
+        "term": "Cache / hard refresh",
+        "plain": "a saved copy handed back instead of a fresh one: fast, but maybe stale. A hard refresh tells the browser to ignore the copy."
+      },
+      {
+        "term": "Merge conflict",
+        "plain": "two people changed the same lines differently, so git writes both versions between `<<<<<<<`, `=======` and `>>>>>>>` and makes you pick."
+      },
+      {
+        "term": "Deadlock",
+        "plain": "two things each waiting for the other to finish, so neither ever moves."
+      }
+    ],
+    "links": [
+      {
+        "title": "NaN - MDN",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NaN",
+        "note": "what NaN is and why it spreads through every calculation it touches"
+      },
+      {
+        "title": "Number coercion - MDN",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number#number_coercion",
+        "note": "how JavaScript turns values into numbers (null becomes 0, unreadable text becomes NaN)"
+      },
+      {
+        "title": "Promise - MDN",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+        "note": "the object that stands for a value arriving later, and its three states: pending, fulfilled, rejected"
+      },
+      {
+        "title": "Wat",
+        "url": "https://www.destroyallsoftware.com/talks/wat",
+        "note": "Gary Bernhardt's famous four-minute lightning talk (CodeMash 2012) on the strange things Ruby and JavaScript do, adding arrays and objects included"
+      }
+    ],
+    "deep": [
+      "The till really runs JavaScript. Prices are stored as real values (the number 3, `Promise.resolve(4.5)`, `null`, the text `n + 1`, the text `4.50 | 5.00`), and each order does `total += Number(price)`. Espresso, Null Tea, Cold Brew gives 3.00, 3.00, 5.00; add a Recursive Refill and it is NaN.",
+      "The Merge Conflict Mocha also makes NaN: its price `4.50 | 5.00` is text, two prices with no choice made, so it can't become a number either.",
+      "Without the `Number()` the sum would not even be NaN: a promise, null and the text `n + 1` glue into the text `[object Promise]nulln + 1`, because `+` joins strings as soon as one side is text. So the till is drawn as one that converts first.",
+      "The latte arriving does not fix the bill. A kept promise is still a promise object, not a number, and an arrival is not a new order.",
+      "The cup's spinner follows the latte's promise: it spins while pending, turns into steam once the promise is fulfilled, and spins again when a new latte is ordered. Ordering again while one is pending changes nothing, because it is awaiting the same promise again, not placing a new order.",
+      "The decline reason, \"NaN is not a number\", is just its name spelled out, yet in JavaScript `typeof NaN` is `number`: a value of the number type that is not a number.",
+      "\"Maximum cup stack size exceeded\" is the real `RangeError: Maximum call stack size exceeded` that Chrome and Node.js throw when recursion runs too deep, with one word changed.",
+      "The barista drinking the unclaimed latte is garbage collection: a value nobody holds a reference to gets cleared away sooner or later."
+    ]
+  }
+}

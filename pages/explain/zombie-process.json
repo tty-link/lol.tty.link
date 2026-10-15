@@ -1,0 +1,149 @@
+{
+  "id": "zombie-process",
+  "title": {
+    "en": "The Zombie Process Haunted House",
+    "ko": "좀비 프로세스 유령의 집"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "컴퓨터 프로그램이 끝난 뒤 '부모'가 챙겨 가기 전까지 이름만 남아 있는 '좀비 프로세스'를, 아무리 쏴도 통과해 버리는 유령의 집 좀비로 놀린다.",
+    "points": [
+      "번개가 좀비를 그냥 통과한다 → `kill -9`는 프로그램을 강제로 끝내는 가장 센 명령이다. 그런데 좀비는 이미 끝난 프로그램이라 끝낼 것이 없다. 그래서 좀비가 \"이미 죽었는데요.\"라고 한다.",
+      "계기판의 \"효과 없음 · 오류도 없음\" → 실제로 좀비에게 `kill`을 보내면 명령은 성공했다고 나온다. 성공했는데 아무 일도 안 일어난다.",
+      "저승사자가 알고 보니 아빠 → 저승사자의 단골 대사 '데리러 왔다'는 부모가 어린이집 앞에서 하는 말과 똑같다. 그래서 두건을 벗은 아빠가 \"놀라지 마세요. 애 데리러 왔어요.\" 한다. 좀비 프로세스를 치우는 일은 영어로 reap(거두다), 저승사자는 Grim Reaper(거두는 자)이고, 실제로도 좀비는 그 부모 프로세스만 거둘 수 있다. 좀비의 \"아빠! 왜 이제 와!\"도 정확하다. 좀비가 그동안 남아 있던 건 부모가 늦게 와서(`wait()`를 늦게 불러서)다.",
+      "좀비가 아빠에게 건네는 '0' 카드 → 프로그램이 끝날 때 남기는 성적표(종료 코드)다. 0은 '아무 문제 없이 끝났다'는 뜻이라 0점이 만점이다. 부모가 이 카드를 받아 읽는 것이 곧 거두기(`wait()`)다.",
+      "1번 할아버지 → 부모가 먼저 끝나 버린 아이는 컴퓨터가 켜질 때 맨 먼저 시작하는 1번 프로그램(init)이 입양해서 대신 거둔다. 그래서 2층 문패의 부모 번호(PPID)가 3999에서 1로 바뀌고, 다락의 '1번' 할아버지가 내려와 \"이 할애비가 거두마.\" 한다. '먼저 갔다'는 '죽었다'를 돌려 말하는 표현이기도 하다.",
+      "사냥꾼의 \"…우린 뭐 하러 왔지?\" → 장비를 다 갖추고 아홉 번이나 쐈지만, 좀비를 치운 건 가족(아빠와 1번 할아버지)이었다. 좀비 프로세스는 밖에서 죽여서 없애는 게 아니라 부모가 거둬야 없어진다. 그 말이 끝나기도 전에 같은 방에 새 좀비(4319)가 솟아오르고 사냥꾼은 총을 다시 든다. 자식 프로그램이 끝날 때마다, 부모가 거두기 전까지는 좀비가 또 생긴다."
+    ],
+    "terms": [
+      {
+        "term": "프로세스",
+        "plain": "컴퓨터에서 지금 돌아가고 있는 프로그램 하나. 저마다 번호(PID)가 있다."
+      },
+      {
+        "term": "좀비 프로세스",
+        "plain": "할 일을 다 마치고 끝났지만, 부모가 '잘 끝났는지'(종료 상태)를 아직 안 읽어 가서 프로세스 목록에 한 줄로 남아 있는 것. 쓰던 메모리는 이미 다 돌려줬고 번호와 종료 상태 같은 최소한의 정보만 남는다. `ps`로 보면 상태가 `Z`, 이름 뒤에 `<defunct>`가 붙는다."
+      },
+      {
+        "term": "kill -9",
+        "plain": "프로그램에 '당장 끝내'라는 신호(SIGKILL)를 보내는 명령. 프로그램이 막을 수 없는 가장 센 신호다."
+      },
+      {
+        "term": "wait()",
+        "plain": "부모 프로그램이 자식이 어떻게 끝났는지 읽어 가는 기능. 읽어 가야(거둬야) 좀비가 목록에서 사라진다."
+      },
+      {
+        "term": "PID 1(init)",
+        "plain": "컴퓨터가 켜질 때 운영체제가 가장 먼저 시작해 꺼질 때까지 도는 프로그램. 부모 잃은 프로세스를 입양한다(요즘 리눅스에서는 '서브리퍼'로 정해 둔 가까운 프로세스가 대신 맡기도 한다)."
+      }
+    ],
+    "links": [
+      {
+        "title": "자식 프로세스 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/자식_프로세스",
+        "note": "좀비 프로세스가 생기는 까닭과 고아 프로세스를 init이 '입양'한다는 설명",
+        "lang": "ko"
+      },
+      {
+        "title": "Zombie process - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Zombie_process",
+        "note": "'reaped'라는 말의 유래, kill이 좀비에게 듣지 않는다는 것, 부모를 끝내면 init이 거둔다는 것",
+        "lang": "en"
+      },
+      {
+        "title": "Orphan process - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Orphan_process",
+        "note": "부모가 먼저 끝난 프로세스가 init이나 서브리퍼에게 다시 붙는 과정",
+        "lang": "en"
+      },
+      {
+        "title": "wait(2) - Linux manual page",
+        "url": "https://man7.org/linux/man-pages/man2/wait.2.html",
+        "note": "NOTES 절에 좀비, 프로세스 표가 차면 새 프로세스를 못 만든다는 것, init 입양이 다 있다",
+        "lang": "en"
+      },
+      {
+        "title": "kill - POSIX.1-2024",
+        "url": "https://pubs.opengroup.org/onlinepubs/9799919799/functions/kill.html",
+        "note": "RATIONALE 절. 좀비에게 보낸 kill()은 오류를 내면 안 된다는 대목",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "계기판 \"오류도 없음\" → POSIX 표준 해설이 \"좀비 프로세스도 프로세스 수명에 들어가므로 ESRCH(그런 프로세스 없음) 오류는 맞지 않는다\"고 적었다. macOS에서 실제로 좀비를 만들어 `kill -9`를 보내 보니 종료 코드 0, `ps`에는 여전히 `Z`였다.",
+      "거둔 뒤 빈 방에 kill -9를 쏘면 → 그제야 빨간 글씨 `kill: (4242) - No such process`(직접 눌러야 보인다: 1층 문패가 '빈 방'일 때 kill -9). bash가 실제로 내는 오류 문구다(앞에 셸 이름만 붙는다). 잠시 뒤 들어오는 다음 좀비는 4242가 아니라 4319호다. 리눅스는 PID를 대개 차례대로 나눠 주고, 한 바퀴 돌기 전에는 비운 번호를 바로 다시 쓰지 않는다.",
+      "넓은 화면 오른쪽 종이(투숙객 명부)의 `[trick-or-treat] <defunct>` → 리눅스 `ps`는 좀비의 인자를 못 읽어 실행 파일 이름을 괄호에 넣고 `<defunct>`를 붙인다. 'trick-or-treat'는 14자라 리눅스 프로세스 이름 한도(15자)에 들어간다.",
+      "2층 왼쪽 방의 고양이 → 문패가 `4316 S`, 명령 이름이 `cat`이다. `cat`은 입력을 기다리는 동안 잠든 상태(S)다. 2층 오른쪽 끝 방의 호박 아이는 침대에서 뛰는 중이라 R(실행 중). (문패 글씨는 큰 화면에서 잘 보인다)",
+      "벽의 'PID 0' 초상화 → init의 부모 번호는 0이다. PID 0은 CPU가 할 일이 없을 때만 도는 idle 태스크(swapper)다. 이 집에서 제일 오래 쉬는 조상님이다."
+    ]
+  },
+  "en": {
+    "line": "A \"zombie process\" (a finished program that lingers in the system's process list until its parent collects it) becomes a haunted-house zombie that ghost hunters can't shoot.",
+    "points": [
+      "The bolts pass straight through the zombie → `kill -9` is the strongest way to force a program to stop. A zombie has already stopped; there is nothing left to kill. Hence \"I'm already dead.\"",
+      "The meter's \"no effect · no error either\" → sending `kill` to a real zombie reports success. It succeeds, and nothing happens.",
+      "The Grim Reaper turns out to be Dad → cleaning up a zombie process is really called reaping, and only its parent process can do it. So the scary reaper with the scythe is just a parent at pickup time: \"Relax. I'm just here to reap my kid.\" The zombie's \"Dad! You're late!\" is the real bug: a zombie hangs around exactly as long as its parent is late to call `wait()`.",
+      "The `0` card the zombie hands Dad → its exit status, a program's last report card. 0 means it finished fine, so a zero is a perfect score, and Dad reading it is the reaping.",
+      "Grandpa PID 1 → when a parent finishes first, its children are adopted by process number 1 (init), the first program the system starts at boot, which reaps them. So the upstairs door plate's parent number (PPID) flips from 3999 to 1, and \"grandpa 1\" climbs down from the attic: \"Your parent went first? Grandpa'll reap you, kiddo.\"",
+      "The hunter's \"…So why are we even here?\" → nine shots, and the family did all the work. You don't kill a zombie process from outside; its parent reaps it. Before the line has even faded, a new zombie (4319) rises in the same room and the zapper comes back up: every child process that exits is a zombie until someone reaps it."
+    ],
+    "terms": [
+      {
+        "term": "Process",
+        "plain": "one program running on a computer. Each has a number, its PID."
+      },
+      {
+        "term": "Zombie process",
+        "plain": "a process that has finished but whose parent hasn't yet read how it finished (its exit status). It has already given its memory back; only a small entry in the process table is left, with its number and exit status. `ps` shows it as `Z` and `<defunct>`."
+      },
+      {
+        "term": "kill -9",
+        "plain": "sends SIGKILL, the \"stop right now\" signal a program cannot catch, block or ignore."
+      },
+      {
+        "term": "wait()",
+        "plain": "how a parent process reads its child's exit status. Reading it is what removes (\"reaps\") the zombie."
+      },
+      {
+        "term": "PID 1 (init)",
+        "plain": "the first process started at boot, running until shutdown. It adopts orphaned processes and reaps them (on modern Linux a nearer process marked as a \"subreaper\" can take that job instead)."
+      }
+    ],
+    "links": [
+      {
+        "title": "Zombie process - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Zombie_process",
+        "note": "why it's called \"reaped\", why kill has no effect, and how killing the parent lets init clean up",
+        "lang": "en"
+      },
+      {
+        "title": "Orphan process - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Orphan_process",
+        "note": "re-parenting to init (or a \"subreaper\") when the parent dies first",
+        "lang": "en"
+      },
+      {
+        "title": "wait(2) - Linux manual page",
+        "url": "https://man7.org/linux/man-pages/man2/wait.2.html",
+        "note": "the NOTES section covers zombies, the process table filling up, and adoption by init"
+      },
+      {
+        "title": "kill - POSIX.1-2024",
+        "url": "https://pubs.opengroup.org/onlinepubs/9799919799/functions/kill.html",
+        "note": "the RATIONALE says a kill() aimed at a zombie must not fail"
+      },
+      {
+        "title": "ps(1) - Linux manual page",
+        "url": "https://man7.org/linux/man-pages/man1/ps.1.html",
+        "note": "state `Z`, \"defunct (\"zombie\") process, terminated but not reaped by its parent\""
+      }
+    ],
+    "deep": [
+      "\"no error either\" on the meter → the POSIX rationale says zombies are still within a process's lifetime, so returning ESRCH (\"no such process\") would not conform. On macOS, `kill -9` at a real zombie exits with 0 and `ps` still shows `Z`.",
+      "Fire at the empty room after the reaping → only now does it fail, in red: `kill: (4242) - No such process`, bash's actual error (minus the shell name in front). You only see it if you press: hit kill -9 while the downstairs plate says VACANT. The next zombie then moves into number 4319, not 4242: Linux usually hands out PIDs in sequence and doesn't reuse a freed one until it wraps around.",
+      "`[trick-or-treat] <defunct>` in the guest register (the paper on the right on wide screens) → Linux `ps` can't read a zombie's arguments, so it shows the command name in brackets plus `<defunct>`. \"trick-or-treat\" is 14 characters, inside Linux's 15-character process-name limit.",
+      "The cat in the left upstairs room → plate `4316 S`, command `cat`: the `cat` program sleeps (S) while it waits for input. The pumpkin kid in the far-right room is bouncing on the bed, so R (running). (the plates are easiest to read on a large screen)",
+      "The \"PID 0\" portrait → init's parent PID is 0, the idle task (\"swapper\") that runs only when the CPU has nothing else to do. The family's most relaxed ancestor."
+    ]
+  }
+}

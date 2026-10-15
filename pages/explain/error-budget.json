@@ -1,0 +1,157 @@
+{
+  "id": "error-budget",
+  "title": {
+    "en": "Your Error Budget",
+    "ko": "나의 에러 버짓"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "큰 인터넷 서비스를 운영하는 사람들이 '한 달에 이만큼은 고장 나도 괜찮다'고 미리 정해 두는 에러 버짓을 사람 한 명에게 붙였다. 실수도 쉬는 것도 다 예산 안이고, 너무 안 쓰면 오히려 경보가 울린다.",
+    "points": [
+      "첫 장면에서 토스트가 버터 바른 면으로 떨어지자 경광등이 돌고 화면 전체가 빨갛게 깜빡이더니, 토스트는 사건 기록의 SEV-4 한 줄로 얌전히 접수된다 → 누구나 겪는 작은 불운(머피의 법칙의 대표 장면)에 관제실이 큰 장애처럼 총력 대응한다. 이어지는 '전체 회신' SEV-3('정정합니다' 메일로 수습), '음소거인 줄 알았음' SEV-3(영향 범위: 참석자 14명), '저장 안 하고 닫음' SEV-2(자동 저장이 복구)도 서버 사고에 쓰는 등급과 말투를 일상의 작은 실수에 아주 진지하게 붙인 것이다.",
+      "목표가 100%가 아니라 95% → 각주 \"100%는 거의 모든 경우에 잘못된 목표다\"는 구글 SRE 책에 실제로 있는 문장이다. 완벽을 목표로 삼지 않는 것이 이 일의 원칙이다.",
+      "빨간 경보 \"번 레이트 14.4배, 원인: 월요일 오전 9시 회의 세 개 연속\" → 14.4배는 실제로 당직자를 깨우는 기준(한 시간 만에 한 달 버짓의 2%를 태우는 속도)이다. 그런데 해결 방법은 '점심 먹음'.",
+      "비난 없는 회고 카드에 \"근본 원인: 인적 오류\"라고 적혔다가 펜으로 줄이 그어지고 '사람이라서'로 고쳐진다 → 사고를 되짚을 때 사람을 탓하지 않는 회고에서 '인적 오류'는 근본 원인으로 쓰지 않는 말이다. 사람은 원래 실수하니, 실수하기 쉽게 만든 구조를 찾는 게 회고라서. 그래서 고친 답이 '사람이라서', 누구 탓은 '없음'.",
+      "노란 경보 \"버짓 과소 사용 · … · 원인: 너무 애씀\"과 곧이어 붙는 쪽지 \"예산은 쓰라고 있는 것. 좀 쉬다 오세요.\" → 보통 관제 화면은 실수하면 울리는데, 이 화면은 실수를 너무 안 해서 울린다(경보 가운데에는 오늘 날짜와 남은 비율이 들어가고, 달 초에는 '지난달 72% 남김'이 나온다). 이것도 실제 원칙이다. 버짓이 많이 남았다는 건 너무 조심했다는 뜻이다. 구글은 Chubby라는 서비스가 한 분기 내내 진짜 장애 없이 목표보다 지나치게 안정적이면 일부러 내렸다. 다들 '절대 안 멈춘다'고 믿고 기대지 않게(SRE 책 4장). 쪽지의 '예산은 쓰라고 있는 것'은 연말마다 남은 예산을 서둘러 쓰는(보도블록 교체) 그 말이다. 그리고 마지막에 머리띠가 네온 '괜찮아요'로 바뀐다."
+    ],
+    "terms": [
+      {
+        "term": "SLO(서비스 수준 목표)",
+        "plain": "\"한 달 중 99.9%는 정상\"처럼 미리 정해 둔 목표. 여기서는 \"깨어 있는 시간의 95%는 괜찮음\"."
+      },
+      {
+        "term": "에러 버짓",
+        "plain": "100%에서 목표를 뺀 나머지. 그만큼은 고장 나도 된다. 많이 남았으면 너무 조심했다는 뜻이라 더 과감하게 움직여도 된다."
+      },
+      {
+        "term": "번 레이트",
+        "plain": "버짓을 쓰는 속도. 1배면 기간이 끝나는 날 딱 맞게 다 쓴다."
+      },
+      {
+        "term": "SEV(장애 등급)",
+        "plain": "사고가 얼마나 큰지 매기는 등급. 회사마다 조금 다르지만 숫자가 작을수록 크다(SEV-1은 서비스가 모두에게 멈춘 정도)."
+      },
+      {
+        "term": "비난 없는 회고(blameless postmortem)",
+        "plain": "사고 뒤에 '누가 잘못했나'가 아니라 '무엇이 그렇게 만들었나'를 적는 기록."
+      }
+    ],
+    "links": [
+      {
+        "title": "Site Reliability Engineering 1장 Introduction",
+        "url": "https://sre.google/sre-book/introduction/",
+        "note": "\"100% is the wrong reliability target for basically everything\"과 에러 버짓이 생긴 이유",
+        "lang": "en"
+      },
+      {
+        "title": "3장 Embracing Risk",
+        "url": "https://sre.google/sre-book/embracing-risk/",
+        "note": "에러 버짓 계산법과 \"버짓이 넉넉하면 더 위험을 감수해도 된다\"",
+        "lang": "en"
+      },
+      {
+        "title": "4장 Service Level Objectives",
+        "url": "https://sre.google/sre-book/service-level-objectives/",
+        "note": "너무 안정적인 Chubby를 일부러 내린 '계획된 장애'",
+        "lang": "en"
+      },
+      {
+        "title": "15장 Postmortem Culture",
+        "url": "https://sre.google/sre-book/postmortem-culture/",
+        "note": "개인이나 팀을 탓하지 않는 회고",
+        "lang": "en"
+      },
+      {
+        "title": "SRE 워크북 5장 Alerting on SLOs",
+        "url": "https://sre.google/workbook/alerting-on-slos/",
+        "note": "1시간 창, 번 레이트 14.4, 버짓 2%면 사람을 호출한다는 표",
+        "lang": "en"
+      },
+      {
+        "title": "Buttered toast phenomenon - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Buttered_toast_phenomenon",
+        "note": "식탁에서 떨어진 토스트가 버터 면으로 떨어지는 이유와 매슈스의 1995년 논문, 1996년 이그노벨 물리학상",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "토스트는 떨어지는 동안 정확히 반 바퀴(180°)만 돈다 → 식탁 높이에서 떨어진 토스트는 반 바퀴쯤 돌 시간밖에 없어서 위에 있던 버터 면이 바닥으로 간다. 로버트 매슈스가 1995년 논문 「Tumbling toast, Murphy's Law and the fundamental constants」에서 따졌고, 이 연구로 1996년 이그노벨 물리학상을 받았다.",
+      "경보의 14.4배 → 30일(720시간) 버짓의 2%를 1시간에 태우는 속도다(720 × 0.02 ÷ 1 = 14.4). SRE 워크북이 '바로 사람을 호출(page)'하라고 권하는 기준 그대로다. 경보가 울리는 동안만 게이지 옆 번 레이트 칸도 1시간 기준 14.4×로 바뀐다(큰 화면).",
+      "평소 번 레이트(평균) 0.3배 → 지난날은 깨어 있는 시간의 1.4%씩만 썼다는 설정이라 1.4% ÷ 5% = 0.28, 반올림해 0.3배. 1배보다 한참 느리니 이번 달 버짓이 넉넉하게 남고, 그래서 노란 경보가 울린다.",
+      "각주는 \"…거의 모든 경우에 잘못된 목표다\"에서 끝나지만, 책의 원래 문장에는 괄호가 이어진다: \"(심장 박동기와 ABS 브레이크는 눈에 띄는 예외)\". 사람은 심장 박동기가 아니니 95%면 된다.",
+      "버짓 정책 칸 \"다 쓰면 새 일 벌이기 동결, 쉬기만 배포\" → SRE 워크북의 에러 버짓 정책 예시도 버짓을 넘기면 \"P0 문제나 보안 수정 말고는 모든 변경과 출시를 멈춘다\". 쉬기 버튼은 누를 때마다 휴가가 길어지고(1시간, 오후 반차, 연차 하루, 안식월) 대시보드는 점점 더 칭찬한다. 노란 경보는 늦어도 오후 반차를 쓰고 나면 꺼진다. 버짓을 다 쓰면 그 정책이 실제로 발동해 '오늘 배포할 것은 낮잠뿐'이 뜬다(누를 때만 나오는 장면)."
+    ]
+  },
+  "en": {
+    "line": "This page gives one person an error budget, the amount of failure big online services agree in advance is fine each month, so slips and rest both fit inside it, and leaving too much of it unspent sets off an alert.",
+    "points": [
+      "In the first second a slice of toast lands butter side down, a red beacon spins and the whole dashboard flashes red, and then the toast is filed, politely, as one SEV-4 row → a tiny bit of everyday bad luck (the textbook case of Murphy's law) gets a full-scale outage response. \"Replied all\" (SEV-3, patched with a \"Correction\" email), \"Thought I was on mute\" (SEV-3, blast radius: 14 attendees) and \"Closed without saving\" (SEV-2, recovered by autosave) follow: the grades and language of server outages, applied with a straight face to tiny everyday slips.",
+      "The objective is 95%, not 100% → the footnote \"100% is the wrong reliability target for basically everything\" is a real line from Google's SRE book. Not aiming for perfect is the rule of the trade.",
+      "The red alert \"Burn rate 14.4× (1 h window) · cause: Monday 9 a.m., three meetings back to back\" → 14.4 is a real threshold for waking up whoever is on call (burning 2% of a month's budget in one hour). It is resolved by \"had lunch\".",
+      "The blameless postmortem card says \"Root cause: human error\", then someone strikes it out and writes \"being human.\" after it → in a blameless review \"human error\" is not an acceptable root cause: people always slip, so the review looks for what made the slip easy. Hence the corrected answer, and \"Blame: none.\"",
+      "The yellow alert \"Budget underspent … cause: trying too hard\", then the sticky note \"Budgets are meant to be spent. Go take a break.\" → most monitoring nags you for failing; this one worries you haven't failed enough (the middle of the alert carries today's date and how much is left; in the first days of a month it says \"72% unspent last month\" instead). That is a real rule: a big unspent budget means you played it too safe. Google's SRE book tells how, when its Chubby lock service went a whole quarter without a real outage and sat well above its target, SRE took it down on purpose so nobody would build on it never failing (chapter 4). Then the header lights up in neon: \"All systems: okay\"."
+    ],
+    "terms": [
+      {
+        "term": "SLO (service level objective)",
+        "plain": "a target agreed in advance, such as \"working 99.9% of the month\". Here: \"okay for 95% of waking hours\"."
+      },
+      {
+        "term": "error budget",
+        "plain": "whatever is left between the target and 100%. That much failure is allowed, and a lot left over means you are being too careful and can afford more risk."
+      },
+      {
+        "term": "burn rate",
+        "plain": "how fast the budget is being spent. At 1× it runs out exactly on the last day."
+      },
+      {
+        "term": "SEV (severity level)",
+        "plain": "how big an incident is. It varies a little by company, but the smaller the number, the bigger the trouble (SEV-1 is something like the service being down for everyone)."
+      },
+      {
+        "term": "blameless postmortem",
+        "plain": "a write-up after an incident that asks what made it happen, not who did it."
+      }
+    ],
+    "links": [
+      {
+        "title": "Site Reliability Engineering, chapter 1: Introduction",
+        "url": "https://sre.google/sre-book/introduction/",
+        "note": "\"100% is the wrong reliability target for basically everything\" and where error budgets come from"
+      },
+      {
+        "title": "Chapter 3: Embracing Risk",
+        "url": "https://sre.google/sre-book/embracing-risk/",
+        "note": "how an error budget is worked out, and \"When the budget is large, the product developers can take more risks\""
+      },
+      {
+        "title": "Chapter 4: Service Level Objectives",
+        "url": "https://sre.google/sre-book/service-level-objectives/",
+        "note": "the Global Chubby Planned Outage, a service taken down on purpose for being too reliable"
+      },
+      {
+        "title": "Chapter 15: Postmortem Culture",
+        "url": "https://sre.google/sre-book/postmortem-culture/",
+        "note": "reviews that do not indict any individual or team"
+      },
+      {
+        "title": "The SRE Workbook, chapter 5: Alerting on SLOs",
+        "url": "https://sre.google/workbook/alerting-on-slos/",
+        "note": "the table where a 1-hour window, burn rate 14.4 and 2% of the budget means \"page\""
+      },
+      {
+        "title": "Buttered toast phenomenon – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Buttered_toast_phenomenon",
+        "note": "why toast pushed off a table lands butter side down, Robert Matthews's 1995 paper and his 1996 Ig Nobel Prize in Physics",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The toast turns exactly half over (180°) on the way down → toast falling from an ordinary table only has time for about half a turn, so the buttered side that started on top ends up underneath. Robert Matthews worked it out in \"Tumbling toast, Murphy's Law and the fundamental constants\" (1995) and won the 1996 Ig Nobel Prize in Physics for it.",
+      "The alert's 14.4× → the rate that burns 2% of a 30-day (720-hour) budget in one hour: 720 × 0.02 ÷ 1 = 14.4. It is the page-someone-now threshold the SRE Workbook recommends. While the alert fires, the burn-rate stat beside the gauge switches to \"(1 h)\" and 14.4× too (wide screens).",
+      "The everyday burn rate, labelled average, of 0.3× → past days are set to have used 1.4% of waking hours each, and 1.4% ÷ 5% = 0.28, rounded to 0.3. That is far below 1×, which is why this month's budget still looks generous and the yellow alert goes off.",
+      "The footnote stops at \"…for basically everything\", but the book's sentence goes on: \"(pacemakers and anti-lock brakes being notable exceptions)\". You are not a pacemaker, so 95% will do.",
+      "The budget policy panel, \"When it runs out, freeze new commitments; only rest ships\" → the SRE Workbook's example error budget policy also says that once the budget is gone, \"we will halt all changes and releases other than P0 issues or security fixes\". The break button asks for more each time you press it (an hour, the afternoon, the day off, a sabbatical) and the dashboard gets more pleased each time. The yellow alert goes quiet after the afternoon off at the latest. Once the budget runs out the policy really kicks in: \"Today's only release: a nap.\" (only if you press)."
+    ]
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "id": "fairy-name",
+  "title": {
+    "en": "What's Your Fairy Name?",
+    "ko": "나의 요정 이름 테스트"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "SNS에 도는 '나의 ○○ 이름 만들기' 테스트가 사실은 비밀번호 찾기 보안 질문의 답을 모으는 미끼일 수 있다는 것을 카드 한 장의 앞뒤로 보여 준다.",
+    "points": [
+      "광고 계정에서 튀어나온 요정이 날개·요술봉에 도둑 가면, 줄무늬 옷, 보따리 차림이고, 댓글이 달릴 때마다 금색 열쇠가 그 보따리로 들어감 → 귀여운 테스트의 주인이 사실은 도둑이고, 댓글로 단 답 하나하나가 계정을 여는 열쇠라는 것을 글 없이 먼저 보여 준다. 열쇠를 받을수록 보따리가 부풀어서, 떠날 때는 무거워 한 번 털썩 가라앉았다가 비틀비틀 날아간다.",
+      "요정 이름 공식 \"태어난 달 + 처음 키운 반려동물 + 출신 초등학교\" → 비밀번호를 잊었을 때 사이트가 묻는 '본인 확인 질문'과 똑같다. 카드를 뒤집으면 공식의 낱말이 그대로 은행 화면의 질문 칸이 된다. 귀여운 파스텔 앞면과 딱딱한 은행 화면 뒷면의 온도 차가 반전이다.",
+      "댓글의 \"꽃잎 초코! 행복초 요정나라 출신이에요\"가 점선을 타고 '비밀번호 찾기' 칸으로 날아감 → \"3개 중 3개 일치 · 본인 확인 완료\". 신나게 단 댓글 하나로 남이 내 이름으로 본인 확인을 통과한다. 곧이어 요정이 날아간 쪽에서 열쇠 하나가 돌아와 은행 화면의 자물쇠를 연다.",
+      "셋째 댓글 \"이거 보안 질문 같은데 ㅋㅋ 암튼 반짝 콩이\" → 이게 수법인 줄 아는 개발자도 결국 답한다. 알면서도 하는 우리 모습 그대로다.",
+      "(직접 누를 때만) '내 요정 이름 보기'에서 태어난 달을 누르면 요정 이름 대신 \"잠깐! 방금 생일 달을 알려 주셨네요 🙂\" → 보던 사람도 1초 만에 똑같이 걸린다(이 페이지는 아무것도 저장하거나 보내지 않는다). 대신 받는 '목요일의 냉장고' 같은 엉뚱한 요정 이름은 미국 소비자 보호 기관(FTC)의 실제 조언을 장난처럼 보여 준다: 보안 질문에는 아무도 못 맞힐 엉뚱한 답을 쓰고, 그 답은 비밀번호 관리자에 적어 둔다.",
+      "마지막 조언 카드의 결론 \"재밌네요 ㅋㅋ\"까지만 → 테스트를 즐기지 말라는 게 아니라, 답은 빼고 반응만 남기라는 것. 첫 줄 \"보안 질문에는 거짓말로 답하세요\" 옆에는 그 거짓말의 예로 '목요일의 냉장고'가 크레용으로 써진다(처음 키운 반려동물 이름이 냉장고일 리 없으니 아무도 못 맞힌다)."
+    ],
+    "terms": [
+      {
+        "term": "보안 질문(본인 확인 질문)",
+        "plain": "비밀번호를 잊었을 때 \"처음 키운 반려동물 이름은?\"처럼 묻는 질문. 답이 SNS에 흔히 드러나서 이제는 약한 방법으로 본다. 미국 표준 기관(NIST)은 더 이상 인증 수단으로 인정하지 않는다."
+      },
+      {
+        "term": "사회공학",
+        "plain": "기술로 뚫는 대신 사람을 속여 비밀을 알아내는 수법. 재미있는 퀴즈 미끼도 그중 하나다."
+      },
+      {
+        "term": "2단계 인증",
+        "plain": "비밀번호 말고 휴대폰 확인 같은 두 번째 증거를 더 요구하는 것. 비밀번호나 보안 질문의 답이 새어 나가도 그것만으로는 들어오기 어렵게 만든다."
+      },
+      {
+        "term": "비밀번호 관리자",
+        "plain": "길고 제각각인 비밀번호(와 지어낸 답)를 대신 기억해 주는 프로그램."
+      }
+    ],
+    "links": [
+      {
+        "title": "Don't answer another online quiz question until you read this",
+        "url": "https://consumer.ftc.gov/consumer-alerts/2023/01/dont-answer-another-online-quiz-question-until-you-read",
+        "note": "미국 연방거래위원회(FTC)의 2023년 1월 경고. 퀴즈 질문이 보안 질문과 닮았으니 퀴즈에는 답하지 않거나 사실대로 답하지 말고, 보안 질문의 답은 '추가 비밀번호'처럼 무작위로 길게 쓰고 다단계 인증을 켜라는 조언",
+        "lang": "en"
+      },
+      {
+        "title": "NIST SP 800-63 FAQ, Q-B07",
+        "url": "https://pages.nist.gov/800-63-FAQ/#q-b07",
+        "note": "보안 질문(지식 기반 인증)은 답을 알아내기 쉬워서 더 이상 인정되는 인증 수단이 아니라는 미국 표준 기관의 답",
+        "lang": "en"
+      },
+      {
+        "title": "NIST SP 800-63B, Password Verifiers",
+        "url": "https://pages.nist.gov/800-63-4/sp800-63b.html#passwordver",
+        "note": "\"What was the name of your first pet?\" 같은 질문을 쓰게 하지 말라는 2025년판 지침 문장",
+        "lang": "en"
+      },
+      {
+        "title": "사회공학 (보안) - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/사회공학_(보안)",
+        "note": "사람 사이의 신뢰를 이용해 정보를 얻는 수법",
+        "lang": "ko"
+      },
+      {
+        "title": "다중 인증 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/다중_인증",
+        "note": "2단계 인증이 무엇인지",
+        "lang": "ko"
+      }
+    ],
+    "deep": [
+      "요정 보따리에 들어가는 열쇠 수 = 지금 화면에 보이는 댓글 수 → 답을 단 사람마다 열쇠 하나다. 화면이 작아 잘려 나간 댓글(휴대폰의 넷째)은 열쇠를 보내지 않아서, 보따리는 데스크톱에서 2배, 휴대폰에서 1.75배까지 부푼다.",
+      "날아가던 '꽃잎'이 칸에 닿기 전에 '3월'로 바뀐다 → 요정 성은 태어난 달을 바꿔 쓴 것뿐이라, 카드의 열두 달 표가 그대로 해독표다(아주 작은 휴대폰 화면에서는 표가 빠지고 바뀌는 낱말만 보인다).",
+      "영어판 뒷면의 질문 \"What was the name of your first pet?\"(아주 작은 화면에서는 줄인 꼴) → 미국 표준 지침 NIST SP 800-63B가 '이런 질문을 쓰게 하지 말라'며 예로 든 문장과 글자 하나 다르지 않다(2017년판과 2025년판 모두).",
+      "(넓은 화면에서만) 한국어판 조언 카드에만 붙은 각주 → 영어권 단골 보안 질문 '어머니의 결혼 전 성은?'은 결혼해도 성이 그대로인 한국에서는 그냥 '어머니 성은?'이 되어 비밀 축에도 못 든다. 보안 질문은 나라만 바뀌어도 허술해진다."
+    ]
+  },
+  "en": {
+    "line": "Those \"what's your ___ name?\" quizzes on social media can be bait that collects the answers to password-reset security questions, and one card shows it front and back.",
+    "points": [
+      "The fairy who pops out of the sponsor's account has wings and a wand, but also a burglar's eye mask, a striped top and a sack, and every time a comment answers, a gold key flies out of it into her sack → before you read a word: the cute quiz is run by a thief, and each answer in the comments is a key to someone's account. The sack swells with every key, so when she leaves it drags her down before she wobbles off.",
+      "The fairy-name formula \"birth month + first pet + the street you grew up on\" → word for word the questions a site asks when you forget your password. Turn the card over and the formula's words are the labels on a bank's form. The flip from a pastel card to a stiff bank screen is the twist.",
+      "The comment \"Petal Biscuit of Maple Street 🍪\" flies along a dotted line into the \"Reset your password\" fields → \"3 of 3 match · Identity verified\". One happy comment and someone else passes as you. Then a key comes back from where the fairy flew off and opens the bank's padlock.",
+      "The third comment, \"pretty sure these are security questions lol. anyway Sparkle Pickles\" → even the developer who sees the trick answers anyway. That one is us.",
+      "(Only if you try it) Pick your birth month under \"Show my fairy name\" and, instead of a fairy name, you get \"Wait! You just told us your birth month 🙂\" → the viewer falls for it in one second too (the page saves and sends nothing). The odd safe fairy name you get instead (like the advice card's \"Thursday Fridge\") is the US Federal Trade Commission's real advice played as a joke: give security questions answers nobody could guess, and keep them in a password manager.",
+      "The advice card ends on \"'haha cute' is enough\" → not \"never play\", just leave a reaction instead of your answers. Its first line, \"Lie on security questions.\", comes with the lie crayoned in: your first pet was a Thursday Fridge, and nobody will ever guess that."
+    ],
+    "terms": [
+      {
+        "term": "security question",
+        "plain": "\"What was the name of your first pet?\" and the like, asked when you forget a password. The answers are often easy to find on social media, and the US standards body NIST no longer accepts them as a way to prove who you are."
+      },
+      {
+        "term": "social engineering",
+        "plain": "getting secrets by fooling people rather than breaking technology. A fun quiz can be one."
+      },
+      {
+        "term": "two-step verification",
+        "plain": "asking for a second proof, such as a code on your phone, on top of the password. A leaked password or security answer is then not enough on its own to get in."
+      },
+      {
+        "term": "password manager",
+        "plain": "a program that remembers long, different passwords (and your made-up answers) for you."
+      }
+    ],
+    "links": [
+      {
+        "title": "Don't answer another online quiz question until you read this",
+        "url": "https://consumer.ftc.gov/consumer-alerts/2023/01/dont-answer-another-online-quiz-question-until-you-read",
+        "note": "the US Federal Trade Commission's alert from January 2023: skip such quizzes or don't answer truthfully, treat security questions like extra passwords with long random answers, and use multi-factor authentication"
+      },
+      {
+        "title": "NIST SP 800-63 FAQ, Q-B07",
+        "url": "https://pages.nist.gov/800-63-FAQ/#q-b07",
+        "note": "security questions (knowledge-based authentication) are \"no longer recognized as an acceptable authenticator\", because the answers are easy to discover"
+      },
+      {
+        "title": "NIST SP 800-63B, Password Verifiers",
+        "url": "https://pages.nist.gov/800-63-4/sp800-63b.html#passwordver",
+        "note": "the 2025 guideline that says not to prompt people with questions like \"What was the name of your first pet?\""
+      },
+      {
+        "title": "Security question – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Security_question",
+        "note": "why social media made the old questions unsafe, and how banks were already asking for a mother's maiden name in 1906",
+        "lang": "en"
+      },
+      {
+        "title": "Social engineering (security) – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Social_engineering_(security)",
+        "note": "fooling people instead of machines",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The number of keys in the fairy's sack = the number of comments you can see → one key per person who answered. A comment cut off on a small screen (the fourth, on phones) sends none, so the sack swells to twice its size on a desktop and 1.75 times on a phone.",
+      "\"Petal\" turns into \"March\" on its way to the form → the fairy first name is only the birth month in disguise, so the card's twelve-month table is the decoder (on the smallest phone screens the table steps aside and only the word changes).",
+      "The question on the back, \"What was the name of your first pet?\" (shortened on very small screens) → word for word the example NIST's own guideline SP 800-63B uses for what sites must not ask (in both the 2017 and the 2025 editions).",
+      "(Wide screens only) Only the Korean advice card has a footnote → the classic English-language security question about your mother's maiden name is no secret in Korea, where women keep their family name after marriage: the answer is just her surname. A security question can go weak just by crossing a border."
+    ]
+  }
+}

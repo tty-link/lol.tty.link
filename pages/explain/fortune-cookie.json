@@ -1,0 +1,154 @@
+{
+  "id": "fortune-cookie",
+  "title": {
+    "en": "Code Review Fortunes",
+    "ko": "코드 리뷰 포춘쿠키"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "코드 리뷰를 받기 전의 떨리는 마음을 포춘쿠키로 달래 주는 페이지다. 쪽지의 운세는 전부 개발자에게 좋은 일뿐이다.",
+    "points": [
+      "쿠키가 식은땀을 흘리며 덜덜 떨다가 갈라지고, 튄 부스러기가 쪽지보다 먼저 초록 체크(✓)로 줄을 선다 → 코드를 올리기 전의 긴장을 쿠키가 대신 떨어 주고, 테스트가 다 통과하면 뜨는 초록 체크처럼 운세를 읽기도 전에 부스러기가 먼저 통과를 알려 준다.",
+      "쪽지의 운세 → \"CI가 한 번에 초록불입니다. ‘혹시 몰라’ 재실행은 없습니다.\", \"찾던 답이 검색 첫 줄에 있습니다. 2011년 글도 아닙니다.\"처럼 개발자에게만 너무 반가운 작은 소원 뒤에, 그게 얼마나 드문 일인지 들키는 꼬리가 붙는다. \"다음 PR은 한 번에 승인됩니다. 리뷰어가 다 읽고 나서.\"는 읽지도 않고 누르는 승인을 꼬집는다.",
+      "쪽지가 놓이고 한 박자 뒤 빨간 행운의 숫자 200, 201, 204 같은 것이 찍힌다 → 웹 서버가 요청을 잘 처리했다고 답할 때 붙이는 HTTP 상태 코드다. 개발자에게 이보다 좋은 숫자는 없다.",
+      "쪽지 아래 '오늘의 영어' → 진짜 포춘쿠키 쪽지에 중국어 낱말 공부가 적혀 있기도 한 것을 흉내 내 리뷰 영어를 가르치는데, 뜻풀이 뒤에 현실이 붙는다. \"nit, 아주 사소한 의견. 그게 열두 개.\", \"FYI, 알고만 계세요. 답장하면 내 일이 됨.\" 영어판은 거꾸로 칼퇴, 회식 같은 한국 직장 말과 리뷰 답글의 정석 '반영했습니다'를 로마자와 함께 가르친다.",
+      "둘째 쿠키에서는 쪽지가 두 장 나오고, 둘째 장 머리에 '리뷰어 몫' → 진짜 포춘쿠키에도 가끔 쪽지가 두 장 든 게 걸린다. 여기서는 그 덤을 내 코드를 읽어 줄 사람에게 보낸다. \"이번 diff는 200줄이 안 됩니다.\", \"테스트는 이미 초록불입니다.\"는 리뷰어가 제일 바라는 운세다. 홈에서 18초 동안 보면 이 두 장이 놓인 장면으로 끝난다.",
+      "(셋째 쿠키, 홈에서는 쿠키를 누르면) 쪽지에 \"이 운세는 아직 리뷰 중입니다.\"와 \"행운의 숫자: 확인 중.\"만 있고, 부스러기는 체크 대신 노란 점 세 개로 깜빡인다 → 검사가 아직 도는 PR에 붙는 노란 점이다. 운세마저 리뷰를 기다린다. 다음 쿠키의 둘째 쪽지 '리뷰 결과'에 \"승인. 둘 다요.\"가 나와, 운세는 전부 좋은 쪽이라는 약속을 지킨다."
+    ],
+    "terms": [
+      {
+        "term": "PR(풀 리퀘스트)",
+        "plain": "내가 고친 코드를 합쳐 달라고 동료에게 올리는 요청. 리뷰를 받고 승인되면 합쳐진다."
+      },
+      {
+        "term": "코드 리뷰",
+        "plain": "동료가 내 코드를 읽고 고칠 점이나 의견을 댓글로 남기는 일."
+      },
+      {
+        "term": "CI",
+        "plain": "코드를 올릴 때마다 자동으로 빌드하고 테스트를 돌리는 시스템. 다 통과하면 초록불, 아직 도는 중이면 노란 점이 켜진다."
+      },
+      {
+        "term": "HTTP 상태 코드",
+        "plain": "웹 서버가 답할 때 붙이는 세 자리 숫자. 200은 성공, 201은 새로 만들었음, 202는 받았음(처리는 나중에), 204는 성공했지만 돌려줄 내용 없음, 304는 바뀐 것 없음이다."
+      },
+      {
+        "term": "nit",
+        "plain": "nitpick(트집)의 줄임말. 리뷰 댓글 앞에 붙여 '사소한 의견이니 안 고쳐도 된다'는 뜻으로 쓴다."
+      },
+      {
+        "term": "off-by-one",
+        "plain": "딱 1만큼 어긋나는 버그. 개수를 세거나 반복 범위를 정할 때, 0부터 세는지 1부터 세는지 헷갈릴 때 흔히 생긴다."
+      }
+    ],
+    "links": [
+      {
+        "title": "포춘 쿠키 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/포춘_쿠키",
+        "note": "운세 쪽지가 든 과자. 중국어 낱말 공부나 복권 번호로 쓰는 숫자가 적혀 있기도 하다",
+        "lang": "ko"
+      },
+      {
+        "title": "코드 검토 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/코드_검토",
+        "note": "코드 리뷰가 무엇이고 어떤 방식이 있는지",
+        "lang": "ko"
+      },
+      {
+        "title": "HTTP 상태 코드 - MDN",
+        "url": "https://developer.mozilla.org/ko/docs/Web/HTTP/Reference/Status",
+        "note": "200, 201, 204, 304 같은 숫자의 뜻"
+      },
+      {
+        "title": "Law of triviality",
+        "url": "https://en.wikipedia.org/wiki/Law_of_triviality",
+        "note": "원자력 발전소를 심사하는 위원회가 원자로보다 직원용 자전거 보관소 재료 이야기에 시간을 더 쓴다는 파킨슨의 예. '바이크셰딩'이 여기서 나왔다",
+        "lang": "en"
+      },
+      {
+        "title": "Off-by-one error",
+        "url": "https://en.wikipedia.org/wiki/Off-by-one_error",
+        "note": "하나 차이로 틀리는 버그",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "부스러기 체크는 짧은 획부터 한 알씩 내려앉고 초록 띠도 짧은 획부터 그어진다. 손으로 체크를 긋는 순서 그대로다.",
+      "행운의 숫자 다섯 후보(200·201·202·204·304) 가운데 304만 성공(2xx)이 아니다. 3xx(리다이렉션)에 속하는 'Not Modified'로, 바뀐 게 없으니 갖고 있던 걸 그대로 쓰라는 뜻이다. 개발자에게는 이것도 좋은 소식이다.",
+      "\"오늘 off-by-one 버그는 0개. 1개 아니고 진짜 0개.\"는 버그 개수가 하나 어긋나지 않았는지까지 굳이 확인해 주는 문장이다. 하나 차이로 틀리는 버그를 그 버그의 방식으로 놀린다.",
+      "영어판의 '반영했습니다(banyeonghaetseumnida)'는 한국 개발자가 리뷰 댓글에 가장 흔히 다는 답이다. 영어로는 Done 한 낱말이면 되는 말이 로마자로 스무 자다.",
+      "바닥글은 몇 개를 깨도 \"칼로리 0.\"이다."
+    ]
+  },
+  "en": {
+    "line": "This is a fortune cookie to crack before you ask teammates to review your code, and every fortune inside is good news for a developer.",
+    "points": [
+      "The cookie breaks into a sweat and shivers, then cracks, and its crumbs line up in a green check mark before the slip is even out → the cookie has your pre-review nerves for you, and the crumbs pass it before you have read a word, like the green check you get when all the tests pass.",
+      "The fortunes → tiny, very specific developer wishes, most with a tail that admits how rare they are: \"CI goes green on the first run. No “re-run, just in case.”\", \"The answer you need is the top result, and it is not from 2011.\" And \"Your PR gets approved on the first try. By someone who read it.\" pokes at approvals nobody read.",
+      "A beat after the slip lands, the lucky numbers are stamped in red: 200, 201, 204 and the like → the HTTP status codes a web server sends when a request went fine. No luckier numbers for a developer.",
+      "The \"Learn Korean\" line → real fortune slips sometimes teach a Chinese word; this one teaches Korean office words, with romanization. 칼퇴 (kaltoe) is literally \"knife-leave\": going home the minute the workday ends. 회식 (hoesik), the after-work team dinner with the boss, comes with \"Optional.\" in quotes, because in many Korean offices people feel they can't really say no. And 반영했습니다 (banyeonghaetseumnida), \"done, as you suggested.\", is the reply Korean developers leave on review comments all day.",
+      "The second cookie holds two slips, and the second is headed \"For your reviewer\" → real fortune cookies now and then hold two slips; here the spare one goes to the person about to read your code. \"This diff is under 200 lines.\" is the fortune every reviewer wants. On the home page, the 18 seconds end on these two slips.",
+      "(The third cookie; on the home page, tap the cookie to get there) The slip says only \"This fortune is still in review.\" and \"Lucky numbers: pending.\", and the crumbs land as three blinking yellow dots instead of a check → the yellow dot of checks still running on a pull request: even the fortune is waiting for review. The next cookie's second slip, \"Review’s in\", says \"Approved. Both of them.\", so every fortune is still a kind one."
+    ],
+    "terms": [
+      {
+        "term": "Pull request (PR)",
+        "plain": "asking teammates to review your code changes and merge them into the shared code."
+      },
+      {
+        "term": "Code review",
+        "plain": "teammates reading your code and leaving comments before it is merged."
+      },
+      {
+        "term": "CI",
+        "plain": "a system that builds and tests the code automatically on every change; green means every test passed, a yellow dot means it is still running."
+      },
+      {
+        "term": "HTTP status codes",
+        "plain": "three-digit numbers a web server puts on each reply. 200 OK, 201 Created, 202 Accepted (it will be done later), 204 No Content (done, nothing to send back), 304 Not Modified (nothing changed)."
+      },
+      {
+        "term": "Off-by-one",
+        "plain": "a bug where a count or a range is wrong by exactly one, often from mixing up counting from 0 and counting from 1."
+      }
+    ],
+    "links": [
+      {
+        "title": "Fortune cookie - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Fortune_cookie",
+        "note": "the slip with a fortune, sometimes a Chinese phrase with its translation, and lucky numbers",
+        "lang": "en"
+      },
+      {
+        "title": "Code review - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Code_review",
+        "note": "what code review is",
+        "lang": "en"
+      },
+      {
+        "title": "HTTP response status codes - MDN",
+        "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
+        "note": "what 200, 201, 204 and 304 mean"
+      },
+      {
+        "title": "Hoesik - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Hoesik",
+        "note": "Korea's after-work team dinners, and why going is often not really optional",
+        "lang": "en"
+      },
+      {
+        "title": "Off-by-one error - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Off-by-one_error",
+        "note": "the bug that is wrong by one",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The crumbs land short stroke first, and the green line under them is drawn the same way: the order in which you draw a check mark by hand.",
+      "Of the five possible lucky numbers (200, 201, 202, 204, 304), only 304 is not a success (2xx) code. It is a 3xx (redirection) code, \"Not Modified\": nothing changed, keep using the copy you have. Still good news for a developer.",
+      "\"No off-by-one errors today. Not even one.\" double-checks that the count itself is not off by one: zero, not one. The joke is told the way the bug works.",
+      "빨리빨리 (ppallippalli), \"hurry, hurry\", is how Koreans describe their own love of speed; \"Also the sprint plan.\" is every team's roadmap.",
+      "The footer stays at \"Calories: 0.\" however many you crack."
+    ]
+  }
+}

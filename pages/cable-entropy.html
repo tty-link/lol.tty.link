@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cable Entropy | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sofia+Sans+Condensed:wght@500;700;900&family=Red+Hat+Mono:wght@500;700&family=IBM+Plex+Sans+KR:wght@500;700&family=Nanum+Pen+Script&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="dunggeun pixel pilgi"></script>
+<style>
+  /* One rack, one year. Day 1 is the photo for the wiki; by day 365 the cables are spaghetti
+     and the wiki still shows day 1. A time-lapse slider scrubs through it. */
+  :root {
+    --wall: #e6e3dc;
+    --ink: #1f2228;
+    --soft: #6b6f78;
+    --rack: #2b2f37;
+    --rack-2: #3a3f49;
+    --port: #14161a;
+    --accent: #ff6b35;
+    --tag: #fbfaf6;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background:
+      linear-gradient(90deg, rgba(0, 0, 0, .035) 1px, transparent 1px) 0 0 / 64px 64px,
+      linear-gradient(rgba(0, 0, 0, .035) 1px, transparent 1px) 0 0 / 64px 64px,
+      var(--wall);
+    color: var(--ink);
+    font-family: 'Sofia Sans Condensed', 'Arial Narrow', sans-serif;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', sans-serif; word-break: keep-all; }
+
+  .room {
+    container-type: size;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "title day" "rack rack" "caption caption" "slider slider";
+    gap: 1.8cqh 3cqw;
+    width: 100vw;
+    height: 100vh;
+    height: 100svh;
+    padding: clamp(14px, 3.8cqmin, 38px);
+  }
+  .title h1 { font-size: clamp(26px, 5.4cqmin, 52px); font-weight: 900; line-height: .95; letter-spacing: -.01em; }
+  .title h1 > font-kku { color: var(--ink); }
+  .title .sub { margin-top: .4em; font-size: clamp(13px, 2cqmin, 17px); font-weight: 700; color: var(--soft); }
+  .day { grid-area: day; text-align: right; line-height: .9; }
+  .day .n { display: block; font-size: clamp(42px, 10cqmin, 96px); font-weight: 900; font-variant-numeric: tabular-nums; }
+  .day .n > font-kku { color: var(--ink); }
+  .day small { font-size: clamp(12px, 1.8cqmin, 15px); font-weight: 700; color: var(--soft); }
+
+  .rack { grid-area: rack; position: relative; min-height: 0; }
+  .rack svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .cable { fill: none; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+  .cable-shadow { fill: none; stroke: rgba(0, 0, 0, .28); stroke-width: 9; stroke-linecap: round; }
+  .label rect { fill: var(--tag); stroke: #c9c4b8; stroke-width: 1.2; }
+  .label text { font: 700 11px 'Red Hat Mono', monospace; fill: var(--ink); text-anchor: middle; }
+  .tape rect { fill: #efe2bb; stroke: #cbb98a; stroke-width: 1; }
+  /* The tape is written by hand (printed labels are mono); the hand outlasts the printer. */
+  .tape text { font: 400 19px 'Nanum Pen Script', cursive; fill: #3b3426; text-anchor: middle; }
+  /* Port lights flicker with traffic; an empty port stays dark. */
+  .led.live { animation: traffic var(--blink, 1s) steps(2, jump-none) infinite; }
+  @keyframes traffic { 0%, 60% { opacity: 1; } 61%, 100% { opacity: .25; } }
+  @media (prefers-reduced-motion: reduce) { .led.live { animation: none; } }
+  .warn rect { fill: #ffd60a; stroke: #1f2228; stroke-width: 2; }
+  .warn text { font: 700 12px 'Red Hat Mono', monospace; fill: #1f2228; }
+  .lang-ko .warn text { font-family: 'IBM Plex Sans KR', sans-serif; font-size: 13px; }
+  /* When the rack is drawn small (a phone), the sign is drawn bigger (see fitSmall) and, in
+     English, in the narrow face, so it stays readable without covering half the rack. */
+  .lang-en .warn.big text { font-family: 'Sofia Sans Condensed', sans-serif; font-size: 13px; }
+
+  /* The wiki photo: on day 1 a camera frames the rack, flashes, and the photo lands taped to the
+     rack's corner, where it stays all year. */
+  .finder path { fill: none; stroke: #fff; stroke-width: 6; stroke-linecap: round; }
+  .photo .card { fill: #fbfaf6; stroke: rgba(0, 0, 0, .18); stroke-width: 1; }
+  .photo .strip { fill: rgba(239, 226, 187, .9); }
+  .flash { position: fixed; inset: 0; z-index: 3; background: #fff; opacity: 0; pointer-events: none; }
+
+  .caption { grid-area: caption; min-height: 2.6em; font-size: clamp(15px, 2.5cqmin, 22px); font-weight: 700; line-height: 1.25; }
+  .caption b { color: var(--accent); }
+
+  .slider { grid-area: slider; display: grid; gap: 6px; }
+  .slider input { width: 100%; height: 34px; accent-color: var(--accent); cursor: pointer; }
+  /* Ticks sit where their day falls on the year, not evenly spaced. */
+  .ticks { position: relative; height: 1.3em; font: 700 clamp(11px, 1.7cqmin, 14px) 'Red Hat Mono', monospace; color: var(--soft); }
+  .ticks span { position: absolute; top: 0; translate: -50% 0; }
+  .ticks span:first-child { translate: 0 0; }
+  .ticks span:nth-child(5) { translate: -100% 0; }
+  /* the one-line hint, in the wide gap between the 180 and 365 ticks */
+  .ticks .hint { left: 74.5%; font: 600 clamp(11px, 1.7cqmin, 14px)/1.3 'Sofia Sans Condensed', sans-serif; white-space: nowrap; color: var(--soft); }
+  .lang-ko .ticks .hint { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 500; }
+  .slider input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  /* Opened on its own, _kit.js puts its links (on a phone, a small ":)" button) bottom-right;
+     keep the slider and its 365 tick clear of them. */
+  html:not(.embedded) .room { padding-bottom: max(clamp(14px, 3.8cqmin, 38px), 48px); }
+
+  .note { position: absolute; z-index: 2; right: 3%; top: 8%; width: clamp(110px, 20cqmin, 170px); padding: .6em .7em .8em; background: #fff59d; rotate: 6deg; box-shadow: 0 4px 8px rgba(0, 0, 0, .18); font-size: clamp(15px, 2.6cqmin, 22px); opacity: 0; pointer-events: none; }
+  .note > font-kku { color: #2f2a1f; }
+  .lang-en .note { font-family: 'Nanum Pen Script', cursive; font-weight: 400; font-size: clamp(21px, 3.6cqmin, 30px); line-height: 1; }
+
+  @media (max-aspect-ratio: 4/5) {
+    .room { grid-template-columns: 1fr; grid-template-areas: "title" "day" "rack" "caption" "slider"; grid-template-rows: auto auto minmax(0, 1fr) auto auto; }
+    .day { text-align: left; display: flex; align-items: baseline; gap: .5em; }
+    .day .n { display: inline; }
+  }
+</style>
+</head>
+<body>
+<main class="room">
+  <header class="title">
+    <h1 data-lang="en">Cable Entropy</h1>
+    <h1 data-lang="ko"><font-kku font="dunggeun" size="5.4cqmin">선 정리의 엔트로피</font-kku></h1>
+    <p class="sub" data-lang="en">One rack, one year, one law of thermodynamics.</p>
+    <p class="sub" data-lang="ko">랙 하나, 일 년, 열역학 법칙 하나.</p>
+  </header>
+  <p class="day" aria-live="off">
+    <span class="n" data-lang="en">Day 1</span>
+    <span class="n" data-lang="ko"><font-kku font="pixel" size="8.6cqmin">1일차</font-kku></span>
+  </p>
+
+  <section class="rack" aria-hidden="true">
+    <svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet">
+      <g class="rig">
+      <!-- rack frame -->
+      <rect x="50" y="20" width="700" height="480" rx="10" fill="#2b2f37"/>
+      <rect x="66" y="34" width="668" height="452" rx="4" fill="#20232a"/>
+      <g fill="#555b67"><circle cx="58" cy="60" r="4"/><circle cx="58" cy="460" r="4"/><circle cx="742" cy="60" r="4"/><circle cx="742" cy="460" r="4"/></g>
+      <!-- patch panel -->
+      <rect x="90" y="60" width="620" height="70" rx="6" fill="#3a3f49"/>
+      <g class="panel-ports"></g>
+      <!-- switch -->
+      <rect x="90" y="388" width="620" height="78" rx="6" fill="#3a3f49"/>
+      <g class="switch-leds"></g>
+      <g class="switch-ports"></g>
+      <g class="cables"></g>
+      <g class="ties"></g>
+      <g class="labels"></g>
+      </g>
+      <g class="mystery-label"></g>
+      <g class="tape-label"></g>
+      <g class="parcel" opacity="0">
+        <rect x="608" y="476" width="96" height="46" rx="5" fill="#c79a5b" stroke="#7d5a2e" stroke-width="2.5"/>
+        <path d="M608 492 H704 M656 476 V492" stroke="#7d5a2e" stroke-width="2.5"/>
+        <text x="656" y="514" text-anchor="middle" style="font: 700 18px 'Red Hat Mono', monospace" fill="#3d2a12">×100</text>
+      </g>
+      <!-- a moment after the box arrives, the first new tie goes round the temporary cable, where it
+           crosses the rack's right post (742, 340 on day 366): the temporary cable is now fixed for good -->
+      <g class="first-tie" opacity="0">
+        <g class="first-tie-fit">
+          <rect x="736" y="318" width="12" height="44" rx="3" fill="#f1f1f1" stroke="#9a9a9a" stroke-width="1.2"/>
+          <rect x="733" y="345" width="18" height="12" rx="2" fill="#dedede" stroke="#9a9a9a" stroke-width="1.2"/>
+          <path d="M751 352 l16 7" stroke="#f1f1f1" stroke-width="5" stroke-linecap="round"/>
+        </g>
+      </g>
+      <!-- the camera's viewfinder corners, then the photo it takes (its picture is a copy of the rack on day 1) -->
+      <g class="finder" opacity="0">
+        <path d="M30 60 V0 H90"/><path d="M710 0 H770 V60"/><path d="M770 460 V520 H710"/><path d="M90 520 H30 V460"/>
+      </g>
+      <g class="photo" opacity="0">
+        <rect class="card" x="0" y="0" width="152" height="122" rx="2"/>
+        <svg class="shot" x="6" y="6" width="140" height="96" viewBox="50 20 700 480"></svg>
+        <rect class="strip" x="52" y="-8" width="48" height="16" transform="rotate(4 76 0)"/>
+      </g>
+    </svg>
+    <p class="note" data-lang="en">Who did this?</p>
+    <p class="note" data-lang="ko"><font-kku font="pilgi" size="4.2cqmin">이거 누가 그랬어</font-kku></p>
+  </section>
+
+  <p class="caption" aria-live="polite"></p>
+
+  <div class="slider">
+    <input type="range" min="1" max="366" value="1" step="1">
+    <div class="ticks"><span style="left: 0%">1</span><span style="left: 7.9%">30</span><span style="left: 24.4%">90</span><span style="left: 49%">180</span><span style="left: 100%">365</span><span class="hint" data-lang="en">Drag to any day.</span><span class="hint" data-lang="ko">아무 날로나 끌어 보세요.</span></div>
+  </div>
+  <div class="flash" aria-hidden="true"></div>
+</main>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.querySelector('.rack svg');
+  const range = document.querySelector('.slider input');
+  const caption = document.querySelector('.caption');
+  const dayEn = document.querySelector('.day [data-lang="en"]');
+  const dayKo = document.querySelector('.day [data-lang="ko"] font-kku');
+  const note = document.querySelector(`.note[data-lang="${TTY.lang}"]`);
+  const parcel = svg.querySelector('.parcel');
+  const parcelText = parcel.querySelector('text');
+  const firstTie = svg.querySelector('.first-tie');
+  const tieFit = svg.querySelector('.first-tie-fit');
+
+  range.setAttribute('aria-label', TTY.t({ en: 'Day', ko: '날짜' }));
+
+  const el = (tag, attrs, parent) => {
+    const e = document.createElementNS(NS, tag);
+    Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+    if (parent) parent.append(e);
+    return e;
+  };
+
+  // A tiny seeded noise so the mess is the same mess every time.
+  const rnd = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+
+  const COLORS = ['#e63946', '#f4a261', '#e9c46a', '#2a9d8f', '#4f8fd9', '#8e7dbe', '#ff70a6', '#6a994e'];
+  const NAMES = TTY.t({
+    en: ['WEB-01', 'WEB-02', 'DB', 'CACHE', 'MAIL', 'VPN', 'PRINTER', 'NAS'],
+    ko: ['WEB-01', 'WEB-02', 'DB', 'CACHE', 'MAIL', 'VPN', '프린터', 'NAS'],
+  });
+  // Ten ports on the panel and the switch. The eight cables use ports 1–8; port 0 and port 9
+  // are spare on day 1 (the temporary cable and the mystery cable find them later).
+  const portAt = (k) => 112 + k * 64;
+  const portX = (i) => portAt(i + 1);
+  const TOP = 110, BOTTOM = 418;
+  const SPARE_TEMP = 9, SPARE_MYSTERY = 0;
+
+  // Ports and switch lights.
+  for (let k = 0; k < 10; k++) {
+    el('rect', { x: portAt(k) - 13, y: 88, width: 26, height: 24, rx: 3, fill: '#14161a' }, svg.querySelector('.panel-ports'));
+    el('rect', { x: portAt(k) - 13, y: 410, width: 26, height: 24, rx: 3, fill: '#14161a' }, svg.querySelector('.switch-ports'));
+    el('circle', { class: 'led', cx: portAt(k) - 7, cy: 448, r: 3.2, fill: '#2a3a30', style: `--blink: ${(.5 + rnd(k * 3 + 1) * 1.1).toFixed(2)}s` }, svg.querySelector('.switch-leds'));
+  }
+  const leds = [...svg.querySelectorAll('.led')];
+
+  // Where cable i plugs into the switch: on day 1 straight down, later two pairs get swapped.
+  // A swap is unplug-and-plug, all in one day (DB and VPN on day 140, MAIL and NAS on
+  // day 231), so every end is always in a port and no port ever takes two cables.
+  const REPATCH = [0, 1, 5, 3, 7, 2, 6, 4];
+  const SWAP_AT = { 2: .38, 5: .38, 4: .63, 7: .63 };
+
+  // The camera holds the bundle's breath in (relax below 0, a narrower waist, caught by the photo);
+  // as the photo comes off the rack the bundle lets it out: it bows out between the two zip ties
+  // and the labels go a little crooked. 1 ever after.
+  let relax = 0;
+  function points(i, t) {
+    // the neat day-1 route: down from the panel, into the bundle, out to the switch
+    const bx = 400 + (i - 3.5) * 9;
+    const out = (i - 3.5) * relax;
+    const endX = t >= (SWAP_AT[i] ?? 2) ? portX(REPATCH[i]) : portX(i);
+    const base = [
+      [portX(i), TOP],
+      [portX(i) + out * 3, TOP + 40],
+      [bx + out * 2, 220],
+      [bx + out * 19, 262 + Math.abs(out) * 3],
+      [bx + out * 2, 300],
+      [endX, BOTTOM - 40],
+      [endX, BOTTOM],
+    ];
+    const amp = 190 * Math.pow(t, 1.35);
+    return base.map(([x, y], k) => {
+      if (k === 0 || k === base.length - 1) return [x, y];
+      const loop = Math.pow(t, 2) * 70 * Math.sin(i * 1.7 + k * 2.3);
+      return [
+        x + (rnd(i * 13 + k) - .5) * amp + loop,
+        y + (rnd(i * 29 + k * 7) - .5) * amp * .7 + Math.pow(t, 2) * 50 * Math.cos(i + k),
+      ];
+    });
+  }
+  // A smooth line through the points (Catmull-Rom as cubic Béziers).
+  function smooth(p) {
+    let d = `M${p[0][0].toFixed(1)} ${p[0][1].toFixed(1)}`;
+    for (let k = 0; k < p.length - 1; k++) {
+      const a = p[k - 1] || p[k], b = p[k], c = p[k + 1], e = p[k + 2] || c;
+      const c1 = [b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6];
+      const c2 = [c[0] - (e[0] - b[0]) / 6, c[1] - (e[1] - b[1]) / 6];
+      d += ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${c[0].toFixed(1)} ${c[1].toFixed(1)}`;
+    }
+    return d;
+  }
+
+  const cablesG = svg.querySelector('.cables');
+  const cables = COLORS.map((c) => ({ shadow: el('path', { class: 'cable-shadow' }, cablesG), line: el('path', { class: 'cable', stroke: c }, cablesG) }));
+  const mysteryShadow = el('path', { class: 'cable-shadow' }, cablesG);
+  const mystery = el('path', { class: 'cable', stroke: '#9aa0a6', 'stroke-dasharray': '1', pathLength: 1 }, cablesG);
+  // The temporary cable: from the spare switch port, out of the rack, to somewhere.
+  const tempShadow = el('path', { class: 'cable-shadow' }, cablesG);
+  const temp = el('path', { class: 'cable', stroke: '#eceae4', 'stroke-dasharray': '1', pathLength: 1 }, cablesG);
+
+  // Zip ties around the bundle.
+  const tiesG = svg.querySelector('.ties');
+  const ties = [232, 292].map((y) => {
+    const g = el('g', {}, tiesG);
+    const left = el('rect', { x: 360, y: y - 5, width: 40, height: 10, rx: 3, fill: '#f1f1f1', stroke: '#9a9a9a', 'stroke-width': 1.2 }, g);
+    const right = el('rect', { x: 400, y: y - 5, width: 40, height: 10, rx: 3, fill: '#f1f1f1', stroke: '#9a9a9a', 'stroke-width': 1.2 }, g);
+    const buckle = el('rect', { x: 432, y: y - 7, width: 10, height: 14, rx: 2, fill: '#dedede', stroke: '#9a9a9a', 'stroke-width': 1.2 }, g);
+    return { g, left, right, buckle, y };
+  });
+
+  // Labels: little flags on each cable, which peel and fall over the year.
+  const labelsG = svg.querySelector('.labels');
+  const labels = NAMES.map((name, i) => {
+    const g = el('g', { class: 'label' }, labelsG);
+    el('rect', { x: -26, y: -9, width: 52, height: 18, rx: 3 }, g);
+    const t = el('text', { y: 4 }, g);
+    t.textContent = name;
+    return g;
+  });
+
+  // The mystery cable and its warning.
+  const warnG = el('g', { class: 'warn', opacity: 0 }, svg.querySelector('.mystery-label'));
+  const WARN = TTY.t({
+    en: ['UNKNOWN CABLE', 'Do not unplug.', 'It might be load-bearing.'],
+    ko: ['정체불명 케이블', '뽑지 마세요.', '내력벽일 수도 있어요.'],
+  });
+  el('rect', { x: 0, y: 0, width: 196, height: 62, rx: 6 }, warnG);
+  WARN.forEach((line, k) => {
+    const t = el('text', { x: 12, y: 20 + k * 17, style: k === 0 ? 'font-weight: 900' : '' }, warnG);
+    t.textContent = line;
+  });
+
+  // Masking tape on the temporary cable. Printed labels peel; this one never does.
+  const tapeG = el('g', { class: 'tape', opacity: 0 }, svg.querySelector('.tape-label'));
+  el('rect', { x: -24, y: -10, width: 48, height: 20, rx: 1.5 }, tapeG);
+  el('text', { y: 5.5 }, tapeG).textContent = TTY.t({ en: 'TEMP', ko: '임시' });
+
+  const STAGES = TTY.t({
+    en: [
+      [1, '<b>Day 1.</b> Cable management complete. Photo taken for the wiki.'],
+      [30, '<b>Day 30.</b> One temporary cable. Just for today.'],
+      [90, '<b>Day 90.</b> A zip tie gave up. Nobody noticed.'],
+      [180, '<b>Day 180.</b> Nobody remembers what the purple one does.'],
+      [300, '<b>Day 300.</b> A grey cable arrives from somewhere. It works, so it stays.'],
+      [365, '<b>Day 365.</b> Spaghetti. The wiki still says Day 1.'],
+      [366, '<b>Day 366.</b> 100 new zip ties arrived. Hope is renewable.'],
+    ],
+    ko: [
+      [1, '<b>1일차.</b> 선 정리 완료. 위키에 올릴 사진도 찍었어요.'],
+      [30, '<b>30일차.</b> 임시 케이블 하나. 오늘만 쓸게요.'],
+      [90, '<b>90일차.</b> 케이블 타이 하나가 포기했어요. 아무도 몰랐고요.'],
+      [180, '<b>180일차.</b> 보라색 선이 뭐 하는 건지 아무도 몰라요.'],
+      [300, '<b>300일차.</b> 회색 선이 어디선가 들어왔어요. 되니까 그냥 둡니다.'],
+      [365, '<b>365일차.</b> 스파게티. 위키는 아직 1일차예요.'],
+      [366, '<b>366일차.</b> 케이블 타이 100개 도착. 희망은 재생&nbsp;에너지니까요.'],
+    ],
+  });
+
+  let shownCaption = -1;
+  let lastDay = 1;
+  let shownDayKo = '';
+  let warnScale = 1, tapeScale = 1;
+  // The first of the hundred new ties: out of the box (which now says ×99), up to the right post,
+  // and cinched round the temporary cable. Leaving day 366 puts it back in the box.
+  let tieTimer = 0;
+  firstTie.style.transformOrigin = '742px 340px';
+  function tieUp(on, animate) {
+    clearTimeout(tieTimer);
+    parcelText.textContent = on ? '×99' : '×100';
+    firstTie.setAttribute('opacity', on ? 1 : 0);
+    firstTie.getAnimations().forEach((a) => a.cancel());
+    if (on && animate) {
+      firstTie.animate([
+        { transform: 'translate(-86px, 140px) rotate(-80deg) scale(.7)' },
+        { transform: 'translate(10px, -16px) rotate(8deg)', offset: .7 },
+        { transform: 'scale(1.35, .8)', offset: .86 },
+        { transform: 'none' },
+      ], { duration: 650, easing: 'ease-out' });
+    }
+  }
+  function render(day) {
+    const t = Math.min(1, (day - 1) / 364);
+    cables.forEach((c, i) => {
+      const d = smooth(points(i, t));
+      c.line.setAttribute('d', d);
+      c.shadow.setAttribute('d', d);
+      c.shadow.setAttribute('transform', 'translate(2 4)');
+    });
+
+    // Labels hang just under the panel and peel off one by one. The purple one (VPN) goes
+    // twice as fast, so by day 180 nobody can say what it does; by day 365 every printed
+    // label is gone and only the masking tape on the temporary cable is left.
+    labels.forEach((g, i) => {
+      const [x, y] = points(i, t)[1];
+      const peel = Math.max(0, t * (i === 5 ? 3.2 : 1.6) - rnd(i * 5) * .9 + Math.pow(t, 6) * .8);
+      const drop = peel > .75 ? (peel - .75) * 420 : 0;
+      const crooked = Math.max(0, relax) * (4 + rnd(i * 11) * 8) * (i % 2 ? 1 : -1);
+      g.setAttribute('transform', `translate(${x.toFixed(1)} ${(y + 4 + drop).toFixed(1)}) rotate(${(peel * 70 * (i % 2 ? 1 : -1) + crooked).toFixed(1)} -26 -9)`);
+      g.setAttribute('opacity', drop > 120 ? 0 : 1);
+    });
+
+    // The lower zip tie snaps between days 67 and 88, so on day 90 its two halves already lie
+    // on the switch; the upper one slides down later.
+    const snap = t > .18;
+    const fall = snap ? Math.min(1, (t - .18) / .06) : 0;
+    ties[1].left.setAttribute('transform', `translate(${-fall * 30} ${fall * 150}) rotate(${-fall * 80} 380 ${ties[1].y})`);
+    ties[1].right.setAttribute('transform', `translate(${fall * 26} ${fall * 160}) rotate(${fall * 95} 420 ${ties[1].y})`);
+    // (the buckle is on the right half and falls with it, not left hanging in the bundle)
+    ties[1].buckle.setAttribute('transform', ties[1].right.getAttribute('transform'));
+    ties[1].g.setAttribute('opacity', 1 - Math.max(0, (t - .4) * 4));
+    const slide = Math.max(0, (t - .55) / .45);
+    ties[0].g.setAttribute('transform', `translate(${slide * 40} ${slide * 90}) rotate(${slide * 25} 400 232)`);
+
+    // The temporary cable (day 30): out of the spare switch port and off the edge of the rack.
+    // It sags a little more every month and never leaves.
+    const tp = Math.max(0, Math.min(1, (t - .05) / .03));
+    const sag = t * 40;
+    const td = smooth([[portAt(SPARE_TEMP), BOTTOM], [portAt(SPARE_TEMP) + 6, BOTTOM - 50], [700, 330 + sag], [742, 300 + sag], [790, 330 + sag * .5], [840, 300]]);
+    temp.setAttribute('d', td);
+    tempShadow.setAttribute('d', td);
+    tempShadow.setAttribute('transform', 'translate(2 4)');
+    temp.style.strokeDashoffset = 1 - tp;
+    // (an undrawn dash still leaves its round cap: a dot at the far end. Hide the line until it starts.)
+    temp.style.visibility = tp > 0 ? 'visible' : 'hidden';
+    tempShadow.setAttribute('opacity', tp > .98 ? 1 : 0);
+    tapeG.setAttribute('opacity', tp > .98 ? 1 : 0);
+    tapeG.setAttribute('transform', `translate(${portAt(SPARE_TEMP) + 4 - (tapeScale - 1) * 14} ${BOTTOM - 62 - (tapeScale - 1) * 6}) rotate(${-6 + t * 4}) scale(${tapeScale.toFixed(2)})`);
+
+    // The mystery cable creeps in from outside the rack (days 249–299) and takes the other spare
+    // port just as day 300 says it works. The sign goes up later, on its own (day 336).
+    const m = Math.max(0, Math.min(1, (t - .68) / .14));
+    const md = smooth([[-40, 300], [30, 250], [120, 340], [240, 180], [330, 330], [portAt(SPARE_MYSTERY) + 70, 330], [portAt(SPARE_MYSTERY), BOTTOM]].map(([x, y], k) => [x + Math.sin(k * 2) * t * 20, y]));
+    mystery.setAttribute('d', md);
+    mysteryShadow.setAttribute('d', md);
+    mysteryShadow.setAttribute('transform', 'translate(2 4)');
+    mystery.style.strokeDashoffset = 1 - m;
+    // (otherwise its round cap sits in the empty port 0 as a grey dot, and in the wiki photo too)
+    mystery.style.visibility = m > 0 ? 'visible' : 'hidden';
+    mysteryShadow.setAttribute('opacity', m > .98 ? 1 : 0);
+    warnG.setAttribute('opacity', t > .92 ? 1 : 0);
+    // (drawn bigger on a small rack, it moves left so it stays on the rack, and a little down,
+    // clear of the wiki photo)
+    warnG.setAttribute('transform', warnScale > 1 ? `translate(${118 - (warnScale - 1) * 40} ${176 + (warnScale - 1) * 10}) rotate(-4) scale(${warnScale.toFixed(2)})` : 'translate(118 176) rotate(-4)');
+
+    // Lights: a port lights up once something is plugged in and flickers with traffic. After
+    // day 220 one kinked cable drops to 100 Mb/s and its light turns amber; nobody asks why.
+    const plugged = (k) => (k >= 1 && k <= 8) || (k === SPARE_TEMP && tp > .98) || (k === SPARE_MYSTERY && m > .98);
+    leds.forEach((l, k) => {
+      const on = plugged(k);
+      l.classList.toggle('live', on);
+      l.setAttribute('fill', !on ? '#2a3a30' : t > .6 && k === 6 ? '#ffb703' : '#3ddc84');
+    });
+
+    note.style.opacity = day >= 365 ? 1 : 0;
+    parcel.setAttribute('opacity', day >= 366 ? 1 : 0);
+    // day 365 says the wiki is still on day 1: the photo in the corner gives a little jump
+    if (day >= 365 && lastDay < 365) nudgePhoto();
+    // day 366: the box arrives full (×100); 1.8 s later its first tie goes onto the temporary cable
+    if (day >= 366 && lastDay < 366) {
+      tieUp(false);
+      if (TTY.reduce) tieUp(true); else tieTimer = setTimeout(() => tieUp(true, true), 1800);
+    } else if (day < 366 && lastDay >= 366) tieUp(false);
+    lastDay = day;
+
+    let stage = 0;
+    STAGES.forEach(([d], k) => { if (day >= d) stage = k; });
+    if (stage !== shownCaption) { shownCaption = stage; caption.innerHTML = STAGES[stage][1]; }
+    const shown = Math.min(day, 365);
+    if (dayEn) dayEn.textContent = day >= 366 ? 'Day 366' : `Day ${shown}`;
+    const ko = `${day >= 366 ? 366 : shown}일차`;
+    if (dayKo && ko !== shownDayKo) { shownDayKo = ko; dayKo.textContent = ko; }
+    if (Number(range.value) !== day) range.value = day;
+  }
+
+  // ---- time-lapse ----
+  let playing = null;
+  let touched = -Infinity; // (0 here held the autoplay back for the page's first 3.5 s)
+  // Keyframes of the auto play: [day, time ms]; it lingers on the milestones. Day 1 is held while
+  // the wiki photo is taken (0.45–1.7 s). Each caption stays up longer than it takes to read
+  // (3 words a second in English, 8 characters in Korean, 'Day N.' included): day 30 lands at
+  // 3.35 s, 90 at 6.1, 180 at 9.55, 300 at 12.65, 365 at 17.05, 366 at 20.15. Day 336 gets a
+  // pause of its own for the sign (15.65 s), three seconds into the day-300 caption, so the sign,
+  // day 365 with the note and day 366 each land alone.
+  const PLAY = [[1, 0], [1, 2350], [30, 3450], [30, 5050], [90, 6150], [90, 8500], [180, 9600], [180, 11600], [300, 12700], [300, 15150], [336, 15700], [336, 16500], [365, 17100], [365, 20000], [366, 20300]];
+  function dayAt(ms) {
+    for (let k = 1; k < PLAY.length; k++) {
+      const [d0, t0] = PLAY[k - 1], [d1, t1] = PLAY[k];
+      if (ms <= t1) {
+        const p = (ms - t0) / (t1 - t0 || 1);
+        const e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+        return Math.round(d0 + (d1 - d0) * e);
+      }
+    }
+    return 366;
+  }
+  const END = PLAY[PLAY.length - 1][1];
+  // The moment of the play at which it shows `day`, so a resumed play carries on from the day the
+  // visitor left (the inverse of dayAt; on a milestone, the start of its pause).
+  function msAt(day) {
+    if (day <= 1) return 0;
+    for (let k = 1; k < PLAY.length; k++) {
+      const [d0, t0] = PLAY[k - 1], [d1, t1] = PLAY[k];
+      if (d1 > d0 && day <= d1) {
+        const e = (day - d0) / (d1 - d0);
+        const p = e < .5 ? Math.sqrt(e / 2) : 1 - Math.sqrt(2 * (1 - e)) / 2;
+        return t0 + p * (t1 - t0);
+      }
+    }
+    return END;
+  }
+  function play() {
+    cancelAnimationFrame(playing);
+    let start = 0, offset = 0;
+    const tick = (now) => {
+      playing = requestAnimationFrame(tick);
+      if (performance.now() - touched < 3500) { start = 0; return; }
+      if (!start) { start = now; offset = msAt(Number(range.value)); }
+      const ms = now - start + offset;
+      render(dayAt(ms));
+      // Done: forget the frame id too, so a later touch can start a new play.
+      if (ms >= END) { cancelAnimationFrame(playing); playing = null; }
+    };
+    playing = requestAnimationFrame(tick);
+  }
+
+  // A touch shows that day at once. The play (not with reduced motion: nothing moves on its own
+  // there) waits 3.5 s after the last touch and carries on from that day.
+  range.addEventListener('input', () => {
+    touched = performance.now();
+    render(Number(range.value));
+    if (!playing && !TTY.reduce) play();
+  });
+
+  // ---- the wiki photo ----
+  // Its picture is a copy of the rack as drawn on day 1, holding its breath for the camera.
+  const finder = svg.querySelector('.finder');
+  const photo = svg.querySelector('.photo');
+  const flash = document.querySelector('.flash');
+  function develop() {
+    const day = Number(range.value);
+    render(1);
+    const copy = svg.querySelector('.rig').cloneNode(true);
+    copy.querySelectorAll('.led').forEach((l) => l.classList.remove('live'));
+    // (the name tags in the photo would be 2px letters nobody can read; the white tags stay)
+    copy.querySelectorAll('text').forEach((t) => t.remove());
+    svg.querySelector('.shot').replaceChildren(copy);
+    render(day);
+  }
+  // relax along a few [progress, value] stops over `ms`, redrawing the rack's current day each frame
+  function breathe(stops, ms) {
+    const t0 = performance.now();
+    return new Promise((done) => {
+      const step = (now) => {
+        const p = Math.min(1, (now - t0) / ms);
+        let k = 1;
+        while (k < stops.length - 1 && p > stops[k][0]) k++;
+        const [p0, v0] = stops[k - 1], [p1, v1] = stops[k];
+        const q = Math.min(1, Math.max(0, (p - p0) / (p1 - p0)));
+        relax = v0 + (v1 - v0) * (1 - (1 - q) * (1 - q));
+        render(Number(range.value));
+        if (p < 1) requestAnimationFrame(step); else done();
+      };
+      requestAnimationFrame(step);
+    });
+  }
+  // Taped to the rack's top-left corner, over the spare panel port, where it stays all year
+  // (inside the drawing's top edge, so on a phone it never reaches up to the subtitle).
+  const PINNED = 'translate(16px, 10px) rotate(-4deg)';
+  // As the shutter clicks it is the rack itself: its picture lies exactly on the rack (×5).
+  const FROZEN = 'translate(20px, -10px) scale(5)';
+  photo.style.transformOrigin = '0 0';
+  let pinned = false;
+  function pinPhoto() { photo.style.transform = PINNED; photo.setAttribute('opacity', 1); pinned = true; }
+  function nudgePhoto() {
+    if (!pinned || TTY.reduce) return;
+    const at = (k) => `${PINNED} translate(76px, 61px) scale(${k}) translate(-76px, -61px)`;
+    photo.animate([{ transform: at(1) }, { transform: at(1.22), offset: .35 }, { transform: at(1) }], { duration: 650, easing: 'ease-out' });
+  }
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  async function takePhoto() {
+    await wait(450);
+    finder.setAttribute('opacity', 1);
+    finder.animate([{ opacity: 0, transform: 'translate(400px, 260px) scale(1.08) translate(-400px, -260px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'ease-out' });
+    // the bundle sees the camera and holds its breath in
+    breathe([[0, 0], [1, -.3]], 300);
+    await wait(420);
+    develop(); // the photo catches the held breath
+    flash.animate([{ opacity: 0 }, { opacity: .85, offset: .15 }, { opacity: 0 }], { duration: 420, easing: 'ease-out' });
+    finder.setAttribute('opacity', 0);
+    photo.setAttribute('opacity', 1);
+    const shrink = photo.animate([{ transform: FROZEN }, { transform: FROZEN, offset: .2 }, { transform: PINNED }], { duration: 760, easing: 'cubic-bezier(.5, 0, .2, 1)' });
+    // …and the moment the photo comes off the rack, the bundle under it lets its breath out, so the
+    // neat picture shrinks away over the bulging real thing.
+    await wait(150);
+    const exhaled = breathe([[0, -.3], [.35, 1.25], [.65, .9], [1, 1]], 650);
+    await shrink.finished;
+    pinPhoto();
+    await exhaled;
+  }
+
+  // On a small rack (a phone) the sign, and the tape on the temporary cable, are drawn up to
+  // 2.6× and 2.4× bigger so their words stay about 10–11px; the English sign takes the narrow face. The
+  // letters on the parcel grow up to 1.95×, the box itself does not. Measured again whenever the rack's box changes
+  // size, not only the window: a caption that wraps to one more line shrinks the rack.
+  function fitSmall() {
+    const ctm = svg.getScreenCTM();
+    const unit = ctm ? Math.hypot(ctm.a, ctm.b) : 1; // screen px per SVG unit
+    const big = Math.max(1, 10.5 / (12 * unit));
+    warnG.classList.toggle('big', big > 1.05);
+    const texts = [...warnG.querySelectorAll('text')];
+    const wide = Math.max(...texts.map((t) => t.getComputedTextLength()));
+    warnG.querySelector('rect').setAttribute('width', Math.ceil(wide + 24));
+    // (the sign may go to 2.6×: a page opened on its own on a small phone has a smaller rack than
+    // the home stage, whose racks need about 2.4×)
+    warnScale = Math.min(2.6, big);
+    tapeScale = Math.min(2.4, big);
+    // the ×100 on the box: only its letters grow (up to 1.95×, 35 units, still inside the 96-unit
+    // box), the box stays put under the switch so the lights of ports 7–9 stay in sight. The
+    // baseline moves down with the size so the letters stay centred under the flap line (y 492).
+    const pText = Math.min(1.95, Math.max(1, 10.5 / (18 * unit)));
+    parcelText.style.fontSize = (18 * pText).toFixed(1) + 'px';
+    parcelText.setAttribute('y', (507 + 18 * pText * .36).toFixed(1));
+    // the first new tie, drawn a little bigger on a small rack so it reads as a strap
+    const tBig = Math.min(1.4, big);
+    tieFit.setAttribute('transform', tBig > 1.02 ? `translate(742 340) scale(${tBig.toFixed(2)}) translate(-742 -340)` : '');
+    render(Number(range.value));
+  }
+
+  if (TTY.reduce) { develop(); pinPhoto(); relax = 1; }
+  render(TTY.reduce ? 366 : 1);
+  // (the time-lapse holds day 1 for the photo, 0–2.35 s, so the two start together)
+  TTY.onShow(() => { if (!TTY.reduce) { takePhoto(); play(); } });
+  new ResizeObserver(() => fitSmall()).observe(document.querySelector('.rack'));
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(() => { fitSmall(); TTY.ready(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page not found | tty.link</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#ffd84a">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffd84a'/%3E%3Ctext x='32' y='44' font-family='ui-monospace,Menlo,monospace' font-size='34' font-weight='700' text-anchor='middle' fill='%231b2b7a'%3E:)%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap">
+<style>
+  /* The home page's sentence, turned the other way. */
+  :root {
+    --sun: #ffd84a;
+    --ink: #1b2b7a;
+    --pad: clamp(16px, 5vw, 72px);
+    --mono: 'Recursive', ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    padding: var(--pad);
+    background: var(--sun);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-variation-settings: 'MONO' 1, 'CASL' 1;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--ink); color: var(--sun); }
+  a { color: inherit; text-underline-offset: .2em; text-decoration-thickness: 2px; }
+  a:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; border-radius: 2px; }
+  .mark { font-size: 15px; text-decoration: none; justify-self: start; }
+  main { align-self: end; }
+  /* The headline uses the stroke letters of the home page (font-size is the x-height). */
+  h1 { font-size: clamp(20px, 5.4vw, 72px); font-weight: 400; line-height: 2.12; white-space: nowrap; }
+  p { margin-top: .9em; font-size: clamp(16px, 2vw, 20px); font-weight: 500; }
+  :lang(ko) p, :lang(ko) .placard { font-family: 'Gowun Dodum', var(--mono); word-break: keep-all; }
+  /* A placard from the Museum of Confident Answers (/pages/hallucination-museum.html): the
+     missing page is exhibited as a thing that definitely existed, at 100% confidence. */
+  .placard {
+    position: relative;
+    width: min(100%, 25em);
+    margin-bottom: clamp(18px, 4vh, 40px);
+    padding: 1em 1.15em 1.05em;
+    border-radius: 4px;
+    background: #fffaf0;
+    color: #2b2420;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(13px, 1.6vw, 16px);
+    line-height: 1.45;
+    box-shadow: 0 1px 0 #d9cdb2, 0 10px 24px rgba(27, 43, 122, .18);
+    transform: rotate(-1.2deg);
+  }
+  .placard .no { font: 700 .72em/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #8a7c6a; }
+  .placard h2 { margin-top: .35em; font-size: 1.45em; line-height: 1.15; }
+  .placard .meta { margin-top: .2em; font-style: italic; color: #6b5f52; font-size: .9em; }
+  :lang(ko) .placard .meta { font-style: normal; }
+  .placard .desc { margin-top: .55em; }
+  .conf { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .5em; margin-top: .75em; font: 600 .82em/1 var(--mono); }
+  .conf .bar { height: .5em; border-radius: 999px; background: #e4dccb; overflow: hidden; }
+  .conf .bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #4e9a52, #7cc36a); transform-origin: 0 50%; }
+  .conf .pct { min-width: 2.6em; text-align: right; font-variant-numeric: tabular-nums; color: #2f7d3a; }
+  .sticker {
+    position: absolute;
+    right: -.6em;
+    top: -.8em;
+    padding: .35em .7em;
+    background: #ffe14d;
+    color: #2a2a2a;
+    font: 700 .78em/1.1 var(--mono);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .18);
+    transform: rotate(6deg);
+  }
+  :lang(ko) .sticker { font-family: 'Gowun Dodum', var(--mono); }
+  .more { margin-top: .5em; font-size: clamp(14px, 1.6vw, 16px); font-weight: 500; opacity: .85; }
+  @media (max-height: 560px) { .placard .desc { display: none; } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap">
+<script src="/assets/tty-glyphs.js"></script>
+</head>
+<body>
+<a class="mark" href="/" aria-label="tty.link">tty.link :)</a>
+<main>
+  <article class="placard" aria-label="Museum placard">
+    <div class="no" data-t="no">Exhibit 404</div>
+    <h2 data-t="title">The Page at This Address</h2>
+    <div class="meta" data-t="meta">Hypertext, c. 2019. Location: exactly here.</div>
+    <div class="desc" data-t="desc">This page definitely existed. Several visitors remember it vividly. It had a great title and three paragraphs.</div>
+    <div class="conf"><span data-t="conf">Confidence</span><span class="bar"><i></i></span><span class="pct">100%</span></div>
+    <span class="sticker" data-t="sticker">citation needed</span>
+  </article>
+  <h1 aria-label="No page here :(">No page here :(</h1>
+  <p><span data-t="checked">Checked. Still 100%. Still not here.</span> <a href="/" data-t="home">Go to the tty.link home page</a></p>
+  <p class="more"><a href="/pages/hallucination-museum.html" data-t="museum">More exhibits at the Museum of Confident Answers</a></p>
+</main>
+<script>
+  TTYGlyphs.wordmark(document.querySelector('.mark'));
+  TTYGlyphs.setWords(document.querySelector('h1'), ['No', 'page', 'here', ':(']);
+
+  // Same language choice as the rest of the site: ?lang=, then the visitor's pick, then the browser.
+  let lang = new URLSearchParams(location.search).get('lang');
+  if (lang !== 'en' && lang !== 'ko') {
+    let picked = null;
+    try { picked = localStorage.getItem('tty.lang'); } catch (e) { /* storage blocked */ }
+    const langs = navigator.languages || [navigator.language || 'en'];
+    lang = picked === 'en' || picked === 'ko' ? picked : langs.some((l) => /^ko\b/i.test(l)) ? 'ko' : 'en';
+  }
+  if (lang === 'ko') {
+    document.documentElement.lang = 'ko';
+    document.title = '없는 페이지 | tty.link';
+    const KO = {
+      no: '전시 번호 404',
+      title: '이 주소의 페이지',
+      meta: '하이퍼텍스트, 2019년경. 소장 위치: 바로 여기.',
+      desc: '이 페이지는 분명히 있었습니다. 여러 방문객이 생생하게 기억합니다. 제목도 멋졌고 문단도 세 개였습니다.',
+      conf: '확신도',
+      sticker: '출처 필요',
+      checked: '확인 완료. 여전히 100%. 그리고 여전히 없음.',
+      home: 'tty.link 첫 화면으로 가기',
+      museum: '자신만만한 답변 박물관에서 더 보기',
+    };
+    document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = KO[el.dataset.t]; });
+    document.querySelector('.placard').setAttribute('aria-label', '박물관 설명판');
+    document.querySelector('.more a').href += '?lang=ko';
+    document.querySelector('a[data-t="home"]').href = '/?lang=ko';
+  }
+
+  // The sticker slaps on; the confidence bar flinches and settles back at 100%.
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const sticker = document.querySelector('.sticker');
+    sticker.animate([
+      { transform: 'translate(30%, -60%) rotate(30deg) scale(1.3)', opacity: 0 },
+      { transform: 'rotate(4deg) scale(.96)', opacity: 1, offset: .7 },
+      { transform: 'rotate(6deg)', opacity: 1 },
+    ], { duration: 480, delay: 900, easing: 'cubic-bezier(.2, .9, .3, 1.2)', fill: 'backwards' });
+    document.querySelector('.conf .bar i').animate([
+      { transform: 'scaleX(1)' }, { transform: 'scaleX(.9)' }, { transform: 'scaleX(1.02)' }, { transform: 'scaleX(1)' },
+    ], { duration: 700, delay: 1250, easing: 'ease-out' });
+  }
+</script>
+</body>
+</html>

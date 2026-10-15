@@ -1,0 +1,153 @@
+{
+  "id": "cert-dairy",
+  "title": {
+    "en": "The Certificate Dairy Aisle",
+    "ko": "인증서 신선 코너"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "웹사이트의 HTTPS 인증서를 마트 냉장 코너의 우유처럼 진열해서, 인증서 유효 기간이 정말로 우유처럼 짧아지고 있다는 실제 변화와, 자동 갱신이 조용히 멈춰 사이트가 하루아침에 경고 화면이 되는 개발자의 흔한 사고를 놀리는 페이지다.",
+    "points": [
+      "가격표가 `D+1`이 되는 순간 우유가 상하고 `폐기` 스티커가 붙는다. 장바구니(브라우저)는 그 앞에서 \"하루 지났네요. 냄새는 안 맡아 봐요.\" → 사람은 하루 지난 우유를 냄새 맡아 보고 마시지만, 브라우저는 인증서 만료 시각이 1초만 지나도 봐주지 않고 \"연결이 비공개로 설정되어 있지 않습니다\"(`NET::ERR_CERT_DATE_INVALID`) 경고를 띄운다. 어제까지 멀쩡하던 사이트가 오늘 갑자기 '상한' 것이다.",
+      "우유가 다 상한 뒤에야 굴러온 자동 갱신 로봇이 \"크론이 죽어 있었어요. 원래 60일째 오거든요.\"라고 둘러댄다 → 맨 처음 우유가 상한 까닭이다. 인증서는 보통 정해진 시각에 프로그램을 돌려 주는 크론이 자동으로 갱신하고, Let's Encrypt가 권하는 갱신 시점은 수명의 3분의 2(90일짜리면 60일째)다. 그런데 그 크론이 조용히 멈춰서 아무도 모르는 사이 인증서가 만료되는 사고가 실제로 흔하다. 로봇은 사과 대신 태연히 새 우유를 놓는다.",
+      "우리 집 소가 직접 보증하는 '자체 서명 우유' → 뒷면 이력의 목장 칸에 \"우리 집 소는 신뢰 저장소에 없음 ✗\"이 뜬다. 바로 앞의 tty.link 우유는 같은 칸이 \"신뢰 저장소에 있음 ✓\"이었다. 맨 위 인증서(루트)는 서명이 아니라 브라우저의 신뢰 목록에 들어 있느냐로 믿기 때문에, 소의 보증이 아무리 진심이어도 경고가 뜬다. 경고 띠 아래 크롬 그대로 붙은 \"고급 › tty.link(안전하지 않음)\" 이동 링크에 묻은 손때 지문은 다들 경고를 무시하고 여기를 눌러 봤다는 뜻이다.",
+      "현수막 \"2029년부터 최대 47일. 이제 인증서도 냉장 보관.\"과 마지막 장면에서 포스터의 47일 막대에 철썩 붙는 '냉장 보관' 스티커 → 인증 기관과 브라우저 회사들이 모인 CA/B 포럼이 실제로 공개 인증서 최대 유효 기간을 398일 → 200일 → 100일 → 47일로 줄이기로 투표했다(반대 0표). 우유(약 2주)에 점점 가까워져서, 첫 장면의 우유에 붙었던 것과 같은 빨간 스티커를 이제 인증서가 받는다."
+    ],
+    "terms": [
+      {
+        "term": "인증서",
+        "plain": "이 사이트가 정말 그 주소의 주인이라고 인증 기관이 서명해 준 전자 문서. 주소창 자물쇠의 근거."
+      },
+      {
+        "term": "유효 기간",
+        "plain": "인증서를 믿을 수 있는 기간(시작일~만료일). 지나면 브라우저가 거절한다."
+      },
+      {
+        "term": "체인",
+        "plain": "루트(목장) → 중간 인증서(집유장) → 사이트 인증서(포장)로 서명이 이어지는 것. 브라우저는 단계마다 서명을 확인하고, 맨 위 루트가 신뢰 저장소에 있는지 본다."
+      },
+      {
+        "term": "신뢰 저장소",
+        "plain": "운영체제와 브라우저가 처음부터 믿기로 하고 넣어 둔 루트 인증서 목록."
+      },
+      {
+        "term": "자체 서명 인증서",
+        "plain": "발급자와 주인이 같은 인증서. 스스로 보증했으니 다른 누구도 보증하지 않은 셈이다."
+      },
+      {
+        "term": "크론(cron)",
+        "plain": "정해진 날짜·시각마다 프로그램을 돌려 주는 유닉스 도구. 인증서 자동 갱신을 여기에 걸어 두는 경우가 많다."
+      },
+      {
+        "term": "ACME 자동 갱신",
+        "plain": "사람이 손대지 않아도 프로그램이 인증서를 미리 새로 받아 오는 방식. 로봇이 우유를 갈아 끼우는 장면."
+      }
+    ],
+    "links": [
+      {
+        "title": "Ballot SC-081v3 (CA/Browser Forum)",
+        "url": "https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/",
+        "note": "최대 유효 기간을 2029년 3월까지 47일로 줄이는 결정과 투표 결과(인증 기관 25표 찬성, 브라우저 4곳 모두 찬성, 반대 0).",
+        "lang": "en"
+      },
+      {
+        "title": "Decreasing Certificate Lifetimes to 45 Days (Let's Encrypt)",
+        "url": "https://letsencrypt.org/2025/12/02/from-90-to-45/",
+        "note": "Let's Encrypt가 90일을 2027년 2월 64일, 2028년 2월 45일로 줄이는 일정과, 수명의 3분의 2쯤에서 갱신하라는 안내.",
+        "lang": "en"
+      },
+      {
+        "title": "공개 키 인증서 (위키백과)",
+        "url": "https://ko.wikipedia.org/wiki/%EA%B3%B5%EA%B0%9C_%ED%82%A4_%EC%9D%B8%EC%A6%9D%EC%84%9C",
+        "note": "인증서에 들어 있는 항목(유효 기간 시작·끝, 발급자 서명 등).",
+        "lang": "ko"
+      },
+      {
+        "title": "Automatic Certificate Management Environment (위키백과)",
+        "url": "https://en.wikipedia.org/wiki/Automatic_Certificate_Management_Environment",
+        "note": "인증서 자동 발급·갱신 프로토콜 ACME.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "꿀 병의 \"2015–2035\"와 꿀 라벨 '20년 · 꿀은 잘 안 상함'(꿀은 누르거나 맨 위 유리장을 봐야 보인다) → 맨 위 루트 인증서 ISRG Root X1의 실제 유효 기간(2015년 6월 4일 ~ 2035년 6월 4일, 정확히 20년)이다. 루트도 결국 만료되므로 꿀 가격표도 남은 날을 센다.",
+      "tty.link 우유 뒷면의 이력 조회(목장 ISRG Root X1, 집유장 YR1과 그 아래 'Root YR 경유', 포장 tty.link) → 이 사이트의 실제 인증서 체인 그대로다(tty.link ← YR1 ← Root YR ← ISRG Root X1).",
+      "로봇이 놓은 새 우유의 가격표가 D-90, 로봇이 와야 했던 날이 60일째 → 지금 Let's Encrypt 인증서의 기본 유효 기간이 90일이고 60일은 그 3분의 2다. 페이지는 날짜를 보고 2027년 2월 10일부터 64일, 2028년 2월 16일부터 45일짜리로 진열을 바꾸고, 로봇의 '원래 오는 날'도 43일째, 30일째로 따라 줄어든다.",
+      "자체 서명 우유의 가격표는 D-3620 언저리, 병 뒤 손글씨는 \"valid 10 yrs!\" → 최대 200일 같은 규칙은 공개적으로 신뢰받는 인증 기관이 지켜야 하는 것이라, 자체 서명 인증서에는 10년도 적을 수 있다. 그래도 브라우저는 믿지 않는다.",
+      "영어판 가격표는 남은 날을 숫자로만 센다(`DAYS LEFT 87`). 그래서 첫 장면은 `1` → `0` → `-1`이고, 어제까지 우유를 눌러 뒷면 라벨을 보면 \"-1 days left\"가 찍혀 있다. 남은 날이 음수가 되는 것도 개발자 농담이다."
+    ]
+  },
+  "en": {
+    "line": "This page stocks HTTPS certificates like milk in a supermarket fridge, poking fun at the very real fact that certificate lifetimes are getting as short as milk's, and at the outage every developer knows: the renewal that quietly didn't happen.",
+    "points": [
+      "The shelf label ticks from `1` to `0` to `-1` days left, the milk goes off on the spot and gets an EXPIRED sticker, and the browser's cart stops in front of it: \"One day over. I don't do sniff tests.\" → people sniff milk that's a day past its date and drink it anyway; a browser refuses a certificate one second past its end date and shows \"Your connection is not private\" (`NET::ERR_CERT_DATE_INVALID`). Fine yesterday, spoiled today. (\"Sniff test\" also means a quick rough check, which is exactly what browsers don't do.)",
+      "The renewal robot rolls up only after the milk has gone off: \"My cron died. I was due on day 60.\" → that's why the milk spoiled in the opening. Certificates are usually renewed by a scheduled job (cron), and Let's Encrypt recommends renewing about two thirds of the way through, so day 60 of 90. Real certificates do expire when the job doing the renewing quietly stops and nobody notices. The robot doesn't apologise; it just puts a fresh carton out.",
+      "\"Homemade milk, vouched for by our own cow\" → its traceability label says \"Our cow isn't in the trust store ✗\" in the very box where the tty.link milk got a green tick for being in the trust store. The certificate at the top of a chain (the root) is trusted because it is on the browser's list, not because of a signature, so a sincere cow still gets a warning. The greasy thumbprint on \"Advanced › Proceed to tty.link (unsafe)\" under the warning is everyone who clicked through anyway.",
+      "The banner \"47 days max from 2029. Certificates now need refrigeration.\" and, at the very end, the KEEP REFRIGERATED sticker slapped on the poster's 47-day bar → the CA/Browser Forum, where certificate authorities and browser makers set the rules, really did vote (with no votes against) to cut the maximum lifetime of public certificates from 398 days to 200, then 100, then 47. Fresh milk lasts about two weeks, so certificates now get the same red sticker the milk got in the opening."
+    ],
+    "terms": [
+      {
+        "term": "certificate",
+        "plain": "a document signed by a certificate authority saying this site really owns this address; the reason for the padlock."
+      },
+      {
+        "term": "validity period",
+        "plain": "the dates between which a certificate is trusted; after the end date, browsers refuse it."
+      },
+      {
+        "term": "-1 days left",
+        "plain": "the shelf label counts down, and past the end date it goes negative. (The Korean page counts like a D-day instead: D-1, D-0, D+1.)"
+      },
+      {
+        "term": "chain",
+        "plain": "root (farm) → intermediate (collection center) → site certificate (carton), each signing the next; the browser checks every signature and whether the root is in its trust store."
+      },
+      {
+        "term": "trust store",
+        "plain": "the list of root certificates your operating system and browser trust from the start."
+      },
+      {
+        "term": "self-signed certificate",
+        "plain": "a certificate whose issuer is its owner, so nobody else has vouched for it."
+      },
+      {
+        "term": "cron",
+        "plain": "the Unix tool that runs a program on a schedule; certificate renewal is often hung on it."
+      },
+      {
+        "term": "ACME",
+        "plain": "the protocol that lets software renew certificates automatically, like the robot restocking the shelf."
+      }
+    ],
+    "links": [
+      {
+        "title": "Ballot SC-081v3 (CA/Browser Forum)",
+        "url": "https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/",
+        "note": "the vote to bring the maximum lifetime down to 47 days by March 2029 (25 certificate authorities and all 4 browser makers in favour, none against)."
+      },
+      {
+        "title": "Decreasing Certificate Lifetimes to 45 Days (Let's Encrypt)",
+        "url": "https://letsencrypt.org/2025/12/02/from-90-to-45/",
+        "note": "Let's Encrypt's schedule from 90 to 64 days in February 2027 and 45 days in February 2028, and renewing at about two thirds of a certificate's life."
+      },
+      {
+        "title": "Public key certificate (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Public_key_certificate",
+        "note": "what is inside a certificate, including its Not Before and Not After dates.",
+        "lang": "en"
+      },
+      {
+        "title": "Automatic Certificate Management Environment (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Automatic_Certificate_Management_Environment",
+        "note": "the ACME protocol.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The honey jar says \"2015–2035\" and its label \"20 years · honey keeps\" (you only see the honey up in the locked cabinet, or its label when you press it): the real lifetime of the root at the top, ISRG Root X1, 4 June 2015 to 4 June 2035, exactly twenty years. Roots expire too, so even the honey's label counts its days.",
+      "The tty.link milk's traceability label (farm ISRG Root X1, collection center YR1 \"via Root YR\", packaging tty.link) is this site's actual certificate chain (tty.link ← YR1 ← Root YR ← ISRG Root X1).",
+      "The robot's fresh carton reads 90 days left and he was due on day 60: a Let's Encrypt certificate lasts 90 days by default for now, and 60 is two thirds of it. The page reads the date: from 10 February 2027 it stocks 64-day milk and from 16 February 2028 45-day milk, and the robot's excuse moves to day 43 and day 30.",
+      "The homemade milk's label reads around 3620 days left, and the bottle's back says \"valid 10 yrs!\": limits like 200 days bind publicly trusted certificate authorities, so a self-signed certificate can say ten years. The browser still won't trust it."
+    ]
+  }
+}

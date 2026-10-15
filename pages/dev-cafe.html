@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dev Café | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@700&family=Patrick+Hand&family=Gaegu:wght@400;700&family=VT323&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="chalk dojang pixel"></script>
+<style>
+  /* A café chalkboard for developers. The menu is written out in chalk, a stamped card names
+     today's special, and every drink you order comes with the barista's honest answer. The
+     till on the counter adds the prices up the way JavaScript would. */
+  :root {
+    --wall: #2c1f17;
+    --board: #1e2a25;
+    --chalk: #f1efe4;
+    --chalk-dim: #b9bfb5;
+    --pink: #f6a6c1;
+    --yellow: #f3df7c;
+    --blue: #a6d6f2;
+    --wood: #8a5a33;
+    --stamp: #d23a35;
+    --lcd: #1d2914;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 40%, #4a3526 0%, var(--wall) 70%),
+      var(--wall);
+    font-family: 'Patrick Hand', 'Gaegu', cursive;
+    color: var(--chalk);
+  }
+  .lang-ko body { font-family: 'Gaegu', 'Patrick Hand', cursive; word-break: keep-all; }
+
+  .frame {
+    position: relative;
+    container-type: inline-size;
+    width: min(calc(100vw - 20px), calc((100vh - 24px) * 1.2), 1040px);
+    padding: 2.2cqi;
+    border-radius: 1.4cqi;
+    background: linear-gradient(135deg, #a06d42, var(--wood) 40%, #6e4426);
+    box-shadow: 0 2.4cqi 5cqi rgba(0, 0, 0, .5), inset 0 0 0 .3cqi rgba(255, 255, 255, .08);
+  }
+  /* On a portrait screen the menu stacks into one tall column (about 1.4 times as tall as
+     wide), so the board is sized by the height too; the home page's phone stage can be short. */
+  @media (max-aspect-ratio: 1/1) {
+    .frame { width: min(calc(100vw - 20px), calc((100vh - 24px) / 1.45), 1040px); }
+  }
+  .board {
+    position: relative;
+    overflow: hidden;
+    padding: 4cqi 5cqi 4.2cqi; /* the bottom holds the hint (.nudge) */
+    border-radius: .6cqi;
+    background:
+      radial-gradient(ellipse 40% 30% at 22% 30%, rgba(255, 255, 255, .06), transparent 70%),
+      radial-gradient(ellipse 50% 35% at 78% 72%, rgba(255, 255, 255, .05), transparent 70%),
+      radial-gradient(ellipse 30% 20% at 60% 18%, rgba(255, 255, 255, .04), transparent 70%),
+      var(--board);
+    box-shadow: inset 0 0 4cqi rgba(0, 0, 0, .55);
+  }
+  /* Chalk: a slightly broken edge on every hand-lettered line. */
+  .chalky { filter: url(#chalk); }
+
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 3cqi; }
+  .title { font-family: 'Cabin Sketch', cursive; font-size: 7.4cqi; line-height: .95; color: var(--chalk); }
+  .lang-ko .title { line-height: 1; }
+  .sub { margin-top: 1cqi; font-size: 2.7cqi; color: var(--chalk-dim); }
+  .cup { width: 10cqi; flex: none; overflow: visible; }
+  .cup .mug { transform-box: fill-box; transform-origin: 20% 95%; } /* sip() tips the cup from its base; the saucer stays */
+  .cup path, .cup line { fill: none; stroke: var(--pink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  /* Steam that is still loading: eight spokes, one step at a time, like any spinner. */
+  .cup .spinner line { stroke-width: 4; }
+  .cup .spinner { transform-box: fill-box; transform-origin: center; animation: loading .96s steps(8) infinite; }
+  @keyframes loading { to { rotate: 360deg; } }
+  .cup .steam { opacity: 0; }
+  /* Resolved: the spinner goes and ordinary steam rises. */
+  .cup.served .spinner { visibility: hidden; animation: none; }
+  .cup.served .steam { opacity: 1; animation: steam 2.6s ease-in-out infinite alternate; }
+  @keyframes steam { from { translate: 0 1px; } to { translate: 0 -2px; } }
+
+  .rule { height: .4cqi; margin: 1.8cqi 0 2.2cqi; background: repeating-linear-gradient(90deg, var(--chalk-dim) 0 2.2cqi, transparent 2.2cqi 3.2cqi); opacity: .6; }
+
+  .menu { display: grid; grid-template-columns: 1fr 1fr; gap: 2cqi 6cqi; list-style: none; padding: 0; }
+  .item { position: relative; cursor: pointer; border-radius: .8cqi; outline-offset: .6cqi; }
+  .item:focus-visible { outline: 2px dashed var(--yellow); }
+  .line1 { display: flex; align-items: baseline; gap: 1.2cqi; }
+  .name { font-size: 3.3cqi; line-height: 1.05; white-space: nowrap; }
+  .dots { flex: 1; min-width: 2cqi; border-bottom: .3cqi dotted rgba(241, 239, 228, .45); translate: 0 -.5cqi; }
+  .price { font-size: 2.9cqi; color: var(--yellow); white-space: nowrap; }
+  .desc { margin-top: .4cqi; font-size: 2.4cqi; line-height: 1.2; color: var(--chalk-dim); }
+  .lang-ko .desc { font-size: 2.6cqi; }
+  .lang-ko .price { font-size: 3.1cqi; }
+  .item.wiggle { animation: wiggle .5s ease; }
+  @keyframes wiggle { 20% { rotate: -1.6deg; } 50% { rotate: 1.2deg; } 80% { rotate: -.5deg; } }
+
+  /* The barista's answer, written on the bottom of the board. */
+  .say { display: flex; align-items: baseline; gap: 1.4cqi; min-height: 6.2cqi; margin-top: 3cqi; padding-top: 1.8cqi; border-top: .3cqi solid rgba(241, 239, 228, .18); }
+  .say b { flex: none; font-weight: 400; font-size: 2.6cqi; color: var(--pink); }
+  .answer { font-size: 2.9cqi; line-height: 1.25; color: var(--chalk); }
+  .lang-ko .answer { font-size: 3.2cqi; }
+  /* The hint stays on the board, small along its bottom edge, once the barista's first line
+     ("Tap a drink to order.") has given way to an answer: the menu always says it can be
+     tapped. It sits in the board's bottom padding, so long answers never push it around. */
+  .nudge { position: absolute; left: 5cqi; bottom: 1cqi; font-size: 2.2cqi; line-height: 1.2; color: var(--chalk-dim); white-space: nowrap; visibility: hidden; }
+  .ordered .nudge { visibility: visible; }
+
+  /* The till's customer display, beside the barista: the last price rung up and the total.
+     It adds each price as Number(price), so a Promise or "n + 1" makes NaN and null is 0. */
+  .pos {
+    flex: none;
+    align-self: center;
+    margin-left: auto;
+    padding: .7cqi;
+    border-radius: 1cqi;
+    background: linear-gradient(#4a4b52, #24252a);
+    box-shadow: 0 .8cqi 1.6cqi rgba(0, 0, 0, .5), inset 0 .15cqi 0 rgba(255, 255, 255, .16);
+  }
+  .screen {
+    width: 22cqi;
+    padding: .5cqi 1.1cqi .3cqi;
+    border-radius: .4cqi;
+    background: linear-gradient(#c9d9a3, #b0c389);
+    box-shadow: inset 0 0 .9cqi rgba(30, 45, 20, .45);
+    color: var(--lcd);
+    font-family: 'VT323', ui-monospace, monospace;
+    font-size: 2.9cqi;
+    line-height: 1.05;
+  }
+  .screen > p { display: flex; justify-content: space-between; gap: 1cqi; white-space: nowrap; overflow: hidden; }
+  .screen .rung { opacity: .72; }
+  .screen .sum { font-size: 1.3em; line-height: .8; }
+  .screen font-kku { color: var(--lcd); }
+  /* The till can be tapped to pay; it pays the way it adds. */
+  .pos { cursor: pointer; outline-offset: .5cqi; }
+  .pos:focus-visible { outline: 2px dashed var(--yellow); }
+  .pos.blink .sum { animation: blink .32s steps(1) 3; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Chalk ledge: three sticks and an eraser. */
+  .ledge { position: relative; height: 2.4cqi; margin: 1.6cqi -2.2cqi -2.2cqi; border-radius: 0 0 1.4cqi 1.4cqi; background: linear-gradient(#7b4f2c, #5a381e); }
+  .stick { position: absolute; top: -1cqi; height: 1.2cqi; border-radius: .6cqi; }
+  .stick.w { left: 12%; width: 7cqi; background: #f4f1e6; rotate: -3deg; }
+  .stick.p { left: 22%; width: 4.4cqi; background: var(--pink); rotate: 4deg; }
+  .stick.y { left: 30%; width: 5.6cqi; background: var(--yellow); }
+  .eraser { position: absolute; right: 14%; top: -2.6cqi; width: 11cqi; height: 3cqi; border-radius: .6cqi; background: linear-gradient(#cfc6b4 0 35%, #3b3b45 35%); }
+
+  /* Today's special: a kraft card taped to the board, then stamped. */
+  .special { display: grid; place-items: center; }
+  .js-play .card { opacity: 0; }
+  .card {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 2cqi;
+    width: 34cqi;
+    padding: 1.6cqi 2.2cqi;
+    background: linear-gradient(180deg, #d9bf8f, #cdb07c);
+    color: #3d2a17;
+    rotate: 3deg;
+    box-shadow: 0 1cqi 2cqi rgba(0, 0, 0, .4);
+  }
+  .card::before { content: ""; position: absolute; left: 30%; top: -1.4cqi; width: 40%; height: 2.6cqi; background: rgba(255, 255, 255, .45); rotate: -4deg; }
+  .card-label { font-size: 2.2cqi; }
+  .card-name { margin-top: .4cqi; font-size: 2.6cqi; line-height: 1.1; font-weight: 700; }
+  .seal {
+    display: grid;
+    place-items: center;
+    width: 11cqi;
+    aspect-ratio: 1;
+    border: .55cqi double var(--stamp);
+    border-radius: 50%;
+    color: var(--stamp);
+    font-family: 'Cabin Sketch', cursive;
+    font-size: 2.5cqi;
+    line-height: 1;
+    rotate: -12deg;
+    mix-blend-mode: multiply;
+    opacity: 0;
+  }
+  .lang-ko .seal { font-size: 1px; }
+  .seal .two { display: grid; justify-items: center; gap: .4cqi; }
+
+  .overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .overlay ellipse { fill: none; stroke: var(--pink); stroke-width: 2.5; stroke-linecap: round; }
+  canvas.dust { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  .write { clip-path: inset(0 100% 0 0); }
+  .written { clip-path: none; }
+
+  /* The one-column phone layout is for portrait screens only. A phone held sideways (or any
+     short landscape window) keeps the two columns, which are wider than tall and fit its
+     height; one tall column there ran far below the screen. */
+  @media (max-aspect-ratio: 1/1) {
+  @container (max-width: 600px) {
+    .board { padding: 5cqi 4.6cqi 6.6cqi; }
+    .title { font-size: 10cqi; }
+    .sub { font-size: 4cqi; }
+    /* The cup stays on a phone (the spinner is the first joke), beside the title, left of the stamp. */
+    .head { justify-content: flex-start; }
+    .cup { width: 15cqi; align-self: flex-start; }
+    .menu { grid-template-columns: 1fr; gap: 2cqi; }
+    .name { font-size: 4.9cqi; }
+    .price { font-size: 4.3cqi; }
+    .lang-ko .price { font-size: 4.5cqi; }
+    .desc, .lang-ko .desc { font-size: 3.9cqi; }
+    /* Room for three lines from the start (the longest answers wrap to three here), so the
+       board does not grow, and jump, when a longer answer or the latte's sip comes in. */
+    .say { min-height: 18cqi; margin-top: 2.4cqi; }
+    .say b { font-size: 3.8cqi; }
+    .answer, .lang-ko .answer { font-size: 4.3cqi; }
+    .nudge { left: 4.6cqi; bottom: 1.4cqi; font-size: 3.9cqi; }
+    .screen { width: 32cqi; padding: .8cqi 1.6cqi .6cqi; font-size: 4.4cqi; }
+    .head > div { max-width: 62cqi; }
+    .special { position: absolute; right: 2.4cqi; top: 1.2cqi; z-index: 2; }
+    /* No room for the whole card on a phone: just the stamped corner; the ring marks the drink. */
+    .card { display: block; width: auto; padding: 1.8cqi; rotate: 6deg; }
+    .card-text { display: none; }
+    .card-label { font-size: 3.2cqi; }
+    .card-name { font-size: 3.6cqi; }
+    /* The stamp is all the card shows on a phone, so it is drawn large enough to read
+       (dojang needs real size; at 12px it smudges). */
+    .seal { width: 18cqi; font-size: 4cqi; }
+    .seal .two > font-kku { font-size: 5cqi; }
+  }
+  }
+  /* A short portrait stage (the home page's phone stages 358×396 and 328×408): the one-line
+     descriptions give way (the jokes are in the names, the prices, the till and the barista),
+     so the board can use the whole width and everything left is drawn bigger. */
+  @media (max-aspect-ratio: 1/1) and (max-height: 450px) {
+    .frame { width: min(calc(100vw - 12px), calc((100vh - 12px) / 1.02), 1040px); }
+    .desc { display: none; }
+    .menu { gap: 1.9cqi; }
+    .rule { margin: 1.4cqi 0 1.8cqi; }
+    .say { margin-top: 2.4cqi; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .write { clip-path: none; }
+    .seal { opacity: .9; }
+    .item.wiggle { animation: none; }
+    .pos.blink .sum { animation: none; }
+    .cup .spinner, .cup.served .steam { animation: none; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="chalk" x="-5%" y="-10%" width="110%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feComposite in="d" in2="n" operator="in"/>
+    <feComponentTransfer><feFuncA type="linear" slope="1.6"/></feComponentTransfer>
+  </filter>
+</svg>
+
+<main class="frame">
+  <div class="board">
+    <canvas class="dust" aria-hidden="true"></canvas>
+    <svg class="overlay" aria-hidden="true"></svg>
+
+    <header class="head">
+      <div>
+        <h1 class="title write" data-lang="en"><span class="chalky">Dev Café</span></h1>
+        <h1 class="title write" data-lang="ko"><font-kku font="chalk" size="7cqi">개발자 카페</font-kku></h1>
+        <p class="sub write chalky" data-lang="en">Today's brews, freshly compiled</p>
+        <p class="sub write chalky" data-lang="ko">오늘의 커피, 방금 컴파일했어요</p>
+      </div>
+      <svg class="cup write" viewBox="0 0 80 88" aria-hidden="true">
+        <!-- The steam is a loading spinner: this coffee is pending too. It turns into steam when
+             the Async Latte resolves, and back into a spinner when another one is ordered. -->
+        <g class="mug"><!-- sip() tips this; the saucer stays put -->
+          <g class="spinner">
+            <line x1="36" y1="11" x2="36" y2="2"/>
+            <line x1="41.7" y1="13.3" x2="48" y2="7" opacity=".18"/>
+            <line x1="44" y1="19" x2="53" y2="19" opacity=".24"/>
+            <line x1="41.7" y1="24.7" x2="48" y2="31" opacity=".32"/>
+            <line x1="36" y1="27" x2="36" y2="36" opacity=".42"/>
+            <line x1="30.3" y1="24.7" x2="24" y2="31" opacity=".54"/>
+            <line x1="28" y1="19" x2="19" y2="19" opacity=".68"/>
+            <line x1="30.3" y1="13.3" x2="24" y2="7" opacity=".84"/>
+          </g>
+          <g class="steam"><path d="M29 38 Q25 30 30 23 Q35 16 31 8" pathLength="1"/><path d="M43 38 Q39 30 44 23 Q49 16 45 8" pathLength="1"/></g>
+          <path d="M14 46 H58 V62 Q58 80 36 80 Q14 80 14 62 Z"/><path d="M58 50 Q72 50 70 60 Q68 68 58 66"/>
+        </g>
+        <line x1="8" y1="84" x2="66" y2="84"/>
+      </svg>
+    </header>
+    <div class="rule"></div>
+
+    <ul class="menu">
+      <li class="special">
+        <div class="card">
+          <div class="seal" aria-hidden="true">
+            <span data-lang="en">Tested<br>in prod</span>
+            <span class="two" data-lang="ko"><font-kku font="dojang" size="3.4cqi">고객</font-kku><font-kku font="dojang" size="3.4cqi">검증</font-kku></span>
+          </div>
+          <div class="card-text">
+            <p class="card-label" data-lang="en">Today's special</p>
+            <p class="card-label" data-lang="ko">오늘의 추천</p>
+            <p class="card-name"></p>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="say" aria-live="polite">
+      <b class="write chalky" data-lang="en">Barista:</b>
+      <b class="write chalky" data-lang="ko">바리스타:</b>
+      <p class="answer chalky"></p>
+      <div class="pos">
+        <div class="screen">
+          <p class="rung"><span data-lang="en">Welcome!</span><span data-lang="ko"><font-kku font="pixel" size="1em">어서 오세요</font-kku></span></p>
+          <p><span data-lang="en">Total:</span><span data-lang="ko"><font-kku font="pixel" size="1em">합계</font-kku>:</span><span><span class="sum"></span><span data-lang="ko"><font-kku font="pixel" size="1em">원</font-kku></span></span></p>
+        </div>
+      </div>
+    </div>
+    <p class="nudge" data-lang="en" aria-hidden="true">Tap a drink to order. Seconds welcome.</p>
+    <p class="nudge" data-lang="ko" aria-hidden="true">메뉴를 눌러 주문하세요. 같은 걸 또 시켜도 돼요.</p>
+  </div>
+  <div class="ledge" aria-hidden="true"><i class="stick w"></i><i class="stick p"></i><i class="stick y"></i><i class="eraser"></i></div>
+</main>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  // say: the barista's answers, in turn, each time that drink is ordered again.
+  // val: the price as the till sees it, a real JavaScript value (see charge()).
+  const MENU = [
+    { en: ['Espresso (sync)', '3.00', 'Blocks until ready.'], ko: ['에스프레소(동기)', '3,000', '다 나올 때까지 아무것도 못 해요.'], val: { en: 3.00, ko: 3000 },
+      say: [{ en: 'One espresso. Everyone behind you is now waiting too.', ko: '에스프레소 나왔습니다. 뒤에 계신 분들도 같이 기다리셨어요.' },
+            { en: "Another? I'm waiting on the grinder, and the grinder's waiting on me.", ko: '한 잔 더요? 저는 그라인더를, 그라인더는 저를 기다리고 있어요.' }] },
+    { en: ['Async Latte', 'Promise<4.50>', 'Arrives eventually.'], ko: ['비동기 라테', 'Promise<4500>', '언젠가는 나옵니다.'], val: { en: Promise.resolve(4.50), ko: Promise.resolve(4500) },
+      say: [{ en: "Order received. We'll call you back.", ko: '주문 받았어요. 진동벨 울리면 오세요.' }] },
+    { en: ['Null Tea', 'null', "There's nothing in it."], ko: ['널 티', 'null', '컵 안에 아무것도 없어요.'], val: { en: null, ko: null },
+      say: [{ en: 'Here you go. (Hands you nothing, very carefully.)', ko: '여기 있습니다. (아무것도 아닌 걸 아주 조심스럽게 건넨다)' },
+            { en: "Milk? Cannot read properties of null (reading 'milk')", ko: "우유 넣어 드릴까요? Cannot read properties of null (reading 'milk')" }] },
+    { en: ['Recursive Refill', 'n + 1', 'See: Recursive Refill.'], ko: ['재귀 리필', 'n + 1', "'재귀 리필'을 참고하세요."], val: { en: 'n + 1', ko: 'n + 1' },
+      say: [{ en: 'One Recursive Refill, which comes with one Recursive Refill, which comes with…', ko: '재귀 리필 하나요. 재귀 리필이 든 재귀 리필이 든 재귀 리필이 든…' },
+            { en: 'Sorry. Maximum cup stack size exceeded.', ko: '죄송해요. Maximum cup stack size exceeded.' }] },
+    { en: ['Cold Brew Cache', '2.00', 'Served stale, twice as fast.'], ko: ['콜드브루 캐시', '2,000', '좀 오래됐지만 두 배 빨라요.'], val: { en: 2.00, ko: 2000 },
+      say: [{ en: "That's yesterday's. For today's, do a hard refresh.", ko: '어제 내린 거예요. 오늘 걸 원하시면 강력 새로고침 하세요.' },
+            { en: "One fresh brew, coming up. …Huh. Yesterday's again.", ko: '새로 내려 드릴게요. …어, 또 어제 거네요.' }] },
+    { en: ['Merge Conflict Mocha', '4.50 | 5.00', 'Two flavours. You pick one.'], ko: ['머지 충돌 모카', '4,500 | 5,000', '두 가지 맛, 하나만 고르세요.'], val: { en: '4.50 | 5.00', ko: '4,500 | 5,000' },
+      say: [{ en: 'Chocolate or vanilla? Resolving it is on you.', ko: '초코냐 바닐라냐, 충돌 해결은 손님 몫이에요.' },
+            { en: '<<<<<<< chocolate ======= vanilla >>>>>>> Stir well.', ko: '<<<<<<< 초코 ======= 바닐라 >>>>>>> 잘 저어 드세요.' }] },
+    { en: ['Hotfix Hot Chocolate', '4.00', 'No tests. Extra marshmallows.'], ko: ['핫픽스 핫초코', '4,000', '테스트 없음, 마시멜로 추가.'], val: { en: 4.00, ko: 4000 },
+      say: [{ en: 'Deployed straight to your table. Untested, but warm.', ko: '테이블로 바로 배포했습니다. 테스트는 안 했지만 따뜻해요.' },
+            { en: "Spilled? We'll fix that in the next hotfix.", ko: '쏟으셨어요? 다음 핫픽스에서 고칠게요.' }] },
+  ];
+  // The Async Latte really is asynchronous: it turns up a while later, whatever is going on.
+  // Nobody comes for it, so a moment later the barista has a sip (the tag after the punchline).
+  const ASYNC = 1;
+  const LATTE = {
+    wait: 5500,
+    pending: { en: "Still pending. Awaiting it won't make it faster.", ko: '아직 대기 중이에요. await 하셔도 안 빨라져요.' },
+    resolved: { en: 'One Async Latte, resolved! …Hello?', ko: '(지이잉) 비동기 라테 나왔습니다! …손님?' },
+    sip: { en: '(Sips it.)', ko: '(홀짝)' },
+  };
+  const SPECIAL = 6;
+  const PROMPT = { en: 'Tap a drink to order.', ko: '메뉴를 눌러 주문해 보세요.' };
+  // Tapping the till pays, by the same JavaScript that added the bill up.
+  const PAY = {
+    none: { en: 'Nothing to pay yet. Pick a drink first.', ko: '아직 계산할 게 없어요. 메뉴부터 골라 주세요.' },
+    declined: [{ en: 'Card declined. Reason: NaN is not a number.', ko: '카드 승인이 거절됐어요. 사유: NaN은 숫자가 아님.' },
+               { en: 'Tried it again. Still NaN. Cash?', ko: '다시 긁어 봐도 NaN이에요. 현금 있으세요?' }],
+    paid: { en: 'Paid, {sum}. Receipt printed to the console.', ko: '{sum}원 결제됐습니다. 영수증은 콘솔에 출력해 드렸어요.' },
+    declinedTag: { en: 'DECLINED', ko: '승인 거절' },
+    paidTag: { en: 'PAID', ko: '결제 완료' },
+  };
+
+  const menu = document.querySelector('.menu');
+  const say = document.querySelector('.say .answer');
+  const board = document.querySelector('.board');
+  const overlay = document.querySelector('.overlay');
+  const seal = document.querySelector('.seal');
+  document.querySelector('.card-name').textContent = MENU[SPECIAL][TTY.lang][0];
+
+  // Menu rows: Korean drink names in font-kku chalk, everything else hand-lettered.
+  const rows = MENU.map((m, i) => {
+    const [name, price, desc] = m[TTY.lang];
+    const li = document.createElement('li');
+    li.className = 'item';
+    li.tabIndex = 0;
+    li.setAttribute('role', 'button');
+    li.innerHTML = `<div class="line1"><span class="name"></span><span class="dots"></span><span class="price chalky"></span></div><p class="desc chalky"></p>`;
+    const nameBox = li.querySelector('.name');
+    if (ko) {
+      const k = document.createElement('font-kku');
+      k.setAttribute('font', 'chalk');
+      k.setAttribute('size', '1em');
+      k.textContent = name;
+      nameBox.append(k);
+    } else {
+      nameBox.classList.add('chalky');
+      nameBox.textContent = name;
+    }
+    li.querySelector('.price').textContent = price;
+    li.querySelector('.desc').textContent = desc;
+    li.setAttribute('aria-label', `${name}, ${price}. ${desc}`);
+    li.querySelectorAll('.line1, .desc').forEach((n) => n.classList.add('write'));
+    menu.append(li);
+    return li;
+  });
+  menu.append(document.querySelector('.special'));
+
+  /* ---- Chalk dust: a few specks fall from wherever the chalk is ---- */
+  const canvas = document.querySelector('canvas.dust');
+  const ctx = canvas.getContext('2d');
+  let specks = [];
+  let raf = 0;
+  function fit() {
+    const r = board.getBoundingClientRect();
+    canvas.width = r.width * devicePixelRatio;
+    canvas.height = r.height * devicePixelRatio;
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  }
+  function puff(x, y, n) {
+    for (let i = 0; i < n; i++) specks.push({ x, y, vx: (Math.random() - .5) * .6, vy: Math.random() * .4, life: 1, size: Math.random() * 1.6 + .5 });
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+  function tick() {
+    const r = board.getBoundingClientRect();
+    ctx.clearRect(0, 0, r.width, r.height);
+    specks = specks.filter((s) => s.life > 0);
+    specks.forEach((s) => {
+      s.vy += .03; s.x += s.vx; s.y += s.vy; s.life -= .018;
+      ctx.fillStyle = `rgba(241, 239, 228, ${Math.max(0, s.life) * .7})`;
+      ctx.fillRect(s.x, s.y, s.size, s.size);
+    });
+    raf = specks.length ? requestAnimationFrame(tick) : 0;
+  }
+
+  /* ---- Writing: each line is revealed left to right while dust falls from the tip ---- */
+  function write(el, ms) {
+    return new Promise((done) => {
+      const box = el.getBoundingClientRect();
+      const base = board.getBoundingClientRect();
+      const t0 = performance.now();
+      el.classList.add('write');
+      const step = (now) => {
+        const p = Math.min(1, (now - t0) / ms);
+        el.style.clipPath = `inset(-20% ${(1 - p) * 100}% -20% 0)`;
+        if (Math.random() < .5) puff(box.left - base.left + box.width * p, box.top - base.top + box.height * (.3 + Math.random() * .5), 2);
+        if (p < 1) requestAnimationFrame(step);
+        else { el.style.clipPath = ''; el.classList.remove('write'); el.classList.add('written'); done(); }
+      };
+      requestAnimationFrame(step);
+    });
+  }
+  const pause = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  /* ---- Ordering ---- */
+  // The barista's line is typed out; every new answer replaces the one before and stops its
+  // typing. `said` counts the answers, so a late follow-up can tell whether its line is still
+  // up. `readUntil` is when a visitor's latest answer will have been typed and read.
+  let typing = 0;
+  let said = 0;
+  let readUntil = 0;
+  function answer(text, { append = false, visitor = false } = {}) {
+    clearInterval(typing);
+    board.classList.add('ordered'); // the first line (the prompt) is gone: the hint takes over
+    if (!append) { said++; say.textContent = ''; }
+    const chars = [...(append ? ' ' + text : text)];
+    const ms = ko ? 55 : 32;
+    if (visitor) readUntil = performance.now() + chars.length * ms + 2500;
+    if (TTY.reduce) { say.textContent += chars.join(''); return Promise.resolve(); }
+    return new Promise((done) => {
+      let i = 0;
+      typing = setInterval(() => {
+        say.textContent += chars[i++];
+        if (i >= chars.length) { clearInterval(typing); done(); }
+      }, ms);
+    });
+  }
+  function wiggle(li) {
+    li.classList.remove('wiggle');
+    void li.offsetWidth;
+    li.classList.add('wiggle');
+  }
+  /* ---- The till ---- */
+  // It adds up Number(price), as a till written in JavaScript would: Number(3) is 3,
+  // Number(null) is 0, and a Promise or the text "n + 1" is NaN. Once NaN, always NaN.
+  const pos = document.querySelector('.pos');
+  const rung = pos.querySelector('.rung');
+  const sum = pos.querySelector('.sum');
+  let total = 0;
+  let billed = false; // something has been rung up since the last payment
+  const money = (n) => (ko ? n.toLocaleString('ko-KR') : n.toFixed(2));
+  sum.textContent = money(total);
+  function blink() {
+    pos.classList.remove('blink');
+    void pos.offsetWidth;
+    pos.classList.add('blink');
+  }
+  function charge(i) {
+    total += Number(MENU[i].val[TTY.lang]);
+    billed = true;
+    rung.textContent = '+ ' + MENU[i][TTY.lang][1];
+    sum.textContent = money(total);
+    blink();
+  }
+  // Hangul on the display is font-kku pixel, like "어서 오세요"; VT323 has no Hangul.
+  function showRung(text) {
+    if (!ko) { rung.textContent = text; return; }
+    const k = document.createElement('font-kku');
+    k.setAttribute('font', 'pixel');
+    k.setAttribute('size', '1em');
+    k.textContent = text;
+    rung.replaceChildren(k);
+  }
+  // Paying goes by the same arithmetic: a NaN bill is declined, a number is paid and the
+  // till starts a new bill. Tapping an empty till only gets a word from the barista: the
+  // regulars still order, once that answer has been read (yieldToVisitor in play()).
+  let declines = 0;
+  function pay() {
+    if (!billed) { answer(TTY.t(PAY.none), { visitor: true }); return; }
+    touched = true;
+    if (Number.isNaN(total)) {
+      showRung(TTY.t(PAY.declinedTag));
+      answer(TTY.t(PAY.declined[declines++ % PAY.declined.length]), { visitor: true });
+    } else {
+      showRung(TTY.t(PAY.paidTag));
+      answer(TTY.t(PAY.paid).replace('{sum}', money(total)), { visitor: true });
+      total = 0;
+      billed = false;
+    }
+    blink();
+  }
+  pos.tabIndex = 0;
+  pos.setAttribute('role', 'button');
+  pos.addEventListener('click', pay);
+  pos.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pay(); } });
+
+  // The cup's steam is a loading spinner until an Async Latte resolves; then it is just steam.
+  const cup = document.querySelector('.cup');
+  function serve(done) {
+    cup.classList.toggle('served', done);
+    if (done && !TTY.reduce) {
+      cup.querySelectorAll('.steam path').forEach((p, i) => p.animate(
+        [{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }],
+        { duration: 600, delay: i * 120, easing: 'ease-out', fill: 'backwards' }));
+    }
+  }
+  // Nobody came for the latte, so the barista has a sip: the cup tips up off its saucer and back.
+  function sip() {
+    if (TTY.reduce) return;
+    cup.querySelector('.mug').animate([
+      { rotate: '0deg', translate: '0 0' },
+      { rotate: '-24deg', translate: '0 -14%', offset: .35 },
+      { rotate: '-24deg', translate: '0 -14%', offset: .7 },
+      { rotate: '0deg', translate: '0 0' },
+    ], { duration: 1200, easing: 'ease-in-out' });
+  }
+
+  const asked = MENU.map(() => 0);
+  let latte = 0;            // the pending Async Latte's timer, 0 when none
+  let regularsLatte = false; // that latte was ordered by the regulars (autoplay)
+  function order(i, visitor = false) {
+    wiggle(rows[i]);
+    if (i === ASYNC) {
+      if (latte) { answer(TTY.t(LATTE.pending), { visitor }); return; }
+      serve(false);
+      regularsLatte = !visitor;
+      latte = setTimeout(arrive, LATTE.wait);
+    }
+    charge(i);
+    const says = MENU[i].say;
+    answer(TTY.t(says[asked[i]++ % says.length]), { visitor });
+  }
+  // The latte turns up when it is ready and takes over the barista's line, even mid-sentence
+  // if the visitor ordered it. The regulars' latte waits until a visitor's own answer has been
+  // read, so autoplay never talks over someone who is playing.
+  function arrive() {
+    const wait = regularsLatte ? readUntil - performance.now() : 0;
+    if (wait > 0) { latte = setTimeout(arrive, wait); return; }
+    latte = 0;
+    wiggle(rows[ASYNC]);
+    serve(true);
+    const typed = answer(TTY.t(LATTE.resolved));
+    const mine = said;
+    typed.then(() => pause(1100)).then(() => {
+      if (said !== mine) return; // someone ordered in the meantime: their answer stays
+      answer(TTY.t(LATTE.sip), { append: true });
+      sip();
+    });
+  }
+  rows.forEach((li, i) => {
+    li.addEventListener('click', () => { touched = true; order(i, true); });
+    li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); touched = true; order(i, true); } });
+  });
+
+  // A pink chalk ring around today's special.
+  function ring() {
+    const b = board.getBoundingClientRect();
+    // The row stretches to the card beside it, so ring the words, not the grid cell.
+    const a = rows[SPECIAL].querySelector('.line1').getBoundingClientRect();
+    const desc = rows[SPECIAL].querySelector('.desc');
+    const z = desc.getClientRects().length ? desc.getBoundingClientRect() : a; // hidden on a short stage
+    const r = { left: Math.min(a.left, z.left), top: a.top, width: Math.max(a.right, z.right) - Math.min(a.left, z.left), height: z.bottom - a.top };
+    overlay.replaceChildren();
+    const e = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+    e.setAttribute('cx', r.left - b.left + r.width / 2);
+    e.setAttribute('cy', r.top - b.top + r.height / 2);
+    e.setAttribute('rx', r.width / 2 + 14);
+    e.setAttribute('ry', r.height / 2 + 10);
+    e.setAttribute('transform', `rotate(-2 ${r.left - b.left + r.width / 2} ${r.top - b.top + r.height / 2})`);
+    e.setAttribute('pathLength', '1');
+    e.setAttribute('filter', 'url(#chalk)');
+    overlay.append(e);
+    return e;
+  }
+
+  let touched = false;
+  if (!TTY.reduce) document.documentElement.classList.add('js-play');
+  const card = document.querySelector('.card');
+
+  async function play() {
+    fit();
+    const lines = [...document.querySelectorAll('.title, .sub, .cup, .say b, .line1, .desc')];
+    if (TTY.reduce) {
+      lines.forEach((l) => { l.classList.remove('write'); l.classList.add('written'); });
+      ring();
+      // Without motion the story is told by its last frame: the regulars' Async Latte is on
+      // the till (Total: NaN), has just arrived (steam instead of the spinner) and nobody
+      // came for it.
+      charge(ASYNC);
+      serve(true);
+      answer(TTY.t(LATTE.resolved) + ' ' + TTY.t(LATTE.sip));
+      return;
+    }
+    // The cup goes up with the title: its steam is a loading spinner, the first joke.
+    write(document.querySelector('.cup'), 600);
+    await write(document.querySelector('.title'), 650);
+    await write(document.querySelector('.sub'), 450);
+    for (const li of rows) {
+      await write(li.querySelector('.line1'), 220);
+      const desc = li.querySelector('.desc');
+      if (desc.getClientRects().length) await write(desc, 150);
+      else { desc.classList.remove('write'); desc.classList.add('written'); } // not shown on a short stage
+    }
+    await write(document.querySelector('.say b'), 300);
+    // A visitor who got an answer already (an order, or a word at the till) keeps it.
+    if (!board.classList.contains('ordered')) say.textContent = TTY.t(PROMPT);
+
+    // The card is taped up, the stamp comes down on it, then the ring goes round the drink.
+    await pause(150);
+    card.animate([{ opacity: 0, translate: '0 -3cqi', rotate: '-6deg' }, { opacity: 1, translate: '0 0', rotate: '3deg' }],
+      { duration: 520, easing: 'cubic-bezier(.2, .9, .3, 1.2)', fill: 'forwards' });
+    await pause(600);
+    seal.animate([
+      { opacity: 0, transform: 'scale(2.4)', filter: 'blur(2px)' },
+      { opacity: .95, transform: 'scale(.94)', filter: 'blur(0)', offset: .7 },
+      { opacity: .9, transform: 'scale(1)' },
+    ], { duration: 420, easing: 'cubic-bezier(.5, 0, .9, .4)', fill: 'forwards' });
+    card.animate([{ scale: '1' }, { scale: '.97' }, { scale: '1' }], { duration: 260, delay: 300 });
+    await pause(600);
+    ring().animate([{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }], { duration: 800, easing: 'ease-in-out', fill: 'both' });
+
+    // If nobody orders, the regulars do: an Async Latte, then the ringed special, and then
+    // the latte turns up after it. Always this order, so every visitor sees the same story.
+    // A visitor's answer (a word at an empty till) is read first: autoplay waits, it does not stop.
+    // If that pushed the latte back, the home stage is asked to stay up for the rest of the story
+    // (latte 5.5 s, punchline, sip, time to read it): the kit's own hold on the tap ends too soon.
+    const yieldToVisitor = async () => {
+      let waited = false;
+      while (performance.now() < readUntil) { waited = true; await pause(readUntil - performance.now()); }
+      return waited;
+    };
+    await pause(900);
+    const late = await yieldToVisitor();
+    if (!touched) { if (late) TTY.hold(13000); order(ASYNC); }
+    await pause(2200);
+    await yieldToVisitor();
+    if (!touched) order(SPECIAL);
+  }
+
+  addEventListener('resize', () => { fit(); if (overlay.firstChild) ring(); });
+  TTY.onShow(() => setTimeout(play, 150));
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

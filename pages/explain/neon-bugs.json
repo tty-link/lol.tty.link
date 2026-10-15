@@ -1,0 +1,141 @@
+{
+  "id": "neon-bugs",
+  "title": {
+    "en": "Bugs Fixed While You Wait",
+    "ko": "버그 즉석 수리"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "버그를 고쳐 준다는 수리점의 네온 간판이 제 글자부터 고장 나 있고, 가게는 그게 고장이 아니라 기능이라고 우긴다.",
+    "points": [
+      "깜빡이는 관 하나 → 하필 영어 'fixed'(고침)의 x, 한국어는 '수리'의 ㅅ이다. 수리점 간판에서 수리가 고장 났다. 켤 때마다 이 관만 못 붙어서 간판이 '버그 즉석 ㅜ리'로 보인다.",
+      "쪽지 \"기능은 환불되지 않습니다\", \"처리 상태: 수정 안 함\" → 버그 신고를 받은 개발자가 버그가 아니라 기능이라고 버티는 오래된 농담을 가게 안내문으로 옮겼다.",
+      "가만히 두면 가게가 제 간판을 툭 친다 → 말 안 듣는 기계를 두드려 고치는 바로 그 방법이고, 정말로 고쳐진다. 가게는 쪽지에 빨간 펜으로 '수리 완료'라고 적지만 말풍선은 끝에 \"일단은요\"를 붙인다. 3초쯤 지나 그 관이 다시 꺼진다.",
+      "직접 칠 때마다 → 처리 상태만 빨간 펜으로 '의도된 동작', '사양입니다', '기능입니다'로 바뀐다. 버그라는 말은 끝내 안 나온다. 가게가 친 것까지 세어 다섯 번째 두드림에서 고장 관은 드디어 고쳐지는데, 바로 그 순간 '버그'의 ㅂ이 나가 'ㅓ그'가 된다. 하나 고치면 다른 데가 고장 나는 회귀 버그이고, 처리 상태는 재발. 영어판은 'Bugs'의 g가 나가 \"Bu s fixed\", 버스 수리점이 된다."
+    ],
+    "terms": [
+      {
+        "term": "\"버그가 아니라 기능입니다\"",
+        "plain": "신고된 문제를 개발자가 원래 그렇게 동작하는 거라며 넘길 때 쓰는 말이 굳어진 농담(It's not a bug, it's a feature). '사양입니다'도 '설계(사양서)대로입니다'라는 같은 뜻이다."
+      },
+      {
+        "term": "수정 안 함(won't fix)",
+        "plain": "이슈 관리 도구에서 \"알지만 고치지 않겠다\"는 처리 상태. GitHub는 새 저장소마다 wontfix 라벨을 기본으로 넣어 준다."
+      },
+      {
+        "term": "두드려서 고치기(percussive maintenance)",
+        "plain": "고장 난 기계를 툭툭 쳐서 살려 보려는 것을 일부러 거창하게 부르는 농담 섞인 말."
+      },
+      {
+        "term": "회귀 버그",
+        "plain": "잘 되던 기능이 다른 것을 고치거나 바꾼 뒤에 다시 고장 나는 버그."
+      }
+    ],
+    "links": [
+      {
+        "title": "Undocumented feature - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Undocumented_feature",
+        "note": "\"it's not a bug, it's a feature\"라는 말이 나온 배경.",
+        "lang": "en"
+      },
+      {
+        "title": "소프트웨어 회귀 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/소프트웨어_회귀",
+        "note": "고친 뒤에 멀쩡하던 것이 고장 나는 회귀 버그.",
+        "lang": "ko"
+      },
+      {
+        "title": "percussive maintenance - Wiktionary",
+        "url": "https://en.wiktionary.org/wiki/percussive_maintenance",
+        "note": "툭 쳐서 고치기의 사전 뜻('익살스러운 말'로 표시되어 있다).",
+        "lang": "en"
+      },
+      {
+        "title": "Managing labels - GitHub Docs",
+        "url": "https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/managing-labels",
+        "note": "기본 라벨 wontfix(\"더는 작업하지 않음\")가 실제로 있다.",
+        "lang": "en"
+      },
+      {
+        "title": "네온 사인 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/네온_사인",
+        "note": "기체를 넣은 유리관이 빛나는 원리.",
+        "lang": "ko"
+      }
+    ],
+    "deep": [
+      "ㅅ이 꺼진 순간 간판은 '버그 즉석 ㅜ리'가 된다. 고쳐 준다는 바로 그 낱말이 고장 났다.",
+      "쪽지의 '수리 완료'는 쓰는 순간에는 거짓말이 아니다. 두드린 관은 정말로 3.2초 동안 멀쩡하다. 말풍선이 사라지고 나서야 다시 꺼진다.",
+      "빨간 펜은 매번 바로 앞의 처리 상태 하나에만 줄을 긋고 새로 쓴다. 수정 안 함 → 수리 완료 → 의도된 동작 → 사양입니다 → 기능입니다 → 재발. 다섯 번 고쳐 쓰는 동안 버그라는 낱말은 한 번도 안 쓴다. 다시 열린 것도 다른 관이 나간 다음이다.",
+      "의도된 동작은 지어낸 말이 아니다. 구글의 이슈 트래커(Issue Tracker)에는 Won't fix (Intended behavior), 곧 수정 안 함(의도된 동작)이라는 처리 상태가 실제로 있다.",
+      "스위치로 간판을 껐다 켜면(직접 눌러야 나온다) 고장 관이 또 못 붙고, 가게는 \"껐다 켜 봤습니다. 여전히 기능입니다.\"라고 한다. 컴퓨터가 이상하면 일단 껐다 켜 보라는 오래된 처방도 이 관에는 안 듣는다.",
+      "자정부터 새벽 6시 전까지(보는 사람의 시계 기준) 열면 초록 '영업 중' 대신 '당직 중'이 켜진다. 가게는 닫아도 버그는 밤에도 나온다."
+    ]
+  },
+  "en": {
+    "line": "A bug repair shop's own neon sign is broken, and the shop insists that's a feature.",
+    "points": [
+      "The one flickering tube → it's the x in \"fixed\". The shop that fixes things can't fix its own sign, and every time the sign comes on, that tube is the one that won't catch: \"Bugs fi ed\".",
+      "The note, \"No refunds on features.\" and \"Status: won't fix\" → the old developer line about bugs being features, posted like a shop notice.",
+      "Leave it alone and the shop gives its own sign a knock → the classic way to fix a misbehaving gadget, and it works. The red pen writes \"fixed\" on the note, the bubble adds \"For now.\", and about three seconds later the tube goes out again.",
+      "Tap it yourself → every tap rewrites the status in red pen: by design, working as intended, feature. Never the word bug. The fifth knock, counting the shop's own, fixes the x for good, and right then the g in \"Bugs\" goes out: \"Bu s fixed\". Now it's a bus repair shop. Fix one thing, break another: a regression. Status: reopened."
+    ],
+    "terms": [
+      {
+        "term": "\"It's not a bug, it's a feature\"",
+        "plain": "a catchphrase for when developers decide a reported problem is the program working as expected."
+      },
+      {
+        "term": "Won't fix",
+        "plain": "an issue status meaning nobody is going to work on it. GitHub even adds a \"wontfix\" label to every new repository by default."
+      },
+      {
+        "term": "Percussive maintenance",
+        "plain": "a jokingly grand name for hitting a device to make it work."
+      },
+      {
+        "term": "Regression",
+        "plain": "a bug where something that used to work breaks after another change."
+      }
+    ],
+    "links": [
+      {
+        "title": "Undocumented feature - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Undocumented_feature",
+        "note": "where \"it's not a bug, it's a feature\" comes from.",
+        "lang": "en"
+      },
+      {
+        "title": "Software regression - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Software_regression",
+        "note": "bugs that appear in things that used to work.",
+        "lang": "en"
+      },
+      {
+        "title": "percussive maintenance - Wiktionary",
+        "url": "https://en.wiktionary.org/wiki/percussive_maintenance",
+        "note": "the dictionary meaning, marked humorous."
+      },
+      {
+        "title": "Managing labels - GitHub Docs",
+        "url": "https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/managing-labels",
+        "note": "the default \"wontfix\" label really exists."
+      },
+      {
+        "title": "Neon sign - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Neon_sign",
+        "note": "how gas-filled glass tubes glow.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "When the sign switches on, every tube sputters to life except the x, which makes three weak tries and catches last. For that second the sign reads \"Bugs fi ed\".",
+      "The \"fixed\" on the note isn't a lie when it's written: a knocked tube really does hold for 3.2 seconds. It only goes out again once the bubble is gone.",
+      "The red pen only ever crosses out the status just before it: won't fix → fixed → by design → working as intended → feature → reopened. In five rewrites the shop never once writes \"bug\", and it only reopens the ticket once a different tube has gone.",
+      "Working as intended is not made up: Google's Issue Tracker really has a status called Won't fix (Intended behavior).",
+      "Switch the sign off and on (only if you use the switch) and the x fails to catch all over again, while the shop reports \"Turned it off and on again. Still a feature.\" The oldest fix in IT doesn't work on this tube either.",
+      "Open the page between midnight and 6 a.m. (by your own clock) and the green \"Open\" tube says \"On call\" instead. The shop is shut, but bugs don't sleep.",
+      "The Korean sign reads 버그 즉석 수리, bug repair on the spot. There the broken tube is the ㅅ (an s sound) on top of 수, the first syllable of 수리, \"repair\". Korean stacks letters into syllable blocks, so losing it leaves ㅜ리: the word for \"repair\" is the one that's broken. After the regression it's the ㅂ (b) of 버그, bug, that goes out."
+    ]
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "id": "keystroke-land",
+  "title": {
+    "en": "Keystroke Land",
+    "ko": "키스트로크 랜드"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "키 하나를 누른 순간부터 화면에 글자가 뜨기까지 걸리는 30ms 안팎을, 대기 시간 표지가 붙은 놀이공원 한 바퀴로 300배 늘려 보여 주는 페이지다.",
+    "points": [
+      "거대한 장갑 손가락이 키캡을 누르면 글자가 두 팔을 들고 튀어 나와 흔들다리에서 세 번 튕긴다 → 실제로 키 안의 금속 접점은 닿는 순간 아주 짧게 몇 번 붙었다 떨어진다. 그래서 많은 키보드는 떨림이 가라앉을 때까지 몇 ms를 기다렸다가 한 번으로 센다. 그 기다림을 놀이기구로 만들었는데, 옆 표지는 태연하게 \"대기 5ms\". 입구 표지 \"키 1개 이상 탑승 가능\"은 놀이기구 앞의 키 제한 표지를 자판의 키로 비튼 말장난이다.",
+      "놀이기구마다 진지한 대기 시간 표지가 서 있고 숫자가 전부 ms다 → 놀이공원 줄 앞의 대기 시간 안내판과 똑같은 말투로 1000분의 1초를 안내한다. 게다가 USB 회전문은 정말로 \"8ms마다 한 번 열림\"이고, 프레임 대기줄은 정말로 16.7ms마다 한꺼번에 출발해서 표지가 \"대기 최대 16.7ms\"다. 지도가 넓으면 공방 앞에 물놀이 기구 말투의 안전 안내 \"주의: 받침이 옆 글자로 튈 수 있습니다\"도 서 있다.",
+      "한국어 판 조합 공방의 `곰?` 다음 \"도깨비불!\" → 고맙다고 치는데 작업대에 먼저 `곰`이 뜬다. 두벌식으로 `곰` 다음에 ㅏ를 치면 받침 ㅁ이 다음 글자 첫소리로 건너가 `고마`가 된다. 한글을 쳐 본 사람은 다 아는 그 깜빡임을 공방 작업대에서 300배 느리게 본다.",
+      "기록 카드 \"오늘의 한 바퀴*\"와 명예의 전당 \"기록 보유 · 1983년 Apple IIe · 30ms\", 그리고 마지막에 찍히는 도장 \"겨우 무승부*\" → 스포츠 기록의 별표(*) 농담이다. 오늘 기기의 29.5ms는 각주대로 \"꾹 발판은 빼고 쟀어요. 공원이 한산한 날 기준.\" 반면 기록 보유자는 \"클럭 1MHz짜리가 꾹 발판까지 타고 세운 기록\"이다. 키 누르는 시간을 빼 주는 핸디캡을 받고도 요즘 기기는 1983년 기계와 겨우 비긴다. 실제로 2017년에 Dan Luu가 키가 움직이기 시작한 순간부터 화면이 다 바뀔 때까지를 고속 카메라로 재 보니 Apple IIe가 표 맨 위였고, 요즘 컴퓨터와 휴대폰 상당수는 더 느렸다."
+    ],
+    "terms": [
+      {
+        "term": "입력 지연",
+        "plain": "키를 누른 순간부터 화면이 바뀌기까지 걸리는 시간."
+      },
+      {
+        "term": "채터링과 디바운스",
+        "plain": "접점이 닿을 때 아주 짧게 붙었다 떨어졌다 하는 떨림이 채터링, 그 떨림이 가라앉기를 잠깐 기다려 한 번의 누름으로 세는 처리가 디바운스다."
+      },
+      {
+        "term": "폴링",
+        "plain": "컴퓨터가 키보드에 \"눌린 거 있어?\" 하고 정해진 간격마다 묻는 방식. USB 키보드는 흔히 8ms(1초에 125번)마다 묻는다. 그래서 회전문이 8ms마다만 열린다."
+      },
+      {
+        "term": "화면 갱신(60Hz)",
+        "plain": "화면은 1초에 60번, 16.7ms마다 한 번씩만 새 그림을 내보낸다. 그 사이에 준비된 글자는 다음 차례까지 줄을 선다."
+      },
+      {
+        "term": "도깨비불 현상",
+        "plain": "두벌식에서 자음이 일단 앞 글자의 받침으로 붙었다가, 뒤에 모음이 오면 다음 글자의 첫소리로 옮겨 가는 것."
+      }
+    ],
+    "links": [
+      {
+        "title": "Computer latency: 1977-2017 (Dan Luu)",
+        "url": "https://danluu.com/input-lag/",
+        "note": "키가 움직이기 시작한 때부터 화면이 다 바뀔 때까지를 고속 카메라로 잰 표. 맨 위가 Apple IIe 30ms.",
+        "lang": "en"
+      },
+      {
+        "title": "Keyboard latency (Dan Luu)",
+        "url": "https://danluu.com/keyboard-latency/",
+        "note": "키보드 안에서만 생기는 지연. 키가 내려가는 거리, 매트릭스 스캔, 디바운스, USB 폴링.",
+        "lang": "en"
+      },
+      {
+        "title": "Debounce API (QMK 문서)",
+        "url": "https://docs.qmk.fm/feature_debounce_type",
+        "note": "많이 쓰는 키보드 펌웨어 QMK의 디바운스 설정. 기본값 5ms.",
+        "lang": "en"
+      },
+      {
+        "title": "도깨비불 현상 (위키백과)",
+        "url": "https://ko.wikipedia.org/wiki/%EB%8F%84%EA%B9%A8%EB%B9%84%EB%B6%88_%ED%98%84%EC%83%81",
+        "note": "받침이 다음 글자로 건너뛰는 현상. '위키백과'를 칠 때 '윜', '킵', '밲'이 잠깐 생기는 예가 있다.",
+        "lang": "ko"
+      },
+      {
+        "title": "Switch: Contact bounce (위키백과)",
+        "url": "https://en.wikipedia.org/wiki/Switch#Contact_bounce",
+        "note": "접점이 튀는 이유와 디바운스 방법.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "흔들다리 표지 \"대기 5ms\" → 많이 쓰는 키보드 펌웨어 QMK의 기본 디바운스 시간이 5ms다. 기본 방식(`sym_defer_g`)은 접점이 5ms 동안 조용해진 뒤에야 누름을 보낸다. 손님이 세 번 튀어도 한 번 탄 걸로 치는 바로 그 기다림이다.",
+      "USB 회전문이 8ms마다 한 번 열린다 → 저속 USB 규격의 최소 간격은 10ms인데, 실제로는 흔히 2의 거듭제곱으로 내려 잡아 8ms(1초에 125번)마다 묻는다(Dan Luu의 키보드 지연 글). 이 간격은 키보드가 적어 내고 컴퓨터 쪽 USB가 일정을 짜는데, 리눅스 같은 운영체제가 2의 거듭제곱으로 내려 잡는다. 그 사이에 누른 키는 문 앞에서 기다린다.",
+      "기록 카드에서 회전문 4ms와 대기줄 8ms에만 '(평균)'이 붙어 있다 → 8ms마다, 16.7ms마다 열리는 문에 아무 때나 도착하면 평균 주기의 절반을 기다린다. 대기줄 표지가 \"대기 최대 16.7ms\"인 것도 같은 이유다(아무 때나 오면 최대 한 주기). 자동 재생에서도 문 앞에서 기다리는 손님과 바로 타는 손님이 있다.",
+      "\"겨우 무승부*\"는 정말 무승부다 → Dan Luu의 표는 10ms 단위로 반올림해서, Apple IIe의 30ms는 25~35ms 어디쯤이다. 오늘의 29.5ms와 반올림 안에서 비긴다. 그런데 오늘 쪽은 키가 내려가는 시간을 뺐다. Dan Luu는 키가 내려가는 시간만으로도 10ms쯤은 쉽게 더해진다고 썼다.",
+      "각주의 \"공원이 한산한 날 기준\" → 표의 숫자는 앱이 키 이벤트를 바로 꺼내 주고(회전목마 2ms) 화면이 한 프레임만 기다리는, 일이 잘 풀리는 날의 값이다. 실제 기기는 앱이 바쁘거나 화면이 프레임을 몇 장 더 쌓아 두기도 해서, Dan Luu의 표에서 요즘 기기는 대부분 30ms보다 느렸다.",
+      "손가락만은 빨리 감기다 → 300배 느린 화면에서 1.2초 간격은 실제로 4ms, 1초에 250타다. 빠른 사람(0.1초에 한 키)의 속도로 쳤다면 다음 손님은 30초 뒤에 왔다. 프레임 대기줄에서 여럿이 한꺼번에 출발하는 장면도 이 압축 덕분이다.",
+      "글꼴 거울의 방 → 한국어 판 거울에는 손님이 들고 온 낱자모가 아니라 공방에서 조합된 글자(`마`, `워`)가 비친다. 화면에 그려지는 것은 조합이 끝난 글자이기 때문이다.",
+      "\"눈 한 번 깜빡이는 사이 세 바퀴 넘게\" → 눈 한 번 깜빡이는 데 0.1~0.4초쯤 걸린다. 가장 빠른 깜빡임에도 29.5ms 한 바퀴가 3.4번 들어간다."
+    ]
+  },
+  "en": {
+    "line": "This page takes the roughly 30 milliseconds between pressing a key and seeing the letter, slows them down 300 times, and turns them into one lap of a theme park with a wait-time sign at every ride.",
+    "points": [
+      "A giant gloved finger presses the keycap, and the letter is flung out with its arms up and bounces three times on a wobbly bridge → the metal contacts inside a real key do flicker on and off for a moment when they meet, so many keyboards wait a few ms for them to settle and then count one press. The sign beside the bridge says, calmly, \"wait 5 ms\", and the entrance sign says \"You must be 1 key tall to ride\", the height sign at every theme-park ride, measured in keys.",
+      "Every ride has a serious wait-time sign, and every number is in milliseconds → the voice of the signs at the head of a theme-park line, used for thousandths of a second. And the USB door really \"opens every 8 ms\", and the frame queue really leaves only every 16.7 ms, so its sign says \"wait up to 16.7 ms\".",
+      "The Hangul Assembly Hall: English riders walk straight past it, and a speech bubble says \"No assembly required!\" → Korean is typed one letter piece at a time (ㅎ h, ㅐ ae, ㅇ ng), and the keyboard software stacks the pieces into one syllable block, as the workbench shows on a roomy map: `ㅎ+ㅐ+ㅇ = 행` (a small map shows only the finished block, `행`). That is a real step for Korean typing; English letters need none, so the sign says 0 ms. (On the Korean page the hall really assembles 고마워 (thank you), and a final consonant leaps over to the next block mid-word, a flicker every Korean typist knows.)",
+      "The ending: \"Today's lap*\", the hall of fame's \"Record holder · 1983 Apple IIe · 30 ms\", and a red stamp that lands on today's lap: \"Barely a tie*\" → the asterisk joke from sports records. Today's 29 ms comes with a footnote, \"Press Pad not counted. On a quiet day at the park.\" The record holder is \"A 1 MHz machine, Press Pad and all.\" So today's machine gets the key press for free and still only ties a 1983 computer. In 2017 Dan Luu really did film keypresses with a high-speed camera, from the moment the key started moving until the screen finished changing: the Apple IIe topped his table, and many of today's computers and phones were slower."
+    ],
+    "terms": [
+      {
+        "term": "input latency",
+        "plain": "the time from pressing a key until the screen changes."
+      },
+      {
+        "term": "chatter and debouncing",
+        "plain": "closing contacts flicker on and off for a moment (chatter); debouncing waits for them to settle and counts a single press."
+      },
+      {
+        "term": "polling",
+        "plain": "the computer asks the keyboard \"anything pressed?\" at a fixed interval, commonly every 8 ms (125 times a second); hence a revolving door that only turns every 8 ms."
+      },
+      {
+        "term": "refresh (60 Hz)",
+        "plain": "the screen shows a new picture 60 times a second, every 16.7 ms, so a finished letter queues for the next one."
+      },
+      {
+        "term": "Hangul input method",
+        "plain": "the software that turns separate Korean letter keys into syllable blocks as you type, for example ㄱ+ㅗ+ㅁ = 곰."
+      }
+    ],
+    "links": [
+      {
+        "title": "Computer latency: 1977-2017 (Dan Luu)",
+        "url": "https://danluu.com/input-lag/",
+        "note": "key-to-screen latency filmed with a high-speed camera, from the moment the key starts moving; the Apple IIe tops the table at 30 ms."
+      },
+      {
+        "title": "Keyboard latency (Dan Luu)",
+        "url": "https://danluu.com/keyboard-latency/",
+        "note": "latency inside the keyboard alone: key travel, matrix scanning, debouncing, USB polling."
+      },
+      {
+        "title": "Debounce API (QMK docs)",
+        "url": "https://docs.qmk.fm/feature_debounce_type",
+        "note": "debouncing in QMK, a widely used keyboard firmware; the default is 5 ms."
+      },
+      {
+        "title": "Korean language and computers (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Korean_language_and_computers",
+        "note": "Korean is typed one letter piece (jamo) at a time and assembled into syllables on the fly.",
+        "lang": "en"
+      },
+      {
+        "title": "Switch: Contact bounce (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Switch#Contact_bounce",
+        "note": "why contacts bounce and how debouncing works.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The Bounce Bridge sign says \"wait 5 ms\": that is the default debounce time of QMK, a widely used keyboard firmware. Its default method (`sym_defer_g`) only reports a press once the contacts have been quiet for 5 ms, the very wait that counts three bounces as one ride.",
+      "The USB Revolving Door \"opens every 8 ms\": the low-speed USB spec sets a 10 ms minimum, and in practice it is commonly rounded down to a power of two, 8 ms or 125 times a second (Dan Luu's keyboard latency piece). The keyboard states the interval and the computer's USB stack schedules it; operating systems such as Linux round it down to a power of two. A key pressed in between waits at the door.",
+      "Only the door (4 ms) and the frame queue (8 ms) say \"(avg)\" on the record card: arrive at a random moment at something that opens every 8 or 16.7 ms and you wait half a period on average, and a full period at worst, hence \"wait up to 16.7 ms\". Even in the autoplay some riders wait at the door and some walk straight in.",
+      "\"Barely a tie*\" really is a tie: Dan Luu's table is rounded to the nearest 10 ms, so the Apple IIe's 30 ms is anywhere from 25 to 35. Today's lap ties it within the rounding, and only because the key press was left out: key travel alone \"can easily add 10ms\", Dan Luu writes.",
+      "The footnote's \"On a quiet day at the park\": the numbers are those of a good day, when the app takes the key event at once (2 ms on the carousel) and the screen waits for just one frame. Real machines have busy apps and screens that hold a few more frames, and in Dan Luu's table most of today's devices took longer than 30 ms.",
+      "Only the finger is fast-forwarded: at 300 times slower, its 1.2 s between presses is 4 ms for real, 250 keys a second. At the speed of a fast typist (a key every 0.1 s) the next rider would show up 30 seconds later. That squeeze is also why several riders leave the frame queue together.",
+      "Today's lap is 29 ms on the English page and 29.5 on the Korean one: the bar \"Hangul (skipped)\" is 0, because English riders skip the half millisecond of assembly.",
+      "\"Over three laps in the blink of an eye\": a blink takes roughly 0.1 to 0.4 seconds, so even the quickest blink fits 3.4 laps of 29 ms."
+    ]
+  }
+}

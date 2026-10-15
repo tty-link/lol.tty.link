@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<!-- Opened on its own, the tty.link nav sits top right, in the sky over the survey flags: the
+     bottom corners belong to the 2011 layer (the long spine reaches the right edge on a phone). -->
+<html lang="en" data-tty-nav="top">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code Archaeology | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,700;1,500&family=IBM+Plex+Mono:wght@500;600;700&family=Gowun+Batang:wght@400;700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="sebul dojang pilgi"></script>
+<style>
+  /* A dig through a codebase: each era left a layer, and each old layer kept something.
+     A brush (the pointer, or one that works on its own) clears the dust off one fossil
+     after another, and each gets a museum label, dated by git blame. Every dig site holds
+     several finds per layer, so the next visit turns up different ones. */
+  :root {
+    --sky: #f6e7c8;
+    --ink: #2a2118;
+    --soft: #6e5a44;
+    --tag: #fffaf0;
+    --dust: #d8c39b;
+    --l2023: #6b4a2b;
+    --l2019: #a4693b;
+    --l2017: #c99a5b;
+    --l2014: #b98a63;
+    --l2011: #8c6c52;
+    --amber: #f5a524;
+    --flag: #ef6c2f;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body { overflow: hidden; background: var(--sky); color: var(--ink); font-family: 'Spectral', Georgia, serif; }
+  .lang-ko body { font-family: 'Gowun Batang', serif; word-break: keep-all; }
+
+  /* clip: the stamp lands from 2.2× and the brush sweeps to the edge; neither may widen a phone's layout */
+  .site { container-type: size; position: relative; width: 100vw; height: 100vh; height: 100svh; overflow: clip; }
+
+  /* ---- above ground ---- */
+  .sky { position: absolute; inset: 0 0 auto; height: 21%; padding: clamp(14px, 3.4cqmin, 34px) clamp(16px, 4cqw, 40px) 0; }
+  .sky h1 { font-size: clamp(24px, 5cqmin, 50px); font-weight: 700; line-height: 1; letter-spacing: -.01em; }
+  .sky h1 > font-kku { color: var(--ink); }
+  .sky .sub { margin-top: .5em; font-size: clamp(13px, 2cqmin, 17px); font-style: italic; color: var(--soft); }
+  .lang-ko .sky .sub { font-style: normal; }
+  .sky .sub .nb { white-space: nowrap; } /* when it wraps, the hint stays one line */
+  .flags { position: absolute; right: 5cqw; bottom: 0; width: 26cqw; height: 70%; }
+  .flags svg { width: 100%; height: 100%; overflow: visible; }
+
+  /* ---- the ground ---- */
+  /* Brushing with the button held must not select the layer names, and a finger dragged
+     across the ground brushes instead of panning (with touch-action auto the browser took the
+     drag as a pan and cancelled the pointer after two moves, so a swipe cleared one spot). */
+  .ground { position: absolute; inset: 21% 0 0; -webkit-user-select: none; user-select: none; touch-action: none; }
+  .ground > svg.strata { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .era {
+    position: absolute;
+    left: clamp(10px, 2cqw, 22px);
+    z-index: 3;
+    padding: .2em .55em;
+    border-radius: 4px;
+    background: rgba(255, 250, 240, .86);
+    color: var(--ink);
+    font-size: clamp(11px, 1.8cqmin, 15px);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .era b { font-family: 'IBM Plex Mono', monospace; font-weight: 600; margin-right: .4em; }
+
+  .fossil { position: absolute; z-index: 1; translate: -50% -50%; cursor: pointer; }
+  .fossil:focus-visible { outline: 3px solid var(--flag); outline-offset: 6px; border-radius: 12px; }
+  .stone {
+    display: block;
+    padding: .55em .8em;
+    border-radius: 40% 46% 42% 50% / 52% 44% 56% 48%;
+    background: #e9dcc4;
+    box-shadow: inset -3px -4px 0 rgba(0, 0, 0, .14), inset 3px 3px 0 rgba(255, 255, 255, .45);
+    color: #4a3b2c;
+    font: 600 clamp(10px, 1.7cqmin, 15px)/1.3 'IBM Plex Mono', monospace;
+    white-space: nowrap;
+  }
+  .amber .stone { border-radius: 48% 52% 46% 54% / 56% 50% 50% 44%; background: radial-gradient(circle at 35% 30%, #ffd77a, var(--amber) 55%, #c97a10); color: #5b3505; box-shadow: inset -4px -5px 0 rgba(120, 60, 0, .3), 0 0 0 3px rgba(255, 215, 122, .35); }
+  .bones { display: flex; gap: 1.6cqw; }
+  .bones .stone { padding: .4em .6em; border-radius: 999px; }
+  .spine .stone { padding: .5em 1em; border-radius: 999px; background: repeating-linear-gradient(90deg, #efe3cc 0 14px, #d9c8aa 14px 17px); }
+  .trilobite .stone { border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%; background: repeating-linear-gradient(0deg, #e2d2b5 0 7px, #cdb894 7px 9px); }
+  /* The first find is not quite a fossil: when the dust comes off it grows legs and feelers,
+     scuttles, startles the brush, then tucks them in and plays dead. Now and then a leg twitches. */
+  .bug { position: absolute; inset: 0; pointer-events: none; font-size: clamp(10px, 1.9cqmin, 16px); }
+  /* legs along both long edges, like a trilobite (or a millipede) seen from above */
+  .bug::before, .bug::after {
+    content: '';
+    position: absolute;
+    left: 14%;
+    right: 12%;
+    height: 1.1em;
+    background: repeating-linear-gradient(to right, #5a4632 0 .18em, transparent .18em .72em);
+    scale: 1 0;
+    transition: scale .16s ease-out;
+  }
+  .bug::before { bottom: calc(100% - .2em); transform-origin: 50% 100%; }
+  .bug::after { top: calc(100% - .2em); transform-origin: 50% 0; }
+  /* two feelers off the front (the left end) */
+  .bug i { position: absolute; top: -1.2em; right: calc(100% - .55em); width: 1.4em; height: 1.4em; border: 0 solid #5a4632; border-width: .17em .17em 0 0; border-radius: 0 100% 0 0; transform-origin: 100% 100%; scale: 0; transition: scale .16s ease-out; }
+  .bug i + i { top: auto; bottom: -1.2em; border-width: 0 .17em .17em 0; border-radius: 0 0 100% 0; transform-origin: 100% 0; }
+  .alive .bug::before, .alive .bug::after { scale: 1 1; }
+  .alive .bug i { scale: 1; }
+  .scuttle .bug::before, .scuttle .bug::after { animation: scuttle .1s steps(2, jump-none) infinite alternate; }
+  .scuttle .bug i { animation: feel .16s ease-in-out infinite alternate; }
+  @keyframes scuttle { from { transform: skewX(-26deg); } to { transform: skewX(26deg); } }
+  @keyframes feel { from { rotate: -12deg; } to { rotate: 10deg; } }
+
+  /* Dust sits on a canvas over the ground and is brushed away. */
+  .dust { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none; }
+
+  .brush { position: absolute; z-index: 5; left: 0; top: 0; width: clamp(54px, 10cqmin, 96px); translate: -7% -93%; pointer-events: none; transition: opacity .3s; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .25)); }
+
+  /* Earlier finds keep a small numbered pin; only the newest has its full label. */
+  .pin {
+    position: absolute;
+    z-index: 3;
+    width: 1.9em;
+    height: 1.9em;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: var(--tag);
+    display: grid;
+    place-items: center;
+    font: 700 clamp(11px, 1.7cqmin, 14px)/1 'IBM Plex Mono', monospace;
+    right: -.9em;
+    top: -1em;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Museum labels. They lie above the brush (z 5): the label being read is never covered by
+     the brush working on the next find, which slides under it instead. */
+  .tag {
+    position: absolute;
+    z-index: 6;
+    width: clamp(170px, 30cqmin, 270px);
+    padding: .7em .85em .75em;
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    background: var(--tag);
+    box-shadow: 0 6px 0 rgba(42, 33, 24, .25);
+    font-size: clamp(12px, 1.9cqmin, 15px);
+    line-height: 1.35;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .tag .spec { display: block; font: 600 .84em 'IBM Plex Mono', monospace; color: var(--soft); }
+  /* the title is no larger than the note: the note carries the joke ("Does not say which year.") */
+  .tag .name { display: block; margin: .15em 0 .3em; font-weight: 700; font-size: 1em; }
+  .tag .note { font-style: italic; }
+  /* the credit line a museum label ends with, here from git blame (.84em: 10 px and up on the
+     smallest label, 12 px) */
+  .tag .blame, .card .blame { display: block; margin-top: .4em; font: 500 .84em 'IBM Plex Mono', 'Gowun Batang', monospace; color: var(--soft); }
+  .blame b { font-weight: inherit; }
+  /* When the author is the visitor, the name is the joke: ink, bold and larger than the title. */
+  .blame.me b { color: var(--ink); font-weight: 700; font-size: 1.36em; }
+  .lang-ko .tag .note { font-style: normal; }
+
+  /* The verdict lands in the empty topsoil band, so no fossil is covered. */
+  .stamp { position: absolute; z-index: 6; right: 5cqw; top: 1.5%; display: flex; align-items: center; gap: 2cqw; opacity: 0; pointer-events: none; }
+  .stamp .seal { flex: none; rotate: -6deg; white-space: nowrap; }
+  .stamp .seal { display: inline-block; padding: .25em .55em; border: .35em double #c0392b; border-radius: 10px; color: #c0392b; font: 700 clamp(20px, 4.2cqmin, 40px)/1 'Spectral', serif; background: rgba(255, 250, 240, .75); }
+  .stamp .seal > font-kku { color: #c0392b; }
+  .stamp .field { display: block; max-width: 15em; padding: .4em .6em; background: #fff6d6; color: #3b3329; font-size: clamp(13px, 2cqmin, 17px); line-height: 1.3; rotate: 3deg; box-shadow: 0 3px 0 rgba(0, 0, 0, .12); }
+  .stamp .field > font-kku { color: #3b3329; }
+
+  /* On a mid-width stage (the home's 648×732 portrait stage) the English seal folds into two lines,
+     so seal and note stay right of the "2023 AI-generated topsoil" chip. */
+  @media (max-width: 800px) {
+    .lang-en .stamp .seal { white-space: normal; max-width: 6.6em; line-height: 1.05; text-align: center; }
+  }
+
+  /* On narrow stages the label shows in one card at the top of the ground instead of next to the
+     fossil (placeCard moves it off the find it describes). */
+  .card { display: none; }
+  @media (max-width: 560px) {
+    .tag { display: none; }
+    /* z 7: a label opened again after the dig lies over the stamp until it folds back */
+    .card {
+      display: block;
+      position: absolute;
+      z-index: 7;
+      left: 64px;
+      right: 10px;
+      top: 4px;
+      padding: .5em .7em;
+      border: 1.5px solid var(--ink);
+      border-radius: 8px;
+      background: var(--tag);
+      font-size: 12px;
+      line-height: 1.3;
+      transition: opacity .3s;
+    }
+    .card:empty { opacity: 0; }
+    .card .spec { display: block; font: 600 11px 'IBM Plex Mono', monospace; color: var(--soft); }
+    .card .name { display: block; font-weight: 700; }
+    .era .label { display: none; }
+    /* code stays at 10 px on a phone; a slightly tighter set keeps the 49-character spine inside 328 px */
+    .stone { letter-spacing: -.03em; }
+    /* On a phone the finale sits in the 2023 topsoil, which holds no fossils, seal beside
+       note, so it never covers a find. */
+    .stamp { left: 62px; right: 8px; top: 8.5%; translate: 0 -50%; flex-direction: row; justify-content: flex-end; gap: 8px; }
+    .stamp .seal { font-size: 17px; line-height: 1.05; text-align: center; }
+    .lang-en .stamp .seal { white-space: normal; max-width: 6.6em; }
+    .stamp .field { min-width: 0; max-width: 13em; font-size: 12px; text-align: left; }
+    .flags { width: 34cqw; }
+    /* The hint line ("Please brush gently.") wraps short of the flags, which start at 61cqw;
+       on a short phone stage (358×396) the flags reach up beside it. */
+    .sky .sub { max-width: calc(61cqw - 22px); line-height: 1.25; }
+  }
+</style>
+</head>
+<body>
+<main class="site">
+  <header class="sky">
+    <h1 data-lang="en">Code Archaeology</h1>
+    <h1 data-lang="ko"><font-kku font="sebul" size="5.4cqmin">코드 발굴 현장</font-kku></h1>
+    <p class="sub" data-lang="en">Excavation site: main branch. <span class="nb">Please brush gently.</span></p>
+    <p class="sub" data-lang="ko">발굴지: main 브랜치. <span class="nb">살살 털어 주세요.</span></p>
+    <div class="flags" aria-hidden="true">
+      <svg viewBox="0 0 260 120" preserveAspectRatio="xMidYMax meet">
+        <path d="M40 120 V30" stroke="#5a4632" stroke-width="4" stroke-linecap="round"/>
+        <path d="M40 32 L78 42 L40 54 Z" fill="#ef6c2f"/>
+        <path d="M120 120 V48" stroke="#5a4632" stroke-width="4" stroke-linecap="round"/>
+        <path d="M120 50 L152 58 L120 68 Z" fill="#ef6c2f"/>
+        <path d="M30 116 H220" stroke="#5a4632" stroke-width="2.4" stroke-dasharray="7 6"/>
+        <path d="M206 120 V20" stroke="#5a4632" stroke-width="4" stroke-linecap="round"/>
+        <path d="M206 22 L244 32 L206 44 Z" fill="#ef6c2f"/>
+      </svg>
+    </div>
+  </header>
+
+  <section class="ground" aria-label="excavation">
+    <svg class="strata" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 0 H1000 V150 C 820 168, 640 132, 470 150 S 160 172, 0 146 Z" fill="var(--l2023)"/>
+      <path d="M0 146 C 160 172, 300 132, 470 150 S 820 168, 1000 150 V350 C 830 330, 640 372, 470 352 S 150 330, 0 352 Z" fill="var(--l2019)"/>
+      <path d="M0 352 C 150 330, 300 372, 470 352 S 830 330, 1000 350 V560 C 860 582, 680 540, 480 562 S 140 586, 0 560 Z" fill="var(--l2017)"/>
+      <path d="M0 560 C 140 586, 300 540, 480 562 S 860 582, 1000 560 V775 C 840 752, 640 796, 460 774 S 160 752, 0 776 Z" fill="var(--l2014)"/>
+      <path d="M0 776 C 160 752, 300 796, 460 774 S 840 752, 1000 775 V1000 H0 Z" fill="var(--l2011)"/>
+      <g fill="#7a9e4b"><path d="M120 0 c -6 -18 4 -28 0 -40 M128 0 c 8 -14 18 -16 20 -30" stroke="#5f8436" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M640 0 c -4 -16 6 -24 2 -36 M648 0 c 10 -10 16 -14 22 -24" stroke="#5f8436" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M860 0 c 4 -14 -4 -22 0 -30" stroke="#5f8436" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+      <g fill="rgba(255,255,255,.12)"><circle cx="210" cy="250" r="6"/><circle cx="760" cy="430" r="8"/><circle cx="380" cy="660" r="7"/><circle cx="880" cy="880" r="9"/><circle cx="90" cy="470" r="5"/><circle cx="560" cy="910" r="6"/></g>
+    </svg>
+
+    <p class="era" style="top: 4%"><b>2023</b><span class="label" data-lang="en">AI-generated topsoil</span><span class="label" data-lang="ko">AI가 만든 겉흙층</span></p>
+    <p class="era" style="top: 19%"><b>2019</b><span class="label" data-lang="en">Microservices, scattered</span><span class="label" data-lang="ko">흩어진 마이크로서비스층</span></p>
+    <p class="era" style="top: 39%"><b>2017</b><span class="label" data-lang="en">"Temporary fix" sediment</span><span class="label" data-lang="ko">'임시 수정' 퇴적층</span></p>
+    <p class="era" style="top: 60%"><b>2014</b><span class="label" data-lang="en">jQuery deposits</span><span class="label" data-lang="ko">jQuery 매장층</span></p>
+    <p class="era" style="top: 81%"><b>2011</b><span class="label" data-lang="en">The TODO layer</span><span class="label" data-lang="ko">TODO 지층</span></p>
+
+    <!-- fossil slots: x/y in % of the ground; the order is the order the brush visits them.
+         What is buried in each slot comes from FINDS in the script. -->
+    <div class="fossil trilobite" data-at="34 66" data-at-narrow="40 66" tabindex="0" role="button"></div>
+    <div class="fossil amber" data-at="30 46" data-at-narrow="42 41" tabindex="0" role="button"></div>
+    <div class="fossil" data-at="74 46" data-at-narrow="62 52" tabindex="0" role="button"></div>
+    <div class="fossil bones" data-at="62 25" data-at-narrow="55 29" tabindex="0" role="button"></div>
+    <div class="fossil spine" data-at="30 89" data-at-narrow="50 91" tabindex="0" role="button"></div>
+    <div class="fossil" data-at="76 85" data-at-narrow="72 79" tabindex="0" role="button"></div>
+
+    <canvas class="dust" aria-hidden="true"></canvas>
+    <div class="tags"></div>
+    <div class="card" aria-live="polite"></div>
+
+    <svg class="brush" viewBox="0 0 120 120" aria-hidden="true">
+      <path d="M62 58 L104 16" stroke="#8b5a2b" stroke-width="12" stroke-linecap="round"/>
+      <path d="M58 62 L104 16" stroke="#b07a42" stroke-width="5" stroke-linecap="round"/>
+      <rect x="44" y="52" width="26" height="16" rx="3" transform="rotate(-45 57 60)" fill="#9aa4ad"/>
+      <path d="M30 70 C 18 82, 12 96, 8 112 C 26 106, 40 98, 52 86 Z" fill="#e8c76a" stroke="#a27c2b" stroke-width="2.5" stroke-linejoin="round"/>
+    </svg>
+
+    <div class="stamp" aria-hidden="true">
+      <span class="seal" data-lang="en">Excavation complete</span>
+      <span class="seal" data-lang="ko"><font-kku font="dojang" size="5.6cqmin">발굴 완료</font-kku></span>
+      <span class="field" data-lang="en">Decision: preserve everything. Refactor next quarter.</span>
+      <span class="field" data-lang="ko"><font-kku font="pilgi" size="3cqmin" wrap-unit="word">결정: 전부 보존. 리팩터링은 다음 분기에.</font-kku></span>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const ground = document.querySelector('.ground');
+  const canvas = document.querySelector('.dust');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const brush = document.querySelector('.brush');
+  const tagsBox = document.querySelector('.tags');
+  const card = document.querySelector('.card');
+  const stamp = document.querySelector('.stamp');
+  const fossils = [...document.querySelectorAll('.fossil')];
+
+  // What each slot may hold: the code as it was found (ko when the Korean dig differs),
+  // and its museum label. spec is the specimen number, blame who git blame names.
+  const FINDS = [
+    [ // 2014, the trilobite
+      { code: 'var self = this;',
+        en: { spec: 'Specimen 14-01', blame: 'dhyoon (left 2016)', name: 'var self = this', note: 'A trilobite of the callback era. Declared extinct in 2015, when arrow functions arrived.' },
+        ko: { spec: '표본 14-01', blame: 'dhyoon (2016 퇴사)', name: 'var self = this', note: '콜백 시대의 삼엽충. 2015년 화살표 함수가 나오면서 멸종 판정을 받음.' } },
+      { code: '}); }); }); });',
+        en: { spec: 'Specimen 14-03', blame: 'mlee (left 2015)', name: 'Callback pyramid, tail end', note: 'Only the closing brackets survive. The opening has never been found.' },
+        ko: { spec: '표본 14-03', blame: 'mlee (2015 퇴사)', name: '콜백 피라미드 꼬리 부분', note: '닫는 괄호만 남았음. 여는 쪽은 아직 발견되지 않음.' } },
+      { code: '<!--[if lt IE 9]>', codeKo: '<object classid="clsid:…">',
+        en: { spec: 'Specimen 14-08', blame: 'webmaster (role abolished)', name: 'Ritual object', note: 'Offered to Internet Explorer 8 in exchange for safe passage.' },
+        ko: { spec: '표본 14-08', blame: 'webmaster (직책 폐지)', name: '액티브X 설치 유도 장치', note: '“보안 프로그램을 설치해야 합니다.” 이 지층의 모든 길이 여기로 통했음.' } },
+      { code: "$('.btn').live('click', save);",
+        en: { spec: 'Specimen 14-05', blame: 'mlee (left 2015)', name: 'An extinct method', note: 'Removed from jQuery in 2013. Still bound to every button here in 2014.' },
+        ko: { spec: '표본 14-05', blame: 'mlee (2015 퇴사)', name: '멸종한 메서드', note: 'jQuery에서는 2013년에 사라졌음. 이 지층에선 2014년에도 버튼마다 붙어 있음.' } },
+    ],
+    [ // 2017, in amber
+      { code: '// do not touch',
+        en: { spec: 'Specimen 17-02', blame: 'sjchoi (now CTO)', name: '// do not touch', note: 'Perfectly preserved in amber. Nobody ever dared.' },
+        ko: { spec: '표본 17-02', blame: 'sjchoi (현 CTO)', name: '// do not touch', note: '호박 속에 완벽하게 보존됨. 아무도 감히 손대지 못했음.' } },
+      { code: "// I don't know why this works",
+        en: { spec: 'Specimen 17-04', blame: 'hpark (left 2018)', name: 'Unexplained mechanism', note: 'Sealed in amber along with the author’s confusion.' },
+        ko: { spec: '표본 17-04', blame: 'hpark (2018 퇴사)', name: '작동 원리 미상', note: '작성자의 당혹감까지 함께 굳었음.' } },
+      { code: '// ask Dave before changing', codeKo: '// 수정 전 김 대리에게 문의',
+        en: { spec: 'Specimen 17-09', blame: 'dave (left 2017)', name: 'A standing order', note: 'Written by Dave himself, the year he left. Nobody has asked him yet.' },
+        ko: { spec: '표본 17-09', blame: '김 대리 (2017 퇴사)', name: '구전 지침', note: '김 대리가 직접 적고 그해 퇴사했음. 아직 아무도 못 물어봄.' } },
+    ],
+    [ // 2017, plain stone
+      { code: '// temporary fix, remove by Friday',
+        en: { spec: 'Specimen 17-05', blame: 'you', name: 'The temporary fix', note: 'Says “remove by Friday”. Does not say which year.' },
+        ko: { spec: '표본 17-05', blame: '나', name: '임시 수정', note: '“금요일까지 삭제”라고 적혀 있음. 몇 년도 금요일인지는 안 적혀 있음.' } },
+      { code: "setTimeout(render, 0); // don't ask",
+        en: { spec: 'Specimen 17-07', blame: 'yjlee (left 2019)', name: 'The zero-millisecond fix', note: 'Fixed a race condition by waiting zero milliseconds. It worked.' },
+        ko: { spec: '표본 17-07', blame: 'yjlee (2019 퇴사)', name: '0밀리초 수정', note: '0밀리초 기다려서 레이스 컨디션을 고쳤음. 그런데 그게 됐음.' } },
+      { code: 'if (user.id === 4217) return; // hotfix',
+        en: { spec: 'Specimen 17-11', blame: 'summer intern, 2017', name: 'Exception 4217', note: 'An exception made for one user. Widely believed to be the CEO.' },
+        ko: { spec: '표본 17-11', blame: '2017년 여름 인턴', name: '4217번 예외', note: '사용자 한 명만을 위한 예외. 대표님 계정이라는 설이 유력함.' } },
+    ],
+    [ // 2019, bones in pieces
+      { code: ['user-service', 'user-service-v2', 'user-service-final'],
+        en: { spec: 'Specimen 19-11', blame: 'platform team (disbanded)', name: 'user-service, in pieces', note: 'One service, found scattered across fourteen repositories.' },
+        ko: { spec: '표본 19-11', blame: '플랫폼팀 (해체)', name: '조각난 user-service', note: '서비스 하나가 저장소 열네 곳에 흩어져 발견됨.' } },
+      { code: ['/api/v1', '/api/v2', '/api/v3'],
+        en: { spec: 'Specimen 19-14', blame: 'four teams', name: 'Three generations of one API', note: 'All three still in production. Something calls v1 every Tuesday.' },
+        ko: { spec: '표본 19-14', blame: '네 팀', name: 'API 삼대', note: '셋 다 아직 운영 중. 화요일마다 누군가 v1을 부름.' } },
+      { code: ['node_modules', 'node_modules', 'node_modules'],
+        en: { spec: 'Specimen 19-20', blame: 'npm install', name: 'node_modules, nested', note: 'Three nested copies. Heavier than the rest of the site combined.' },
+        ko: { spec: '표본 19-20', blame: 'npm install', name: '겹겹이 node_modules', note: '세 겹으로 중첩됨. 유적 나머지를 다 합친 것보다 무거움.' } },
+    ],
+    [ // 2011, the long spine
+      { code: 'function handleEverything() { /* 900 lines */ }',
+        en: { spec: 'Specimen 11-00', blame: 'the founder', name: 'handleEverything()', note: 'A 900-line function, fully articulated. Every joint still holds.' },
+        ko: { spec: '표본 11-00', blame: '창업자', name: 'handleEverything()', note: '900줄짜리 함수 화석. 뼈마디가 지금도 전부 붙어 있음.' } },
+      { code: 'catch (e) { log("should never happen"); }',
+        en: { spec: 'Specimen 11-03', blame: 'yhshin (left 2012)', name: 'The impossible case', note: 'The log says it happened 41,000 times in 2012 alone.' },
+        ko: { spec: '표본 11-03', blame: 'yhshin (2012 퇴사)', name: '일어날 리 없는 일', note: '로그에는 2012년 한 해에만 41,000번 찍혀 있음.' } },
+      { code: `"SELECT * FROM users WHERE id = '" + id + "'"`,
+        en: { spec: 'Specimen 11-05', blame: 'contractor, 2011', name: 'Hand-assembled SQL', note: 'Still opens for anyone who knocks. One quote mark is enough.' },
+        ko: { spec: '표본 11-05', blame: '외주, 2011', name: '손으로 이어 붙인 SQL', note: '지금도 누가 두드리든 열어 줌. 따옴표 하나면 충분함.' } },
+    ],
+    [ // 2011, plain stone
+      { code: '// TODO: fix later',
+        en: { spec: 'Specimen 11-07', blame: 'jhkim (left 2016)', name: '// TODO: fix later', note: 'The oldest known TODO. Later never came.' },
+        ko: { spec: '표본 11-07', blame: 'jhkim (2016 퇴사)', name: '// TODO: fix later', note: '가장 오래된 TODO. ‘나중’은 끝내 오지 않았음.' } },
+      { code: '// FIXME',
+        en: { spec: 'Specimen 11-09', blame: 'anonymous', name: 'A bare FIXME', note: 'No further detail. Scholars still argue about what was broken.' },
+        ko: { spec: '표본 11-09', blame: '익명', name: '설명 없는 FIXME', note: '더 적힌 건 없음. 무엇이 고장이었는지 학계에서도 의견이 갈림.' } },
+      { code: '// sorry about this', codeKo: '// 죄송합니다',
+        en: { spec: 'Specimen 11-12', blame: 'you', name: 'An apology', note: 'The only apology recovered from the site.' },
+        ko: { spec: '표본 11-12', blame: '나', name: '사과문', note: '현장에서 나온 유일한 사과문.' } },
+    ],
+  ];
+  // Each visit turns the dig over: a counter kept in this browser moves every slot on to its
+  // next find. Slots are offset so one visit mixes them. A first visit gets the representative
+  // dig, 4: the "extinct" var self in the live slot, Dave, the temporary fix whose git blame is
+  // you, the three APIs, the SQL and the oldest TODO. With storage blocked, every visit is a first.
+  let visit = 4;
+  try {
+    const kept = localStorage.getItem('tty.dig');
+    if (kept !== null && Number.isFinite(+kept)) visit = +kept;
+    localStorage.setItem('tty.dig', String(visit + 1));
+  } catch (e) { /* storage blocked: the representative dig */ }
+  const LABELS = fossils.map((f, k) => {
+    const find = FINDS[k][(visit + k) % FINDS[k].length];
+    const code = (TTY.lang === 'ko' && find.codeKo) || find.code;
+    f.replaceChildren(...[].concat(code).map((text) => Object.assign(document.createElement('span'), { className: 'stone', textContent: text })));
+    const label = find[TTY.lang];
+    return { spec: label.spec, name: label.name, note: label.note, blame: label.blame };
+  });
+  // git blame names the author; when that is you (나), the name is set in ink, bold and larger.
+  const ME = TTY.t({ en: 'you', ko: '나' });
+  // The trilobite slot holds a live one: legs on both sides and two feelers, tucked in until it is dug up.
+  const bug = fossils[0];
+  bug.append(Object.assign(document.createElement('span'), { className: 'bug', innerHTML: '<i></i><i></i>' }));
+
+  // Place fossils from data-at (data-at-narrow on phone-sized stages) and build their tags.
+  const narrow = () => innerWidth <= 560;
+  const placeAll = () => fossils.forEach((f) => {
+    const [x, y] = ((narrow() && f.dataset.atNarrow) || f.dataset.at).split(' ').map(Number);
+    f.style.left = x + '%';
+    f.style.top = y + '%';
+  });
+  placeAll();
+  fossils.forEach((f, i) => {
+    const [x, y] = f.dataset.at.split(' ').map(Number);
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    tag.innerHTML = '<span class="spec"></span><span class="name"></span><span class="note"></span><span class="blame">git blame: <b></b></span>';
+    ['spec', 'name', 'note'].forEach((key, k) => { tag.children[k].textContent = LABELS[i][key]; });
+    tag.querySelector('b').textContent = LABELS[i].blame;
+    if (LABELS[i].blame === ME) tag.lastChild.classList.add('me');
+    // labels sit on the side with more room, above unless the fossil is near the top
+    tag.style.left = x > 55 ? `calc(${x}% - clamp(170px, 30cqmin, 270px) - 3%)` : `calc(${x}% + 3%)`;
+    tag.style.top = y < 40 ? `calc(${y}% + 4%)` : `calc(${y}% - 4%)`;
+    tag.style.translate = y < 40 ? '0 0' : '0 -100%';
+    tagsBox.append(tag);
+    const pin = document.createElement('span');
+    pin.className = 'pin';
+    pin.textContent = i + 1;
+    f.append(pin);
+    f._tag = tag;
+    f._tagRight = x <= 55; // the label opens on this fossil's right
+    f._pin = pin;
+    f._done = false;
+  });
+
+  /* ---- dust ---- */
+  let W = 0, H = 0, dpr = 1;
+  const rectOf = (f) => {
+    const g = ground.getBoundingClientRect();
+    const r = f.getBoundingClientRect();
+    return { x: r.left - g.left, y: r.top - g.top, w: r.width, h: r.height, cx: r.left - g.left + r.width / 2, cy: r.top - g.top + r.height / 2 };
+  };
+  function seed(n) { let s = n * 9301 + 49297; return () => ((s = (s * 9301 + 49297) % 233280) / 233280); }
+  // A heap of sand over fossil i, lumpy at the edges, from a fixed seed so the same heap can be
+  // drawn again. Painted, it is the dust; unpainted (one fill colour, no specks), it is the heap's
+  // outline, which clearAround keeps out of its eraser. Under the lumps, a row of round ones
+  // along the fossil: without it, gaps between lumps let code show through ("…ERE id" of the SQL,
+  // the "7" of 4217) before anything was dug. (Their own seed: the heap above stays as it was.)
+  function heap(c, i, r, paint) {
+    const bed = seed(i + 40), step = r.h * .6;
+    for (let x = r.x + r.h * .3; x < r.x + r.w - r.h * .3 + step; x += step) {
+      const rad = r.h * (.7 + bed() * .12), colour = `hsl(${37 + bed() * 6}, ${34 + bed() * 10}%, ${68 + bed() * 8}%)`;
+      if (paint) c.fillStyle = colour;
+      c.beginPath();
+      c.arc(Math.min(x, r.x + r.w - r.h * .3), r.cy + (bed() - .5) * r.h * .1, rad, 0, Math.PI * 2);
+      c.fill();
+    }
+    const rnd = seed(i + 3);
+    for (let k = 0; k < 70; k++) {
+      const px = r.x - r.w * .08 + rnd() * r.w * 1.16;
+      const py = r.y - r.h * .25 + rnd() * r.h * 1.5;
+      const rad = Math.max(r.h * .5, 10) * (.6 + rnd() * .9);
+      const colour = `hsl(${36 + rnd() * 8}, ${32 + rnd() * 14}%, ${66 + rnd() * 12}%)`;
+      const ry = rad * (.7 + rnd() * .4), turn = rnd() * 3;
+      if (paint) c.fillStyle = colour;
+      c.beginPath();
+      c.ellipse(px, py, rad, ry, turn, 0, Math.PI * 2);
+      c.fill();
+    }
+    if (!paint) return;
+    c.fillStyle = 'rgba(120, 92, 60, .35)';
+    for (let k = 0; k < 90; k++) { c.fillRect(r.x + rnd() * r.w, r.y - r.h * .2 + rnd() * r.h * 1.4, 1.6, 1.6); }
+  }
+  function drawDust() {
+    const g = ground.getBoundingClientRect();
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = g.width; H = g.height;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.globalCompositeOperation = 'source-over';
+    fossils.forEach((f, i) => { if (!f._done) heap(ctx, i, rectOf(f), true); });
+  }
+
+  function sweep(x, y) {
+    const rad = Math.max(16, Math.min(W, H) * .045);
+    ctx.globalCompositeOperation = 'destination-out';
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, rad);
+    grad.addColorStop(0, 'rgba(0,0,0,.9)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(x, y, rad, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // How much dust is left over a fossil (0..1).
+  function dustLeft(f) {
+    const r = rectOf(f);
+    const x = Math.max(0, Math.floor(r.x * dpr)), y = Math.max(0, Math.floor(r.y * dpr));
+    const w = Math.max(1, Math.floor(r.w * dpr)), h = Math.max(1, Math.floor(r.h * dpr));
+    const data = ctx.getImageData(x, y, w, h).data;
+    let left = 0, seen = 0;
+    for (let i = 3; i < data.length; i += 4 * 7) { seen++; if (data[i] > 60) left++; }
+    return seen ? left / seen : 0;
+  }
+
+  /* ---- revealing ---- */
+  // Timing, in ms. Nobody touching anything: the brush digs the live find in 1.4 strokes (it is
+  // out at 1.7 s and wakes at 1.9 s) and every other find in 1.2. After each find it rests, so a
+  // label is up about 3.6 s (the rest and the next dig), the last one 2.8 s. The live find's label
+  // waits until it has played dead, so the first three seconds are the bug's alone. Measured
+  // (2026-10-14): finds at 1.7, 6.6, 10.3, 13.9, 17.6 and 21.3 s, the stamp at 24.1 s (down by
+  // 24.5), the bug scuttles once more at 25.6 s. index.json gives the page 28 s.
+  const STROKE = 1200, REST = 2200, BUG_WAIT = 1550, FINISH = 2800, TAG_BEAT = 1000;
+  let found = 0;
+  let active = null;   // the find whose label is open (or about to open)
+  let pending = 0;     // the live find's label, waiting
+  let finished = false;
+  let fold = 0;        // after the dig, a label opened again folds back into its pin
+  // A pill around a box (arcTo, not roundRect, which older Safari lacks).
+  function pill(c, x, y, w, h) {
+    const q = Math.min(w, h) / 2;
+    c.moveTo(x + q, y);
+    c.arcTo(x + w, y, x + w, y + h, q);
+    c.arcTo(x + w, y + h, x, y + h, q);
+    c.arcTo(x, y + h, x, y, q);
+    c.arcTo(x, y, x + w, y, q);
+    c.closePath();
+  }
+  // Erase whatever dust is left over a fossil, fading it out over a few frames.
+  // The eraser is drawn once, on a canvas of its own: an ellipse over this find's heap, less the
+  // heaps of the finds still buried, plus this find's own stones again, so it comes clean where
+  // a buried neighbour's heap reaches over it. On a phone the heaps overlap: the bare ellipse
+  // uncovered half of "if (user.id === 4217)" with the trilobite at 1.7 s, and a rect clipped
+  // around each buried find cut straight edges into the sand. Now the other heaps keep their own
+  // lumpy outline, and where they meet this find the sand stops at the stone's own rounded edge.
+  function clearAround(f) {
+    const r = rectOf(f);
+    // the heap reaches about 1.4 fossil-heights past the fossil's edge
+    const rx = r.w / 2 + r.h * 1.7 + 12, ry = r.h / 2 + r.h * 2 + 12;
+    const m = document.createElement('canvas');
+    m.width = canvas.width;
+    m.height = canvas.height;
+    const mc = m.getContext('2d');
+    mc.setTransform(dpr, 0, 0, dpr, 0, 0);
+    mc.fillStyle = 'rgba(0,0,0,.3)';
+    mc.beginPath();
+    mc.ellipse(r.cx, r.cy, rx, ry, 0, 0, Math.PI * 2);
+    mc.fill();
+    mc.globalCompositeOperation = 'destination-out';
+    mc.fillStyle = '#000';
+    fossils.forEach((g, i) => { if (g !== f && !g._done) heap(mc, i, rectOf(g), false); });
+    // This find's stones, each an ellipse a little larger than the stone (the live one's taller,
+    // for its legs, .9em out), and a pill as well for the pill-shaped spine and bones. Soft at the
+    // edge: drawn off the canvas, with the blurred shadow brought back into place (older Safari
+    // has no ctx.filter).
+    mc.globalCompositeOperation = 'source-over';
+    const off = W + 100;
+    mc.shadowColor = 'rgba(0,0,0,.3)';
+    mc.shadowBlur = 4 * dpr;
+    mc.shadowOffsetX = off * dpr;
+    const padY = f === bug ? 13 : 6, round = f.matches('.spine, .bones');
+    mc.beginPath();
+    f.querySelectorAll('.stone').forEach((s) => {
+      const k = rectOf(s);
+      mc.moveTo(k.cx - off + k.w / 2 + 6, k.cy);
+      mc.ellipse(k.cx - off, k.cy, k.w / 2 + 6, k.h / 2 + padY, 0, 0, Math.PI * 2);
+      if (round) pill(mc, k.x - off - 2, k.y - 2, k.w + 4, k.h + 4);
+    });
+    mc.fill('nonzero');
+    let n = 0;
+    const step = () => {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.drawImage(m, 0, 0);
+      ctx.restore();
+      if (++n < (TTY.reduce ? 30 : 16)) TTY.reduce ? step() : requestAnimationFrame(step);
+    };
+    step();
+  }
+  function pinUp(f) {
+    f._tag.style.opacity = 0;
+    f._pin.style.opacity = 1;
+    if (!TTY.reduce) f._pin.animate([{ scale: .2 }, { scale: 1.15, offset: .7 }, { scale: 1 }], { duration: 360 });
+  }
+  // Open a find's label (and the phone card); the label open before it becomes a pin.
+  function openTag(f) {
+    clearTimeout(pending);
+    clearTimeout(fold);
+    if (active && active !== f) pinUp(active);
+    active = f;
+    f._pin.style.opacity = 0;
+    const tag = f._tag;
+    tag.style.opacity = 1;
+    if (!TTY.reduce) tag.animate([{ opacity: 0, transform: 'rotate(-4deg) scale(.9)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
+    card.replaceChildren(...[...tag.children].map((c) => c.cloneNode(true)));
+    card.style.opacity = '';
+    placeCard(f);
+  }
+  // On a phone the card lies at the top of the ground. Where that covers the find it describes
+  // (the 2019 bones on a 358×396 or 328×408 stage: 51–81% of "/api/v1 /api/v2 /api/v3" lay under
+  // it), it moves: just below that find, else to the bottom of the ground, else just above the
+  // find, wherever it covers least of the finds still buried (the next one counts three times,
+  // the brush is about to work there). Finds already dug may lie under it: they have been read.
+  const boxOf = (els, pad = 0) => {
+    const b = { t: Infinity, b: -Infinity, l: Infinity, r: -Infinity };
+    els.forEach((e) => { const r = e.getBoundingClientRect(); b.t = Math.min(b.t, r.top - pad); b.b = Math.max(b.b, r.bottom + pad); b.l = Math.min(b.l, r.left - pad); b.r = Math.max(b.r, r.right + pad); });
+    return b;
+  };
+  const meet = (a, b) => a.l < b.r + 4 && a.r > b.l - 4 && a.t < b.b + 4 && a.b > b.t - 4;
+  const shared = (a, b) => Math.max(0, Math.min(a.r, b.r) - Math.max(a.l, b.l)) * Math.max(0, Math.min(a.b, b.b) - Math.max(a.t, b.t));
+  function placeCard(f) {
+    card.style.top = '';
+    if (!f || !narrow()) return;
+    const c = boxOf([card]), s = boxOf([...f.querySelectorAll('.stone')]);
+    if (!meet(c, s)) return;
+    const g = ground.getBoundingClientRect(), h = c.b - c.t;
+    const buried = fossils.filter((o) => o !== f && !o._done);
+    const cost = (t) => {
+      const at = { t, b: t + h, l: c.l, r: c.r };
+      if (t < g.top + 4 || at.b > g.bottom - 4 || meet(at, s)) return Infinity;
+      return buried.reduce((sum, o, k) => sum + shared(at, boxOf([o], 4)) * (k ? 1 : 3), 0);
+    };
+    const best = [s.b + 8, g.bottom - 4 - h, s.t - 8 - h].reduce((a, t) => (cost(t) < cost(a) ? t : a));
+    if (cost(best) < Infinity) card.style.top = (best - g.top) + 'px';
+  }
+  function reveal(f) {
+    if (f._done) return;
+    f._done = true;
+    f._dugAt = performance.now();
+    found += 1;
+    clearAround(f);
+    if (!TTY.reduce) f.animate([{ transform: 'none' }, { transform: 'translateY(-4px) scale(1.04)' }, { transform: 'none' }], { duration: 500 });
+    if (f === bug && !TTY.reduce) {
+      wakeUp();
+      // Its label comes once it has played dead. A find dug in the meantime files it under its pin.
+      clearTimeout(fold);
+      if (active) pinUp(active);
+      active = bug;
+      card.style.opacity = 0;
+      pending = setTimeout(() => openTag(bug), BUG_WAIT);
+    } else {
+      if (f === bug) wakeUp();
+      openTag(f);
+    }
+    if (found === fossils.length) setTimeout(finish, TTY.reduce ? 0 : FINISH + (f === bug ? BUG_WAIT : 0));
+  }
+  // A find already dug, pressed again: its label opens again. The live one scuttles as well.
+  function look(f) {
+    openTag(f);
+    if (f === bug && !TTY.reduce) legs(700, .7);
+    // After the dig the stamp is the last scene; a label opened over it folds back after a while.
+    if (finished) fold = setTimeout(() => { if (active === f) { pinUp(f); active = null; card.style.opacity = 0; } }, 6000);
+  }
+  // Legs out and scuttling for ms; k > 0 also shakes the find from side to side (k of the full step).
+  let legsT = [];
+  function legs(ms, k) {
+    legsT.forEach(clearTimeout);
+    bug.classList.add('alive', 'scuttle');
+    if (k) {
+      const step = k * Math.min(30, Math.max(10, bug.offsetWidth * .2));
+      bug.animate([
+        { transform: 'none' },
+        { transform: `translateX(${-step}px)`, offset: .25 },
+        { transform: `translateX(${step * .8}px)`, offset: .55 },
+        { transform: `translateX(${-step * .4}px)`, offset: .8 },
+        { transform: 'none' },
+      ], { duration: ms, easing: 'ease-in-out' });
+    }
+    legsT = [setTimeout(() => bug.classList.remove('scuttle'), ms + 50), setTimeout(() => bug.classList.remove('alive'), ms + 250)];
+  }
+  // The 2014 find is alive. It scuttles left and right, the brush jumps back, and then it
+  // freezes and tucks its legs in as if nothing happened.
+  function wakeUp() {
+    if (TTY.reduce) { bug.classList.add('alive'); return; }
+    setTimeout(() => {
+      legs(900, 1);
+      // (on the transform list, so the turn is about the brush where it is, not where it started)
+      // It leaps away from the side its label opens on, so it never lands on the text.
+      const at = brush.style.transform || 'none', bw = brush.getBoundingClientRect().width; // (an <svg> has no offsetWidth)
+      const away = bug._tagRight ? -1 : 1;
+      brush.animate([
+        { transform: at },
+        { transform: `${at} translate(${away * bw * .45}px, ${-bw * .7}px) rotate(-28deg)`, offset: .18 },
+        { transform: `${at} translate(${away * bw * .4}px, ${-bw * .62}px) rotate(-22deg)`, offset: .7 },
+        { transform: at },
+      ], { duration: 1050, easing: 'ease-out' });
+      twitchLater();
+    }, 180);
+  }
+  // Every so often, long after it was catalogued, one leg moves.
+  let twitching = 0;
+  function twitchLater() {
+    clearTimeout(twitching);
+    twitching = setTimeout(() => { if (!bug.classList.contains('scuttle')) legs(210, 0); twitchLater(); }, 6500 + Math.random() * 3000);
+  }
+  function finish() {
+    finished = true;
+    clearTimeout(pending);
+    if (active) pinUp(active);
+    active = null;
+    card.style.opacity = 0;
+    // (once it has faded where it was: a card dropped below the bones would jump to the top)
+    setTimeout(() => { if (!active) card.style.top = ''; }, 320);
+    stamp.style.opacity = 1;
+    // The brush is put down so it does not lie over the last find; a visitor's hand brings it back.
+    brush.style.opacity = 0;
+    if (TTY.reduce) return;
+    stamp.animate([{ opacity: 0, transform: 'scale(2.2)' }, { opacity: 1, transform: 'scale(.95)', offset: .7 }, { opacity: 1, transform: 'none' }], { duration: 520, easing: 'cubic-bezier(.5, 0, .9, .4)' });
+    // A second after the stamp is down, the catalogued find scuttles once more: "preserve
+    // everything" includes the live bug. (No random twitch may come first or steal the beat.)
+    clearTimeout(twitching);
+    twitching = setTimeout(() => { legs(700, .7); twitchLater(); }, 520 + TAG_BEAT);
+  }
+
+  /* ---- the brush ---- */
+  let auto = null;
+  // When a hand last held the brush. Not 0: rAF time starts at the page's own start, so 0 kept
+  // the brush waiting until 2.5 s after load, and a page opened on its own revealed its first
+  // find at about 4.2 s instead of 1.7 s (on the home stage the page is loaded early, so it hid).
+  let lastHand = -Infinity;
+  const moveBrush = (x, y) => { brush.style.transform = `translate(${x}px, ${y}px)`; };
+  function handSweep(x, y, byHand = true) {
+    moveBrush(x, y);
+    sweep(x, y);
+    if (!byHand) return;
+    if (!TTY.reduce) brush.style.opacity = '';
+    const f = fossils.find((g) => !g._done && (() => { const r = rectOf(g); return x > r.x - 20 && x < r.x + r.w + 20 && y > r.y - 20 && y < r.y + r.h + 20; })());
+    if (f && dustLeft(f) < .3) reveal(f);
+  }
+  ground.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'mouse' || e.buttons) {
+      const g = ground.getBoundingClientRect();
+      lastHand = performance.now();
+      handSweep(e.clientX - g.left, e.clientY - g.top);
+    }
+  });
+  ground.addEventListener('pointerdown', (e) => {
+    const g = ground.getBoundingClientRect();
+    lastHand = performance.now();
+    handSweep(e.clientX - g.left, e.clientY - g.top);
+  });
+  fossils.forEach((f) => {
+    // A find just dug by the pointerdown under this click is not opened twice.
+    const press = () => (!f._done ? reveal(f) : performance.now() - f._dugAt > 400 && look(f));
+    f.addEventListener('click', press);
+    f.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); press(); } });
+  });
+
+  // When nobody holds the brush, it works through the fossils by itself: 1.4 strokes over the
+  // live find, 1.2 over the others, then a pause to read the label (see the timing above).
+  function autoDig() {
+    let t0 = 0, restUntil = 0;
+    const loop = (now) => {
+      auto = requestAnimationFrame(loop);
+      if (now - lastHand < 2500 || now < restUntil) return;
+      const target = fossils.find((f) => !f._done);
+      if (!target) { cancelAnimationFrame(auto); return; } // all dug up: stop the loop
+      if (!t0) t0 = now;
+      const r = rectOf(target);
+      const need = target === bug ? 1.4 : 1.2;
+      const p = ((now - t0) % STROKE) / STROKE;
+      const strokes = (now - t0) / STROKE;
+      // The stroke is phased so that at the reveal the brush sits at the end of the fossil away
+      // from its label, and rests there, clear of the text.
+      const phase = (target._tagRight ? .75 : .25) - (need % 1);
+      const x = r.x + r.w * (.5 + .5 * Math.sin((p + phase) * Math.PI * 2));
+      const y = r.cy + r.h * .55 * Math.cos(p * Math.PI * 4);
+      handSweep(x, y, false);
+      // (the live find's label opens late, so its rest is longer by about as much)
+      if (strokes > need) { reveal(target); t0 = 0; restUntil = now + REST + (target === bug ? BUG_WAIT - 300 : 0); }
+    };
+    auto = requestAnimationFrame(loop);
+  }
+
+  addEventListener('resize', () => { placeAll(); drawDust(); placeCard(active); });
+  if (TTY.reduce) {
+    drawDust();
+    fossils.forEach(reveal);
+    brush.style.opacity = 0;
+  } else {
+    drawDust();
+    moveBrush(W * .62, H * .1);
+  }
+  TTY.onShow(() => { if (!TTY.reduce) autoDig(); });
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(() => { if (!TTY.reduce) drawDust(); TTY.ready(); });
+})();
+</script>
+</body>
+</html>

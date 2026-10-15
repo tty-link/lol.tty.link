@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>USB Superposition | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gabarito:wght@500;700;900&family=STIX+Two+Text:ital,wght@1,500&family=IBM+Plex+Sans+KR:wght@500;600&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="sticker dunggeun"></script>
+<style>
+  /* A textbook figure for a law of nature: a USB-A plug only goes in after it has been
+     flipped three times. Cutaway drawing, quantum annotations, one tired cable. */
+  :root {
+    --paper: #f4f6fb;
+    --grid: #dfe5f3;
+    --ink: #151824;
+    --soft: #5a6177;
+    --psi: #2c5cff;
+    --bonk: #ff5a36;
+    --steel-a: #f1f4f8;
+    --steel-b: #a9b2c0;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 28px 28px,
+      var(--paper);
+    color: var(--ink);
+    font-family: 'Gabarito', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', system-ui, sans-serif; word-break: keep-all; }
+
+  .lab {
+    container-type: size;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas: "title count" "scene scene" "notes action";
+    gap: 2cqh 4cqw;
+    width: 100vw;
+    height: 100vh;
+    height: 100svh;
+    padding: clamp(16px, 4.4cqmin, 44px);
+  }
+
+  .title { grid-area: title; align-self: start; }
+  /* At least 26px, a little less only where 26px would break the line (328px stages). */
+  .title h1 { font-size: clamp(min(26px, 7.1cqi), 5.6cqmin, 54px); font-weight: 900; line-height: 1.02; letter-spacing: -.02em; }
+  .title .usb { font-family: 'Gabarito', sans-serif; font-weight: 900; }
+  .title .kk { display: inline-flex; align-items: baseline; gap: .1em; flex-wrap: wrap; }
+
+  .count { grid-area: count; text-align: right; }
+  .count .label { font-size: clamp(12px, 1.9cqmin, 15px); font-weight: 700; color: var(--soft); }
+  .count .label > font-kku { color: var(--soft); }
+  /* The digit sits at the right edge of a wide block: the bump grows it from there, not from the
+     block's middle (which pushed it 30px to the right, onto the edge of the home stage). */
+  .count .num { display: block; font-size: clamp(54px, 13cqmin, 120px); font-weight: 900; line-height: .9; color: var(--psi); font-variant-numeric: tabular-nums; transform-origin: right center; }
+  .count .verdict { max-width: 15em; margin-top: 4px; font-size: clamp(13px, 2cqmin, 17px); font-weight: 700; min-height: 2.6em; }
+  /* The notification as words: read out everywhere, shown on small stages (where the figure is
+     cropped and the drawn notification hidden). */
+  .count .os { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+  .os-badge { visibility: hidden; }
+  .os.on .os-badge { visibility: visible; }
+  .os-badge circle { fill: var(--psi); }
+  .os-badge path { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .os b { font-weight: 700; }
+  /* The longest message, invisible, holds its room from the start: nothing moves when it arrives. */
+  .os-msg { display: grid; }
+  .os-now, .os-room { grid-area: 1 / 1; }
+  .os-sub, .os-room span { display: block; }
+  .os-room { visibility: hidden; }
+
+  .scene { grid-area: scene; position: relative; display: grid; place-items: center; min-height: 0; }
+  .scene svg { width: 100%; max-height: 100%; overflow: hidden; }
+  .note {
+    position: absolute;
+    left: 4%;
+    top: 2%;
+    max-width: 24em;
+    padding: 10px 14px;
+    border: 1.5px solid var(--psi);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .85);
+    color: var(--psi);
+    font-size: clamp(13px, 2.1cqmin, 17px);
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .note > font-kku { color: var(--psi); }
+  .eq { display: block; margin-top: 4px; font-family: 'STIX Two Text', serif; font-style: italic; font-weight: 500; font-size: 1.15em; color: var(--ink); }
+
+  /* Fig. 2 sits under the drawing, like the smaller figure on a textbook page. */
+  .fig2 { position: absolute; left: 4%; bottom: 2%; display: flex; align-items: center; gap: 12px; margin: 0; color: var(--ink); font-size: clamp(12px, 1.8cqmin, 15px); line-height: 1.35; }
+  .fig2 svg { flex: none; width: clamp(76px, 11cqmin, 108px); }
+  .fig2 figcaption { color: var(--soft); }
+  .fig2 b { color: var(--ink); }
+
+  .notes { grid-area: notes; align-self: end; font-size: clamp(12px, 1.9cqmin, 15px); color: var(--soft); }
+  .notes b { color: var(--ink); }
+
+  .action { grid-area: action; align-self: end; justify-self: end; }
+  .again {
+    min-height: 44px;
+    padding: 0 20px;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ink);
+    font: 700 clamp(14px, 2cqmin, 16px)/1 inherit;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 3px 0 var(--ink);
+  }
+  .again:active { translate: 0 3px; box-shadow: 0 0 0 var(--ink); }
+  .again:focus-visible { outline: 3px solid var(--psi); outline-offset: 3px; }
+
+  .bonk-word { opacity: 0; transform-box: fill-box; transform-origin: center; }
+  /* Drawn over the port mouth, where the plug sits once it is in: clicks go through to the plug. */
+  .burst, .bonk-word { pointer-events: none; }
+  .toast { opacity: 0; }
+  #flipper, .burst, .c-plug { transform-box: fill-box; transform-origin: center; }
+  #wave { transform-box: view-box; transform-origin: 0 210px; }
+
+  /* Portrait screens, and small or short stages of any shape (the phone home stage is 358×396,
+     which is still landscape; a phone held sideways gets 508×339): the figure is cropped to the
+     plug and the port, the note moves under it, and the notification, both of its messages, is
+     written beside the counter instead of drawn. */
+  @media (max-aspect-ratio: 4/5), (max-width: 480px), (max-height: 420px) {
+    .lab {
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto 1fr auto;
+      grid-template-areas: "title title" "count count" "scene scene" "notes action";
+      gap: 10px 12px;
+    }
+    /* The counter on the left (label over the digit) and, beside it, the verdict over the
+       notification, so the notification costs the figure no height of its own. */
+    .count { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "label verdict" "num os"; gap: 3px 12px; align-items: end; text-align: left; }
+    .count .label { grid-area: label; }
+    .count .num { grid-area: num; align-self: start; font-size: 44px; transform-origin: center; }
+    .count .verdict { grid-area: verdict; max-width: none; min-height: 0; margin: 0; }
+    .count .os {
+      grid-area: os; align-self: start;
+      position: static; width: auto; height: auto; overflow: visible; clip: auto; clip-path: none; white-space: normal;
+      display: flex; align-items: flex-start; gap: 6px;
+      font-size: 13.5px; line-height: 1.3; font-weight: 500; color: var(--ink);
+    }
+    .os-badge { flex: none; width: 15px; height: 15px; margin-top: 1px; }
+    .scene { display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+    .scene svg { flex: none; }
+    .note { position: static; max-width: none; align-self: stretch; }
+    .fig2 { position: static; align-self: flex-start; padding-left: 4px; }
+    .fig2 svg { width: 64px; }
+    .toast { display: none; }
+  }
+  /* A small stage that is not portrait has no height to spare: tighter spacing, and the figure
+     takes whatever height the note and Fig. 2 leave (the drawing scales to fit inside it). */
+  @media (min-aspect-ratio: 4/5) and (max-width: 480px), (min-aspect-ratio: 4/5) and (max-height: 420px) {
+    .lab { gap: 6px 10px; padding: 12px 14px; }
+    .scene { justify-content: flex-start; gap: 6px; }
+    .scene svg { flex: 1 1 0; min-height: 0; }
+    .note { padding: 6px 10px; border-radius: 10px; line-height: 1.3; }
+    .eq { margin-top: 2px; }
+    .fig2 { gap: 8px; font-size: 12px; line-height: 1.3; }
+    /* No taller than the two caption lines beside it, and big enough to see it flip. */
+    .fig2 svg { width: 60px; }
+  }
+  html:not(.embedded) .lab { padding-bottom: max(clamp(16px, 4.4cqmin, 44px), 52px); }
+</style>
+</head>
+<body>
+<main class="lab">
+  <header class="title">
+    <h1 data-lang="en">USB goes in on the third flip.</h1>
+    <h1 data-lang="ko" class="kk"><span class="usb">USB</span><font-kku font="sticker" size="clamp(min(26px, 7.1cqi), 5.8cqmin, 56px)">는 세 번 뒤집어야 꽂힌다</font-kku></h1>
+  </header>
+
+  <aside class="count" aria-live="polite">
+    <span class="label" data-lang="en">Flips</span>
+    <span class="label" data-lang="ko"><font-kku font="dunggeun" size="clamp(13px, 2cqmin, 16px)">뒤집은 횟수</font-kku></span>
+    <span class="num">0</span>
+    <p class="verdict"></p>
+    <!-- The notification in words. On phones the figure is cropped and the drawn one hidden, so this is what shows. -->
+    <p class="os"><svg class="os-badge" viewBox="-10 -10 20 20" aria-hidden="true"><circle r="10"/><path d="M-5 0 l4 4 l7 -8"/></svg><span class="os-msg"><span class="os-now"><b class="os-title"></b><span class="os-sub"></span></span><span class="os-room" aria-hidden="true"></span></span></p>
+  </aside>
+
+  <section class="scene">
+    <svg viewBox="0 0 1000 420" aria-hidden="true">
+      <defs>
+        <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--steel-a)"/><stop offset=".55" stop-color="#cfd5de"/><stop offset="1" stop-color="var(--steel-b)"/>
+        </linearGradient>
+        <linearGradient id="alu" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#d9dde4"/><stop offset="1" stop-color="#c2c8d1"/>
+        </linearGradient>
+        <clipPath id="waveclip"><rect x="196" y="100" width="290" height="220"/></clipPath>
+        <!-- the USB trident (arrowhead, circle at the root, square and circle on the branches), in currentColor -->
+        <g id="trident" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">
+          <path d="M-22 0 H26"/><path d="M-6 0 L6 -12 H14"/><path d="M2 0 L12 12 H18"/>
+          <circle cx="-24" cy="0" r="4" fill="currentColor" stroke="none"/><rect x="14" y="-16" width="8" height="8" fill="currentColor" stroke="none"/><circle cx="20" cy="12" r="4" fill="currentColor" stroke="none"/>
+          <path d="M25 -6 L35 0 L25 6 Z" fill="currentColor" stroke="none"/>
+        </g>
+        <g id="plugart">
+          <!-- overmold with strain relief -->
+          <path d="M150 196 L200 172 H316 a8 8 0 0 1 8 8 V240 a8 8 0 0 1 -8 8 H200 L150 224 Z" fill="#20232c"/>
+          <!-- trident on the overmold side: shows which way up the plug is -->
+          <use href="#trident" transform="translate(258 210)" style="color: #e8ecf3"/>
+          <!-- metal shell, cut away to show the tongue; SuperSpeed blue (Pantone 300 C), not the page's blue -->
+          <rect x="324" y="180" width="150" height="60" rx="3" fill="url(#steel)" stroke="#7c8594" stroke-width="2"/>
+          <rect x="330" y="186" width="138" height="48" fill="#3a3f4b" opacity=".15"/>
+          <rect x="332" y="187" width="134" height="22" rx="2" fill="#005eb8"/>
+          <rect x="352" y="205" width="100" height="4" fill="#d9ae4f"/>
+        </g>
+      </defs>
+
+      <!-- laptop side, in section, with its port -->
+      <g>
+        <path d="M640 70 H1000 V350 H640 a26 26 0 0 1 -26 -26 V96 a26 26 0 0 1 26 -26 Z" fill="url(#alu)"/>
+        <rect x="614" y="176" width="190" height="68" fill="#15171d"/>
+        <rect x="660" y="184" width="144" height="24" rx="2" fill="#005eb8"/>
+        <rect x="676" y="208" width="112" height="4" fill="#d9ae4f"/>
+        <path d="M614 176 H804 M614 244 H804" stroke="#9aa3b1" stroke-width="3"/>
+        <!-- SuperSpeed mark printed by the port, as on a real laptop: this already is the USB 3.0 port -->
+        <g class="ss" style="color: #8a93a2">
+          <text id="ss-text" x="630" y="276" font-family="Gabarito, sans-serif" font-size="26" font-weight="900" fill="currentColor">SS</text>
+          <use href="#trident" transform="translate(700 266) scale(.62)"/>
+        </g>
+        <g fill="#b3bac5"><rect x="860" y="110" width="90" height="8" rx="4"/><rect x="860" y="126" width="90" height="8" rx="4"/><rect x="860" y="142" width="90" height="8" rx="4"/></g>
+        <circle id="led" cx="836" cy="210" r="7" fill="#9aa3b1"/>
+        <!-- Laid out by fitToast(): its type never lands under 16/15 px on screen, whatever the stage. -->
+        <g class="toast">
+          <rect id="toast-box" x="676" y="290" width="312" height="52" rx="12" fill="#fff" stroke="#c9cfda" stroke-width="2"/>
+          <g id="toast-badge" transform="translate(702 316)">
+            <circle r="10" fill="var(--psi)"/>
+            <path id="toast-icon" d="M-5 0 l4 4 l7 -8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <text id="toast-text" x="722" y="322" font-family="Gabarito, IBM Plex Sans KR, sans-serif" font-size="19" font-weight="700" fill="#151824"></text>
+          <text id="toast-sub" x="722" y="345" font-family="Gabarito, IBM Plex Sans KR, sans-serif" font-size="15" font-weight="500" fill="#3b4256"></text>
+        </g>
+      </g>
+
+      <!-- the plug: cable, art, its superposed twin, and the wave -->
+      <g id="plug">
+        <path d="M-700 210 C -400 160, -200 250, 0 205 S 120 205, 150 210" fill="none" stroke="#2b303b" stroke-width="22" stroke-linecap="round"/>
+        <g id="wave" clip-path="url(#waveclip)" fill="none" stroke="var(--psi)" stroke-width="3" stroke-linecap="round" opacity=".85">
+          <g class="travel">
+            <path d="M120 150 q20 -16 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0"/>
+            <path d="M120 270 q20 16 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0"/>
+          </g>
+        </g>
+        <g id="flipper">
+          <use href="#plugart"/>
+          <use id="ghost" href="#plugart" transform="translate(0 420) scale(1 -1)" opacity=".28" style="filter: hue-rotate(0deg)"/>
+        </g>
+      </g>
+
+      <!-- bonk -->
+      <g class="burst" stroke="var(--bonk)" stroke-width="5" stroke-linecap="round" opacity="0">
+        <line x1="606" y1="164" x2="590" y2="140"/><line x1="600" y1="210" x2="572" y2="210"/><line x1="606" y1="256" x2="590" y2="280"/>
+        <line x1="620" y1="152" x2="620" y2="126"/><line x1="620" y1="268" x2="620" y2="294"/>
+      </g>
+      <g class="bonk-word">
+        <text id="bonk-text" x="540" y="120" font-family="Gabarito, sans-serif" font-size="44" font-weight="900" fill="var(--bonk)" transform="rotate(-10 540 120)"></text>
+      </g>
+    </svg>
+
+    <p class="note">
+      <span data-lang="en">Until observed, a USB plug is in a superposition of both orientations.</span>
+      <span data-lang="ko"><font-kku font="dunggeun" size="clamp(14px, 2.2cqmin, 18px)" wrap-unit="word">관측하기 전까지 USB는 앞뒤가 겹쳐 있다.</font-kku></span>
+      <span class="eq">|ψ⟩ = ( |up⟩ + |down⟩ ) / √2</span>
+    </p>
+
+    <figure class="fig2">
+      <svg viewBox="0 0 92 44" aria-hidden="true">
+        <!-- USB-C, end on: the same both ways up (it gets flipped twice anyway, after the punchline) -->
+        <g class="c-plug">
+          <rect x="16" y="12" width="60" height="20" rx="10" fill="none" stroke="currentColor" stroke-width="2.4"/>
+          <rect x="30" y="20.5" width="32" height="3" rx="1.5" fill="currentColor"/>
+        </g>
+        <path d="M8 30 A16 16 0 0 1 8 14" fill="none" stroke="var(--psi)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M4 17 L8 13 L12 17" fill="none" stroke="var(--psi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M84 14 A16 16 0 0 1 84 30" fill="none" stroke="var(--psi)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M80 27 L84 31 L88 27" fill="none" stroke="var(--psi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <figcaption>
+        <span data-lang="en"><b>Fig. 2.</b> USB-C: reversible.<br>Flipped twice anyway, out of habit.</span>
+        <span data-lang="ko"><b>그림 2.</b> USB-C: 앞뒤가 없다.<br>그래도 습관처럼 두 번 뒤집는다.</span>
+      </figcaption>
+    </figure>
+  </section>
+
+  <p class="notes">
+    <span data-lang="en"><b>Fig. 1.</b> Insertion, eventually.</span>
+    <span data-lang="ko"><b>그림 1.</b> 결국엔 꽂힘.</span>
+  </p>
+  <div class="action">
+    <button class="again" type="button" data-lang="en">Unplug and try again</button>
+    <button class="again" type="button" data-lang="ko">뽑았다가 다시 꽂기</button>
+  </div>
+</main>
+
+<script>
+(() => {
+  const T = {
+    bonk: { en: 'bonk', ko: '툭' },
+    // Every second bonk comes with the plug the right way up.
+    bonk2: { en: 'bonk?!', ko: '툭?!' },
+    toast: { en: 'USB device connected', ko: 'USB 장치가 연결되었습니다' },
+    // A moment later, in the blue (USB 3) port it is already in:
+    faster: { en: 'This device can perform faster', ko: '이 장치는 더 빠르게 작동할 수 있습니다' },
+    fasterSub: { en: 'Try a USB 3.0 port.', ko: 'USB 3.0 포트에 연결하세요.' },
+    // The title is the theory: in on the third flip. Five is still "within error".
+    verdict3: { en: 'Consistent with theory.', ko: '이론과 일치.' },
+    verdict5: { en: 'Within experimental error.', ko: '오차 범위 이내.' },
+  };
+  // The note's equation: both ways up until the plug goes in, then only the way it went in.
+  const EQ_BOTH = '|ψ⟩ = ( |up⟩ + |down⟩ ) / √2';
+  const EQ_DOWN = '|ψ⟩ = |down⟩';
+  // Notification badge marks, drawn around (0, 0) in a circle of radius 10.
+  const CHECK = 'M-5 0 l4 4 l7 -8';
+  const INFO = 'M0 -2.5 v8 M0 -6.5 v.1';
+
+  const $ = (s) => document.querySelector(s);
+  const plug = document.getElementById('plug');
+  const flipper = document.getElementById('flipper');
+  const ghost = document.getElementById('ghost');
+  const wave = document.getElementById('wave');
+  const travel = wave.querySelector('.travel');
+  const burst = $('.burst');
+  const bonkWord = $('.bonk-word');
+  const bonkText = document.getElementById('bonk-text');
+  const toast = $('.toast');
+  const toastBox = document.getElementById('toast-box');
+  const toastBadge = document.getElementById('toast-badge');
+  const toastIcon = document.getElementById('toast-icon');
+  const toastText = document.getElementById('toast-text');
+  const toastSub = document.getElementById('toast-sub');
+  const os = $('.count .os');
+  const osTitle = os.querySelector('.os-title');
+  const osSub = os.querySelector('.os-sub');
+  const osIcon = os.querySelector('.os-badge path');
+  os.querySelector('.os-room').append(Object.assign(document.createElement('b'), { textContent: TTY.t(T.faster) + '.' }), Object.assign(document.createElement('span'), { textContent: TTY.t(T.fasterSub) }));
+  const led = document.getElementById('led');
+  const num = $('.count .num');
+  const verdict = $('.count .verdict');
+  const eq = $('.eq');
+  const cPlug = $('.fig2 .c-plug');
+  const svg = $('.scene svg');
+  const ssText = document.getElementById('ss-text');
+  if (TTY.lang === 'ko') bonkText.setAttribute('font-family', 'IBM Plex Sans KR, sans-serif');
+
+  // Portrait screens and small stages crop the figure to the plug's metal end and the port
+  // mouth, and show the notification as words beside the counter instead of drawn. The same
+  // condition as the CSS media query.
+  const portrait = matchMedia('(max-aspect-ratio: 4/5), (max-width: 480px), (max-height: 420px)');
+
+  // The drawn notification hangs on the laptop under the port, its right edge fixed. Its type is
+  // sized for the screen, not the drawing: the 648×732 desktop stage draws the figure at about
+  // 0.59, where the old fixed 15-unit second line came out at 8.9 px. Bigger type widens the box
+  // to the left (never past x 360: below the plugged-in plug and its cable) before it gets smaller.
+  const RIGHT = 988, TOP = 290, LEFT_MOST = 360;
+  function fitToast() {
+    if (portrait.matches) return;
+    const m = svg.getScreenCTM();
+    const k = m && m.a > 0 ? m.a : 1;
+    const two = toastSub.textContent !== '';
+    let big = Math.max(two ? 17 : 19, 16 / k);
+    let small = Math.max(15, 15 / k);
+    let pad, r, gap, w;
+    for (let i = 0; i < 30; i++) {
+      toastText.setAttribute('font-size', big.toFixed(2));
+      toastSub.setAttribute('font-size', small.toFixed(2));
+      pad = big * 0.7; r = big * 0.55; gap = big * 0.6;
+      w = Math.max(toastText.getComputedTextLength(), two ? toastSub.getComputedTextLength() : 0);
+      if (RIGHT - (2 * pad + 2 * r + gap + w) >= LEFT_MOST) break;
+      big *= 0.96; small *= 0.96;
+    }
+    const x = RIGHT - (2 * pad + 2 * r + gap + w);
+    const vpad = big * 0.62;
+    const base1 = TOP + vpad + big * 0.8;
+    const base2 = base1 + small * 1.3;
+    const bottom = (two ? base2 + small * 0.3 : base1 + big * 0.3) + vpad;
+    const tx = x + pad + 2 * r + gap;
+    toastBox.setAttribute('x', x.toFixed(1));
+    toastBox.setAttribute('y', TOP);
+    toastBox.setAttribute('width', (RIGHT - x).toFixed(1));
+    toastBox.setAttribute('height', (bottom - TOP).toFixed(1));
+    toastBadge.setAttribute('transform', `translate(${(x + pad + r).toFixed(1)} ${(base1 - big * 0.34).toFixed(1)}) scale(${(r / 10).toFixed(3)})`);
+    toastText.setAttribute('x', tx.toFixed(1));
+    toastText.setAttribute('y', base1.toFixed(1));
+    toastSub.setAttribute('x', tx.toFixed(1));
+    toastSub.setAttribute('y', base2.toFixed(1));
+  }
+
+  // The notification: nothing yet (0), the good news (1), then the operating system's second
+  // opinion (2), drawn on the laptop and, in words, beside the counter.
+  function setToast(state) {
+    const upgrade = state === 2;
+    toastText.textContent = TTY.t(upgrade ? T.faster : T.toast);
+    toastSub.textContent = upgrade ? TTY.t(T.fasterSub) : '';
+    toastIcon.setAttribute('d', upgrade ? INFO : CHECK);
+    os.classList.toggle('on', state > 0);
+    osTitle.textContent = state ? TTY.t(upgrade ? T.faster : T.toast) + '.' : '';
+    osSub.textContent = upgrade ? TTY.t(T.fasterSub) : '';
+    osIcon.setAttribute('d', upgrade ? INFO : CHECK);
+    fitToast();
+  }
+  setToast(0);
+
+  function setEq(collapsed, animate) {
+    eq.textContent = collapsed ? EQ_DOWN : EQ_BOTH;
+    if (animate && !TTY.reduce) eq.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' });
+  }
+
+  // Plug positions along x (user units): parked, touching the port mouth, fully in.
+  const PARK = 30, MOUTH = 136, IN = 286;
+  let run = 0;
+  let runs = 0;
+  let loops = [];
+  let flips = 0;
+  let down = false;            // the plug's tongue must be down to fit this port
+  // A restart cancels the running animations, which rejects their `finished`. Swallow that: every
+  // await below checks the run number and stops on its own.
+  const anim = (el, frames, opts) => el.animate(frames, Object.assign({ fill: 'forwards' }, opts)).finished.catch(() => {});
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const at = (x) => `translateX(${x}px)`;
+  const flipT = () => (down ? 'scaleY(-1)' : 'scaleY(1)');
+  const shake = [{ transform: 'translateX(-6px)' }, { transform: 'translateX(4px)' }, { transform: 'none' }];
+
+  function setCount(n, bump) {
+    flips = n;
+    num.textContent = n;
+    if (bump && !TTY.reduce) num.animate([{ transform: 'scale(1.35)', color: 'var(--bonk)' }, { transform: 'scale(1)' }], { duration: 320, easing: 'cubic-bezier(.3,1.6,.5,1)' });
+  }
+
+  function superposed(on) {
+    loops.forEach((a) => a.cancel());
+    loops = [];
+    if (!on) return;
+    loops.push(travel.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-80px)' }], { duration: 1100, iterations: Infinity }));
+    loops.push(ghost.animate([{ opacity: .12 }, { opacity: .38 }], { duration: 140, iterations: Infinity, direction: 'alternate', easing: 'steps(2)' }));
+  }
+
+  async function bonk(id) {
+    bonkText.textContent = TTY.t(down ? T.bonk2 : T.bonk);
+    burst.setAttribute('opacity', '1');
+    burst.animate([{ transform: 'scale(.4)', opacity: 1 }, { transform: 'scale(1.1)', opacity: 0 }], { duration: 380, easing: 'ease-out', fill: 'forwards' });
+    bonkWord.animate([
+      { opacity: 0, transform: 'translateY(10px) scale(.6)' },
+      { opacity: 1, transform: 'translateY(0) scale(1.08)', offset: .35 },
+      { opacity: 1, transform: 'scale(1)', offset: .75 },
+      { opacity: 0, transform: 'translateY(-12px)' },
+    ], { duration: 700, fill: 'forwards' });
+    await anim(plug, [{ transform: at(MOUTH) }, { transform: at(MOUTH - 16) }, { transform: at(MOUTH - 8) }], { duration: 220, easing: 'ease-out' });
+    if (id !== run) return;
+    await anim(plug, [{ transform: at(MOUTH - 8) }, { transform: at(PARK + 20) }], { duration: 280, easing: 'cubic-bezier(.3,0,.2,1)' });
+  }
+
+  async function flip(id) {
+    const from = flipT();
+    down = !down;
+    setCount(flips + 1, true);
+    await anim(flipper, [{ transform: from }, { transform: down ? 'scaleY(-1)' : 'scaleY(1)' }], { duration: 420, easing: 'cubic-bezier(.6,0,.3,1)' });
+  }
+
+  // The tag: Fig. 2's USB-C, which has no wrong way up, gets flipped twice anyway and ends up
+  // exactly as it was.
+  function habit() {
+    const turn = 'cubic-bezier(.5,0,.3,1)';
+    cPlug.animate([
+      { transform: 'rotate(0deg)', easing: turn },
+      { transform: 'rotate(180deg)', offset: .38 },
+      { transform: 'rotate(180deg)', offset: .62, easing: turn },
+      { transform: 'rotate(360deg)' },
+    ], { duration: 1000 });
+  }
+
+  async function play() {
+    const id = ++run;
+    // The first run is always the textbook three; from the second on, one in four takes five.
+    const target = runs++ === 0 ? 3 : [3, 3, 3, 5][Math.floor(Math.random() * 4)];
+    down = false;
+    setCount(0);
+    verdict.textContent = '';
+    toast.style.opacity = 0;
+    setToast(0);
+    setEq(false, false);
+    led.setAttribute('fill', '#9aa3b1');
+    led.style.filter = '';
+    [plug, flipper, wave, toast, os, cPlug].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
+    plug.style.transform = at(PARK);
+    flipper.style.transform = flipT();
+    wave.style.opacity = '';
+
+    if (TTY.reduce) return finish(target, false);
+    superposed(true);
+    await wait(700);
+    // The first approach starts from where the plug is parked; later ones from where a
+    // bonk leaves it.
+    let from = PARK;
+    while (id === run) {
+      await anim(plug, [{ transform: at(from) }, { transform: at(MOUTH) }], { duration: 420, easing: 'cubic-bezier(.55,0,.9,.6)' });
+      from = PARK + 20;
+      if (id !== run) return;
+      if (flips >= target && down) {
+        // Contact: the superposition collapses, the equation down to one state, and the plug
+        // simply goes in.
+        superposed(false);
+        wave.animate([{ transform: 'scaleY(1)', opacity: .85 }, { transform: 'scaleY(0)', opacity: 0 }], { duration: 260, fill: 'forwards' });
+        ghost.animate([{ opacity: .4 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+        setEq(true, true);
+        await anim(plug, [{ transform: at(MOUTH) }, { transform: at(IN) }], { duration: 300, easing: 'cubic-bezier(.2,.9,.3,1)' });
+        if (id !== run) return;
+        return finish(target, true);
+      }
+      await bonk(id);
+      if (id !== run) return;
+      await wait(140);
+      if (id !== run) return;
+      await flip(id);
+      if (id !== run) return;
+      await wait(160);
+    }
+  }
+
+  function finish(target, animate) {
+    if (!animate) {
+      superposed(false);
+      down = true;
+      plug.style.transform = at(IN);
+      flipper.style.transform = 'scaleY(-1)';
+      ghost.style.opacity = 0;
+      wave.style.opacity = 0;
+      setCount(target);
+      setEq(true, false);
+    }
+    led.setAttribute('fill', '#2c5cff');
+    led.style.filter = 'drop-shadow(0 0 6px #2c5cff)';
+    verdict.textContent = TTY.t(target === 3 ? T.verdict3 : T.verdict5);
+    toast.style.opacity = 1;
+    if (!animate) return setToast(2);
+    setToast(1);
+    toast.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'ease-out' });
+    os.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+    verdict.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+    // Two seconds of good news, then the second opinion, then the tag.
+    const id = run;
+    wait(2000).then(() => {
+      if (id !== run) return;
+      setToast(2);
+      toast.animate(shake, { duration: 260, easing: 'ease-out' });
+      os.animate(shake, { duration: 260, easing: 'ease-out' });
+      return wait(1260).then(() => { if (id === run) habit(); });
+    });
+  }
+
+  // The crop is wide and short, and small stages give it little height: it keeps only what
+  // happens there (the bonk just above the plug, the burst, the port, its SS mark and LED).
+  const frame = () => {
+    const small = portrait.matches;
+    svg.setAttribute('viewBox', small ? '250 86 620 200' : '0 0 1000 420');
+    const [bx, by] = small ? [452, 162] : [540, 120];
+    bonkText.setAttribute('x', bx);
+    bonkText.setAttribute('y', by);
+    bonkText.setAttribute('transform', `rotate(-10 ${bx} ${by})`);
+    // The crop is drawn smaller, so its SS mark is printed a size up.
+    ssText.setAttribute('font-size', small ? 32 : 26);
+    fitToast();
+  };
+  portrait.addEventListener('change', frame);
+  frame();
+  // The home stage opens the page at the window's size and then shrinks it to the stage.
+  new ResizeObserver(fitToast).observe(svg);
+  document.fonts.ready.then(fitToast);
+
+  // Plays again on its own a while after each success; a newer start cancels older ones.
+  let idle;
+  let starts = 0;
+  function start() {
+    clearTimeout(idle);
+    const mine = ++starts;
+    play().then(() => { if (mine === starts && !TTY.reduce) idle = setTimeout(start, 7000); });
+  }
+  document.querySelectorAll('.again').forEach((b) => b.addEventListener('click', start));
+  plug.addEventListener('click', start);
+
+  TTY.onShow(start);
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

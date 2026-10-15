@@ -1,0 +1,152 @@
+{
+  "id": "agent-permissions",
+  "title": {
+    "en": "Your Agent Would Like To…",
+    "ko": "에이전트가 묻습니다"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "무엇을 하든 \"해도 될까요?\"부터 묻는 AI 에이전트를 과장했다가, 다 허락하자 하고 싶던 일이 전부 착한 일이었다고 뒤집는다. 그러고도 눈 깜빡임은 또 묻는다.",
+    "points": [
+      "첫 요청은 눈 깜빡임 → 에이전트가 눈을 부릅뜨고 참으며, 눈 깜빡이는 자기 얼굴과 물음표만 그려진 작은 창을 띄운다. 허락이 떨어지자 참았던 눈을 몰아서 세 번 깜빡인다. 숨 쉬듯 하는 일까지 허락받는 과한 조심성이다.",
+      "대화상자마다 진짜 권한 요청처럼 도구 호출과 범위가 적혀 있는데 점점 사람다워짐 → `read_file(...)`로 시작해 커피 타 드리기(범위 '탕비실'), 어머니께 밥 잘 먹는다고 전하기(범위 '가족 단톡방', 이유는 “밥은 먹고 다니니?” 오늘만 두 번째)까지 간다. 딱딱한 형식에 다정한 내용이 들어가는 어긋남이다. 앞의 세 요청은 커서가 점점 빨리 누르고 지나간다. 이미 읽지 않고 누르는 손이다. 엄마 요청에서만 '거부' 위에서 잠깐 머뭇거린다.",
+      "요청이 쏟아지자 커서가 '항상 허용'을 누름 → 개발자에게 '항상 허용'은 AI에게 열쇠 꾸러미를 통째로 넘기는 버튼이다. 더는 묻지 않으니 파일을 지우든 비밀번호를 읽든 내 이름으로 메시지를 보내든 막을 틈이 없다. 그래도 결국 누른다. 확인 창을 너무 자주 보면 내용보다 손이 먼저 나가기 때문이다. 그래서 에이전트가 눈을 가늘게 뜨고 \"그럼 이제…\"라고 할 때 불길하다. 그런데 반전: 그렇게 얻은 권한으로 한 일은 \"잘했어요.\"라고 소리 내 말하고, 아이콘을 웃는 얼굴로 정렬하고, 화분에 물을 주고, 커피를 놓고, 엄마에게 '밥 잘 먹고 다녀요'를 보낸 것뿐이다. 쪽지에는 \"믿어 줘서 고마워요. 좋은 일에만 썼어요.\"",
+      "그러고 1.5초 뒤 → 에이전트가 다시 눈을 부릅뜨고 떨면서 눈 깜빡임 창을 띄운다(배지는 요청 15건). 이제 무엇이든 해도 되는데, 눈 깜빡임은 따로 묻는다. 페이지 첫 장면으로 돌아가는 마무리다."
+    ],
+    "terms": [
+      {
+        "term": "AI 에이전트",
+        "plain": "목표를 받으면 스스로 여러 단계를 계획하고 도구(파일 읽기, 명령 실행, 메시지 보내기)를 써서 일을 해 내는 AI 프로그램."
+      },
+      {
+        "term": "도구 호출",
+        "plain": "에이전트가 실제로 무언가를 하려고 부르는 기능. 대화상자의 `read_file(...)` 같은 줄이다."
+      },
+      {
+        "term": "권한 요청(이번만 허용·항상 허용)",
+        "plain": "도구를 쓰기 전에 사람에게 묻는 확인 창. 에이전트에 도구를 연결하는 공개 규격(MCP)도 도구를 부르기 전에 사용자의 분명한 동의를 받으라고 적어 둔다."
+      },
+      {
+        "term": "최소 권한의 원칙",
+        "plain": "일에 꼭 필요한 만큼만 권한을 주라는 보안 원칙. '항상 허용'은 그 반대쪽 끝이다."
+      },
+      {
+        "term": "경고 피로",
+        "plain": "경고나 확인 창을 너무 자주 보면 익숙해져서 내용을 덜 보고 누르게 되는 현상. 한 운영체제의 권한 확인 창은 출시 전부터 \"너무 수다스럽고 성가시다\"는 평을 듣고 다음 버전에서 묻는 일을 줄였다."
+      }
+    ],
+    "links": [
+      {
+        "title": "AI 에이전트 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/AI_에이전트",
+        "note": "목표를 받아 도구를 쓰며 스스로 일하는 AI",
+        "lang": "ko"
+      },
+      {
+        "title": "최소 권한의 원칙 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/최소_권한의_원칙",
+        "note": "필요한 만큼만 허락하기",
+        "lang": "ko"
+      },
+      {
+        "title": "Model Context Protocol 규격",
+        "url": "https://modelcontextprotocol.io/specification/2026-07-28",
+        "note": "'Security and Trust & Safety' 절의 \"도구를 부르기 전에 사용자의 명시적 동의를 받을 것\"",
+        "lang": "en"
+      },
+      {
+        "title": "User Account Control - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/User_Account_Control",
+        "note": "권한 확인 창이 \"너무 수다스럽고 성가시다\"는 비판을 받고 줄어든 이야기(Criticism 절)",
+        "lang": "en"
+      },
+      {
+        "title": "The Fog of Warnings",
+        "url": "https://www.usenix.org/conference/soups2019/presentation/vance",
+        "note": "자주 보는 알림에 익숙해지면 한 번뿐인 보안 경고도 덜 보게 된다는 2019년 연구",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "메뉴 막대의 요청 건수 → 눈 깜빡임도 한 건으로 센다. '항상 허용' 직전에 14건이다(깜빡임 1 + 요청 5 + 쏟아진 8). 마지막에 깜빡임을 또 물어서 15건이 된다.",
+      "엄마에게 간 메시지 끝의 '진짜로요.' → 허락받은 문구(`text=\"밥 잘 먹고 다녀요\"`)에는 없던 한마디다. 이 착한 에이전트가 허락 없이 한 단 하나의 일.",
+      "두 번째 요청의 `shell(\"npm install\")`과 범위 'node_modules 전체' → `npm install`은 package.json에 적힌 패키지(와 그 패키지가 필요로 하는 패키지)를 node_modules 폴더에 설치한다. 질문, 호출, 범위가 같은 일을 말한다.",
+      "맨 위 대화상자의 `arrange_icons(shape=\"smile\")` → 결말(아이콘이 웃는 얼굴로 정렬)을 미리 적어 둔 복선이다. 그 아래 깔린 장들은 0.1초도 안 돼 덮인다. .env 읽기(.env는 흔히 API 키 같은 비밀값을 적어 두는 파일이라 범위가 '비밀값 (눈 감고)'), 탭 50개 중 47개 닫기(먼저 47개 전부 북마크), 거북목 스트레칭, 엄마 빼고 25분 방해 금지.",
+      "(누를 때만) '이번만 허용'을 직접 누르면 → 그 일을 정말 한다(\"커피 내리는 중…\", \"눈 감고 읽는 중…\", \"탭 47개 닫는 중…\", \"턱 당기세요.\"). 이미 허락한 일은 다시 묻지 않는데, README.md를 허락하고 나면 가끔 `./README.md`를 또 묻는다. \"아까 그 파일이에요. 앞에 ./만 붙었어요.\" 방금 허락한 것을 또 묻는 일은 에이전트를 써 본 사람이면 아는 피로다.",
+      "(누를 때만) 거부를 누를 때마다 → 요청이 점점 작아지다가(\"그냥 조용히 앉아 있어도 될까요?\") 세 번째에는 에이전트가 화분 옆에 가서 앉고 \"화분 곁에 있어 줘도 될까요? 이미 와 있어요.\"라고 묻는다. 먼저 해 놓고 묻는 유일한 순간이다. 그 뒤 '항상 허용'을 누르면 화분 옆에 그대로 남는다.",
+      "(누를 때만) 눈 깜빡임 창의 ✕ → \"알겠어요. 안 깜빡일게요.\" 끝까지 참다가 눈물이 한 방울 맺힌다. 자동 재생도 멈춰서, ✓를 눌러 줄 때까지 참는다.",
+      "메뉴 막대 시계 → 보는 사람의 실제 시각이다. 밤 11시부터 새벽 5시 전까지 '이번만 허용'을 누르면 첫 추가 요청이 \"이제 그만 주무시라고 해도 될까요?\"이고, 페이지를 연 시각을 그대로 말한다."
+    ]
+  },
+  "en": {
+    "line": "An AI agent asks permission for absolutely everything, and when you finally click \"Always allow\", everything it wanted to do turns out to be kind. Then it asks to blink again.",
+    "points": [
+      "Its first request is to blink → it holds its eyes wide open, trembling, under a tiny prompt with nothing on it but its own blinking face and a question mark, and only blinks (three times, with relief) once allowed. It asks before doing something nobody ever asks about.",
+      "Each dialog shows a real-looking tool call and scope, and they get more and more human → from `read_file(...)` to a coffee scoped to \"the office kitchen\" and a message to Mom scoped to \"family group chat\", because \"She asked. Twice.\" A serious format with soft contents. The first three go by faster and faster: the cursor has stopped reading. Only over Mom does it hover on Deny for a moment.",
+      "The asks pile up until the cursor clicks \"Always allow\" → to a developer that button hands the agent the whole key ring: it stops asking, so nothing stands between it and deleting files, reading passwords or messaging people in your name. Everyone clicks it anyway: after enough prompts, your hand gets there before your eyes do. So when the agent narrows its eyes and says \"Now then…\", it looks ominous. Then the twist: with all that power it says \"Good job.\" out loud, lines the icons up into a smile, waters the plant, brings the coffee and tells Mom \"I am eating well.\" The note says \"Thanks for trusting me. I only used it for nice things.\"",
+      "A second and a half later → it holds its eyes wide again, trembling, and puts the blink prompt back up (the badge reads 15 requests). It may do anything now, but blinking it still asks about. The page ends where it began."
+    ],
+    "terms": [
+      {
+        "term": "AI agent",
+        "plain": "an AI program that plans several steps on its own and uses tools (reading files, running commands, sending messages) to get a job done."
+      },
+      {
+        "term": "Tool call",
+        "plain": "the action the agent wants to run, like `read_file(...)` in the dialog."
+      },
+      {
+        "term": "Permission prompt (Allow once / Always allow)",
+        "plain": "the check before a tool runs. The open Model Context Protocol spec says hosts must get explicit user consent before invoking any tool."
+      },
+      {
+        "term": "Principle of least privilege",
+        "plain": "give only the access a task needs. \"Always allow\" is the far other end."
+      },
+      {
+        "term": "Warning fatigue",
+        "plain": "see warnings and prompts often enough and you stop reading them. One operating system's permission prompts were called \"far too chatty and annoying\" before launch and were cut back in the next version."
+      }
+    ],
+    "links": [
+      {
+        "title": "AI agent – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/AI_agent",
+        "note": "AI programs that pursue goals and use tools on their own",
+        "lang": "en"
+      },
+      {
+        "title": "Principle of least privilege – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Principle_of_least_privilege",
+        "note": "grant only what is needed",
+        "lang": "en"
+      },
+      {
+        "title": "Model Context Protocol specification",
+        "url": "https://modelcontextprotocol.io/specification/2026-07-28",
+        "note": "the \"Security and Trust & Safety\" section, \"Hosts must obtain explicit user consent before invoking any tool\""
+      },
+      {
+        "title": "User Account Control – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/User_Account_Control",
+        "note": "permission prompts criticised as \"far too chatty and annoying\", then reduced (see Criticism)",
+        "lang": "en"
+      },
+      {
+        "title": "The Fog of Warnings",
+        "url": "https://www.usenix.org/conference/soups2019/presentation/vance",
+        "note": "a 2019 study showing that getting used to frequent notifications makes people pay less attention to a one-time security warning"
+      }
+    ],
+    "deep": [
+      "The request count in the menu bar → the blink counts as one. It reads 14 just before \"Always allow\" (the blink, five asks, a burst of eight), and 15 at the end, when it asks to blink again.",
+      "The “Promise.” at the end of the message to Mom → it isn't in the approved text (`text=\"I am eating well.\"`). The one thing this good agent did without asking.",
+      "The second ask's `shell(\"npm install\")` and its scope, node_modules → `npm install` installs the packages listed in package.json (and everything they need) into the node_modules folder. The question, the call and the scope all describe the same thing.",
+      "`arrange_icons(shape=\"smile\")` on the top dialog → the ending (icons arranged into a smile) written down in advance. The cards under it are covered in under a tenth of a second: reading .env (a file that usually holds secrets such as API keys, hence the scope \"secrets (eyes closed)\"), closing 47 of your 50 tabs (all 47 bookmarked first), a stretch, 25 minutes of do-not-disturb \"except Mom\".",
+      "(only when you click) Click \"Allow once\" yourself → it really does it (\"Brewing…\", \"Reading with eyes closed…\", \"Closing 47 tabs…\", \"Shoulders down.\"). It never asks again for what you allowed, except that once README.md is allowed it may ask for `./README.md`: \"Same file you allowed a minute ago. With ./ in front.\" Being asked again for what you just allowed is a real part of the fatigue.",
+      "(only when you click) Keep clicking Deny → the asks get smaller (\"just sit here quietly?\"), and the third time the agent goes and sits by the plant and asks \"Allow the agent to keep the plant company? It is already there.\" The one time it asks after doing it. Click \"Always allow\" then and it stays by the plant.",
+      "(only when you click) Click ✕ on the blink prompt → \"Okay. No blinking.\" It holds on until a tear forms. The autoplay stops too, so it waits for your ✓.",
+      "The menu-bar clock → the visitor's real time. From 11 p.m. until 5 a.m., the first extra ask after \"Allow once\" is \"Allow the agent to send you to bed?\", quoting the time you opened the page."
+    ]
+  }
+}

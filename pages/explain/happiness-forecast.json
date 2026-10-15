@@ -1,0 +1,128 @@
+{
+  "id": "happiness-forecast",
+  "title": {
+    "en": "The Happiness Forecast",
+    "ko": "오늘의 행복 예보"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "TV 일기예보를 그대로 흉내 내되, 비 대신 칭찬이 내리고 강수 확률 대신 웃음 확률을 알려 주는 행복 예보다.",
+    "points": [
+      "첫 장면의 먹구름 → 잔뜩 찌푸린 먹구름이 몰려오고 번개까지 치는데, 쏟아지는 건 비가 아니라 하트다. 구름도 자기가 쏟은 걸 보고 눈이 동그래졌다가 그제야 웃는다. 폭풍 예보인 줄 알았더니 칭찬 예보였다.",
+      "사무실 \"칭찬 이슬비\", 공원 \"곳곳에 웃음 소나기\", 부엌 \"간식 확률 100%\", 특보 띠의 \"칭찬주의보 발효 중\" → 일기예보와 기상특보 말투(주의보·경보·예비특보·발효·해제 예정)는 그대로 두고 낱말만 바꿔 끼웠다. 휴대폰처럼 지도가 작게 그려지는 화면에서는 이 설명 줄이 접혀 있다가, 칭찬 전선이 그 섬을 지날 때나 섬을 누를 때 잠깐 펼쳐진다.",
+      "\"월요병주의보 발효 중 · 오후 3시 해제 예정\" → 두 번째 특보는 보는 날의 요일에 따라 바뀐다. 월요일 아침에 보면 지금 딱 걸려 있는 그 병인데, 오후에는 풀린다니 조금 위로가 된다. 화요일에는 \"화요일은 특보 없음 · 조용해서 더 수상함\"이 나온다.",
+      "\"오후 2~4시 회의 안개 · 한 치 앞도 안 보이겠습니다\" → 짙은 안개 예보 말투로 오후 회의를 알린다. '한 치 앞도 안 보인다'는 정말 앞이 안 보인다는 뜻과 일이 어떻게 될지 모른다는 뜻을 함께 갖는다. 시간대별 웃음 확률도 15시에 40으로 푹 꺼진다.",
+      "서버실의 18° 배지 → 다른 섬의 배지는 확률인데 서버실만 온도다. 특보 띠에 \"서버실 18도 · 내일도 18도 · 모레도 18도\"가 떠 있는 동안 칭찬 전선이 서버실을 지나가면, 다른 섬은 아이콘이 들썩였는데 서버실은 꿈쩍 않고 배지만 19도, 17도로 잠깐 흔들렸다가 18도로 돌아온다. 그리고 \"여전히 18도.\" 서버실 냉방은 바깥 날씨와 상관없이 정해 둔 온도를 지키도록 맞춰져 있어서, 칭찬 전선도 못 바꾼다. 서버실을 눌러도 똑같이 군다.",
+      "끝인사 \"지금까지 행복이었습니다.\" → 일기예보 끝에 기상캐스터가 하는 '지금까지 날씨였습니다'를 바꿨다. 방금 본 15초가 행복이었다는 말도 된다."
+    ],
+    "terms": [
+      {
+        "term": "전선(날씨)",
+        "plain": "따뜻한 공기 덩어리와 찬 공기 덩어리가 만나는 경계. 온난 전선은 일기도에서 진행 방향 쪽에 반원을 단 선으로 그린다."
+      },
+      {
+        "term": "주의보·경보·예비특보",
+        "plain": "재해가 걱정될 때 기상청이 내는 기상특보. 주의보는 재해가 일어날 우려가 있을 때, 경보는 중대한 재해가 예상될 때 낸다. 예비특보는 특보가 나오기 몇 시간 전에 '곧 특보가 나올 수 있다'고 미리 알리는 것. 미국 기상청은 Advisory(큰 불편을 줄 정도)·Watch(위험이 커짐)·Warning(생명·재산 위협)으로 나눈다."
+      },
+      {
+        "term": "서버실 온도",
+        "plain": "서버가 과열되지 않게 늘 냉방한다. 미국 냉난방공조학회(ASHRAE)가 권하는 범위가 18~27°C라서 18도는 그 맨 아래 값이다. 온도 조절기는 설정 온도에서 벗어나면 곧바로 되돌린다."
+      }
+    ],
+    "links": [
+      {
+        "title": "온난전선 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/온난전선",
+        "note": "따뜻한 공기가 찬 공기 쪽으로 밀려가는 전선과 일기도 기호.",
+        "lang": "ko"
+      },
+      {
+        "title": "기상특보 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/기상특보",
+        "note": "주의보와 경보의 차이, 특보를 내는 기상 현상들.",
+        "lang": "ko"
+      },
+      {
+        "title": "기상정보 및 특보 - 기상청",
+        "url": "https://www.kma.go.kr/kma/biz/forecast03.jsp",
+        "note": "기상청이 직접 설명하는 예비특보, 그리고 주의보·경보의 발표 기준 표."
+      },
+      {
+        "title": "Watch, Warning, and Advisory Definitions - 미국 기상청",
+        "url": "https://www.weather.gov/dtx/wwa_defs",
+        "note": "영어판 특보 띠가 쓰는 Advisory·Watch·Warning의 공식 정의.",
+        "lang": "en"
+      },
+      {
+        "title": "Data center - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Data_center",
+        "note": "데이터 센터 냉방과 권장 온도 범위(18~27°C).",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "오프닝의 먹구름 → 사무실 구름 아이콘과 같은 그림을 4.5배쯤(지도 폭의 절반) 키운 것이다. 웃고 나서 작아지면 그대로 사무실 구름 자리에 앉는다. 그래서 사무실에 내리는 하트 이슬비는 그 폭풍의 끝자락이다.",
+      "칭찬 전선의 하트 → 일기도에서 온난 전선의 반원은 전선이 나아가는 쪽에 붙는다. 하트도 모두 동쪽(오른쪽)을 향하고, 전선은 실제로 서쪽에서 동쪽으로 간다.",
+      "시간대별 웃음 확률 → 두 흰 봉우리는 13시(점심, 92)와 18시(퇴근, 96)이고, 15시 골짜기(40)는 특보 띠의 회의 안개 시간이다.",
+      "마지막 특보 \"밤사이 곳곳에 좋은 소식 · 우산은 두고 나오세요\" → 이 예보에서 내리는 건 맞고 싶은 것들이라 우산이 필요 없다.",
+      "서버실의 19도, 17도 → 바람에 흔들린 온도 조절기가 곧바로 설정 온도로 되돌리는 모습이다. 18은 흔히 쓰는 데이터 센터 권장 온도 범위(ASHRAE, 18~27°C)의 맨 아래 값이다."
+    ]
+  },
+  "en": {
+    "line": "It's the TV weather forecast, except compliments fall instead of rain and the hourly chance of rain becomes the chance of giggles.",
+    "points": [
+      "The storm at the start → a scowling black cloud rolls in, rumbles and flashes, and what pours out is hearts. The cloud is as surprised as anyone (eyes wide, mouth an \"o\") and only then smiles. A storm warning that turns out to be a compliment forecast.",
+      "\"Light drizzle of compliments\", \"Scattered giggles\", \"100% chance of snacks\", \"Compliment Advisory in effect until 6 pm\" → the forecaster's phrasing and the grammar of real weather alerts (Advisory, Watch, Warning, in effect, expected to lift) stay; only the nouns change. Where the map is drawn small, as on phones, these lines stay folded and open for a moment when the front crosses an island or you tap it.",
+      "\"Monday Blues Advisory in effect. Expected to lift by 3 pm.\" → the second alert follows the viewer's day of the week. Read on a Monday morning, it is the thing you have right now, and it clears up this afternoon. Tuesdays get \"Tuesday: no advisories. Suspiciously calm.\"",
+      "\"Dense Meeting Advisory, 2 to 4 pm. Visibility near zero.\" → a dense fog advisory, for the afternoon meetings. The chance-of-giggles chart dips to 40 at 3 pm.",
+      "The server room's 18° badge → the other islands show a chance; the server room's badge shows a temperature. With \"Server room: 18°. Tomorrow: 18°. The day after: 18°.\" on the alert strip, the front crosses the server room: the other islands bounced, but here only the badge twitches to 19°, then 17°, and settles back on 18°, and the card says \"Still 18°.\" A server room's cooling holds its set temperature whatever the weather, so even a compliment front can't move it. Tapping the server room gets the same treatment.",
+      "The sign-off, \"And that was your happiness. Back to you.\" → what a TV forecaster says at the end ('And that was the weather. Back to you.'), and also true: the fifteen seconds you just watched were your happiness."
+    ],
+    "terms": [
+      {
+        "term": "Weather front",
+        "plain": "the boundary where a warm air mass meets a cold one. A warm front is drawn as a line with semicircles pointing the way it moves."
+      },
+      {
+        "term": "Advisory, Watch, Warning",
+        "plain": "US National Weather Service alert words. A watch means the risk has risen; a warning means a hazard is happening or very likely and threatens life or property; an advisory is for a hazard that causes significant inconvenience, such as dense fog."
+      },
+      {
+        "term": "Server room temperature",
+        "plain": "rooms full of computers are kept cool; ASHRAE, the US society of heating and air-conditioning engineers, recommends 18–27 °C, so 18° is the cold end. The thermostat pulls any drift straight back to the set point."
+      }
+    ],
+    "links": [
+      {
+        "title": "Warm front - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Warm_front",
+        "note": "what a warm front is and the symbol used on weather maps.",
+        "lang": "en"
+      },
+      {
+        "title": "Surface weather analysis - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Surface_weather_analysis",
+        "note": "how weather maps draw fronts and pressure centres.",
+        "lang": "en"
+      },
+      {
+        "title": "Watch, Warning, and Advisory Definitions - National Weather Service",
+        "url": "https://www.weather.gov/dtx/wwa_defs",
+        "note": "the official meaning of the words on the alert strip."
+      },
+      {
+        "title": "Data center - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Data_center",
+        "note": "data center cooling and the recommended temperature range (18–27 °C).",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The storm cloud → it is the office's cloud icon drawn about four and a half times larger (half the map wide). Once it smiles it shrinks and settles exactly where the office cloud sits, so the office's drizzle of hearts is the tail of that storm.",
+      "The hearts on the compliment front → on a weather map a warm front's semicircles sit on the side the front is moving toward. These hearts all face east, and the front does move west to east.",
+      "The chance-of-giggles chart → the two white peaks are 1 pm (lunch, 92) and 6 pm (going home, 96), and the dip at 3 pm (40) is the meeting fog from the alert strip.",
+      "The last alert, \"Scattered good news overnight. Leave the umbrella at home.\" → everything that falls in this forecast is something you want to get caught in.",
+      "The server room's 19° and 17° → a thermostat nudged by the wind and pulling straight back to its set point. 18 is the cold end of a widely used recommended range for data centres (ASHRAE, 18–27 °C)."
+    ]
+  }
+}

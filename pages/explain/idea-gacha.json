@@ -1,0 +1,133 @@
+{
+  "id": "idea-gacha",
+  "title": {
+    "en": "One Turn, One Good Deed",
+    "ko": "착한 일 뽑기"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "운에 맡기고 돈을 넣는 캡슐 뽑기 기계를 빌려, 꽝 없이 공짜로 '오늘 해 볼 착한 일'만 뽑아 주는 페이지다.",
+    "points": [
+      "첫 장면의 동전과 하트 → 동전을 넣으려 하자 기계가 도로 뱉어 우리에게 던지고 가격표가 고개를 젓는다. 하트를 던지자 납작하게 접혀 쏙 들어가고 손잡이가 돈다. 돈은 안 받고 마음만 받는 기계다.",
+      "가격표 “공짜”와 라벨 “착한 일” → 뽑기 기계는 돈을 넣고 무엇이 나올지 모르는 게 재미인데, 이 기계는 돈도 안 받고 꽝도 없다.",
+      "쪽지 내용 → \"친절하게 살자\" 같은 막연한 말 대신 \"data2라는 변수 하나 이름 고쳐 주기\", \"사흘째 기다리는 PR 리뷰해 주기\", \"읽씹한 메시지에 답장하기\"처럼 오늘 당장 할 수 있을 만큼 구체적이라, 해 본 사람은 살짝 찔린다.",
+      "금색 시크릿 캡슐 → 아무것도 누르지 않고 지켜보면 두 번째 뽑기에 나온다. 뽑기 게임의 희귀 등급처럼 반짝이며 나오는데, 내용은 \"오늘은 칼퇴하기. 나한테도 착한 일 하나\". 남한테 잘하는 일만 뽑다가 마지막 희귀템은 나 자신이다. 눈치 보이는 칼퇴를 착한 일로 쳐 주고, 제목의 '착한 일 하나'를 '나한테도'로 되받는다.",
+      "돔에 걸리는 \"퇴근했어요\" 팻말 → 시크릿이 나오고 1~2초 뒤, 칼퇴하라는 쪽지를 내준 기계가 돔에 팻말을 걸고 불을 끈다. 남에게 권한 대로 자기도 바로 퇴근한다. 그 뒤로는 혼자 돌지 않고, 손잡이를 돌리면 팻말을 떼고 다시 연다."
+    ],
+    "terms": [
+      {
+        "term": "가챠(캡슐 토이)",
+        "plain": "손잡이를 돌리면 장난감이 든 캡슐이 무작위로 하나 떨어지는 뽑기 기계. 일본어 이름 '가샤폰(가챠폰)'은 손잡이 돌리는 소리 '가샤(가챠)'와 캡슐이 떨어지는 소리 '퐁'을 합친 말이다."
+      },
+      {
+        "term": "시크릿·천장",
+        "plain": "시크릿은 캡슐 장난감이나 랜덤 박스의 상품 목록에 그림 없이 숨겨 둔, 다른 것보다 훨씬 드문 상품. 천장(영어로 pity)은 뽑기 게임에서 정해진 횟수까지 희귀 상품이 안 나오면 반드시 주는 장치."
+      },
+      {
+        "term": "PR(풀 리퀘스트)",
+        "plain": "\"제가 고친 코드를 합쳐 주세요\" 하고 올리는 검토 요청. 누가 봐 주기 전까지는 계속 기다린다."
+      },
+      {
+        "term": "대체 텍스트",
+        "plain": "그림을 볼 수 없는 사람(화면 낭독기 사용자 등)에게 그림 대신 읽어 주는 설명 글. \"이미지\"라고만 쓰면 아무것도 설명하지 않은 셈이다."
+      }
+    ],
+    "links": [
+      {
+        "title": "가챠폰 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/가챠폰",
+        "note": "캡슐 뽑기 기계와 이름의 유래(손잡이 돌리는 소리 '가샤'와 캡슐 떨어지는 소리 '퐁').",
+        "lang": "ko"
+      },
+      {
+        "title": "Gacha game - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Gacha_game",
+        "note": "게임 속 뽑기와 일정 횟수 뒤 희귀 상품을 보장하는 'pity'(천장) 장치.",
+        "lang": "en"
+      },
+      {
+        "title": "Random act of kindness - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Random_act_of_kindness",
+        "note": "이유 없이 베푸는 작은 친절이라는 생각과 그 말의 유래.",
+        "lang": "en"
+      },
+      {
+        "title": "Images Tutorial - W3C WAI",
+        "url": "https://www.w3.org/WAI/tutorials/images/",
+        "note": "대체 텍스트를 그림의 쓰임에 맞게 쓰는 법.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "하트가 투입구 앞에서 폭만 좁게 홀쭉해지는 것 → 투입구가 세로로 길고 좁은 틈이라 동전도 옆으로 세워야 들어간다. 하트도 규칙은 지킨다.",
+      "돔 꼭대기 근처의 금색 캡슐(흰 별 반짝이) → 처음부터 보이는 시크릿이다. 뽑히는 순간 손잡이와 함께 아래로 빠져 돔에서 사라지고, 그 방문에서는 다시 나오지 않는다.",
+      "시크릿이 나오는 차례 → 첫 뽑기에는 없다. 아무것도 누르지 않고 지켜보면 두 번째 뽑기에 나온다. 손잡이를 돌린 방문에서는 두 번째부터 6분의 1 확률이고, 여섯 번째까지 안 나오면 확정. 게임의 천장과 같은 장치다.",
+      "첫 쪽지 → 늘 조금 찔리는 다섯 장(복붙한 답변, 사흘째 PR, data2, 회의 10분, 읽씹) 중 하나가 먼저 나온다.",
+      "같은 쪽지가 연달아 나오지 않는 것 → 16개를 섞은 주머니에서 하나씩 꺼내서, 16개를 다 보기 전에는 겹치지 않는다."
+    ]
+  },
+  "en": {
+    "line": "This capsule-toy machine is free, never gives a dud, and only drops small good deeds you could do today.",
+    "points": [
+      "The coin and the heart at the start → you toss a coin at the slot, the machine spits it straight back at you and the price tag shakes its head. You toss a heart, it folds itself thin, slips in, and the knob turns. It won't take your money, only your heart.",
+      "The \"free\" price tag and the \"good deeds\" label → a capsule machine is about paying and taking your chances; this one takes no coin and never gives a dud.",
+      "The slips → not a vague \"be kind\" but \"Rename one variable called data2.\", \"Review the PR that’s been waiting three days.\", \"Fix the flaky test instead of hitting retry.\" Specific enough to sting a little.",
+      "The gold SECRET capsule → leave the machine alone and it comes out on the second turn. It shines like a gacha rare and says \"Go home on time. This one’s for you.\" After all the deeds for other people, the rarest prize is you.",
+      "The \"Gone home.\" sign → a moment after it hands you the secret, the machine hangs a sign on its own dome and the lights go down. It takes its own advice on the spot. It stops turning by itself after that; turn the knob and it takes the sign down and opens again."
+    ],
+    "terms": [
+      {
+        "term": "Gacha (capsule toy)",
+        "plain": "a vending machine where turning a knob drops a random toy in a plastic capsule. The Japanese name, gashapon or gachapon, imitates the sounds of the knob turning (\"gasha\", \"gacha\") and the capsule landing (\"pon\")."
+      },
+      {
+        "term": "Secret, pity",
+        "plain": "a secret is a hidden extra in a capsule-toy or blind-box series, not pictured with the others and much rarer. Pity is the gacha-game rule that hands you a rare prize after a set number of pulls without one."
+      },
+      {
+        "term": "PR (pull request)",
+        "plain": "a request asking others to review your code change and merge it. It waits until someone looks."
+      },
+      {
+        "term": "Flaky test",
+        "plain": "a test that sometimes passes and sometimes fails on the same code. Hitting retry until it goes green is the usual fix, and it leaves the problem for the next person."
+      },
+      {
+        "term": "Alt text",
+        "plain": "a short description read out instead of an image for people who can’t see it. \"image.png\" describes nothing."
+      }
+    ],
+    "links": [
+      {
+        "title": "Gashapon - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Gashapon",
+        "note": "the capsule-toy machine and where its name comes from.",
+        "lang": "en"
+      },
+      {
+        "title": "Gacha game - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Gacha_game",
+        "note": "gacha mechanics in games, including the \"pity\" system.",
+        "lang": "en"
+      },
+      {
+        "title": "Random act of kindness - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Random_act_of_kindness",
+        "note": "the idea of small, unplanned kindness and where the phrase came from.",
+        "lang": "en"
+      },
+      {
+        "title": "Images Tutorial - W3C WAI",
+        "url": "https://www.w3.org/WAI/tutorials/images/",
+        "note": "how to write alt text that fits what an image is for."
+      }
+    ],
+    "deep": [
+      "The heart squeezes itself narrow in front of the slot → the slot is a thin upright slit, so even a coin has to go in on its edge. The heart follows the rules too.",
+      "The gold capsule near the top of the dome (with a white sparkle) → the secret is there from the start. When it is drawn it drops out of sight with the turn of the knob and is gone for the rest of the visit.",
+      "When the secret comes → never on the first turn. Leave it alone and it comes out on the second turn. Once you have turned the knob yourself it is one in six from the second turn, and certain by the sixth: a pity counter, as in gacha games.",
+      "The first slip → always one of the five that sting a little (the copied answer, the three-day PR, data2, the long meeting, the message left on read).",
+      "No slip twice in a row → the 16 deeds come out of a shuffled bag, so you see all 16 before any repeats."
+    ]
+  }
+}

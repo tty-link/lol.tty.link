@@ -1,0 +1,148 @@
+{
+  "id": "robot-captcha",
+  "title": {
+    "en": "Prove You Are a Robot",
+    "ko": "로봇임을 증명하세요"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "웹사이트가 \"로봇이 아님을 증명하세요\"라며 내는 캡차(자동입력 방지 문자)를 거꾸로 뒤집어, 기계에겐 쉽고 사람에겐 어려운 문제만 내는 '로봇 전용 출입문'을 만들었다.",
+    "points": [
+      "골판지 상자 로봇 탈을 쓴 커서가 97과 2는 잘 고르다가 91에서 한 번 망설인 끝에 골랐다가 틀리고, 위젯이 흔들리자 탈이 벗겨져 바닥에 떨어짐 → 로봇만 들어갈 수 있는 문에 사람이 로봇 분장을 하고 들어가려다 첫 문제에서 들통난다. 91은 7 × 13이다. 소수처럼 생겨서 사람은 '느낌'으로 고르고, 컴퓨터는 그냥 나눠 본다.",
+      "\"hello\"의 SHA-256 값이나 지금 유닉스 시간을 밀리초로 2초 안에 입력 → SHA-256은 사람이 머리로 계산할 수 없는 64자짜리 값이라, 사람은 \"hello\"를 그대로 치다가 \"hell\"에서 시간이 끝난다(\"그 심정 알아요\"). 밀리초 시계는 1초에 1,000번 바뀐다. 로봇은 계산해서 붙여 넣으면 끝이다.",
+      "바닥의 탈을 주워 거꾸로 뒤집어쓰고 '로봇입니다'를 눌렀더니 \"커서가 너무 사람처럼 움직였어요. 그리고 상자가 거꾸로예요.\" → 실제 체크박스 캡차도 누르기 전·누르는 동안·누른 뒤의 행동 전체를 보고 사람인지 가린다. 그 판정을 거꾸로 썼고, 처음의 골판지 변장이 한 번 더 들통난다.",
+      "사람이 18초 동안 다 틀린 것을 로봇 팔이 5초쯤에 다 풀고 \"확인 완료: 로봇. 어서 오세요, 친구.\" → 요즘은 기계가 캡차를 사람보다 잘 푼다. 구글은 2014년에 AI가 가장 어려운 일그러진 글자도 99.8% 정확도로 읽는다고 밝혔고, 2023년 연구에서는 여러 종류의 캡차에서 봇이 사람보다 빠르고 정확했다. 그러니 차라리 로봇 전용 문을 만든 셈이다.",
+      "끝에 위젯 아래 줄이 바뀌는 \"사람도 환영해요. 맨 아랫줄에 적힌 대로, 잘하고 있어요.\" → 사람이 3미터 밖에서 끝내 못 읽은 시력표 맨 아랫줄에는 '잘하고 있어요'라고 적혀 있었다. 돋보기를 든 로봇만 그 줄을 읽었고, 페이지는 그 말을 마지막에 사람에게 돌려준다.",
+      "(직접 누를 때만) '로봇입니다'를 직접 누르면 누른 방식대로 놀린다. 마우스면 \"네, 방금 그 커서요\", 터치면 \"손가락이 따뜻하네요\", 키보드면 \"커서가 하나도 안 움직였네요. 수상할 만큼 로봇 같아요\" 하고 로봇 동료를 보낸다. 소수를 직접 다 맞히면 \"수상할 만큼 정확해요. 혹시 로봇이세요?\" 뒤에 \"4개 중 1개 통과. 그 정도면 충분해요.\"로 로봇 대접을 받는다."
+    ],
+    "terms": [
+      {
+        "term": "캡차(CAPTCHA)",
+        "plain": "사람인지 프로그램인지 가리려고 내는 짧은 시험. 한국 웹사이트에서는 '자동입력 방지 문자'라고 부른다. 컴퓨터가 사람을 시험한다고 해서 '역 튜링 테스트'라고도 부른다."
+      },
+      {
+        "term": "소수",
+        "plain": "1과 자기 자신으로만 나누어떨어지는, 1보다 큰 자연수. 1은 소수가 아니다."
+      },
+      {
+        "term": "SHA-256",
+        "plain": "어떤 글이든 64글자(0~9와 a~f로 쓰는 16진수)짜리 '지문'으로 바꾸는 계산. 같은 글이면 늘 같은 값이 나오지만, 값을 보고 원래 글을 짐작할 수도, 손으로 셈할 수도 없다."
+      },
+      {
+        "term": "유닉스 시간",
+        "plain": "1970년 1월 1일 0시(UTC)부터 흐른 시간. 밀리초로 세면 지금은 13자리 숫자다."
+      }
+    ],
+    "links": [
+      {
+        "title": "CAPTCHA - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/CAPTCHA",
+        "note": "캡차가 무엇이고 왜 '역 튜링 테스트'라고도 부르는지",
+        "lang": "ko"
+      },
+      {
+        "title": "Are you a robot? Introducing “No CAPTCHA reCAPTCHA”",
+        "url": "https://security.googleblog.com/2014/12/are-you-robot-introducing-no-captcha.html",
+        "note": "체크박스 하나로 바뀐 캡차, 행동 전체를 보는 위험 분석, AI가 일그러진 글자를 99.8% 읽는다는 구글 발표",
+        "lang": "en"
+      },
+      {
+        "title": "New Findings on CAPTCHAs Attract Worldwide Attention",
+        "url": "https://ics.uci.edu/2023/09/14/new-findings-on-captchas-attract-worldwide-attention/",
+        "note": "1,400명이 캡차 14,000개를 푼 2023년 연구. 봇이 사람보다 빠르고 정확했다",
+        "lang": "en"
+      },
+      {
+        "title": "소수 (수론) - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/소수_(수론)",
+        "note": "소수의 정의와 1이 소수가 아닌 이유",
+        "lang": "ko"
+      },
+      {
+        "title": "유닉스 시간 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/유닉스_시간",
+        "note": "1970년부터 세는 컴퓨터의 시계",
+        "lang": "ko"
+      }
+    ],
+    "deep": [
+      "시력표 맨 아랫줄 → 사람이 끝내 못 읽은 그 줄에는 '잘하고 있어요'라고 적혀 있다. 돋보기를 든 로봇만 읽는다.",
+      "해시 칸의 64자 → 로봇이 한 번에 붙여 넣는 값은 \"hello\"의 진짜 SHA-256(2cf24dba…938b9824)이다. 사람이 친 \"hell\"은 원래 문제의 \"hello\"에서 한 글자 모자란다.",
+      "\"시간 종료\" → 타이머 막대가 0이 되는 순간, 칸을 누르고 정확히 2,000밀리초 뒤에 뜬다. 그래서 유닉스 시간 문제의 \"2,000번 바뀌었어요\"도 맞다.",
+      "로봇 팔의 소수 고르기 → 사람이 맞게 고른 97과 2는 그대로 두고, 틀린 91만 도로 뺀 뒤 나머지 넷을 집는다.",
+      "동그라미 한가운데 픽셀의 답 #4dabf7 → 그림을 그리는 공식에서 (37, 29) 칸이 실제로 그 색이다. 원 안에는 다른 색 픽셀도 들어 있어서 문제는 '한가운데'를 묻는다.",
+      "픽셀 세기의 답 4,096 → 그림은 정말 가로세로 64칸짜리 그림을 크게 키운 것이라 64 × 64 = 4,096칸이 맞다.",
+      "숫자판의 함정 → 16칸 중 진짜 소수는 2, 7, 89, 97, 113, 127 여섯 개뿐이다. 나머지는 91(7×13), 51(3×17), 57(3×19), 87(3×29), 119(7×17), 133(7×19), 221(13×17)처럼 소수처럼 생긴 합성수와 9, 39, 그리고 소수가 아닌 1이다.",
+      "유닉스 시간 문제에서 사람이 치는 네 자리 → 그 순간 실제 시계의 앞 네 자리이고, 로봇은 그 순간의 13자리를 그대로 친다. 이 문제와 픽셀 색 문제는 둘째 판부터 SHA-256·픽셀 세기와 번갈아 나온다."
+    ]
+  },
+  "en": {
+    "line": "This page turns the usual \"prove you're not a robot\" check inside out: it is a gate for robots, with questions that are easy for machines and hopeless for people.",
+    "points": [
+      "A cursor in a cardboard-box robot costume picks 97 and 2 without a doubt, hesitates over 91, picks it anyway, and the wrong answer shakes the costume off onto the floor → a human trying to sneak through a robots-only gate in disguise, caught on the first question. 91 is 7 × 13. It looks prime, so people pick it on feel; a computer just divides.",
+      "Type the SHA-256 of \"hello\", or the current Unix time in milliseconds, in 2 seconds → nobody can work out a SHA-256 in their head, so the human just types \"hello\" and runs out of time at \"hell\" (\"Relatable.\"). A millisecond clock changes 1,000 times a second. The robot computes it and pastes.",
+      "The human picks the costume up, puts it on upside down, ticks \"I’m a robot\" and gets \"Your cursor moved like a human. Also, the box is upside down.\" → real checkbox CAPTCHAs judge you by everything you do before, during and after the click. The page runs that test backwards, and the cardboard disguise gets caught a second time.",
+      "A robot arm clears in about 5 seconds the four checks the human failed for 18, and is welcomed as a friend → machines now beat people at CAPTCHAs. Google said in 2014 that AI could read even the hardest distorted text with 99.8% accuracy, and a 2023 study found bots faster and more accurate than humans on many kinds of CAPTCHA. So why not a door just for them?",
+      "The line under the widget at the end, \"Humans welcome too. Bottom line: you are doing great.\" → the bottom line of the eye chart, the one the human could never read from 3 metres, said exactly that; only the robot, with its magnifier, read it. In English \"bottom line\" also means the conclusion, so the page hands it back to the human as its last word.",
+      "(Only if you click) Tick \"I’m a robot\" yourself and the page judges how you did it: with a mouse \"Yes, yours.\", with a finger \"That finger felt warm.\", with the keyboard \"No cursor movement at all. Suspiciously robotic.\" and it sends a robot colleague. Solve the primes yourself and you get \"Suspiciously accurate. Are you a robot?\", then \"1 of 4 checks passed. Close enough.\""
+    ],
+    "terms": [
+      {
+        "term": "CAPTCHA",
+        "plain": "a short test meant to tell humans from programs. Because a computer tests a human, it is sometimes called a reverse Turing test. (In Korean it is called \"automatic-input prevention text\", so the Korean subtitle calls this one \"manual-input prevention\".)"
+      },
+      {
+        "term": "Prime number",
+        "plain": "a whole number above 1 that only 1 and itself divide. 1 is not prime."
+      },
+      {
+        "term": "SHA-256",
+        "plain": "a calculation that turns any text into a 64-character \"fingerprint\" written with 0–9 and a–f (hexadecimal). The same text always gives the same value, but you can neither guess the text from it nor work it out by hand."
+      },
+      {
+        "term": "Unix time",
+        "plain": "time counted from midnight UTC on 1 January 1970. In milliseconds it is a 13-digit number today."
+      }
+    ],
+    "links": [
+      {
+        "title": "CAPTCHA – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/CAPTCHA",
+        "note": "what CAPTCHAs are and why they are called reverse Turing tests",
+        "lang": "en"
+      },
+      {
+        "title": "Are you a robot? Introducing “No CAPTCHA reCAPTCHA”",
+        "url": "https://security.googleblog.com/2014/12/are-you-robot-introducing-no-captcha.html",
+        "note": "Google's 2014 post on the one-click checkbox, risk analysis of the whole interaction, and AI reading distorted text at 99.8%"
+      },
+      {
+        "title": "New Findings on CAPTCHAs Attract Worldwide Attention",
+        "url": "https://ics.uci.edu/2023/09/14/new-findings-on-captchas-attract-worldwide-attention/",
+        "note": "a 2023 study in which 1,400 people solved 14,000 CAPTCHAs, and bots beat them on speed and accuracy"
+      },
+      {
+        "title": "Prime number – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Prime_number",
+        "note": "what makes a number prime",
+        "lang": "en"
+      },
+      {
+        "title": "Unix time – Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Unix_time",
+        "note": "the computer clock that counts from 1970",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "The eye chart's bottom line → the line the human could never read says \"you are doing great\". Only the robot, with its magnifier, reads it.",
+      "The 64 characters in the hash box → what the robot pastes is the real SHA-256 of \"hello\" (2cf24dba…938b9824). The human's \"hell\" is the question's own \"hello\", one letter short.",
+      "\"Time’s up\" → it appears the moment the timer bar empties, exactly 2,000 ms after the field is tapped, so \"It changed 2,000 times\" is right too.",
+      "The robot's prime picks → it keeps the human's correct 97 and 2, takes back the wrong 91 and adds the other four.",
+      "The answer for the circle, #4dabf7 → the formula that draws the picture really puts that colour at (37, 29). The circle holds a few other pixels too, which is why the question asks for the one at its centre.",
+      "The pixel count, 4,096 → the picture really is a 64 × 64 grid blown up, so 4,096 is exact.",
+      "The traps on the grid → of the 16 numbers, only 2, 7, 89, 97, 113 and 127 are prime. The rest are prime-looking composites, 91 (7×13), 51 (3×17), 57 (3×19), 87 (3×29), 119 (7×17), 133 (7×19) and 221 (13×17), plus 9, 39, and 1, which is not prime.",
+      "The four digits the human types for Unix time → the first four digits of the real clock at that moment; the robot types all 13. That question and the pixel colour one take turns with the SHA-256 and the pixel count from the second round on."
+    ]
+  }
+}

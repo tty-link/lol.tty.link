@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Please Don't Feed the Phish | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Atkinson+Hyperlegible:wght@400;700&family=DotGothic16&family=Gowun+Dodum&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="sticker pixel"></script>
+<style>
+  /* An aquarium of phishing messages that swim like fish and circle a hook baited with a key.
+     Whoever bites the key gets reported by the cat on the lid: tagged, blushing, gone. One
+     fish is a real text from Mom, and nobody answers her. Tap a phish to report it yourself. */
+  :root {
+    --wall: #dcebe7;
+    --wall-2: #c9e0da;
+    --water-top: #7fd3dd;
+    --water-bot: #2b7ea6;
+    --sand: #f0d29a;
+    --wood: #8a5a3b;
+    --wood-2: #6e4329;
+    --brass: #caa24b;
+    --brass-ink: #3c2a0c;
+    --ink: #1e2a33;
+    --report: #e2453c;
+    --fp: #2f6fd6;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container-type: size;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 6cqmin, rgba(255,255,255,.18) 6cqmin 6.3cqmin),
+      linear-gradient(var(--wall), var(--wall-2));
+    color: var(--ink);
+    font-family: 'Atkinson Hyperlegible', 'Gowun Dodum', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'Gowun Dodum', 'Atkinson Hyperlegible', sans-serif; word-break: keep-all; }
+
+  /* Sized so the cat, tank, stand and plaque always fit the height as well as the width:
+     the room is .68 of its width plus about 36.5cqmin tall (measured), and a few px more on
+     small stages where the text floors kick in. */
+  .room {
+    display: grid;
+    justify-items: center;
+    width: min(94cqw, calc((99cqh - 36.5cqmin - max(12px, 60px - 9cqmin)) / .68));
+  }
+
+  /* ---- The tank ---- */
+  .tank-wrap { position: relative; width: 100%; }
+  /* Tall enough for the whole cat, ear tips included. */
+  .topper { position: relative; aspect-ratio: 100 / 11.5; }
+  .tank {
+    position: relative;
+    container-type: size;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 1.2cqmin solid #f4fbfa;
+    border-radius: 1.6cqmin;
+    overflow: hidden;
+    background: linear-gradient(var(--water-top), var(--water-bot));
+    box-shadow: inset 0 0 0 .4cqmin rgba(255,255,255,.35), 0 2cqmin 4cqmin rgba(30, 60, 70, .25);
+    cursor: default;
+  }
+  .lid {
+    position: relative;
+    z-index: 1;
+    width: 102.4%;
+    margin: -.4cqmin 0 -.8cqmin -1.2%;
+    height: 2.2cqmin;
+    border-radius: 1cqmin;
+    background: #2f3d45;
+  }
+  .rays { position: absolute; inset: -20% -10%; background: repeating-linear-gradient(100deg, rgba(255,255,255,.16) 0 3%, transparent 3% 9%); animation: rays 12s linear infinite alternate; pointer-events: none; }
+  @keyframes rays { to { transform: translateX(6%); } }
+  .scenery { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .bubbles i {
+    position: absolute;
+    bottom: -4%;
+    left: var(--x);
+    width: var(--s);
+    aspect-ratio: 1;
+    border: .3cqh solid rgba(255,255,255,.7);
+    border-radius: 50%;
+    animation: rise var(--t) linear infinite;
+    animation-delay: var(--d);
+  }
+  @keyframes rise {
+    0% { transform: translate(0, 0); opacity: 0; }
+    10% { opacity: 1; }
+    50% { transform: translate(1.4cqw, -55cqh); }
+    100% { transform: translate(-.8cqw, -112cqh); opacity: .4; }
+  }
+
+  .hook { position: absolute; left: 63%; top: 0; width: 6cqw; height: 54%; transform-origin: 50% 0; animation: sway 4.5s ease-in-out infinite alternate; pointer-events: none; }
+  @keyframes sway { from { rotate: -3deg; } to { rotate: 3deg; } }
+  .hook svg { width: 100%; height: 100%; overflow: visible; }
+
+  /* ---- Fish: a message with fins ---- */
+  .school { position: absolute; inset: 0; }
+  /* The head (eye, rounder end) leads: a fish going right is tail, then body; .left flips it. */
+  .fish {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    width: 30cqw;
+    cursor: pointer;
+    will-change: transform;
+  }
+  .fish.left { flex-direction: row; }
+  .fish .body {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    padding: 1.3cqw 4.2cqw 1.3cqw 2.4cqw;
+    border-radius: 3.2cqw 4.2cqw 4.2cqw 3.2cqw;
+    background: var(--fc);
+    color: #1a2228;
+    font-size: 1.95cqw;
+    font-weight: 700;
+    line-height: 1.2;
+    box-shadow: inset -.6cqw -.5cqw 0 rgba(0,0,0,.08);
+    transition: background-color .3s;
+  }
+  /* Caught: the whole fish flushes, not just the cheek, so it reads at any size. */
+  .fish.reported .body, .fish.reported .tail, .fish.reported .fin { background-color: color-mix(in srgb, var(--fc), #ff7d9b 28%); }
+  .fish.left .body { border-radius: 4.2cqw 3.2cqw 3.2cqw 4.2cqw; padding: 1.3cqw 2.4cqw 1.3cqw 4.2cqw; }
+  .fish .body small { display: block; margin-bottom: .3cqw; font-size: max(10px, 1.45cqw); font-weight: 400; opacity: .7; }
+  .fish .eye { position: absolute; top: 34%; right: 1.6cqw; width: 1.4cqw; aspect-ratio: 1; border-radius: 50%; background: #1a2228; box-shadow: inset .35cqw .35cqw 0 #fff; }
+  .fish.left .eye { right: auto; left: 1.6cqw; }
+  .fish .cheek { position: absolute; top: 56%; right: 1.2cqw; width: 2.2cqw; height: 1cqw; border-radius: 50%; background: #ff7d9b; opacity: 0; transition: opacity .3s; }
+  .fish.left .cheek { right: auto; left: 1.2cqw; }
+  .fish.reported .cheek { opacity: .85; }
+  .fish .tail { flex-shrink: 0; width: 4.6cqw; height: 6cqw; background: var(--fc); clip-path: polygon(100% 50%, 0 0, 22% 50%, 0 100%); animation: wag .5s ease-in-out infinite alternate; transform-origin: 100% 50%; }
+  .fish.left .tail { clip-path: polygon(0 50%, 100% 0, 78% 50%, 100% 100%); transform-origin: 0 50%; }
+  @keyframes wag { from { transform: scaleY(.8) skewY(-8deg); } to { transform: scaleY(1) skewY(8deg); } }
+  .fish:focus { outline: none; }
+  .fish:focus-visible .body { outline: .5cqw solid #fff; outline-offset: .5cqw; box-shadow: 0 0 0 1.1cqw rgba(30, 42, 51, .55), inset -.6cqw -.5cqw 0 rgba(0,0,0,.08); }
+  .fish .fin { position: absolute; left: 40%; top: -1.3cqw; width: 4cqw; height: 1.8cqw; background: var(--fc); border-radius: 60% 60% 0 0; filter: brightness(.92); }
+  /* Stamped right of centre, clear of the sender line (who it is from is half the clue). */
+  .tag {
+    position: absolute;
+    left: 70%;
+    top: -2.6cqw;
+    padding: .4cqw 1cqw;
+    border: .35cqw solid var(--report);
+    border-radius: .8cqw;
+    background: #fff;
+    color: var(--report);
+    font-family: 'DotGothic16', monospace;
+    font-size: max(10px, 1.7cqw);
+    rotate: -8deg;
+    translate: -50% 0;
+    white-space: nowrap;
+  }
+  .tag > font-kku { color: var(--report); }
+  /* A tag for the one message that was real. */
+  .tag.fp { left: 50%; border-color: var(--fp); color: var(--fp); rotate: 6deg; }
+  .tag.fp > font-kku { color: var(--fp); }
+
+  /* ---- The cat on the lid ---- */
+  .cat { position: absolute; left: 12%; bottom: -1%; width: 22%; pointer-events: none; }
+  .cat svg { display: block; width: 100%; overflow: visible; }
+  .cat .tail { transform-origin: 8px 6px; animation: tail 3.2s ease-in-out infinite alternate; }
+  @keyframes tail { from { rotate: 6deg; } to { rotate: -14deg; } }
+  .cat .open { display: none; }
+  .cat.peek .open { display: inline; }
+  .cat.peek .shut { display: none; }
+  /* The z's float in the empty space above the cat's back, inside the cat's own box, so
+     they stay on screen whatever the stage. */
+  .zz { position: absolute; left: 66%; top: 4%; font-family: 'Young Serif', serif; font-size: max(11px, 2.2cqmin); line-height: 1; color: rgba(30,42,51,.55); animation: zz 3s ease-in-out infinite; }
+  .zz:nth-child(2) { left: 76%; top: -4%; font-size: max(10px, 1.6cqmin); animation-delay: -1.5s; }
+  /* Awake: no z's while the eye is open. */
+  .cat.peek .zz { visibility: hidden; }
+  @keyframes zz { 0%, 100% { opacity: 0; translate: 0 1cqmin; } 50% { opacity: 1; translate: .6cqmin -.6cqmin; } }
+
+  /* ---- Stand, counter, plaque ---- */
+  .stand {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 104%;
+    margin-top: -.2cqmin;
+    padding: 1.4cqmin 3cqmin;
+    border-radius: .8cqmin;
+    background: linear-gradient(var(--wood), var(--wood-2));
+  }
+  .counter {
+    display: flex;
+    align-items: center;
+    gap: 1.2cqmin;
+    padding: .7cqmin 1.6cqmin;
+    border-radius: .6cqmin;
+    background: #c4dfa6;
+    box-shadow: inset 0 0 0 .3cqmin #556b3e;
+    color: #1d2b17;
+    font-family: 'DotGothic16', monospace;
+    font-size: max(12px, 2.3cqmin);
+  }
+  .counter > font-kku { color: #1d2b17; }
+  .counter b { font-weight: 400; display: inline-block; }
+
+  .plaque {
+    container-type: inline-size;
+    width: min(100%, 76cqmin);
+    margin-top: 3cqmin;
+    padding: 2.4cqmin 3.4cqmin;
+    border-radius: 1.2cqmin;
+    background: linear-gradient(135deg, #e6c56e, var(--brass) 55%, #a9832f);
+    box-shadow: inset 0 0 0 .4cqmin rgba(60, 42, 12, .35), 0 .8cqmin 1.6cqmin rgba(30,40,40,.2);
+    color: var(--brass-ink);
+    text-align: center;
+  }
+  .plaque h1 { font-family: 'Young Serif', serif; font-weight: 400; font-size: 5.6cqi; line-height: 1.1; }
+  .plaque .sci { margin-top: .8cqi; font-family: 'Young Serif', serif; font-style: italic; font-size: max(10px, 3.2cqi); }
+  .plaque .facts { margin-top: 1.2cqi; font-size: max(11px, 2.9cqi); line-height: 1.4; text-wrap: balance; }
+  .plaque h1 > font-kku { color: var(--brass-ink); }
+  .hint { margin-top: 1.6cqmin; font-size: max(12px, 2.2cqmin); color: rgba(30,42,51,.6); }
+
+  /* A phone's tank is about 336 px wide: px floors keep the messages readable, and wider,
+     flatter fish keep a subject to two lines so three lanes still fit. */
+  @container (max-width: 520px) {
+    .fish { width: 52cqw; }
+    .fish .body { font-size: max(11px, 3cqw); line-height: 1.15; }
+    .fish .body, .fish.left .body { padding-top: .9cqw; padding-bottom: .9cqw; }
+    .fish .body small { margin-bottom: 0; font-size: max(10px, 2.4cqw); }
+    .tag { font-size: max(10px, 2.4cqw); }
+    .fish .cheek { width: 4cqw; height: 1.8cqw; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rays, .bubbles i, .hook, .fish .tail, .cat .tail, .zz { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="room">
+  <div class="tank-wrap">
+    <div class="topper">
+    <div class="cat" aria-hidden="true">
+      <svg viewBox="0 0 120 60">
+        <g class="tail" transform="translate(98 44)"><path d="M8 6 C 22 10, 26 24, 18 34 C 14 38, 20 42, 24 40" fill="none" stroke="#e59a52" stroke-width="7" stroke-linecap="round"/></g>
+        <path d="M14 50 C 12 30, 34 22, 60 23 C 88 24, 106 32, 104 50 Z" fill="#f1ad62" stroke="#7a4a22" stroke-width="2.4" stroke-linejoin="round"/>
+        <path d="M44 28 l4 8 M58 25 l1 9 M72 26 l-2 8" stroke="#d68637" stroke-width="3" stroke-linecap="round"/>
+        <g>
+          <path d="M10 34 L13 14 L24 26 Z M34 24 L41 10 L45 27 Z" fill="#f1ad62" stroke="#7a4a22" stroke-width="2.4" stroke-linejoin="round"/>
+          <ellipse cx="28" cy="37" rx="20" ry="15" fill="#f1ad62" stroke="#7a4a22" stroke-width="2.4"/>
+          <g class="shut"><path d="M18 36 q4 3 8 0 M31 36 q4 3 8 0" fill="none" stroke="#3b2410" stroke-width="2.2" stroke-linecap="round"/></g>
+          <g class="open"><path d="M18 36 q4 3 8 0" fill="none" stroke="#3b2410" stroke-width="2.2" stroke-linecap="round"/><circle cx="35" cy="35.5" r="3.4" fill="#3b2410"/><circle cx="36" cy="34.5" r="1" fill="#fff"/></g>
+          <path d="M26 42 l2 1.6 2 -1.6" fill="none" stroke="#3b2410" stroke-width="1.8" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <span class="zz">z</span><span class="zz">z</span>
+    </div>
+    </div>
+    <div class="lid" aria-hidden="true"></div>
+    <div class="tank">
+      <div class="rays" aria-hidden="true"></div>
+      <svg class="scenery" viewBox="0 0 160 90" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 78 C 30 72, 52 80, 80 76 S 130 72, 160 77 L160 90 L0 90 Z" fill="#f0d29a"/>
+        <path d="M0 82 C 40 79, 70 85, 100 82 S 140 80, 160 83 L160 90 L0 90 Z" fill="#e2bd7c"/>
+        <path d="M14 80 C 10 66, 18 58, 12 46 M14 80 C 20 70, 16 62, 22 54 M140 80 C 136 64, 146 58, 140 44 M144 80 C 150 70, 148 64, 154 58" stroke="#3f9a6a" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <ellipse cx="104" cy="78" rx="8" ry="4.6" fill="#9aa7ad"/><ellipse cx="114" cy="80" rx="5" ry="3" fill="#7f8b92"/>
+      </svg>
+      <div class="bubbles" aria-hidden="true"></div>
+      <div class="hook" aria-hidden="true">
+        <svg viewBox="0 0 20 100" preserveAspectRatio="xMidYMin meet">
+          <path d="M10 0 V82" stroke="rgba(255,255,255,.75)" stroke-width=".8"/>
+          <path d="M10 80 V90 a5 5 0 1 1 -8 -4" fill="none" stroke="#5d6a72" stroke-width="1.8" stroke-linecap="round"/>
+          <g transform="translate(5 86) rotate(-20)"><circle r="3.2" fill="none" stroke="#e8b730" stroke-width="1.6"/><path d="M3 0 h7 M7 0 v2.6 M9.4 0 v2" stroke="#e8b730" stroke-width="1.6" stroke-linecap="round"/></g>
+        </svg>
+      </div>
+      <div class="school"></div>
+    </div>
+  </div>
+  <div class="stand">
+    <div class="counter" aria-live="polite"></div>
+  </div>
+  <div class="plaque">
+    <div data-lang="en">
+      <h1>Please don't feed the phish.</h1>
+      <p class="sci">Phishus credentialis</p>
+      <p class="facts">Habitat: inboxes and text messages. Diet: passwords, codes, gift cards. Predators: the report button, and the cat.</p>
+    </div>
+    <div data-lang="ko">
+      <h1><font-kku font="sticker" size="6.4cqi">피싱에게 먹이를 주지 마세요</font-kku></h1>
+      <p class="sci">분류: 사칭어과 낚시꾼속</p>
+      <p class="facts">서식지: 문자함, 메일함. 먹이: 비밀번호, 인증번호, 상품권. 천적: 신고 버튼과 고양이.</p>
+    </div>
+  </div>
+  <p class="hint">
+    <span data-lang="en">Tap a phish to report it.</span>
+    <span data-lang="ko">낚이기 전에 눌러서 신고하세요.</span>
+  </p>
+</div>
+
+<script>
+(() => {
+  const ko = TTY.lang === 'ko';
+  const school = document.querySelector('.school');
+  const tank = document.querySelector('.tank');
+  const cat = document.querySelector('.cat');
+  const hook = document.querySelector('.hook');
+  const counter = document.querySelector('.counter');
+
+  // The first two open every visit (see play()); the rest come shuffled. A zero-width space
+  // lets a file name break right before its real extension.
+  const MESSAGES = TTY.t({
+    en: [
+      ['Unknown number', 'Hi Mom, dropped my phone. New number'],
+      ['accounting', 'Invoice_FINAL_final​.pdf.exe'],
+      ['Security team', 'Your account is suspended'],
+      ['The CEO (real)', 'Need gift cards. Quietly.'],
+      ['npm Support', 'Update your 2FA or get locked out'],
+      ['Parcel Service', 'Parcel held. Pay $1.99'],
+      ['IT Helpdesk', 'Password expires in 1 hour'],
+      ['Sign-in alert', 'Unusual login. Verify here'],
+      ['Toll Services', 'Unpaid toll: $3.75. Pay today to avoid fees'],
+      ['HR', 'Updated salary bands. Sign in to view'],
+      ['Unknown number', 'Hi, is this Emma? Long time no see!'],
+      ['Tax Refund Dept.', 'You are owed $412.80. Claim in 24 hours'],
+    ],
+    ko: [
+      ['모르는 번호', '엄마 나 폰 깨졌어 이 번호로 문자 줘'],
+      ['거래처', '견적서_최종_진짜최종​.pdf.exe'],
+      ['[택배]', '주소 불일치로 배송 보류 중'],
+      ['서울중앙지검', '명의 도용 사건 관련 확인 바랍니다'],
+      ['[국외발신]', '해외결제 980,000원 승인'],
+      ['정부지원', '저금리 대출 승인 대상자입니다'],
+      ['부고', '삼가 고인의 명복을… 장례식장 링크'],
+      ['건강보험', '건강검진 결과를 확인하세요'],
+      ['모르는 번호', '저희 결혼합니다♡ 모바일 청첩장'],
+      ['[구청 알림]', '쓰레기 무단투기 과태료 부과 안내'],
+      ['[카드 발급 완료]', '본인 신청이 아니면 바로 연락 주세요'],
+      ['[국세청]', '연말정산 미수령 환급금 조회'],
+    ],
+  });
+  // One fish is not a scam: a saved contact, no link, no hurry. She keeps the top lane, the cat
+  // never reports her, and when nobody answers she tries to prove she is real, which only
+  // makes her sound like the rest of the tank. Tapping her earns a false-positive tag.
+  const MOM = TTY.t({
+    en: { from: 'Mom', lines: ['Coming Sunday? Bring a jacket', "It's really Mom. Not a scam.", 'Want my verification code?'], fp: 'Did you just report me?' },
+    ko: { from: '엄마', lines: ['밥은 먹고 다니니?', '엄마야. 진짜 엄마야. 사기 아니야', '엄마 인증번호 보내 줄까?'], fp: '방금 엄마 신고했니?' },
+  });
+  // Peach (#ffe1c2) is Mom's alone, so no scam looks like her.
+  const COLORS = ['#ffe9a8', '#ffd0dc', '#d6f5c9', '#f6d6ff', '#e2dcff', '#c9f0ff'];
+  const ARIA = TTY.t({ en: 'Report: ', ko: '신고: ' });
+
+  // The first round is the same for everyone, so a visitor who never taps still gets the story
+  // (seconds after the page is on screen):
+  //   0     the fake kid in the hook's lane heads for the key; by about 1.9 it is nibbling
+  //         (about 1.0 on a phone, where fish are wider and it starts nearer)
+  //   3.0   the cat opens an eye; 3.4 the hook jerks, the stamp lands, 4.05 it flees
+  //   7.2   the cat again: the invoice, nearest the key now
+  //   9.6   Mom, still unanswered, insists she is real; 12.4 she offers proof
+  //   15.0  the cat is back on duty every 4.2 s, and the hook's lane is lured every 2.6 s
+  // With reduced motion nothing moves and the story is only Mom's texts, so they come sooner:
+  // 3.0 and 5.8.
+  const T = { firstCat: 3.0, secondCat: 7.2, momProof: 9.6, momCode: 12.4, catBack: 15.0, catEvery: 4.2, catToStamp: 0.4, stillProof: 3.0 };
+
+  let reported = 0;
+  function renderCounter(bump) {
+    if (ko) {
+      const el = document.createElement('font-kku');
+      el.setAttribute('font', 'pixel');
+      el.setAttribute('size', 'max(12px, 2.4cqmin)');
+      el.textContent = `오늘 신고 ${reported}건`;
+      counter.replaceChildren(el);
+    } else {
+      counter.innerHTML = `Reported today: <b>${reported}</b>`;
+    }
+    if (bump && !TTY.reduce) counter.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 380, easing: 'ease-out' });
+  }
+  renderCounter(false);
+
+  // Bubbles rising from the sand.
+  const bubbles = document.querySelector('.bubbles');
+  for (let i = 0; i < 16; i++) {
+    const b = document.createElement('i');
+    b.style.cssText = `--x:${4 + Math.random() * 92}%;--s:${.8 + Math.random() * 1.6}cqw;--t:${5 + Math.random() * 6}s;--d:${-Math.random() * 10}s`;
+    bubbles.append(b);
+  }
+
+  /* ---- The school ---- */
+  let W = 0, H = 0;
+  const measure = () => { W = tank.clientWidth; H = tank.clientHeight; };
+  measure();
+  addEventListener('resize', measure);
+
+  const fish = [];
+  // Every fish is the same width (a share of the tank), the tail included.
+  const fw = () => (fish[0] ? fish[0].el.offsetWidth / (W || 1) : 0.3);
+
+  // Messages come from a shuffled deck, never one that is already swimming.
+  const shuffle = (a) => a.sort(() => Math.random() - .5);
+  let deck = shuffle([...MESSAGES.keys()].slice(2));
+  const nextMessage = () => {
+    for (let tries = 0; tries < 30; tries++) {
+      if (!deck.length) deck = shuffle([...MESSAGES.keys()]);
+      const i = deck.pop();
+      if (!fish.some((f) => f.msg === i)) return i;
+    }
+    return 2;
+  };
+
+  // Three lanes, so messages never pile up. Mom keeps the top one; the key hangs in the middle
+  // one. The top lane starts low enough that a tag above its fish stays inside the glass.
+  const MOM_LANE = 0, HOOK_LANE = 1;
+  const laneY = (i) => 0.12 + i * 0.27;
+
+  function say(f, text, pop) {
+    f.el.querySelector('.subject').textContent = text;
+    f.el.setAttribute('aria-label', ARIA + f.from + ' ' + text);
+    if (pop && !TTY.reduce) f.el.querySelector('.body').animate([{ transform: 'none' }, { transform: 'translateY(-1.2cqw) scale(1.1)', offset: .4 }, { transform: 'none' }], { duration: 480, easing: 'ease-out' });
+  }
+
+  // `at` places a fish inside the glass; without it the fish starts just outside and hurries in.
+  function spawn(msg, lane, at) {
+    const real = msg === 'mom';
+    const [from, subject] = real ? [MOM.from, MOM.lines[0]] : MESSAGES[msg];
+    const el = document.createElement('div');
+    el.className = 'fish';
+    el.innerHTML = `<div class="body"><small></small><span class="subject"></span><i class="eye"></i><i class="cheek"></i><i class="fin"></i></div><div class="tail"></div>`;
+    el.querySelector('small').textContent = from;
+    el.style.setProperty('--fc', real ? '#ffe1c2' : COLORS[Math.floor(Math.random() * COLORS.length)]);
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    school.append(el);
+    const dir = at ? at.dir : Math.random() < .5 ? 1 : -1;
+    const f = {
+      el, msg, real, from, dir, lane,
+      x: at ? at.x : dir > 0 ? -el.offsetWidth / (W || 1) : 1,
+      entering: !at,
+      y: laneY(lane),
+      speed: at && at.speed ? at.speed : 0.035 + Math.random() * 0.03,
+      phase: Math.random() * 6,
+      state: 'swim',  // swim, caught (blushing in place), leaving
+      curious: false, // heading for the key
+      nib: 0,         // seconds spent nibbling it
+      jolt: 0,
+      fp: 0,
+      busy: false,
+    };
+    say(f, subject, false);
+    el.classList.toggle('left', dir < 0);
+    el.addEventListener('pointerdown', (e) => { e.stopPropagation(); idleUntil = performance.now() + 9000; report(f); });
+    el.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      idleUntil = performance.now() + 9000;
+      report(f);
+    });
+    fish.push(f);
+    return f;
+  }
+
+  function stamp(f, text, kind) {
+    const tag = document.createElement('span');
+    tag.className = 'tag' + (kind ? ' ' + kind : '');
+    if (ko) {
+      const k = document.createElement('font-kku');
+      k.setAttribute('font', 'pixel');
+      k.setAttribute('size', '1em');
+      k.textContent = text;
+      tag.append(k);
+    } else {
+      tag.textContent = text;
+    }
+    f.el.querySelector('.body').append(tag);
+    if (!TTY.reduce) tag.animate([{ transform: 'scale(2.4)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }], { duration: 260, easing: 'cubic-bezier(.5,0,.9,.4)' });
+    return tag;
+  }
+
+  // The cat opens one eye while it works, and the z's stop.
+  let catSleepAt = 0, catTimer = 0;
+  function wakeCat(ms) {
+    cat.classList.add('peek');
+    catSleepAt = Math.max(catSleepAt, performance.now() + ms);
+    clearTimeout(catTimer);
+    catTimer = setTimeout(() => { cat.classList.remove('peek'); catSleepAt = 0; }, catSleepAt - performance.now());
+  }
+
+  function report(f, how = {}) {
+    if (f.state !== 'swim') return;
+    if (f.real) return falsePositive(f);
+    f.state = 'caught';
+    f.curious = false;
+    reported += 1;
+    renderCounter(true);
+    f.el.classList.add('reported');
+    stamp(f, TTY.t({ en: 'Reported', ko: '신고 완료' }));
+    if (!how.byCat) wakeCat(1300);
+    if (how.stay) return;
+    // Reduced motion: no darting off. The reported fish fades out where it is and a new
+    // message takes its place in the same lane.
+    if (TTY.reduce) {
+      setTimeout(() => {
+        const fade = f.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 600, fill: 'forwards' });
+        fade.finished.then(() => {
+          const hadFocus = document.activeElement === f.el;
+          f.el.remove();
+          fish.splice(fish.indexOf(f), 1);
+          const dir = Math.random() < .5 ? 1 : -1;
+          const g = spawn(nextMessage(), f.lane, { x: 0.05 + Math.random() * Math.max(0, 0.9 - fw()), dir });
+          g.el.style.transform = `translate(${g.x * W}px, ${g.y * H}px)`;
+          if (hadFocus) g.el.focus({ preventScroll: true });
+        });
+      }, 900);
+      return;
+    }
+    // Embarrassed: a beat to blush, then turn to the nearer edge and dart off.
+    setTimeout(() => {
+      f.state = 'leaving';
+      f.dir = f.x + fw() / 2 > 0.5 ? 1 : -1;
+      f.el.classList.toggle('left', f.dir < 0);
+      f.speed = 0.32;
+    }, 650);
+  }
+
+  // Reporting Mom: a blue tag, no count, and she swims on. When the tag drops, she has
+  // noticed.
+  function falsePositive(f) {
+    if (f.el.querySelector('.tag')) return;
+    const token = ++f.fp;
+    f.busy = true;
+    const tag = stamp(f, TTY.t({ en: 'False positive: real Mom', ko: '오탐: 진짜 엄마' }), 'fp');
+    wakeCat(1300);
+    setTimeout(() => {
+      const gone = TTY.reduce ? Promise.resolve(tag.remove())
+        : tag.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' }).finished.then(() => tag.remove());
+      gone.then(() => {
+        say(f, MOM.fp, true);
+        setTimeout(() => {
+          if (token !== f.fp) return;
+          f.busy = false;
+          momCatchUp(f);
+        }, 4000);
+      });
+    }, 2600);
+  }
+
+  // Mom's lines move on by themselves. A false-positive reply is never cut short: a line that
+  // falls due meanwhile waits, and comes straight after it.
+  let momLine = 0, momDue = 0;
+  function momSays(line) {
+    if (line <= momDue) return;
+    momDue = line;
+    const mom = fish.find((f) => f.real);
+    if (mom && !mom.busy) momCatchUp(mom);
+  }
+  function momCatchUp(mom) {
+    const moved = momDue !== momLine;
+    momLine = momDue;
+    say(mom, MOM.lines[momLine], true);
+    const next = momLine + 1;
+    if (moved && next < MOM.lines.length) setTimeout(() => momSays(next), (T.momCode - T.momProof) * 1000);
+  }
+
+  /* ---- The key ---- */
+  const HOOK = { x: 0.63, y: 0.47 };
+  // Where a fish stops so that its mouth (the head leads) is at the key.
+  const keyX = (f) => (f.dir > 0 ? HOOK.x - fw() - 0.01 : HOOK.x + 0.03);
+  // A fish only goes for the key if it can swim there head first.
+  function lure(f) {
+    if (!f || f.real || f.state !== 'swim' || f.entering) return false;
+    const dir = f.x <= HOOK.x - fw() - 0.01 ? 1 : f.x >= HOOK.x + 0.03 ? -1 : 0;
+    if (!dir) return false;
+    f.dir = dir;
+    f.el.classList.toggle('left', dir < 0);
+    f.curious = true;
+    f.nib = 0;
+    return true;
+  }
+  const lureSomeone = () => {
+    if (fish.some((f) => f.curious && f.state === 'swim')) return;
+    lure(fish.find((f) => f.lane === HOOK_LANE && f.state === 'swim'));
+  };
+
+  let last = 0;
+  function frame(t) {
+    const dt = Math.min(0.05, (t - (last || t)) / 1000);
+    last = t;
+    const w = fw();
+    fish.forEach((f) => {
+      let dx = 0;
+      let dy = Math.sin(t / 700 + f.phase) * 0.018;
+      if (f.curious && f.state === 'swim') {
+        const d = keyX(f) - f.x;
+        if (!f.nib && Math.abs(d) > 0.004) {
+          f.x += Math.sign(d) * Math.min(Math.abs(d), Math.min(0.18, 0.02 + Math.abs(d) * 2.2) * dt);
+        } else {
+          // Nibbling: pull back and peck at the key, about 3.5% of the tank's width.
+          f.x = keyX(f);
+          f.nib += dt;
+          dx = -f.dir * 0.035 * (0.5 - 0.5 * Math.cos(f.nib * Math.PI * 2 / 0.5));
+          dy *= 0.3;
+          if (f.nib > 3.6) { f.curious = false; f.nib = 0; }
+        }
+      } else if (f.state !== 'caught') {
+        if (f.entering && f.x > 0 && f.x < 1 - w) f.entering = false;
+        f.x += f.dir * f.speed * (f.entering && f.state === 'swim' ? 4 : 1) * dt;
+        if (f.state === 'swim' && ((f.dir > 0 && f.x > 0.985 - w) || (f.dir < 0 && f.x < 0.015))) {
+          f.dir *= -1;
+          f.el.classList.toggle('left', f.dir < 0);
+        }
+      }
+      // Hooked: the fish jerks up with the line.
+      if (f.jolt) {
+        const k = (t - f.jolt) / 340;
+        if (k < 1 && k >= 0) dy -= 0.06 * Math.sin(Math.PI * k);
+        else if (k >= 1) f.jolt = 0;
+      }
+      f.el.style.transform = `translate(${(f.x + dx) * W}px, ${(f.y + dy) * H}px)`;
+    });
+    // Reported fish that have left are replaced by new arrivals.
+    for (let i = fish.length - 1; i >= 0; i--) {
+      const f = fish[i];
+      if (f.state === 'leaving' && (f.x > 1.02 || f.x < -w - 0.02)) {
+        if (document.activeElement === f.el) {
+          const next = fish.find((g) => g.state === 'swim');
+          if (next) next.el.focus({ preventScroll: true });
+        }
+        f.el.remove();
+        fish.splice(i, 1);
+        setTimeout(() => spawn(nextMessage(), f.lane), 900);
+      }
+    }
+    if (running) requestAnimationFrame(frame);
+  }
+
+  // If nobody reports anything, the cat does: whoever has the key in its mouth first,
+  // otherwise the phish whose mouth is nearest the key. Never Mom.
+  let idleUntil = 0;
+  addEventListener('pointerdown', () => { idleUntil = performance.now() + 9000; });
+  const mouthToKey = (f) => Math.hypot((f.dir > 0 ? f.x + fw() : f.x) - HOOK.x, f.y + 0.07 - HOOK.y);
+  const prey = () => fish.filter((f) => f.state === 'swim' && !f.real && !f.entering);
+  function catTurn() {
+    if (performance.now() < idleUntil || !prey().length) return;
+    wakeCat(T.catToStamp * 1000 + 1800);
+    setTimeout(() => {
+      if (performance.now() < idleUntil) return;
+      const pool = prey();
+      const f = pool.find((g) => g.nib > 0) || pool.sort((a, b) => mouthToKey(a) - mouthToKey(b))[0];
+      if (!f) return;
+      if (f.nib > 0 && !TTY.reduce) {
+        hook.animate([{ transform: 'none' }, { transform: 'translateY(-14%)', offset: .35 }, { transform: 'none' }], { duration: 420, easing: 'ease-out' });
+        f.jolt = performance.now();
+      }
+      report(f, { byCat: true });
+    }, T.catToStamp * 1000);
+  }
+
+  // The opening school: Mom up top, the fake kid in the hook's lane on the key's left, the
+  // invoice below. A fish's width is only known once one exists (about .3 of the tank on a
+  // desktop, .52 on a phone), so spawn first, then place them inside the glass.
+  {
+    spawn('mom', MOM_LANE, { x: 0.5, dir: -1, speed: 0.04 });
+    spawn(0, HOOK_LANE, { x: 0, dir: 1, speed: 0.05 });
+    spawn(1, 2, { x: 0.6, dir: -1, speed: 0.05 });
+    const w = fw();
+    fish[0].x = Math.min(0.5, 0.97 - w);
+    fish[1].x = Math.max(0, HOOK.x - w - 0.01 - 0.26);
+    fish[2].x = Math.min(0.6, 0.97 - w);
+  }
+  const kid = fish[1];
+  // Reduced motion: the fake kid is already caught at the key, so the counter (1) has a
+  // tagged fish to match.
+  if (TTY.reduce) { kid.x = keyX(kid); report(kid, { stay: true }); }
+  const place = () => fish.forEach((f) => { f.el.style.transform = `translate(${f.x * W}px, ${f.y * H}px)`; });
+  place();
+
+  let running = false, t0 = 0;
+  const at = (s, fn) => setTimeout(fn, Math.max(0, t0 + s * 1000 - performance.now()));
+  function play() {
+    measure();
+    t0 = performance.now();
+    at(TTY.reduce ? T.stillProof : T.momProof, () => momSays(1));
+    if (TTY.reduce) { place(); return; }
+    running = true;
+    requestAnimationFrame(frame);
+    lure(kid);
+    // Keep the key quiet while Mom talks, so the eye goes to her.
+    setInterval(() => {
+      const s = (performance.now() - t0) / 1000;
+      if (s > T.secondCat && s < T.catBack - 1) return;
+      lureSomeone();
+    }, 2600);
+    at(T.firstCat, catTurn);
+    at(T.secondCat, catTurn);
+    at(T.catBack, () => { catTurn(); setInterval(catTurn, T.catEvery * 1000); });
+  }
+  // Not gated on TTY.drawn: fish are a fixed share of the tank wide, so nothing here measures
+  // text, and the punch should not move with font loading (a font arriving late only swaps the
+  // face of text already on screen).
+  TTY.onShow(play);
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(() => { measure(); place(); TTY.ready(); });
+})();
+</script>
+</body>
+</html>

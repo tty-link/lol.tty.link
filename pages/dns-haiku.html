@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DNS Haiku | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yuji+Boku&family=Shippori+Mincho+B1:wght@800&family=Gowun+Batang:wght@400;700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="butgeul dojang"></script>
+<script src="https://font.tty.link/lib/font-kku-fx.js"></script>
+<style>
+  /* The sysadmin's haiku, hung where it belongs: on a scroll, brushed line by line,
+     sealed in red. Every outage review ends here eventually. */
+  :root {
+    --wall: #22252d;
+    --mist: #343844;
+    --silk: #5f7b7c;
+    --silk-deep: #48605f;
+    --paper: #f3eee2;
+    --ink: #1a1613;
+    --seal: #c4302b;
+    --rod: #4a2f22;
+    --petal: #f2b5c3;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(60% 40% at 20% 25%, rgba(70, 76, 92, .55), transparent 70%),
+      radial-gradient(50% 45% at 85% 75%, rgba(60, 66, 80, .5), transparent 70%),
+      radial-gradient(120% 100% at 50% 50%, var(--mist), var(--wall));
+    color: var(--ink);
+    font-family: 'Gowun Batang', serif;
+  }
+  .petals { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  /* The scroll: hanger, top rod, mounted paper, bottom rod. */
+  .scroll {
+    position: relative;
+    container-type: inline-size;
+    width: min(88vw, calc(90vh * .72));
+    width: min(88vw, calc(90svh * .72));
+    filter: drop-shadow(0 18px 30px rgba(0, 0, 0, .45));
+  }
+  .hanger { position: absolute; left: 50%; top: -9cqi; width: 36cqi; height: 10cqi; translate: -50% 0; }
+  .rod {
+    position: relative;
+    z-index: 2;
+    height: 4.2cqi;
+    margin: 0 -3cqi;
+    border-radius: 2cqi;
+    background: linear-gradient(#6b4632, var(--rod) 55%, #2e1c14);
+  }
+  .rod::before, .rod::after {
+    content: "";
+    position: absolute;
+    top: -1cqi;
+    width: 4.6cqi;
+    height: 6.2cqi;
+    border-radius: 1.4cqi;
+    background: linear-gradient(90deg, #2a1a12, #5c3a29 50%, #2a1a12);
+  }
+  .rod::before { left: -3.4cqi; }
+  .rod::after { right: -3.4cqi; }
+  .rod.bottom { height: 5.2cqi; }
+
+  .roll { position: relative; }
+  .sheet {
+    position: relative;
+    padding: 7cqi 7cqi 8cqi;
+    background:
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, .05) 0 .6cqi, transparent .6cqi 1.6cqi),
+      linear-gradient(var(--silk), var(--silk-deep));
+  }
+  .paper {
+    position: relative;
+    aspect-ratio: 1 / 1.22;
+    padding: 9cqi 6cqi 26cqi;
+    justify-content: center;
+    background:
+      radial-gradient(90% 70% at 30% 20%, rgba(255, 255, 255, .5), transparent 70%),
+      radial-gradient(70% 60% at 80% 90%, rgba(196, 178, 140, .18), transparent 70%),
+      var(--paper);
+    box-shadow: inset 0 0 0 .4cqi rgba(160, 140, 100, .25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .lines { display: flex; flex-direction: column; align-items: center; gap: 5.6cqi; filter: url(#bleed); }
+  .line { display: flex; align-items: baseline; justify-content: center; min-height: 1.3em; color: var(--ink); white-space: nowrap; }
+  .lang-en .line { font-family: 'Yuji Boku', serif; font-size: calc(6.3cqi * var(--fit, 1)); }
+  .lang-ko .line { font-size: 8.2cqi; }
+  .line .lat { font-family: 'Yuji Boku', serif; font-size: .82em; margin: 0 .12em; }
+  .lang-en .line .lat { font-size: 1em; margin: 0; }
+  .line .ch { display: inline-block; }
+  .line > font-kku { color: var(--ink); filter: drop-shadow(0 0 .5px var(--ink)) drop-shadow(0 0 .5px var(--ink)); }
+  .js-hide { visibility: hidden; }
+
+  /* The signature keeps clear of the seal (it wraps instead) and never drops under 10 px. */
+  .sign {
+    position: absolute;
+    left: 8cqi;
+    right: 23cqi;
+    bottom: 7cqi;
+    font-size: max(10px, 3cqi);
+    line-height: 1.35;
+    color: #5a5045;
+    word-break: keep-all;
+    text-wrap: balance;
+  }
+  .lang-en .sign { font-family: 'Yuji Boku', serif; }
+
+  .seal {
+    position: absolute;
+    right: 8cqi;
+    bottom: 6.5cqi;
+    display: grid;
+    place-items: center;
+    width: 13cqi;
+    aspect-ratio: 1 / 1.24;
+    padding: 1cqi 0;
+    border: 0;
+    border-radius: 1.2cqi .8cqi 1.4cqi .9cqi;
+    color: var(--paper);
+    rotate: -4deg;
+    cursor: pointer;
+    background:
+      radial-gradient(40% 30% at 30% 25%, rgba(255, 255, 255, .14), transparent 70%),
+      radial-gradient(35% 30% at 75% 80%, rgba(90, 10, 10, .22), transparent 70%),
+      var(--seal);
+    box-shadow: inset 0 0 0 .5cqi rgba(255, 240, 230, .18);
+    font: inherit;
+    opacity: .94;
+  }
+  .seal-en { display: grid; line-height: .95; font-family: 'Shippori Mincho B1', serif; font-weight: 800; font-size: 4.6cqi; color: var(--paper); text-align: center; }
+  .seal-ko { display: grid; justify-items: center; line-height: 1; }
+  .seal-ko > font-kku { color: var(--seal); }
+  /* The dojang face carries its own red ink, so the Korean seal is the outlined kind. */
+  .lang-ko .seal { bottom: 5cqi; padding: .4cqi 0; background: rgba(243, 238, 226, .4); border: .6cqi solid var(--seal); box-shadow: none; mix-blend-mode: multiply; }
+  .seal:focus-visible { outline: .5cqi solid var(--seal); outline-offset: 1cqi; }
+  .lead-seal {
+    position: absolute;
+    left: 6cqi;
+    top: 5.5cqi;
+    display: grid;
+    place-items: center;
+    width: max(5.6cqi, 14px);
+    height: max(8.6cqi, 22px);
+    border-radius: 50%;
+    background:
+      radial-gradient(40% 30% at 35% 30%, rgba(255, 255, 255, .14), transparent 70%),
+      var(--seal);
+    color: var(--paper);
+    font: 800 max(10px, 2.7cqi)/.92 'Shippori Mincho B1', serif;
+    text-align: center;
+    rotate: 3deg;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .foot {
+    position: absolute;
+    right: 5cqi;
+    bottom: 26cqi;
+    padding: 1.2cqi 2cqi;
+    border-radius: .8cqi;
+    background: #fffaf0;
+    box-shadow: 0 .6cqi 1.6cqi rgba(0, 0, 0, .18);
+    font-size: max(11px, 3.2cqi);
+    color: #4a3f36;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s, translate .25s;
+    translate: 0 1cqi;
+  }
+  .foot.show { opacity: 1; translate: 0 0; }
+  /* The dojang seal stands taller than the English one (three stacked characters), so in
+     Korean it sits a little lower and the footnote a little higher. */
+  .lang-ko .foot { bottom: 27.5cqi; }
+  /* Until the page is on stage the scroll is still rolled up (play() unrolls it). */
+  .roll.unshown { visibility: hidden; }
+  /* Once written, tapping the scroll writes the next verse. */
+  .roll.done .sheet { cursor: pointer; }
+  .sheet:focus-visible { outline: .6cqi solid #e9d9a8; outline-offset: .6cqi; }
+
+  .hint {
+    position: fixed;
+    left: 50%;
+    bottom: max(6px, 1.6vh);
+    translate: -50% 0;
+    color: rgba(243, 238, 226, .74);
+    font: 400 clamp(12px, 1.8vmin, 15px)/1.3 'Gowun Batang', serif;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity .6s;
+    pointer-events: none;
+  }
+  .hint.on { opacity: 1; }
+
+  html:not(.embedded) body { padding-bottom: 40px; }
+  /* ...so the scroll is sized against what is left, keeping its hanging cord inside the window. */
+  html:not(.embedded) .scroll { width: min(88vw, calc((100vh - 40px) * .648)); width: min(88vw, calc((100svh - 40px) * .648)); }
+  /* Standalone, the tty.link nav takes the bottom-right corner; the hint keeps to the left. */
+  html:not(.embedded) .hint { left: 14px; bottom: 18px; translate: none; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- Ink soaks a little into the paper; the seal is uneven where the paste was thin. -->
+  <filter id="bleed"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="1.4"/></filter>
+</svg>
+<canvas class="petals" aria-hidden="true"></canvas>
+
+<main class="scroll">
+  <svg class="hanger" viewBox="0 0 100 30" aria-hidden="true">
+    <path d="M6 30 L50 3 L94 30" fill="none" stroke="#b9a37a" stroke-width="1.6"/>
+    <circle cx="50" cy="3" r="2.6" fill="#8b8f99"/>
+  </svg>
+  <div class="rod"></div>
+  <div class="roll">
+    <div class="sheet">
+      <article class="paper">
+        <!-- The verse, its signature and footnote are written by the script (VERSES). -->
+        <h1 class="lines"></h1>
+        <p class="sign"></p>
+        <p class="foot"></p>
+        <!-- The leading seal: an oval stamped where the writing begins. Port 53. -->
+        <span class="lead-seal" aria-hidden="true">5<br>3</span>
+        <button class="seal" type="button">
+          <span class="seal-en" data-lang="en" aria-label="Seal: DNS">D<br>N<br>S</span>
+          <span class="seal-ko" data-lang="ko" aria-label="낙관: 또 너냐">
+            <font-kku font="dojang" size="5cqi">또</font-kku><font-kku font="dojang" size="5cqi">너</font-kku><font-kku font="dojang" size="5cqi">냐</font-kku>
+          </span>
+        </button>
+      </article>
+    </div>
+    <div class="rod bottom"></div>
+  </div>
+</main>
+<p class="hint" id="verse-hint">
+  <span data-lang="en">Tap the scroll for the next verse.</span>
+  <span data-lang="ko">족자를 누르면 다음 시를 써요.</span>
+</p>
+
+<script>
+(() => {
+  const roll = document.querySelector('.roll');
+  const sheet = document.querySelector('.sheet');
+  const bottomRod = document.querySelector('.rod.bottom');
+  const h1 = document.querySelector('.lines');
+  const seal = document.querySelector('.seal');
+  const leadSeal = document.querySelector('.lead-seal');
+  const foot = document.querySelector('.foot');
+  const sign = document.querySelector('.sign');
+  const paper = document.querySelector('.paper');
+
+  /* ---- The series. English lines scan 5-7-5; Korean ones keep a natural three-beat rhythm.
+     In a Korean line, Latin runs (with the space before them) are brushed letter by letter in
+     Yuji Boku and the Hangul jamo by jamo in butgeul. The classic always plays first: the hasty
+     seal is its joke. The other three are for whoever taps the finished scroll. ---- */
+  const VERSES = [
+    {
+      en: { lines: ["It's not DNS", "There's no way it's DNS", 'It was DNS'], sign: 'a sysadmin, 3 a.m.', foot: "(It's always DNS.)" },
+      ko: { lines: ['DNS일 리 없다', '절대 DNS일 리 없다', 'DNS였다'], sign: '새벽 세 시, 어느 시스템 관리자', foot: '(언제나 DNS다.)' },
+    },
+    {
+      en: { lines: ['I changed the record', 'The TTL was one day', 'See you tomorrow'], sign: 'a sysadmin, Friday 6 p.m.', foot: '(TTL 86400)' },
+      ko: { lines: ['레코드를 바꿨다', 'TTL은 하루', '내일 뵙겠습니다'], sign: '금요일 저녁 여섯 시, 어느 시스템 관리자', foot: '(TTL 86400)' },
+    },
+    {
+      en: { lines: ['Asked once, too early', 'It replied: no such domain', 'And will, for an hour'], sign: 'a developer, slightly early', foot: '(NXDOMAIN · SOA minimum 3600)' },
+      ko: { lines: ['레코드 만들기 전에', '딱 한 번 물어봤을 뿐', '한 시간째 없단다'], sign: '조금 성급했던 어느 개발자', foot: '(NXDOMAIN · SOA 최솟값 3600)' },
+    },
+    {
+      en: { lines: ['Wait for it to spread', "It doesn't. It never did", 'Caches age and die'], sign: 'a sysadmin, hour 47', foot: '(TTL 3412, 3411, 3410…)' },
+      ko: { lines: ['전파되길 기다렸다', '퍼지는 게 아니었다', '캐시가 늙어 죽을 뿐'], sign: '마흔일곱 시간째, 어느 시스템 관리자', foot: '(TTL 3412, 3411, 3410…)' },
+    },
+  ];
+  let verse = 0;
+
+  /* ---- Build each line: Latin letters as spans, Hangul as font-kku hosts ---- */
+  const shown = new WeakMap();
+  let lines = [];
+  function build(v) {
+    const text = VERSES[v][TTY.lang];
+    // English lines are all Latin. A Korean line splits into Latin runs and Hangul pieces:
+    // '절대 DNS일 리 없다' → '절대', ' DNS', '일 리 없다'.
+    const segsOf = (l) => (TTY.lang === 'en' ? [['lat', l]]
+      : l.split(/( ?[A-Za-z][A-Za-z0-9]*)/).filter(Boolean).map((s) => [/[A-Za-z]/.test(s) ? 'lat' : 'kku', s]));
+    h1.setAttribute('aria-label', text.lines.map((l) => segsOf(l).map(([, t]) => t).join('') + '.').join(' '));
+    sign.textContent = text.sign;
+    foot.textContent = text.foot;
+    lines = text.lines.map((l) => {
+      const line = document.createElement('span');
+      line.className = 'line';
+      line._parts = segsOf(l).map(([kind, piece]) => {
+        if (kind === 'lat') {
+          const box = document.createElement('span');
+          box.className = 'lat';
+          // Spaces go in as no-break spaces so the inline-block letters keep them.
+          const chars = [...piece].map((c) => {
+            const ch = document.createElement('span');
+            ch.className = 'ch';
+            ch.textContent = c === ' ' ? '\u00a0' : c;
+            box.append(ch);
+            return ch;
+          });
+          line.append(box);
+          return { kind, text: piece, chars };
+        }
+        const host = document.createElement('font-kku');
+        host.setAttribute('font', 'butgeul');
+        host.setAttribute('size', '1em');
+        line.append(host);
+        return { kind, text: piece, host };
+      });
+      return line;
+    });
+    h1.replaceChildren(...lines);
+  }
+
+  // A long English line gets a slightly smaller brush rather than running off the paper.
+  // (The letters are laid out while hidden, so the width is known before the brush starts.)
+  function fitLines() {
+    if (TTY.lang !== 'en') return;
+    h1.style.removeProperty('--fit');
+    const room = paper.clientWidth * .9;
+    const widest = Math.max(...lines.map((l) => l.getBoundingClientRect().width));
+    if (widest > room) h1.style.setProperty('--fit', (room / widest).toFixed(3));
+  }
+
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  function setHost(host, text) {
+    if ((shown.get(host) ?? null) === text) return;
+    shown.set(host, text);
+    host.textContent = text;
+  }
+
+  // Before the brush starts, everything is blank; the reduced-motion path writes it all at once.
+  function blank() {
+    lines.forEach((line) => line._parts.forEach((p) => {
+      if (p.kind === 'lat') p.chars.forEach((c) => c.classList.add('js-hide'));
+      else setHost(p.host, '');
+    }));
+  }
+  function full() {
+    lines.forEach((line) => line._parts.forEach((p) => {
+      if (p.kind === 'lat') p.chars.forEach((c) => c.classList.remove('js-hide'));
+      else setHost(p.host, p.text);
+    }));
+  }
+
+  async function brushLatin(p) {
+    for (const c of p.chars) {
+      c.classList.remove('js-hide');
+      c.animate([
+        { opacity: 0, filter: 'blur(3px)', transform: 'scale(1.18) translateY(-.04em)' },
+        { opacity: 1, filter: 'blur(0)', transform: 'none' },
+      ], { duration: 260, easing: 'cubic-bezier(.2,.7,.2,1)' });
+      await wait(c.textContent === ' ' ? 90 : 75);
+    }
+  }
+  async function brushHangul(p) {
+    // Jamo by jamo, the way a hand would write it.
+    const frames = window.FontKkuFx ? FontKkuFx.typingFrames(p.text) : [p.text];
+    for (const f of frames) {
+      setHost(p.host, f);
+      await wait(f.endsWith(' ') ? 120 : 95);
+    }
+    setHost(p.host, p.text);
+  }
+
+  /* ---- Petals ---- */
+  const canvas = document.querySelector('.petals');
+  const ctx = canvas.getContext('2d');
+  let petals = [];
+  let raf = 0;
+  function sizeCanvas() {
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function spawn(initial) {
+    return {
+      x: Math.random() * innerWidth * .9 - innerWidth * .15,
+      y: initial ? Math.random() * innerHeight : -20 - Math.random() * 60,
+      s: 5 + Math.random() * 6,
+      vx: .25 + Math.random() * .45,
+      vy: .35 + Math.random() * .5,
+      r: Math.random() * 6.28,
+      vr: (Math.random() - .5) * .03,
+      w: Math.random() * 6.28,
+    };
+  }
+  function petalsOn() {
+    sizeCanvas();
+    petals = Array.from({ length: Math.round(Math.min(9, innerWidth / 110)) }, () => spawn(true));
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+  function tick() {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    petals.forEach((p, i) => {
+      p.w += .02; p.x += p.vx + Math.sin(p.w) * .35; p.y += p.vy; p.r += p.vr;
+      if (p.y > innerHeight + 20 || p.x > innerWidth + 20) petals[i] = spawn(false);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.r);
+      ctx.scale(1, .55 + Math.abs(Math.sin(p.w)) * .45);
+      ctx.fillStyle = 'rgba(242, 181, 195, .85)';
+      ctx.beginPath();
+      ctx.moveTo(0, -p.s);
+      ctx.quadraticCurveTo(p.s * .9, -p.s * .2, 0, p.s);
+      ctx.quadraticCurveTo(-p.s * .9, -p.s * .2, 0, -p.s);
+      ctx.fill();
+      ctx.restore();
+    });
+    raf = requestAnimationFrame(tick);
+  }
+  addEventListener('resize', () => { sizeCanvas(); fitLines(); });
+
+  /* ---- Seal and its footnote ---- */
+  // Once a verse is finished its footnote is part of the scroll and stays (with reduced motion
+  // from the start); before that, pointing at the seal or focusing it shows it for a moment.
+  let footTimer;
+  let footPinned = false;
+  const showFoot = (ms) => {
+    foot.classList.add('show');
+    clearTimeout(footTimer);
+    if (ms && !footPinned) footTimer = setTimeout(() => foot.classList.remove('show'), ms);
+  };
+  const hideFoot = () => { if (!footPinned) foot.classList.remove('show'); };
+  seal.addEventListener('pointerenter', () => showFoot(0));
+  seal.addEventListener('pointerleave', hideFoot);
+  seal.addEventListener('focus', () => showFoot(0));
+  seal.addEventListener('blur', hideFoot);
+
+  /* ---- The whole piece ---- */
+  const STAMP = [
+    { transform: 'scale(1.9) rotate(-8deg)', opacity: 0 },
+    { transform: 'scale(.95)', opacity: 1, offset: .7 },
+    { transform: 'scale(1)', opacity: 1 },
+  ];
+  const THUD = [{ transform: 'none' }, { transform: 'translateY(.4%)' }, { transform: 'none' }];
+  // The seal's return is the punchline, so it lands harder than the hasty first stamp.
+  const SLAM = [
+    { transform: 'scale(2.6) rotate(-10deg)', opacity: 0 },
+    { transform: 'scale(.9) rotate(1deg)', opacity: 1, offset: .75 },
+    { transform: 'scale(1)', opacity: 1 },
+  ];
+  const THUD_BIG = [{ transform: 'none' }, { transform: 'translateY(.9%)' }, { transform: 'none' }];
+  // Shakes its head (side to side, so it reads on a phone too), then is flicked off the paper.
+  const FLICK = [
+    { transform: 'none', opacity: 1 },
+    { transform: 'translateX(-20%) rotate(-12deg)', opacity: 1, offset: .1 },
+    { transform: 'translateX(16%) rotate(10deg)', opacity: 1, offset: .2 },
+    { transform: 'translateX(-10%) rotate(-7deg)', opacity: 1, offset: .3 },
+    { transform: 'none', opacity: 1, offset: .38 },
+    { transform: 'translateY(-5%) scale(1.08)', opacity: 1, offset: .46, easing: 'cubic-bezier(.5, 0, .8, .6)' },
+    { transform: 'translate(85%, -55%) rotate(26deg) scale(.95)', opacity: 1, offset: .8 },
+    { transform: 'translate(125%, -80%) rotate(44deg) scale(.85)', opacity: 0 },
+  ];
+  const DROP = 'cubic-bezier(.5, 0, .9, .4)';
+
+  // While the seal is off the paper it cannot be pointed at, tapped or focused, so nobody
+  // reaches the conclusion's footnote before the third line does.
+  function sealOn(on) {
+    seal.style.opacity = on ? 1 : 0;
+    seal.style.pointerEvents = on ? '' : 'none';
+    seal.tabIndex = on ? 0 : -1;
+    if (!on && document.activeElement === seal) seal.blur();
+  }
+  // Tapping the finished seal stamps it once more (on touch, the first tap also shows the footnote).
+  seal.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showFoot(2600);
+    if (footPinned && !TTY.reduce) {
+      seal.animate(STAMP, { duration: 380, easing: DROP });
+      roll.animate(THUD, { duration: 240, delay: 290 });
+    }
+  });
+
+  const hint = document.querySelector('.hint');
+  let hintTimer;
+  function finished() {
+    roll.classList.add('done');
+    sheet.tabIndex = 0;
+    sheet.setAttribute('aria-describedby', 'verse-hint');
+    footPinned = true;
+    showFoot(0);
+    // The footnote lands first; the hint follows once it has been read.
+    clearTimeout(hintTimer);
+    if (TTY.reduce) hint.classList.add('on');
+    else hintTimer = setTimeout(() => hint.classList.add('on'), 1400);
+  }
+
+  // The 3-second gag (the classic only): the conclusion turns up first. The seal stamps itself on
+  // the blank paper as soon as it unrolls; once the first line of denial is written it shakes its
+  // head and is flicked away (flick(), called from the brush). It comes back for good, harder,
+  // once the third line admits it.
+  let run = 0;
+  async function hastySeal(mine) {
+    await wait(1000);
+    if (mine !== run) return;
+    sealOn(true);
+    seal.animate(STAMP, { duration: 380, easing: DROP });
+    roll.animate(THUD, { duration: 240, delay: 290 });
+  }
+  function flick(mine) {
+    if (mine !== run) return;
+    // Hidden first (the keyframes keep it visible) so nothing flashes back when the flick ends.
+    sealOn(false);
+    seal.animate(FLICK, { duration: 1100 });
+  }
+
+  let playing = false;
+  async function play() {
+    if (TTY.reduce) { full(); document.fonts.ready.then(fitLines); sealOn(true); finished(); return; }
+    if (playing) return;
+    playing = true;
+    const mine = ++run;
+    const hasty = verse === 0;
+    roll.classList.remove('done', 'unshown');
+    // Taps wait until this verse is written, so the hint goes quiet until then (finished() brings it back).
+    clearTimeout(hintTimer);
+    hint.classList.remove('on');
+    footPinned = false;
+    hideFoot();
+    [sheet, bottomRod, seal, leadSeal, sign].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
+    sealOn(false);
+    leadSeal.style.opacity = 0;
+    sign.style.opacity = 0;
+    build(verse);
+    blank();
+    const h = sheet.offsetHeight;
+    // Unroll: the paper is revealed from the top while the bottom rod drops.
+    const ease = 'cubic-bezier(.45, .05, .2, 1)';
+    sheet.animate([{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 1300, easing: ease, fill: 'both' });
+    bottomRod.animate([{ transform: `translateY(${-h}px)` }, { transform: 'none' }], { duration: 1300, easing: ease, fill: 'both' });
+    if (hasty) hastySeal(mine);
+    await Promise.all([wait(1500), document.fonts.ready]);
+    fitLines();
+    petalsOn();
+    for (const [i, line] of lines.entries()) {
+      for (const p of line._parts) await (p.kind === 'lat' ? brushLatin(p) : brushHangul(p));
+      // The seal reacts once the denial is on the paper, whichever end of the line it sits at
+      // ("It's not DNS" / "DNS일 리 없다"), even when the fonts were late.
+      if (i === 0 && hasty) setTimeout(() => flick(mine), 150);
+      await wait(420);
+    }
+    sign.style.opacity = 1;
+    sign.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500 });
+    await wait(500);
+    // Two stamps: the small oval where the writing begins, then the seal, back for good.
+    leadSeal.style.opacity = .92;
+    leadSeal.animate(STAMP, { duration: 320, easing: DROP });
+    await wait(520);
+    seal.getAnimations().forEach((a) => a.cancel());
+    sealOn(true);
+    if (hasty) {
+      seal.animate(SLAM, { duration: 460, easing: DROP });
+      roll.animate(THUD_BIG, { duration: 300, delay: 350 });
+    } else {
+      seal.animate(STAMP, { duration: 380, easing: DROP });
+      roll.animate(THUD, { duration: 240, delay: 290 });
+    }
+    await wait(1600);
+    finished();
+    playing = false;
+  }
+  // Tapping the finished scroll (or Enter/Space on it) writes the next one in the series.
+  function next() {
+    if (!roll.classList.contains('done')) return;
+    verse = (verse + 1) % VERSES.length;
+    if (TTY.reduce) build(verse);
+    // The longest verse (ko negative cache) has its footnote up about 12.5 s after the tap, past
+    // the 12 s the kit asks for on every tap, so ask for enough to read it on the home stage.
+    else TTY.hold(15000);
+    play();
+  }
+  sheet.addEventListener('click', next);
+  sheet.addEventListener('keydown', (e) => {
+    if (e.target !== sheet || (e.key !== 'Enter' && e.key !== ' ')) return;
+    e.preventDefault();
+    next();
+  });
+
+  build(verse);
+  // Before the page is on stage it looks like the first frame of play(): rolled up, no seal.
+  if (TTY.reduce) { full(); leadSeal.style.opacity = .92; document.fonts.ready.then(fitLines); }
+  else { blank(); sealOn(false); roll.classList.add('unshown'); }
+  TTY.onShow(play);
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

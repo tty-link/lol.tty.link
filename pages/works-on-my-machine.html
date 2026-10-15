@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Certificate of Works on My Machine | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Gochi+Hand&family=Gowun+Batang:wght@400;700&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="sebul dojang pilgi"></script>
+<style>
+  /* A certificate for the oldest excuse in software, stamped, and then answered by a sticky
+     note with the oldest reply ("then we'll ship your machine"). The developer ships it, and the
+     ticket comes back anyway. */
+  :root {
+    --desk: #2f5d50;
+    --paper: #fffdf6;
+    --gold: #b8892b;
+    --gold-soft: #e7cf8f;
+    --ink: #2a2622;
+    --seal: #c8322b;
+    --note: #ffe45c;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background:
+      radial-gradient(120% 90% at 50% 40%, #3a6f61 0%, var(--desk) 60%, #244a40 100%);
+    color: var(--ink);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+  /* The desk is the screen, and it clips: a stamp lifted at 2.6x or a note flying in from the
+     right must not widen a phone's layout viewport (body { overflow: hidden } alone does not). */
+  .desk {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: clip;
+  }
+
+  .cert {
+    position: relative;
+    container-type: inline-size;
+    width: min(88vw, 64vh);
+    aspect-ratio: 1 / 1.34;
+    padding: 9cqi 8cqi 8cqi;
+    background: var(--paper);
+    box-shadow: 0 2px 0 rgba(0,0,0,.08), 0 24px 60px rgba(0,0,0,.35);
+    text-align: center;
+  }
+  /* Guilloché-ish frame: a gold rule, a fine repeating band, an inner hairline. */
+  .cert::before, .cert::after { content: ""; position: absolute; pointer-events: none; }
+  .cert::before {
+    inset: 3cqi;
+    border: .6cqi solid var(--gold);
+    background:
+      repeating-linear-gradient(45deg, transparent 0 .9cqi, rgba(184,137,43,.18) .9cqi 1.1cqi) border-box;
+    -webkit-mask: linear-gradient(#000 0 0) border-box, linear-gradient(#000 0 0) padding-box;
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) border-box exclude, linear-gradient(#000 0 0) padding-box;
+  }
+  .cert::after { inset: 5.4cqi; border: .25cqi solid var(--gold-soft); }
+
+  .cert > div[data-lang] { margin-top: 2cqi; }
+  .kicker { font-size: max(3.6cqi, 10px); font-style: italic; letter-spacing: .02em; color: #6b5a3a; }
+  .title { margin-top: 2.5cqi; font-family: 'UnifrakturCook', serif; font-size: 8.5cqi; line-height: .95; }
+  /* The name of the award carries the joke, so it is set as big as "Certificate", never smaller. */
+  .of { margin-top: 1.6cqi; font-size: 8.5cqi; font-weight: 700; line-height: 1.1; }
+  .rule { width: 34cqi; height: .35cqi; margin: 5cqi auto; background: var(--gold); }
+  .body { font-size: max(4.8cqi, 10px); line-height: 1.5; font-weight: 500; }
+  .who { display: block; margin: 2cqi 0; font-size: 8.6cqi; font-style: italic; font-weight: 700; }
+  .date { margin-top: 5.5cqi; font-size: max(3.6cqi, 10px); font-style: italic; color: #6b5a3a; }
+  .sign { position: absolute; left: 9cqi; bottom: 9.5cqi; width: 38cqi; font-size: 3.2cqi; text-align: center; }
+  .sign svg { display: block; width: 100%; height: 9cqi; }
+  .sign svg path { fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .sign > span { display: block; padding-top: 1cqi; border-top: .25cqi solid var(--ink); font-size: max(3.2cqi, 10px); }
+  /* The second signer: the only witness there was. */
+  .witness { left: auto; right: 9cqi; }
+  /* On the smallest certificates the signer's title (10 px at least) needs more than 38cqi to
+     stay on one line; the signer's box grows to the right, towards the empty middle. */
+  .sign:not(.witness) { width: max(38cqi, 118px); }
+  .witness .hand { display: block; height: 9cqi; font: 6.4cqi/9cqi 'Gochi Hand', cursive; letter-spacing: .02em; rotate: -3deg; }
+
+  /* Stamps and notes lie on top of the printed frame (.cert::after would be painted over them). */
+  .seal, .note { z-index: 1; }
+  .seal {
+    position: absolute;
+    right: 10cqi;
+    bottom: 23cqi;
+    display: grid;
+    place-items: center;
+    width: 30cqi;
+    aspect-ratio: 1;
+    border: 1.1cqi double var(--seal);
+    border-radius: 50%;
+    color: var(--seal);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: max(4cqi, 10px);
+    line-height: 1.05;
+    text-transform: uppercase;
+    rotate: -14deg;
+    mix-blend-mode: multiply;
+    opacity: .9;
+  }
+  .seal b { display: block; font-size: 8cqi; }
+  /* The round seal carries a picture too: a laptop with a tick on its screen, so the stamp
+     says "approved: this machine" before anyone reads it. */
+  .seal:not(.rect) { align-content: center; gap: .3cqi; line-height: 1; }
+  /* where its lettering stops shrinking (10 px), the seal stops too, so "machine" stays inside the ring */
+  .lang-en .seal:not(.rect) { width: max(30cqi, 78px); }
+  .seal .pc { display: block; width: 8.5cqi; height: auto; overflow: visible; }
+  /* Rubber stamps for the shipment, the excuses and the closing: a box, not a seal. */
+  .seal.rect {
+    width: auto;
+    aspect-ratio: auto;
+    padding: 1.6cqi 3.2cqi 1.8cqi;
+    border-width: 1cqi;
+    border-radius: 1cqi;
+    font-size: max(3.2cqi, 10px);
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .seal.rect b { font-size: 5.8cqi; letter-spacing: .02em; }
+  .seal .tag { display: block; margin-top: .6cqi; font-size: max(3.6cqi, 10px); letter-spacing: .01em; text-transform: none; }
+  /* On a small certificate the tag line, held at 10 px, would make the shipping stamp so wide
+     that it covers the end of the note it answers: image and size go on two lines there. */
+  @container (max-width: 270px) {
+    .seal .tag .sep { display: none; }
+    .seal .tag > span { display: block; }
+  }
+  /* Placed by its centre, in percent of the paper. */
+  .seal.at { right: auto; bottom: auto; translate: -50% -50%; }
+  /* It catches the note's right edge, not its last line. */
+  .seal.shipped { left: 39%; top: 77%; rotate: 8deg; }
+  /* The answer to the reopened ticket, hanging from that note's lower edge (placed by the script). */
+  .seal.closing { rotate: -9deg; }
+  .note {
+    position: absolute;
+    left: -6cqi;
+    bottom: 26cqi;
+    width: 40cqi;
+    padding: 4.5cqi 4cqi 5cqi;
+    background: var(--note);
+    color: #2b2a26;
+    font-family: 'Gochi Hand', cursive;
+    font-size: 5.6cqi;
+    line-height: 1.12;
+    text-align: left;
+    rotate: -5deg;
+    box-shadow: 0 1.2cqi 2.4cqi rgba(0,0,0,.22);
+  }
+  .note::before { content: ""; position: absolute; left: 30%; top: -2cqi; width: 40%; height: 4cqi; background: rgba(255,255,255,.55); rotate: -3deg; }
+  /* After the shipment, the other side answers again: a second note, top right, high enough
+     to clear the award's name (the widest line of the title). */
+  .note.reopened { left: auto; right: -5cqi; bottom: auto; top: 5%; width: 34cqi; padding: 4cqi 3.6cqi 5cqi; rotate: 6deg; }
+
+  /* Korean: font-kku draws the display lines (title, award, stamp, note); running text is
+     set in Gowun Batang, since font-kku is made for headlines rather than paragraphs. */
+  .lang-ko .cert { font-family: 'Gowun Batang', serif; word-break: keep-all; }
+  .lang-ko .title { margin-top: 3cqi; letter-spacing: 0; }
+  .seal .ko { display: grid; justify-items: center; gap: 1cqi; }
+  .lang-ko .body { font-size: max(4.6cqi, 10px); line-height: 1.75; }
+  .lang-ko .seal { font-size: 1px; }
+  .lang-ko .note { font-family: inherit; }
+
+  .hidden { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { .hidden { opacity: 1; } }
+
+  /* Once the reply has landed, the certificate can be stamped again, as often as you like. */
+  .cert.stampable { cursor: pointer; }
+  .cert:focus-visible { outline: 3px solid #ffd84a; outline-offset: 6px; }
+  .seal.extra { opacity: .78; }
+  .hint {
+    position: fixed;
+    left: 50%;
+    bottom: max(10px, 2.4vh);
+    translate: -50% 0;
+    color: rgba(255, 255, 255, .78);
+    font: 500 clamp(12px, 1.8vmin, 15px)/1.3 'Cormorant Garamond', Georgia, serif;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity .6s;
+  }
+  .lang-ko .hint { font-family: 'Gowun Batang', serif; }
+  .hint.on { opacity: 1; }
+  /* Opened on its own on a phone, the tty.link nav ("?", ":)", about 84 px) takes the bottom
+     right; the hint is centred in the room left of it. */
+  @media (max-width: 600px) {
+    html:not(.embedded):has(.tty-nav:not([data-at])) .hint { translate: calc(-50% - 46px) 0; }
+  }
+</style>
+</head>
+<body>
+<main class="desk">
+<article class="cert" aria-labelledby="cert-title">
+
+  <div data-lang="en">
+    <p class="kicker step">Presented with great confidence</p>
+    <h1 class="title step" id="cert-title">Certificate</h1>
+    <p class="of step">of Works on My Machine</p>
+    <div class="rule step"></div>
+    <p class="body step">This certifies that
+      <span class="who">my code</span>
+      ran flawlessly, without a single error,<br>on my machine.</p>
+    <p class="date step" data-date></p>
+  </div>
+
+  <div data-lang="ko">
+    <p class="kicker step" data-serial>제 2026-404 호</p>
+    <h1 class="title step" id="cert-title"><font-kku font="sebul" size="9.5cqi">상 장</font-kku></h1>
+    <p class="of step"><font-kku font="sebul" size="9.5cqi">내 컴퓨터에선 잘 됨 상</font-kku></p>
+    <div class="rule step"></div>
+    <p class="body step">위 코드는 제 컴퓨터에서<br>오류 하나 없이 완벽하게 실행되어<br>타의 모범이 되므로 이 상장을 수여합니다.</p>
+    <p class="date step" data-date></p>
+  </div>
+
+  <div class="sign step">
+    <svg viewBox="0 0 200 50" aria-hidden="true"><path pathLength="1" d="M8 34 C 22 6, 30 44, 44 24 S 66 10, 70 30 C 74 44, 92 8, 104 26 S 130 40, 140 18 C 146 8, 156 40, 170 24 L 192 20"/></svg>
+    <span data-lang="en">Lead Developer (it compiled)</span>
+    <span data-lang="ko">개발팀장 (빌드는 됨)</span>
+  </div>
+
+  <div class="sign witness step">
+    <i class="hand">localhost</i>
+    <span data-lang="en">Witness</span>
+    <span data-lang="ko">증인</span>
+  </div>
+
+  <div class="seal hidden" aria-hidden="true">
+    <svg class="pc" viewBox="0 0 40 27"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="1.5" width="28" height="18" rx="2"/><path d="M13.5 10.5 l4.5 4.5 l8.5 -8.5"/></g><path d="M1 21.5 h38 l-3 4 h-32z" fill="currentColor"/></svg>
+    <span data-lang="en">Works on<b>my</b>machine</span>
+    <span data-lang="ko" class="ko"><font-kku font="dojang" size="5.4cqi">내 컴에선</font-kku><font-kku font="dojang" size="9cqi">됨</font-kku></span>
+  </div>
+
+  <p class="note hidden">
+    <span data-lang="en">Great. Then we'll ship your machine.</span>
+    <span data-lang="ko"><font-kku font="pilgi" size="6cqi" wrap-unit="word">좋아요. 그럼 컴퓨터째 배포하죠.</font-kku></span>
+  </p>
+
+  <p class="note reopened" hidden>
+    <span data-lang="en">Ticket reopened.</span>
+    <span data-lang="ko"><font-kku font="pilgi" size="6cqi" wrap-unit="word">티켓 다시 열었어요.</font-kku></span>
+  </p>
+</article>
+</main>
+<p class="hint" id="stamp-hint">
+  <span data-lang="en">Tap the certificate for another excuse.</span>
+  <span data-lang="ko">상장을 누르면 변명이 하나 더 찍혀요.</span>
+</p>
+
+<script>
+(() => {
+  // Awarded today, and numbered 404 in this year's series ("Not Found"): Korean puts the number
+  // on top, as Korean certificates do; English puts it on the date line.
+  const today = new Date();
+  const year = today.getFullYear();
+  const date = TTY.lang === 'ko'
+    ? `${year}년 ${today.getMonth() + 1}월 ${today.getDate()}일`
+    : `No. ${year}-404 · Awarded ` + today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  document.querySelectorAll('[data-date]').forEach((el) => { el.textContent = date; });
+  document.querySelectorAll('[data-serial]').forEach((el) => { el.textContent = `제 ${year}-404 호`; });
+
+  const cert = document.querySelector('.cert');
+  const steps = [...document.querySelectorAll('.step')];
+  const seal = document.querySelector('.seal');
+  const note = document.querySelector('.note');
+  const reopened = document.querySelector('.note.reopened');
+  const signature = document.querySelector('.sign path');
+  const witness = document.querySelector('.witness .hand');
+  const hint = document.querySelector('.hint');
+
+  if (!TTY.reduce) steps.forEach((el) => el.classList.add('hidden'));
+
+  // A rubber stamp: a small line over a big one, and maybe a tag line. Korean is set in dojang.
+  // The tag line's two halves ("image · size") stack on a small certificate (see .tag .sep).
+  const kku = (text, size) => `<font-kku font="dojang" size="${size}">${text}</font-kku>`;
+  const tagLine = (tag) => (tag ? `<span class="tag">${tag.split(' · ').map((t) => `<span>${t}</span>`).join('<span class="sep"> · </span>')}</span>` : '');
+  const stamp = ([small, big, tag], cls) => {
+    const el = document.createElement('div');
+    el.className = 'seal rect ' + cls;
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = TTY.lang === 'ko'
+      ? `<span class="ko">${small ? kku(small, 'max(4.4cqi, 10px)') : ''}${kku(big, '6.8cqi')}${tagLine(tag)}</span>`
+      : `${small ? `<span>${small}</span>` : ''}<b>${big}</b>${tagLine(tag)}`;
+    return el;
+  };
+  // The reply taken literally: the developer ships the machine.
+  const shipped = stamp(TTY.t({
+    en: ['', 'Shipped', 'my-machine:latest · 14.2 GB'],
+    ko: ['', '배포 완료', 'my-machine:latest · 14.2GB'],
+  }), 'shipped at hidden');
+  cert.append(shipped);
+
+  // Taps answer the reopened ticket: the four excuses first, then the seal again, round and round.
+  const EXCUSES = TTY.t({
+    en: [["Can't", 'reproduce'], ['Worked', 'yesterday'], ['Passed on', 'retry #3'], ['Works in', 'incognito']],
+    ko: [['재현', '안 됨'], ['어제는', '됐음'], ['세 번 돌리니', '됨'], ['시크릿 창에선', '됨']],
+  });
+  // ...and once all four are out, the ticket is closed again, for the oldest reason there is.
+  const CLOSING = TTY.t({ en: ['Closed as', 'Works for me'], ko: ['다시 닫음', '내 컴에선 됨'] });
+
+  // After the ceremony, every tap (or Enter/Space) brings a stamp down once more: where you
+  // tapped, or somewhere new on the paper. Seven extra impressions at most; then the oldest goes.
+  const thump = (el) => {
+    if (TTY.reduce) return;
+    el.animate([
+      { transform: 'scale(2.6)', opacity: 0, filter: 'blur(2px)' },
+      { transform: 'scale(.94)', opacity: .95, filter: 'blur(0)', offset: .7 },
+      { transform: 'scale(1)', opacity: .9 },
+    ], { duration: 420, easing: 'cubic-bezier(.5, 0, .9, .4)' });
+    cert.animate([
+      { transform: 'none' }, { transform: 'translate(0, .6%) rotate(.4deg)' }, { transform: 'translate(0, -.2%)' }, { transform: 'none' },
+    ], { duration: 320, delay: 300 });
+  };
+  const extras = [];
+  let stampable = false;
+  let taps = 0;
+  // The other side's second answer, after the shipment: a note flying in from the right.
+  function reopen() {
+    cert.append(reopened);
+    reopened.hidden = false;
+    if (TTY.reduce) return;
+    reopened.animate([
+      { transform: 'translate(45%, -25%) rotate(28deg)', opacity: 0 },
+      { transform: 'translate(2%, 2%) rotate(-3deg)', opacity: 1, offset: .75 },
+      { transform: 'none', opacity: 1 },
+    ], { duration: 650, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
+  }
+  // Stamped once, right under the reopened note: below its lower edge, so "Ticket reopened."
+  // stays readable, and below the award's name, so neither line is printed over the other.
+  function closeAgain() {
+    const el = stamp(CLOSING, 'closing at');
+    cert.append(el);
+    const box = cert.getBoundingClientRect();
+    const r = reopened.getBoundingClientRect();
+    const award = cert.querySelector('.of').getBoundingClientRect();
+    el.style.left = Math.min(80, (r.left + r.width / 2 - box.left) / box.width * 100).toFixed(1) + '%';
+    const half = el.getBoundingClientRect().height / 2; // of the tilted stamp
+    const y = Math.max(r.bottom, award.bottom) + half + 2;
+    el.style.top = ((y - box.top) / box.height * 100).toFixed(1) + '%';
+    thump(el);
+  }
+  function readyToStamp() {
+    stampable = true;
+    cert.classList.add('stampable');
+    cert.tabIndex = 0;
+    cert.setAttribute('aria-describedby', 'stamp-hint');
+    hint.classList.add('on');
+  }
+  // x, y: where on the paper, in percent of its width and height.
+  function stampAgain(x, y) {
+    if (!stampable) return;
+    if (extras.length >= 7) extras.shift().remove();
+    const n = taps++;
+    const copy = n % 5 === 4 ? seal.cloneNode(true) : stamp(EXCUSES[n % 5], '');
+    copy.classList.add('extra', 'at');
+    copy.classList.remove('hidden');
+    if (x === undefined) { x = 20 + Math.random() * 60; y = 12 + Math.random() * 76; }
+    copy.style.left = Math.min(80, Math.max(20, x)).toFixed(1) + '%';
+    copy.style.top = Math.min(88, Math.max(12, y)).toFixed(1) + '%';
+    copy.style.rotate = (-24 + Math.random() * 36).toFixed(1) + 'deg';
+    cert.append(copy);
+    extras.push(copy);
+    thump(copy);
+    if (taps === 4) setTimeout(closeAgain, TTY.reduce ? 0 : 900);
+  }
+  cert.addEventListener('click', (e) => {
+    const box = cert.getBoundingClientRect();
+    // Keyboard "clicks" have no position; let those land anywhere.
+    if (!e.detail) return stampAgain();
+    stampAgain((e.clientX - box.left) / box.width * 100, (e.clientY - box.top) / box.height * 100);
+  });
+  cert.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    stampAgain();
+  });
+
+  function play() {
+    if (TTY.reduce) { [seal, note, shipped].forEach((el) => el.classList.remove('hidden')); reopen(); readyToStamp(); return; }
+    const ease = 'cubic-bezier(.2, .8, .2, 1)';
+    cert.animate([{ transform: 'translateY(-6%) rotate(-1.5deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 700, easing: ease });
+
+    // The text is printed line by line, left to right: briskly, so the stamp comes down by the
+    // third second (the title is read while the ink is still wet).
+    steps.forEach((el, i) => {
+      el.animate([{ clipPath: 'inset(0 100% 0 0)', opacity: 1 }, { clipPath: 'inset(0 0 0 0)', opacity: 1 }],
+        { duration: 460, delay: 300 + i * 120, easing: 'cubic-bezier(.6, 0, .3, 1)', fill: 'backwards' });
+      setTimeout(() => el.classList.remove('hidden'), 300 + i * 120);
+    });
+    const signedAt = 300 + steps.length * 120;
+    signature.animate([{ strokeDasharray: '1', strokeDashoffset: 1 }, { strokeDasharray: '1', strokeDashoffset: 0 }],
+      { duration: 700, delay: signedAt - 360, easing: 'ease-in-out', fill: 'both' });
+    // Then the witness signs, neatly.
+    witness.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }],
+      { duration: 600, delay: signedAt + 100, easing: 'ease-in-out', fill: 'both' });
+
+    // Stamp: lifted high, slammed down, the paper flinches.
+    const stampAt = signedAt + 740;
+    setTimeout(() => {
+      seal.classList.remove('hidden');
+      thump(seal);
+    }, stampAt);
+
+    // And the reply arrives.
+    setTimeout(() => {
+      note.classList.remove('hidden');
+      note.animate([
+        { transform: 'translate(40%, -30%) rotate(24deg)', opacity: 0 },
+        { transform: 'translate(-2%, 2%) rotate(3deg)', opacity: 1, offset: .75 },
+        { transform: 'none', opacity: 1 },
+      ], { duration: 650, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
+    }, stampAt + 2000);
+
+    // And the answer to the reply.
+    setTimeout(() => {
+      shipped.classList.remove('hidden');
+      thump(shipped);
+    }, stampAt + 4600);
+    // Shipped, machine and all. The ticket comes back anyway.
+    setTimeout(reopen, stampAt + 7600);
+    setTimeout(readyToStamp, stampAt + 8400);
+  }
+
+  TTY.onShow(play);
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

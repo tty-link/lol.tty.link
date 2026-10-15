@@ -1,0 +1,135 @@
+{
+  "id": "tcp-manners",
+  "title": {
+    "en": "TCP Etiquette",
+    "ko": "TCP 예절 교실"
+  },
+  "updated": "2026-10-14",
+  "ko": {
+    "line": "컴퓨터 두 대가 TCP로 연결을 맺고, 맞장구치고, 끊는 절차를 옛 생활 예절 교과서 한 쪽으로 옮겼더니, 끝날 듯 안 끝나는 한국식 전화 작별이 TCP의 작별과 꼭 같더라는 페이지다.",
+    "points": [
+      "제목 옆 표지 그림과 제3과 → 표지 그림에서는 수화기를 든 두 사람이 만화의 전화 장면처럼 칸막이 양쪽에 서서, 상대가 보지도 못하는데 각자 벽에 대고 번갈아 꾸벅꾸벅 절한다. 제3과에서 그 통화가 그대로 TCP의 4단계 종료(FIN, ACK, FIN, ACK)가 되고, 교훈 \"먼저 작별을 꺼낸 쪽이 마지막까지 기다립니다.\"도 진짜 TCP 규칙이다(먼저 끊자고 한 쪽이 TIME_WAIT로 기다린다). 그런데 기다리는 사이에 상대가 또 **네~** 하고, 모래시계가 60초로 돌아간다(아무도 안 눌러도 제3과에서 한 번). 진짜 TCP에서도 마지막 **네네~**(ACK)가 중간에 사라지면 상대는 작별(FIN)을 다시 보내고, 기다리던 쪽은 다시 답한 뒤 60초를 처음부터 센다. '전화 끊기'를 누르면 한 번 더 그렇게 되고, 누를수록 상대의 작별 인사가 \"언제 밥 한번 먹어요~\"처럼 늘어난다(누를 때만).",
+      "제1과 명함 교환 → TCP는 말을 시작하기 전에 인사를 세 번 한다(SYN, SYN-ACK, ACK). 받은 번호에 1을 더해 돌려주는 것(`ack=101`)이 정말 규칙이라, 교훈이 \"명함은 두 손으로. 받은 번호에는 하나를 더해 돌려드립니다.\"가 된다.",
+      "제2과 \"네? 2번까지 들었어요\" 세 번 → 받는 쪽이 같은 확인을 세 번 거듭 보내면 보내는 쪽은 타이머를 기다리지 않고 빠진 말을 바로 다시 말한다(빠른 재전송).",
+      "제4과 틀린 예 → 규칙 \"인사 없이 끊지 않고, 확인 없이 말하지 않습니다\"를 둘이 하나씩 어긴다. 제3과에서 끝나지 않던 작별 바로 다음에, 인사 없이 뚝 끊어 버리면 받은 쪽 브라우저에 '연결이 재설정되었습니다'(RST)가 뜬다. 확인 없이 말만 하는 UDP 씨의 마지막 말은 \"UDP 농담 하나 던질게요. 받든 말든 상관없어요.\" 던지기만 하고 받았는지 확인하지 않으니, 정말로 못 받아도 모른다."
+    ],
+    "terms": [
+      {
+        "term": "TCP",
+        "plain": "인터넷에서 데이터를 빠짐없이 순서대로 전하려고 '받았어요' 확인을 주고받는 약속."
+      },
+      {
+        "term": "3방향 핸드셰이크",
+        "plain": "연결을 맺는 세 번의 인사. SYN(연결할까요?) → SYN-ACK(좋아요, 저도요) → ACK(네)."
+      },
+      {
+        "term": "TIME_WAIT",
+        "plain": "연결을 먼저 끊은 쪽이 잠시 기다리는 상태. 마지막 확인이 중간에 사라졌으면 상대가 작별을 다시 보낼 테니 그때 다시 답하려고, 그리고 길을 헤매던 옛 패킷이 다음 연결에 섞이지 않게 하려고 기다린다. 리눅스는 60초로 정해 두었다."
+      },
+      {
+        "term": "RST",
+        "plain": "인사 없이 연결을 끊어 버리는 신호. 받은 쪽 크롬은 `ERR_CONNECTION_RESET`을 보여 준다."
+      },
+      {
+        "term": "UDP",
+        "plain": "연결 인사도, 받았다는 확인도 없이 보내기만 하는 방식. 빠르지만 중간에 사라져도 모른다."
+      }
+    ],
+    "links": [
+      {
+        "title": "전송 제어 프로토콜 (위키백과)",
+        "url": "https://ko.wikipedia.org/wiki/전송_제어_프로토콜",
+        "note": "3방향 핸드셰이크로 연결하고 4방향 핸드셰이크로 끊는 TCP.",
+        "lang": "ko"
+      },
+      {
+        "title": "RFC 9293",
+        "url": "https://www.rfc-editor.org/rfc/rfc9293.html",
+        "note": "TCP 표준 원문. Figure 6에 3단계 연결(명함 번호 100·300이 여기서 왔다), Figure 12·13에 정상 종료와 동시 종료가 있고, TIME-WAIT 중에 FIN이 다시 오면 \"확인하고 2 MSL 타이머를 다시 시작한다\"는 규칙도 여기 있다.",
+        "lang": "en"
+      },
+      {
+        "title": "사용자 데이터그램 프로토콜 (위키백과)",
+        "url": "https://ko.wikipedia.org/wiki/사용자_데이터그램_프로토콜",
+        "note": "연결 협상 없이 보내고, 보낸 것을 챙기지 않는 UDP.",
+        "lang": "ko"
+      },
+      {
+        "title": "linux/include/net/tcp.h",
+        "url": "https://github.com/torvalds/linux/blob/master/include/net/tcp.h",
+        "note": "`TCP_TIMEWAIT_LEN (60*HZ)`, 리눅스의 TIME_WAIT 60초가 적힌 곳.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "명함 번호 100과 300, 답의 101과 301 → TCP 표준(RFC 9293)의 3단계 연결 그림(Figure 6)에 나오는 예시 번호 그대로다(`SEQ=100`, `SEQ=300 ACK=101`, `ACK=301`). SYN도 번호 하나를 차지해서 답이 '+1'이다.",
+      "제2과에서 ③이 끊긴 뒤 ④⑤⑥을 더 말하는 이유 → 빠른 재전송은 같은 확인(`ack=3`)이 세 번 더(중복 ACK 세 번) 와야 시작한다. 그러려면 ③ 뒤에 세 마디가 더 도착해야 한다.",
+      "상대가 또 **네~** 하면 60초가 처음부터 → 표준에 \"TIME-WAIT 중에 FIN이 다시 오면 확인하고 2 MSL 타이머를 다시 시작한다\"고 적혀 있다. 60초는 리눅스 값이고, 표준은 MSL을 2분으로 잡으니 표준대로라면 2 MSL, 4분 동안 수화기를 들고 있어야 한다.",
+      "서버를 다시 켰더니 `Address already in use`가 뜬 적이 있다면, 그 포트에서 아직 누군가 TIME_WAIT로 수화기를 들고 있었을 수 있다. 그래서 서버 프로그램은 흔히 `SO_REUSEADDR`를 켜 둔다.",
+      "제4과의 「뚝.」은 서버 씨 쪽에서 나고 쪽지는 클라이언트 씨 옆에 뜬다 → RST를 보낸 쪽이 아니라 받은 쪽 브라우저가 `ERR_CONNECTION_RESET`을 보여 준다.",
+      "UDP 점선 화살표 셋 중 가운데 것이 중간에 사라지는데 아무도 다시 보내지 않는다 → UDP에는 확인도 재전송도 없다."
+    ]
+  },
+  "en": {
+    "line": "This page turns how two computers open, keep up and close a TCP connection into a page from an old etiquette textbook, and the goodbye that never quite ends turns out to be exactly how TCP says goodbye.",
+    "points": [
+      "The cover picture by the title, and Lesson 3 → a guest keeps heading for his car and turning back to wave, and the host waves him off from the doorway every time: the famous \"Midwestern goodbye\" of the American Midwest, where guests announce they're leaving long before they go and then keep talking at the front door. Lesson 3 shows it is TCP's four-step close (FIN, ACK, FIN, ACK), and its moral is the real rule: \"Whoever says goodbye first waits the longest.\" Mr. Client, who started the goodbye, is still waving in the driveway (TIME_WAIT). Then, with nobody touching anything, the host says \"Bye now!\" once more and the 60 seconds start over. In real TCP, if the last \"You too!\" (ACK) gets lost, the other side sends its goodbye (FIN) again, and whoever is waiting answers and starts the 60 seconds over. Each press of \"Drive off\" does it again, with a new goodbye every time (\"Say hi to your mom!\", only when you press). Notice the answer every time: \"You too!\", to a man who isn't driving anywhere. (The Korean page tells the same joke with a phone call: both people keep saying \"deureogaseyo~\", literally \"go on in\", meaning \"get home safely\", and bow to someone who cannot see them, each on his own side of a comic-strip split panel.)",
+      "Lesson 1, business cards → TCP greets three times before it talks (SYN, SYN-ACK, ACK). You return the other side's number plus one (`ack=101`), which really is the rule, so it becomes textbook etiquette: \"Offer your number with both hands. Return theirs, plus one.\" (In Korea business cards are handed over with both hands.) The lines are old-fashioned manners too: the proper reply to \"How do you do?\" is \"How do you do?\", the same greeting sent back along with your own, which is exactly what a SYN-ACK is.",
+      "Lesson 2, \"Sorry? I got up to 2.\" three times → three duplicate acknowledgements make the sender resend the missing piece at once, without waiting for a timer (fast retransmit).",
+      "Lesson 4, Don'ts → the rule \"Never hang up without a goodbye. Never talk without checking.\" is broken twice. Right after Lesson 3's goodbye that would not end, someone simply hangs up, and the browser on the other end says \"The connection was reset.\" (ERR_CONNECTION_RESET, an RST). Mr. UDP talks without checking anyone hears: \"I'd tell you a UDP joke, but you might not get it.\" With no acknowledgements, he really wouldn't know whether you got it."
+    ],
+    "terms": [
+      {
+        "term": "TCP",
+        "plain": "the internet's way of delivering data complete and in order, by confirming what arrived."
+      },
+      {
+        "term": "three-way handshake",
+        "plain": "the three greetings that open a connection: SYN (\"shall we?\"), SYN-ACK (\"yes, and you?\"), ACK (\"yes\")."
+      },
+      {
+        "term": "TIME_WAIT",
+        "plain": "the side that closed first waits a while. If its last ACK got lost, the other side will send its goodbye again and needs an answer; and stray old packets need time to die out before a new connection uses the same ports. Linux fixes it at 60 seconds."
+      },
+      {
+        "term": "RST",
+        "plain": "the \"hang up without a word\" signal; Chrome on the receiving end shows `ERR_CONNECTION_RESET`."
+      },
+      {
+        "term": "UDP",
+        "plain": "send and hope: no handshake, no acknowledgements. Fast, but nobody notices a lost message."
+      }
+    ],
+    "links": [
+      {
+        "title": "Transmission Control Protocol (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Transmission_Control_Protocol",
+        "note": "how TCP opens, acknowledges and closes a connection.",
+        "lang": "en"
+      },
+      {
+        "title": "RFC 9293",
+        "url": "https://www.rfc-editor.org/rfc/rfc9293.html",
+        "note": "the TCP standard. Figure 6 is the three-way handshake (where the card numbers 100 and 300 come from); Figures 12 and 13 show the normal and the simultaneous close; in TIME-WAIT a repeated FIN means \"Acknowledge it, and restart the 2 MSL timeout\"."
+      },
+      {
+        "title": "The Minnesota Goodbye (Strong Towns)",
+        "url": "https://archive.strongtowns.org/journal/2022/12/13/ns2022-the-minnesota-goodbye",
+        "note": "the Midwestern farewell that starts \"anywhere from 30 minutes to three hours\" before anyone actually leaves."
+      },
+      {
+        "title": "linux/include/net/tcp.h",
+        "url": "https://github.com/torvalds/linux/blob/master/include/net/tcp.h",
+        "note": "`TCP_TIMEWAIT_LEN (60*HZ)`, Linux's 60-second TIME_WAIT."
+      }
+    ],
+    "deep": [
+      "The card numbers 100 and 300, and the replies 101 and 301, are the example numbers of the three-way handshake figure in the TCP standard (RFC 9293, Figure 6: `SEQ=100`, `SEQ=300 ACK=101`, `ACK=301`). A SYN takes up one sequence number, hence the \"+1\".",
+      "In Lesson 2, three more sentences (4, 5, 6) follow the lost third one: fast retransmit needs three duplicate acknowledgements (`ack=3` three more times), so three more pieces must arrive first.",
+      "A second goodbye restarts the 60 seconds because the standard says so: in TIME-WAIT, a repeated FIN is acknowledged and the 2 MSL timer restarts. The 60 seconds are Linux's choice; the standard takes the MSL to be 2 minutes, so by the book you would wave for 4 minutes.",
+      "If a restarted server ever said `Address already in use`, someone may still have been standing in the driveway: sockets in TIME_WAIT hold the port, which is why servers turn on `SO_REUSEADDR`.",
+      "In Lesson 4 the \"Click.\" comes from Mr. Server but the error note pops up beside Mr. Client: the side that receives the RST is the one whose browser shows `ERR_CONNECTION_RESET`.",
+      "Of Mr. UDP's three dashed arrows, the middle one vanishes halfway and nobody sends it again: UDP has no acknowledgements and no retransmission."
+    ]
+  }
+}

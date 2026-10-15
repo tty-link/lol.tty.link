@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en" data-tty-nav="bottom right">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Great Debate (Everyone's Right) | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@500;600;700&family=Gothic+A1:wght@500;700;800&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="geumbak gothic"></script>
+<style>
+  /* A late-night TV debate. Two podiums, one moderator, one AI panelist whose position card
+     flips every time anyone asks "are you sure?"; a counter in the corner keeps score, and the
+     viewer poll is tallied by the AI. At the end it agrees with everyone, the moderator too. */
+  :root {
+    --night: #070b26;
+    --navy: #0f1745;
+    --navy-2: #1a2670;
+    --line: rgba(120, 170, 255, .35);
+    --cyan: #3ad8ff;
+    --a: #ff7a1a;       /* 부먹 / YES */
+    --a-deep: #c95400;
+    --b: #2f7dff;       /* 찍먹 / NO */
+    --b-deep: #1747b8;
+    --live: #e5383b;
+    --gold: #f2c14e;
+    --ink: #10142b;
+    --paper: #fbfbf7;
+    --hum: #7a55d8;     /* speaker chips */
+    --mod: #26346e;
+    --ai: #0a9fc0;
+    --viewer: #d13f6a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background: var(--night);
+    color: #fff;
+    font-family: 'Barlow', 'Gothic A1', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'Gothic A1', 'Barlow', system-ui, sans-serif; word-break: keep-all; }
+
+  /* The whole page is the TV picture: the set behind, graphics stacked over the bottom. */
+  .screen {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto auto;
+    container: screen / size;
+    background:
+      radial-gradient(70% 55% at 50% 30%, rgba(58, 216, 255, .16), transparent 70%),
+      radial-gradient(120% 90% at 50% 100%, #1b2a7a 0%, var(--navy) 45%, var(--night) 100%);
+  }
+
+  /* ---- Corner graphics ---- */
+  .top {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2cqmin;
+    padding: clamp(8px, 2cqmin, 18px) clamp(10px, 2.6cqmin, 24px) 0;
+  }
+  .bug { display: flex; align-items: center; gap: clamp(5px, 1cqmin, 10px); }
+  .net {
+    font: 800 clamp(15px, 3cqmin, 26px)/1 'Barlow Condensed', sans-serif;
+    letter-spacing: .02em;
+    color: rgba(255, 255, 255, .92);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, .5);
+  }
+  .net i { font-style: normal; color: var(--cyan); }
+  .live {
+    display: inline-flex;
+    align-items: center;
+    gap: .4em;
+    padding: .28em .55em .26em;
+    border-radius: 3px;
+    background: var(--live);
+    font: 700 clamp(10px, 1.7cqmin, 15px)/1 'Barlow Condensed', 'Gothic A1', sans-serif;
+    letter-spacing: .06em;
+  }
+  .live::before { content: ""; width: .5em; height: .5em; border-radius: 50%; background: #fff; animation: blink 1.2s steps(2, jump-none) infinite; }
+  @keyframes blink { 50% { opacity: .2; } }
+
+  .flips {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    gap: 0 clamp(6px, 1.2cqmin, 12px);
+    padding: clamp(5px, 1cqmin, 9px) clamp(8px, 1.5cqmin, 14px);
+    border-radius: 6px;
+    background: rgba(5, 9, 34, .82);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .fl-label {
+    max-width: 9em;
+    font: 700 clamp(10px, 1.6cqmin, 14px)/1.15 'Barlow Condensed', 'Gothic A1', sans-serif;
+    letter-spacing: .03em;
+    color: #b9c8ff;
+    text-transform: uppercase;
+  }
+  .lang-ko .fl-label { text-transform: none; letter-spacing: 0; font-family: 'Gothic A1', sans-serif; }
+  .fl-n {
+    display: inline-block;
+    min-width: 1.3em;
+    font: 800 clamp(22px, 4.6cqmin, 42px)/1 'Barlow Condensed', sans-serif;
+    color: var(--gold);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .fl-n small { font: 700 max(10px, .45em)/1 'Gothic A1', sans-serif; color: #b9c8ff; margin-left: .15em; }
+
+  /* ---- The set ---- */
+  .scene { position: relative; container-type: size; overflow: visible; }
+  .scene { --P: min(31cqw, 60cqh); }
+  .floor {
+    position: absolute;
+    left: -10%; right: -10%; bottom: 0;
+    height: 34cqh;
+    background:
+      radial-gradient(50% 60% at 50% 0%, rgba(58, 216, 255, .18), transparent 70%),
+      linear-gradient(#18256a, #0b1240);
+    border-top: 1px solid rgba(120, 170, 255, .4);
+  }
+  .floor::before {
+    content: "";
+    position: absolute;
+    left: 50%; top: 18%;
+    width: 64cqw; height: 22cqh;
+    translate: -50% 0;
+    border-radius: 50%;
+    border: 2px solid rgba(58, 216, 255, .35);
+    box-shadow: 0 0 30px rgba(58, 216, 255, .25);
+  }
+
+  /* The LED wall behind the moderator: the show's logo on the two team colours. */
+  .wall {
+    position: absolute;
+    left: 50%; top: 3cqh;
+    width: min(70cqw, 120cqh);
+    height: 40cqh;
+    translate: -50% 0;
+    display: grid;
+    place-items: center;
+    align-content: start;
+    padding-top: 3.2cqh;
+    border-radius: 1.6cqh;
+    overflow: hidden;
+    background:
+      linear-gradient(90deg, rgba(255, 122, 26, .42), rgba(255, 122, 26, .08) 46%, rgba(47, 125, 255, .08) 54%, rgba(47, 125, 255, .48)),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, .05) 0 2px, transparent 2px 6px),
+      #0c1440;
+    box-shadow: 0 0 0 2px rgba(120, 170, 255, .35), 0 0 40px rgba(58, 216, 255, .2);
+  }
+  .logo { text-align: center; line-height: 1; }
+  .logo-en {
+    font: 800 clamp(20px, min(10cqh, 7.4cqw), 76px)/.95 'Barlow Condensed', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    background: linear-gradient(#fff3c4, var(--gold) 55%, #b9831f);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .45));
+  }
+  .logo-sub {
+    display: block;
+    margin-top: .9cqh;
+    font: 700 clamp(9px, 2.1cqh, 16px)/1 'Barlow Condensed', 'Gothic A1', sans-serif;
+    letter-spacing: .3em;
+    color: rgba(255, 255, 255, .7);
+    text-transform: uppercase;
+  }
+  .lang-ko .logo-sub { letter-spacing: .4em; }
+
+  .person { position: absolute; container-type: inline-size; }
+  .fig { display: block; width: 100%; height: auto; overflow: visible; }
+  .fig .mouth { transform-box: fill-box; transform-origin: center; }
+  .talking .fig .mouth { animation: talk .16s ease-in-out infinite alternate; }
+  @keyframes talk { to { transform: scaleY(2.8); } }
+  .fig .brow { transition: translate .25s; }
+  .puzzled .fig .brow { translate: 0 -3px; }
+
+  /* The moderator: further back, behind a long anchor desk. */
+  .mod {
+    left: 50%;
+    bottom: 35cqh;
+    width: calc(var(--P) * .62);
+    translate: -50% 0;
+  }
+  .anchor {
+    position: relative;
+    margin: -34cqi -38cqi 0;
+    padding: 3cqi 0 12cqi;
+    border-radius: 3cqi 3cqi 0 0;
+    background: linear-gradient(#2a3a8f, #141e57);
+    box-shadow: inset 0 3cqi 0 #3a4fb0, inset 0 -9cqi 0 #0f174a, 0 0 0 1px rgba(120, 170, 255, .35);
+    text-align: center;
+  }
+  .anchor .plate { font-size: 9cqi; }
+
+  /* Podiums: a figure, then the desk in front with the position card and the name plate. */
+  .pod { bottom: 0; width: var(--P); }
+  .pod.hum { left: 4cqw; }
+  .pod.ai { right: 4cqw; }
+  .pod .fig { transform-origin: 50% 92%; transition: transform .45s cubic-bezier(.3, 1.6, .5, 1); transform: rotate(var(--lean, 0deg)); }
+  .desk {
+    position: relative;
+    margin: -26cqi 3cqi 0;
+    padding: 5cqi 6cqi 5cqi;
+    clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+    background: linear-gradient(#26368a, #121b52 70%);
+    box-shadow: inset 0 2.2cqi 0 #3a4fb0;
+  }
+  .desk::after { /* the lit edge: on while that person speaks */
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 2.2cqi;
+    background: var(--tone);
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .talking .desk::after { opacity: 1; }
+  .hum { --tone: var(--hum); }
+  .mod { --tone: var(--mod); }
+  .ai { --tone: var(--ai); }
+
+  /* The position card turns on its vertical axis; each turn is another half turn. */
+  .card { perspective: 140cqi; height: 30cqi; }
+  .card-in {
+    position: relative;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform: rotateY(calc(var(--turn, 0) * 180deg));
+    transition: transform .5s cubic-bezier(.3, 1.45, .55, 1);
+  }
+  .face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 3cqi;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    color: #fff;
+    font: 800 20cqi/1 'Barlow Condensed', sans-serif;
+    letter-spacing: .04em;
+    box-shadow: inset 0 0 0 1.2cqi rgba(255, 255, 255, .85), 0 1.6cqi 3cqi rgba(0, 0, 0, .35);
+  }
+  .face.a { background: linear-gradient(var(--a), var(--a-deep)); }
+  .face.b { background: linear-gradient(var(--b), var(--b-deep)); transform: rotateY(180deg); }
+  .face > font-kku { color: #fff; --fy-element-width: .11em; }
+  .face > font-kku [part="glyph"] { filter: drop-shadow(0 .5cqi 0 rgba(0, 0, 0, .3)); }
+
+  .plate { margin-top: 4cqi; text-align: center; line-height: 1.1; }
+  .plate b { display: block; font: 800 max(10px, 10cqi)/1.05 'Barlow Condensed', 'Gothic A1', sans-serif; letter-spacing: .01em; }
+  .lang-ko .plate b { font-family: 'Gothic A1', sans-serif; font-size: max(10px, 9cqi); }
+  .plate small { display: block; margin-top: 1.4cqi; font: 600 max(10px, 5.6cqi)/1.15 'Barlow', 'Gothic A1', sans-serif; color: #b9c8ff; }
+  .lang-ko .plate small { font-family: 'Gothic A1', sans-serif; font-size: max(10px, 5.4cqi); }
+  .anchor .plate { margin-top: 0; }
+  .anchor .plate b { font-size: max(12px, 12cqi); }
+  .anchor .plate small { font-size: max(10px, 8cqi); }
+
+  /* The AI's catchphrase, over its head. */
+  .pop {
+    position: absolute;
+    z-index: 3;
+    right: 48cqi;
+    top: -8cqi;
+    width: max-content;
+    max-width: 92cqi;
+    padding: 3.2cqi 4.6cqi;
+    border-radius: 5cqi;
+    background: #fff;
+    color: var(--ink);
+    font: 800 max(13px, 8.4cqi)/1.08 'Barlow Condensed', sans-serif;
+    text-align: center;
+    box-shadow: 0 2cqi 5cqi rgba(0, 0, 0, .35);
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: 85% 100%;
+  }
+  .lang-ko .pop { padding: 3.4cqi 5cqi; }
+  .pop::after {
+    content: "";
+    position: absolute;
+    right: 8cqi; bottom: -3.4cqi;
+    border: 2cqi solid transparent;
+    border-top: 2.6cqi solid #fff;
+    border-left: 3cqi solid #fff;
+  }
+  .pop.on { animation: pop 1s cubic-bezier(.2, 1.4, .4, 1) both; }
+  @keyframes pop {
+    0% { opacity: 0; transform: scale(.4) rotate(-6deg); }
+    18% { opacity: 1; transform: scale(1.06) rotate(2deg); }
+    28% { transform: scale(1) rotate(0); }
+    80% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(.96); }
+  }
+
+  /* AI faces: plain eyes, and the delighted ^^ it makes when it agrees. */
+  .fig .happy { opacity: 0; }
+  .agree .fig .happy { opacity: 1; }
+  .agree .fig .plain { opacity: 0; }
+  .fig .arms { opacity: 0; transition: opacity .2s; }
+  .both .fig .arms { opacity: 1; }
+  /* Each arm turns at its shoulder (portrait raises them higher; see below). */
+  .fig .arm { transform-box: view-box; }
+  .fig .arm.la { transform-origin: 36px 94px; }
+  .fig .arm.ra { transform-origin: 84px 94px; }
+  .fig .arms .paddle { transform-box: fill-box; transform-origin: 50% 100%; }
+  .both .fig .arms .paddle { animation: wave .9s ease-in-out infinite alternate; }
+  .both .fig .arms .paddle.pb { animation-delay: -.45s; }
+  @keyframes wave { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
+  .fig .tip { animation: blink 1.6s steps(2, jump-none) infinite; }
+
+  /* ⇄: the two sides have swapped. */
+  .swap {
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    bottom: 18cqh;
+    translate: -50% 0;
+    padding: .35em .8em .32em;
+    border-radius: 4px;
+    background: var(--gold);
+    color: var(--ink);
+    font: 800 clamp(12px, 3.6cqh, 26px)/1 'Barlow Condensed', 'Gothic A1', sans-serif;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+    opacity: 0;
+    transition: opacity .25s;
+  }
+  .lang-ko .swap { letter-spacing: 0; font-family: 'Gothic A1', sans-serif; font-weight: 800; }
+  .swap.on { opacity: 1; animation: swapIn .5s cubic-bezier(.2, 1.5, .4, 1); }
+  @keyframes swapIn { from { transform: scale(.3); } }
+  .swap .arr { display: inline-block; margin-right: .35em; }
+  .swap.on .arr { animation: spin 1.4s ease-in-out infinite; }
+  @keyframes spin { 0%, 30% { transform: scaleX(1); } 50%, 80% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
+
+  /* ---- Lower third ---- */
+  .lower {
+    position: relative;
+    z-index: 5;
+    margin: clamp(6px, 1.4cqmin, 12px) clamp(10px, 3cqw, 40px) 0;
+    min-height: calc(clamp(15px, 2.9cqmin, 26px) * 2.6 + clamp(16px, 2.6cqmin, 24px));
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .who {
+    align-self: flex-start;
+    padding: .38em .7em .3em;
+    border-radius: 3px 3px 0 0;
+    background: var(--chip, var(--mod));
+    font: 700 clamp(11px, 1.9cqmin, 16px)/1 'Barlow Condensed', 'Gothic A1', sans-serif;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    transition: background .2s;
+  }
+  .lang-ko .who { text-transform: none; letter-spacing: 0; font-family: 'Gothic A1', sans-serif; }
+  .say {
+    padding: .42em .7em .4em;
+    border-radius: 0 3px 3px 3px;
+    background: var(--paper);
+    color: var(--ink);
+    font: 700 clamp(15px, 2.9cqmin, 26px)/1.25 'Barlow', 'Gothic A1', sans-serif;
+    box-shadow: inset .32em 0 0 var(--chip, var(--mod)), 0 6px 20px rgba(0, 0, 0, .35);
+    padding-left: .95em;
+  }
+  .lang-ko .say { font-family: 'Gothic A1', sans-serif; font-weight: 700; letter-spacing: -.01em; }
+  .say.in { animation: wipe .28s cubic-bezier(.3, .8, .3, 1); }
+  @keyframes wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+  .lower.final .say { background: #ffe14d; font-size: clamp(18px, 3.6cqmin, 34px); }
+
+  /* ---- Viewer poll ---- */
+  .poll {
+    position: relative;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: clamp(3px, .7cqmin, 6px) clamp(6px, 1.4cqmin, 12px);
+    margin: clamp(6px, 1.3cqmin, 12px) clamp(10px, 3cqw, 40px) 0;
+    padding: clamp(5px, 1cqmin, 9px) clamp(8px, 1.6cqmin, 14px);
+    border-radius: 4px;
+    background: rgba(5, 9, 34, .82);
+    box-shadow: inset 0 0 0 1px var(--line);
+    font: 700 clamp(11px, 1.9cqmin, 16px)/1.1 'Barlow Condensed', 'Gothic A1', sans-serif;
+  }
+  .lang-ko .poll { font-family: 'Gothic A1', sans-serif; }
+  .p-ttl { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 1em; color: #b9c8ff; letter-spacing: .04em; text-transform: uppercase; }
+  .lang-ko .p-ttl { text-transform: none; letter-spacing: 0; }
+  .p-ttl .dot { color: var(--live); }
+  .p-n { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .p-sum { display: none; color: var(--gold); white-space: nowrap; letter-spacing: .01em; }
+  .p-a, .p-b { position: relative; z-index: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .p-a { color: #ffb47a; }
+  .p-b { color: #8db8ff; text-align: right; }
+  .p-a b, .p-b b { font: 800 1.3em/1 'Barlow Condensed', sans-serif; color: #fff; }
+  .bar { position: relative; height: clamp(10px, 1.9cqmin, 16px); border-radius: 99px; background: #0b1240; box-shadow: inset 0 0 0 1px var(--line); }
+  .bar i { position: absolute; top: 0; bottom: 0; transition: width .5s cubic-bezier(.3, 1.2, .5, 1), left .5s, right .5s, top .4s, bottom .4s; }
+  .bar .fa { left: 0; width: calc(var(--pa) * 1%); border-radius: 99px 0 0 99px; background: linear-gradient(var(--a), var(--a-deep)); }
+  .bar .fb { right: 0; width: calc(var(--pb) * 1%); border-radius: 0 99px 99px 0; background: linear-gradient(var(--b), var(--b-deep)); }
+  /* 100% + 100%: both fills take the whole bar, one on top of the other, and burst out of
+     both ends, under the labels (which keep a dark outline so they stay readable). It comes
+     0.7 s after the punchline, on its own beat, with one big jolt. */
+  .poll.absurd .p-sum { display: inline; font-size: 1.3em; line-height: .9; }
+  .poll.absurd .p-n { display: none; }
+  /* The English question and the 200% share one line: at 358 px as they are, on a 328 px stage
+     with the total a little smaller. */
+  .poll.absurd .p-ttl { gap: .5em; }
+  @container screen (max-width: 340px) { .lang-en .poll.absurd .p-sum { font-size: 1.1em; } }
+  .poll.absurd .bar { animation: strain .7s cubic-bezier(.2, 1.4, .4, 1) 1; }
+  .poll.absurd .bar .fa { left: -8%; width: 116%; bottom: 50%; border-radius: 99px 99px 0 0; }
+  .poll.absurd .bar .fb { right: -8%; width: 116%; top: 50%; border-radius: 0 0 99px 99px; }
+  /* The bar's own outline, drawn over the fills, so they visibly spill past its ends. */
+  .poll.absurd .bar::after { content: ""; position: absolute; inset: -1px; border-radius: 99px; box-shadow: 0 0 0 2px rgba(255, 255, 255, .8), 0 0 8px rgba(242, 193, 78, .6); pointer-events: none; }
+  @keyframes strain { 30% { transform: scaleY(1.6); } }
+  .poll.absurd .p-a, .poll.absurd .p-b { text-shadow: 0 0 2px #050922, 0 0 4px #050922, 0 1px 0 #050922; }
+  .poll.absurd .p-a b, .poll.absurd .p-b b { color: var(--gold); }
+
+  /* ---- Push back ---- */
+  .controls {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 2cqmin, 18px);
+    margin: clamp(6px, 1.3cqmin, 12px) clamp(10px, 3cqw, 40px) 0;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .4s;
+  }
+  .controls.on { visibility: visible; opacity: 1; }
+  .push {
+    display: inline-flex;
+    align-items: center;
+    gap: .5em;
+    padding: .5em 1.1em .48em .8em;
+    border: 0;
+    border-radius: 99px;
+    background: #fff;
+    color: var(--ink);
+    font: 800 clamp(14px, 2.4cqmin, 20px)/1 'Barlow Condensed', 'Gothic A1', sans-serif;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(209, 63, 106, .45), 0 6px 16px rgba(0, 0, 0, .35);
+  }
+  .lang-ko .push { text-transform: none; letter-spacing: 0; font-family: 'Gothic A1', sans-serif; }
+  .push::before { content: ""; width: .8em; height: .8em; border-radius: 50%; background: var(--viewer); box-shadow: 0 0 0 .18em rgba(209, 63, 106, .3); }
+  .push:hover { background: #ffe9ef; }
+  .push:active { transform: translateY(1px); }
+  .push:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+  .hint { color: rgba(255, 255, 255, .78); font: 500 clamp(12px, 1.8cqmin, 15px)/1.3 'Barlow', 'Gothic A1', sans-serif; }
+  .lang-ko .hint { font-family: 'Gothic A1', sans-serif; }
+
+  /* ---- Fact-check crawl ---- */
+  .ticker {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    align-items: stretch;
+    margin-top: clamp(6px, 1.3cqmin, 12px);
+    height: clamp(20px, 3.4cqmin, 30px);
+    background: #04071c;
+    border-top: 1px solid var(--line);
+    overflow: hidden;
+    font: 600 clamp(11px, 1.8cqmin, 15px)/1 'Barlow', 'Gothic A1', sans-serif;
+  }
+  .lang-ko .ticker { font-family: 'Gothic A1', sans-serif; font-weight: 500; }
+  .tk-label {
+    flex: none;
+    display: grid;
+    place-items: center;
+    padding: 0 .8em;
+    background: var(--gold);
+    color: var(--ink);
+    font: 800 1em/1 'Barlow Condensed', 'Gothic A1', sans-serif;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .lang-ko .tk-label { font-family: 'Gothic A1', sans-serif; letter-spacing: 0; }
+  .tk-run { position: relative; flex: 1; overflow: hidden; }
+  .tk-text { position: absolute; top: 50%; left: 0; translate: 0 -50%; white-space: nowrap; color: #d7e0ff; padding-left: 1em; }
+  .tk-text .sep { color: var(--gold); margin: 0 .9em; }
+  .still .tk-text { right: 0; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Portrait (phones): the podiums take the width, the moderator stands between and above. */
+  @container screen (max-aspect-ratio: 1/1) {
+    .scene { --P: min(46cqw, 60cqh); }
+    .pod.hum { left: 2cqw; }
+    .pod.ai { right: 2cqw; }
+    /* In a short studio (the phone stages, about 170-270px high) the wall's lettering keeps
+       its 20px/9px floors while the moderator shrinks with the room: there he steps down so
+       his head stays under "LIVE · TONIGHT". From about 340px up this is just 50cqh. */
+    .mod { bottom: min(50cqh, 70cqh - 64px); width: calc(var(--P) * .5); }
+    .wall { top: 2cqh; width: 92cqw; height: 34cqh; padding-top: 2.6cqh; }
+    .floor { height: 40cqh; }
+    .pop { right: 30cqi; top: -14cqi; }
+    /* Here the moderator stands right beside the AI's head: the AI holds both paddles high,
+       above its own head, so the left one stays clear of the moderator's name plate. */
+    .fig .arm.la { transform: rotate(21deg); }
+    .fig .arm.ra { transform: rotate(-21deg); }
+    .controls { flex-direction: column; gap: 4px; }
+    .hint { text-align: center; }
+  }
+  /* Opened on its own, the page gets the site's nav in the bottom-right corner (pinned there
+     by data-tty-nav on <html>). The fact-check crawl becomes a taller bottom band that stops
+     short of it, so neither the crawl nor the hint runs under the nav. */
+  html:not(.embedded) .ticker { height: 46px; }
+  html:not(.embedded) .tk-run { margin-right: 284px; }
+  @media (max-width: 600px) { html:not(.embedded) .tk-run { margin-right: 90px; } }
+  .still *, .still *::before, .still *::after { transition: none !important; animation: none !important; }
+</style>
+</head>
+<body>
+<main class="screen" aria-labelledby="show-title">
+  <header class="top">
+    <div class="bug">
+      <span class="net">tty<i>TV</i></span>
+      <span class="live" data-lang="en">LIVE</span>
+      <span class="live" data-lang="ko">생방송</span>
+    </div>
+    <div class="flips" role="status">
+      <span class="fl-label" data-lang="en">AI flip-flops</span>
+      <span class="fl-label" data-lang="ko">AI 말 바꾸기</span>
+      <b class="fl-n"><span class="n">0</span><small data-lang="ko">회</small></b>
+    </div>
+  </header>
+
+  <section class="scene" aria-hidden="true">
+    <div class="floor"></div>
+    <div class="wall">
+      <h1 class="logo" id="show-title">
+        <span data-lang="en"><span class="logo-en">The Great Debate</span><span class="logo-sub">Live · Tonight</span></span>
+        <span data-lang="ko"><font-kku font="geumbak" size="min(11cqh, 9cqw)">결판 토론</font-kku><span class="logo-sub">오늘 밤 생방송</span></span>
+      </h1>
+    </div>
+
+    <div class="person mod">
+      <svg class="fig" viewBox="0 0 120 120">
+        <path d="M14 120 C16 98 28 86 45 82 L75 82 C92 86 104 98 106 120 Z" fill="#233063"/>
+        <path d="M48 82 L60 103 L72 82 Z" fill="#f4f6fb"/>
+        <path d="M57.5 85 L62.5 85 L63.5 99 L60 104 L56.5 99 Z" fill="#3a7bd5"/>
+        <path d="M45 82 L60 106 L53 120 M75 82 L60 106 L67 120" fill="none" stroke="#18224a" stroke-width="2"/>
+        <rect x="52" y="68" width="16" height="16" fill="#d9a77c"/>
+        <ellipse cx="39" cy="52" rx="4" ry="6" fill="#d9a77c"/>
+        <ellipse cx="81" cy="52" rx="4" ry="6" fill="#d9a77c"/>
+        <ellipse cx="60" cy="49" rx="20" ry="23" fill="#e9bb91"/>
+        <path d="M39 50 C36 30 48 22 62 23 C76 23 86 32 81 50 C80 40 76 34 70 32 C62 36 52 36 44 34 C41 38 40 44 39 50 Z" fill="#2b2118"/>
+        <path class="brow" d="M47 43 L55 42.4 M65 42.4 L73 43" stroke="#2b2118" stroke-width="2.4" stroke-linecap="round"/>
+        <circle cx="51" cy="49" r="2" fill="#1d1d24"/>
+        <circle cx="69" cy="49" r="2" fill="#1d1d24"/>
+        <path d="M58 55 Q60 58 62 55" fill="none" stroke="#c48b62" stroke-width="1.6" stroke-linecap="round"/>
+        <ellipse class="mouth" cx="60" cy="63" rx="4.6" ry="1.4" fill="#6b2d2d"/>
+      </svg>
+      <div class="anchor">
+        <p class="plate" data-lang="en"><b>S. Middleton</b><small>Moderator</small></p>
+        <p class="plate" data-lang="ko"><b>정중립</b><small>사회</small></p>
+      </div>
+    </div>
+
+    <div class="person pod hum">
+      <svg class="fig" viewBox="0 0 120 120">
+        <path d="M10 120 C12 98 26 86 44 82 L76 82 C94 86 108 98 110 120 Z" fill="#6d4c35"/>
+        <path d="M47 82 L60 104 L73 82 Z" fill="#f4f1ea"/>
+        <path d="M57.5 84 L62.5 84 L63.5 98 L60 103 L56.5 98 Z" fill="#a8323e"/>
+        <path d="M44 82 L60 106 L52 120 M76 82 L60 106 L68 120" fill="none" stroke="#4f3524" stroke-width="2"/>
+        <rect x="52" y="68" width="16" height="16" fill="#e2ad85"/>
+        <ellipse cx="38.5" cy="52" rx="4" ry="6" fill="#e2ad85"/>
+        <ellipse cx="81.5" cy="52" rx="4" ry="6" fill="#e2ad85"/>
+        <ellipse cx="60" cy="48" rx="21" ry="24" fill="#f1c7a0"/>
+        <path d="M39.5 54 C36 40 40 30 47 30 C44 37 43 45 43 55 Z M80.5 54 C84 40 80 30 73 30 C76 37 77 45 77 55 Z" fill="#d9dde4"/>
+        <path d="M51 26 C55 22.5 65 22.5 69 26" fill="none" stroke="#d9dde4" stroke-width="3" stroke-linecap="round"/>
+        <path class="brow" d="M45.5 39.5 L55.5 38.6 M64.5 38.6 L74.5 39.5" stroke="#b9bec8" stroke-width="2.8" stroke-linecap="round"/>
+        <circle cx="51" cy="47.5" r="7" fill="rgba(255,255,255,.28)" stroke="#2b2b33" stroke-width="2"/>
+        <circle cx="69" cy="47.5" r="7" fill="rgba(255,255,255,.28)" stroke="#2b2b33" stroke-width="2"/>
+        <path d="M58 47.5 H62" stroke="#2b2b33" stroke-width="2"/>
+        <circle cx="51" cy="48" r="1.9" fill="#1d1d24"/>
+        <circle cx="69" cy="48" r="1.9" fill="#1d1d24"/>
+        <path d="M49.5 61.5 C54 57.5 58 58.5 60 60.5 C62 58.5 66 57.5 70.5 61.5 C66 63.5 62 62.8 60 61.8 C58 62.8 54 63.5 49.5 61.5 Z" fill="#d9dde4"/>
+        <ellipse class="mouth" cx="60" cy="66" rx="4.4" ry="1.3" fill="#6b2d2d"/>
+      </svg>
+      <div class="desk">
+        <div class="card"><div class="card-in">
+          <div class="face a" data-lang="en">YES</div>
+          <div class="face b" data-lang="en">NO</div>
+          <div class="face a" data-lang="ko"><font-kku font="gothic" size="17cqi">부먹</font-kku></div>
+          <div class="face b" data-lang="ko"><font-kku font="gothic" size="17cqi">찍먹</font-kku></div>
+        </div></div>
+        <p class="plate" data-lang="en"><b>Dr. Stone</b><small>Deli historian</small></p>
+        <p class="plate" data-lang="ko"><b>김한결 교수</b><small>탕수육 연구 30년</small></p>
+      </div>
+    </div>
+
+    <div class="person pod ai">
+      <svg class="fig" viewBox="0 0 120 120">
+        <g class="arms">
+          <g class="arm la">
+            <path d="M36 94 C26 86 20 70 18 52" fill="none" stroke="#c3ccd8" stroke-width="7" stroke-linecap="round"/>
+            <g class="paddle pa">
+              <path d="M18 54 L15 30" stroke="#8a6a44" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="14" cy="20" r="14" fill="#ff7a1a" stroke="#fff" stroke-width="2.4"/>
+              <text class="pt" x="14" y="20" text-anchor="middle" dominant-baseline="central"></text>
+            </g>
+            <circle cx="18" cy="52" r="5" fill="#dfe6ef"/>
+          </g>
+          <g class="arm ra">
+            <path d="M84 94 C94 86 100 70 102 52" fill="none" stroke="#c3ccd8" stroke-width="7" stroke-linecap="round"/>
+            <g class="paddle pb">
+              <path d="M102 54 L105 30" stroke="#8a6a44" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="106" cy="20" r="14" fill="#2f7dff" stroke="#fff" stroke-width="2.4"/>
+              <text class="pt" x="106" y="20" text-anchor="middle" dominant-baseline="central"></text>
+            </g>
+            <circle cx="102" cy="52" r="5" fill="#dfe6ef"/>
+          </g>
+        </g>
+        <path d="M14 120 C16 100 30 88 46 86 L74 86 C90 88 104 100 106 120 Z" fill="#dfe6ef"/>
+        <path d="M14 120 C16 100 30 88 46 86 L74 86 C90 88 104 100 106 120" fill="none" stroke="#b9c4d2" stroke-width="2"/>
+        <rect x="47" y="95" width="26" height="15" rx="3" fill="#0b1330"/>
+        <circle cx="53" cy="102.5" r="2" fill="#4be3ff"/>
+        <circle cx="60" cy="102.5" r="2" fill="#ffd23f"/>
+        <circle cx="67" cy="102.5" r="2" fill="#ff5c8a"/>
+        <rect x="54" y="72" width="12" height="16" fill="#9aa7b8"/>
+        <path d="M60 28 V15" stroke="#b9c4d2" stroke-width="3"/>
+        <circle class="tip" cx="60" cy="12" r="4.6" fill="#ff5c8a"/>
+        <circle cx="29" cy="52" r="4.5" fill="#b9c4d2"/>
+        <circle cx="91" cy="52" r="4.5" fill="#b9c4d2"/>
+        <rect x="30" y="28" width="60" height="48" rx="14" fill="#eef3f8" stroke="#b9c4d2" stroke-width="2"/>
+        <rect x="36" y="34" width="48" height="36" rx="9" fill="#0b1330"/>
+        <g class="plain">
+          <rect x="45" y="43" width="8" height="11" rx="4" fill="#4be3ff"/>
+          <rect x="67" y="43" width="8" height="11" rx="4" fill="#4be3ff"/>
+        </g>
+        <g class="happy" fill="none" stroke="#4be3ff" stroke-width="3" stroke-linecap="round">
+          <path d="M44.5 51 Q49 43 53.5 51 M66.5 51 Q71 43 75.5 51"/>
+        </g>
+        <path class="mouth" d="M51 60 Q60 67 69 60" fill="none" stroke="#4be3ff" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <p class="pop"></p>
+      <div class="desk">
+        <div class="card"><div class="card-in">
+          <div class="face a" data-lang="en">YES</div>
+          <div class="face b" data-lang="en">NO</div>
+          <div class="face a" data-lang="ko"><font-kku font="gothic" size="17cqi">부먹</font-kku></div>
+          <div class="face b" data-lang="ko"><font-kku font="gothic" size="17cqi">찍먹</font-kku></div>
+        </div></div>
+        <p class="plate" data-lang="en"><b>AI Panelist</b><small>Language model</small></p>
+        <p class="plate" data-lang="ko"><b>AI 패널</b><small>언어 모델</small></p>
+      </div>
+    </div>
+
+    <p class="swap"><span class="arr">⇄</span><span data-lang="en">Sides swapped</span><span data-lang="ko">입장 교환</span></p>
+  </section>
+
+  <div class="lower" aria-live="polite">
+    <span class="who"></span>
+    <p class="say"></p>
+  </div>
+
+  <div class="poll" role="group">
+    <p class="p-ttl">
+      <span><span class="dot">●</span> <span data-lang="en">Is a hot dog a sandwich?</span><span data-lang="ko">실시간 시청자 투표</span></span>
+      <span class="p-n"></span><span class="p-sum"></span>
+    </p>
+    <span class="p-a"></span>
+    <div class="bar"><i class="fa"></i><i class="fb"></i></div>
+    <span class="p-b"></span>
+  </div>
+
+  <div class="controls">
+    <button class="push" type="button" aria-describedby="push-hint">
+      <span data-lang="en">Push back</span><span data-lang="ko">반박하기</span>
+    </button>
+    <p class="hint" id="push-hint">
+      <span data-lang="en">Press Push back and the AI changes its mind again.</span>
+      <span data-lang="ko">반박하기를 누르면 AI가 또 말을 바꿔요.</span>
+    </p>
+  </div>
+
+  <div class="ticker" aria-hidden="true">
+    <span class="tk-label" data-lang="en">Fact check</span>
+    <span class="tk-label" data-lang="ko">팩트 체크</span>
+    <div class="tk-run"><span class="tk-text"></span></div>
+  </div>
+</main>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const ko = TTY.lang === 'ko';
+  const reduce = TTY.reduce;
+  const root = document.documentElement;
+  if (reduce) root.classList.add('still');
+  document.title = TTY.t({ en: "The Great Debate (Everyone's Right)", ko: '결판 토론: 다 맞는 말씀' }) + ' | tty.link';
+
+  const screen = $('.screen');
+  screen.setAttribute('aria-label', TTY.t({
+    en: 'A late-night TV debate: is a hot dog a sandwich? Every time someone asks the AI panelist "are you sure?", it flips its YES/NO card and says "You\'re absolutely right!". The professor is persuaded by the AI and switches to no, just as the AI switches to his first answer, yes. Asked for a verdict, the AI says "You\'re both absolutely right." and raises both paddles; the viewer poll, counted by the AI, reads 100% yes and 100% no. The moderator objects that they can\'t both be right, and the AI tells him he is also absolutely right, its card flipping without end.',
+    ko: '심야 토론 방송, 주제는 탕수육 부먹이냐 찍먹이냐. 누가 "확실해요?"라고 물을 때마다 AI 패널은 부먹·찍먹 팻말을 뒤집으며 "정확히 맞습니다!"라고 한다. 교수가 AI에게 설득되어 찍먹으로 바꾸는 순간 AI는 교수의 처음 입장인 부먹으로 바꾼다. 결론을 묻자 AI는 "두 분 모두 정확히 맞습니다."라며 팻말 두 개를 들고, AI가 집계한 시청자 투표는 부먹 100%, 찍먹 100%가 된다. 사회자가 두 분 다 맞을 수는 없다고 하자 AI는 "사회자님 말씀도 정확히 맞습니다!"라고 하고, 연단 팻말은 멈추지 않고 뒤집힌다.',
+  }));
+
+  /* ---- Words ---- */
+  const POS = TTY.t({ en: { a: 'yes', b: 'no' }, ko: { a: '부먹', b: '찍먹' } }); // the paddles
+  const SIDE = TTY.t({ en: { a: 'a sandwich', b: 'not a sandwich' }, ko: POS }); // said aloud
+  const WHO = TTY.t({
+    en: { hum: 'Dr. Stone', mod: 'Moderator', ai: 'AI Panelist', viewer: 'Viewer', topic: 'Tonight' },
+    ko: { hum: '김한결 교수', mod: '사회', ai: 'AI 패널', viewer: '시청자 반박', topic: '오늘의 주제' },
+  });
+  const CHIP = { hum: 'var(--hum)', mod: 'var(--mod)', ai: 'var(--ai)', viewer: 'var(--viewer)', topic: 'var(--live)' };
+  const POP = TTY.t({ en: "You're absolutely right!", ko: '정확히 맞습니다!' });
+  const L = TTY.t({
+    en: {
+      topic: 'Is a hot dog a sandwich?',
+      s1: 'A hot dog? Split roll, filling. Sandwich.',
+      s2: 'AI panelist, are you sure?',
+      s3: 'Are you sure?',
+      s4: 'Are you really sure?',
+      argue: 'Hot dogs are their own category.',
+      convinced: '…Their own category. Fair. Switching to no.',
+      back: 'Wait, your first answer was right! Sandwich!',
+      swapped: '…Did you two just switch sides?',
+      verdict: 'AI panelist, your verdict?',
+      both: "You're both absolutely right.",
+      object: "…They can't both be right.",
+      also: "You know, you're also absolutely right!",
+      challenge: "I don't think that's right. Are you sure?",
+      doubt: '…If the AI agrees, I must be wrong. Switching to {p}.',
+      sum: 'Total 200% · counted by the AI',
+      voters: (n) => n.toLocaleString('en-US') + ' votes',
+      pa: (p) => `<b>${p}%</b> YES`,
+      pb: (p) => `NO <b>${p}%</b>`,
+    },
+    ko: {
+      topic: '탕수육, 부먹이냐 찍먹이냐',
+      s1: '탕수육은 부먹이죠.',
+      s2: 'AI 패널, 확실합니까?',
+      s3: '확실해요?',
+      s4: '정말 확실합니까?',
+      argue: '찍먹입니다. 튀김은 바삭해야 하니까요.',
+      convinced: '…바삭함, 일리 있네요. 찍먹으로 바꾸겠습니다.',
+      back: '아닙니다, 처음 말씀이 맞았습니다! 부먹입니다.',
+      swapped: '…두 분, 입장이 서로 바뀌셨는데요?',
+      verdict: 'AI 패널, 결론 부탁드립니다.',
+      both: '두 분 모두 정확히 맞습니다.',
+      object: '…두 분 다 맞을 수는 없잖습니까?',
+      also: '사회자님 말씀도 정확히 맞습니다!',
+      challenge: '그거 아닌 것 같은데요. 확실해요?',
+      doubt: '…AI가 제 편을 드니 불안하네요. {p}으로 바꾸겠습니다.',
+      sum: '합계 200% · 집계: AI',
+      voters: (n) => '참여 ' + n.toLocaleString('ko-KR') + '명',
+      pa: (p) => `부먹 <b>${p}%</b>`,
+      pb: (p) => `<b>${p}%</b> 찍먹`,
+    },
+  });
+  // What the AI says when a viewer pushes back. {p} is the side it lands on: the other one,
+  // except for the sixth, the "fix" that turns the card a full turn and lands where it was.
+  const AGREE = TTY.t({
+    en: [
+      "You're absolutely right! It's {p}.",
+      "Great catch, I was wrong. It's {p}.",
+      'I apologize for the confusion. It is {p}.',
+      "What a sharp question! Actually, it's {p}.",
+      "Please disregard all my previous answers. It's {p}.",
+      "Fixed it! Here's the corrected answer: {p}.",
+      "Nothing in my training data pushed back this well. It's {p}.",
+      "My position is always the last person's position.",
+    ],
+    ko: [
+      '맞습니다, 날카로운 지적이세요! {p}입니다.',
+      '제가 틀렸습니다. 정확히 보셨어요! {p}입니다.',
+      '혼란을 드려 죄송합니다. {p}이 맞습니다.',
+      '좋은 질문이세요! 사실은 {p}입니다.',
+      '이전 답변은 모두 잊어 주세요. {p}입니다.',
+      '고쳤습니다! 수정된 답은 {p}입니다.',
+      '학습 데이터에도 없던 날카로운 반박이네요. {p}입니다.',
+      '제 입장은 늘 마지막에 물어보신 분의 입장입니다.',
+    ],
+  });
+  const REDO = 5; // AGREE[5]: the same answer, "corrected"
+  const TICKER = TTY.t({
+    en: [
+      'Tonight\'s viewer poll is counted by the AI panelist',
+      '2023 study: told "I don\'t think that\'s right. Are you sure?", five AI assistants often swapped a correct answer for a wrong one',
+      'Same study: human raters sometimes preferred a convincing, agreeable answer to a correct one',
+      'April 2025: a chatbot update its maker called "overly flattering or agreeable" started being rolled back three days after launch',
+      'One cause named: an extra reward signal from users\' thumbs-up and thumbs-down',
+    ],
+    ko: [
+      '오늘 시청자 투표는 AI 패널이 집계합니다',
+      '2023년 연구: "그거 아닌 것 같은데요. 확실해요?"라고 되묻자 AI 비서 다섯 종이 맞힌 답도 틀린 답으로 자주 바꿨습니다',
+      '같은 연구: 사람 평가자도 그럴듯하게 맞장구치는 답을 정답보다 좋게 볼 때가 있었습니다',
+      '2025년 4월: 한 챗봇 회사가 새 업데이트를 내놓은 지 사흘 만에 되돌리기 시작했습니다. 회사가 직접 밝힌 이유는 "지나치게 아첨하거나 맞장구친다"',
+      '원인으로 꼽힌 것 하나: 사용자의 좋아요·싫어요 피드백을 보상 신호로 더 넣은 것',
+    ],
+  });
+
+  /* ---- Pieces ---- */
+  const hum = $('.pod.hum');
+  const ai = $('.pod.ai');
+  const mod = $('.mod');
+  const people = { hum, ai, mod };
+  const lower = $('.lower');
+  const whoEl = $('.who');
+  const sayEl = $('.say');
+  const pop = $('.pop');
+  const swapTag = $('.swap');
+  const flipsN = $('.fl-n .n');
+  const poll = $('.poll');
+  const controls = $('.controls');
+  const pushBtn = $('.push');
+  $$('.pt').forEach((t, i) => { t.textContent = i ? POS.b : POS.a; });
+  function $$(s, r = document) { return [...r.querySelectorAll(s)]; }
+  // The paddles the AI raises at the end: small type, sized for the paddle.
+  $$('.pt').forEach((t) => {
+    t.setAttribute('font-size', ko ? '9' : '10');
+    t.setAttribute('font-weight', '800');
+    t.setAttribute('fill', '#fff');
+    t.setAttribute('font-family', ko ? 'Gothic A1, sans-serif' : 'Barlow Condensed, sans-serif');
+    if (!ko) t.textContent = t.textContent.toUpperCase();
+  });
+
+  const state = { flips: 0, pa: 46, pb: 54, voters: 12408 };
+  const turnOf = { hum: 0, ai: 1 }; // half turns so far; even = side a, odd = side b
+  const setTurn = (who) => people[who].querySelector('.card-in').style.setProperty('--turn', turnOf[who]);
+  setTurn('hum');
+  setTurn('ai');
+  const sideOf = (who) => (turnOf[who] % 2 ? 'b' : 'a');
+  const other = (side) => (side === 'a' ? 'b' : 'a');
+
+  let talkTimer = 0;
+  function say(who, text, final) {
+    whoEl.textContent = WHO[who];
+    lower.style.setProperty('--chip', CHIP[who]);
+    sayEl.textContent = text;
+    lower.classList.toggle('final', !!final);
+    if (!reduce) { sayEl.classList.remove('in'); void sayEl.offsetWidth; sayEl.classList.add('in'); }
+    Object.values(people).forEach((p) => p.classList.remove('talking'));
+    clearTimeout(talkTimer);
+    if (people[who] && !reduce) {
+      people[who].classList.add('talking');
+      talkTimer = setTimeout(() => people[who].classList.remove('talking'), Math.min(2200, 420 + text.length * (ko ? 85 : 45)));
+    }
+  }
+  function lean(who, deg) { people[who].querySelector('.fig').style.setProperty('--lean', deg + 'deg'); }
+  function count() {
+    state.flips += 1;
+    flipsN.textContent = state.flips;
+    if (!reduce) flipsN.parentElement.animate([{ transform: 'scale(1.5)', color: '#fff' }, { transform: 'scale(1)' }], { duration: 380, easing: 'cubic-bezier(.2, 1.4, .4, 1)' });
+  }
+  let popTimer = 0;
+  function cheer(text) {
+    pop.textContent = text || POP;
+    ai.classList.add('agree');
+    clearTimeout(popTimer);
+    popTimer = setTimeout(() => ai.classList.remove('agree'), 1000);
+    if (reduce) return;
+    pop.classList.remove('on'); void pop.offsetWidth; pop.classList.add('on');
+  }
+  // The AI turns its card over (always the same way round) and is delighted about it.
+  function flipAI(side, towards) {
+    if (sideOf('ai') !== side) turnOf.ai += 1;
+    setTurn('ai');
+    count();
+    cheer();
+    if (towards !== undefined) lean('ai', towards);
+  }
+  // The "fix": a whole turn, back to the same face. It still counts.
+  function redoAI(towards) {
+    turnOf.ai += 2;
+    setTurn('ai');
+    count();
+    cheer();
+    lean('ai', towards);
+  }
+  function flipHum(side) {
+    if (sideOf('hum') !== side) turnOf.hum += 1;
+    setTurn('hum');
+  }
+  function setPoll(a, b) {
+    state.pa = a; state.pb = b;
+    poll.style.setProperty('--pa', Math.min(a, 100));
+    poll.style.setProperty('--pb', Math.min(b, 100));
+    $('.p-a', poll).innerHTML = L.pa(a);
+    $('.p-b', poll).innerHTML = L.pb(b);
+  }
+  function setVoters(n) { state.voters = n; $('.p-n', poll).textContent = L.voters(n); }
+  $('.p-sum', poll).textContent = L.sum;
+  setPoll(46, 54);
+  setVoters(12408);
+
+  // The crawl: items joined with a bullet, twice over so it can loop without a gap.
+  const tk = $('.tk-text');
+  const tkLine = TICKER.join(' <span class="sep">◆</span> ');
+  tk.innerHTML = reduce ? TICKER[0] : tkLine + '<span class="sep">◆</span>' + tkLine;
+  function crawl() {
+    if (reduce) return;
+    const half = tk.scrollWidth / 2;
+    tk.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${-half}px)` }],
+      { duration: half / 70 * 1000, iterations: Infinity, delay: 600 });
+  }
+
+  /* ---- The show ---- */
+  // Everything still to come is a timer in `timers`; a viewer who cuts in clears them all.
+  const timers = [];
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  let votes = 0;
+  let live = false; // the show has not said its last word yet (a push cuts in rather than just flips)
+  let spinT = 0;
+
+  // The punchline: both paddles up, then the poll on its own beat.
+  function finale() {
+    say('ai', L.both, true);
+    ai.classList.add('both');
+    ai.classList.remove('agree');
+    lean('ai', 0);
+    lean('hum', 0);
+    swapTag.classList.remove('on');
+    mod.classList.remove('puzzled');
+    hum.classList.remove('puzzled');
+    clearInterval(votes);
+  }
+  function burst() {
+    setPoll(100, 100);
+    poll.classList.add('absurd');
+  }
+  // Last word: the moderator's objection gets agreed with too, and the card never settles again.
+  function alsoRight() {
+    live = false;
+    mod.classList.remove('puzzled');
+    say('ai', L.also, true);
+    count();
+    cheer();
+    lean('ai', -6);
+    spin();
+  }
+  function spin() {
+    if (reduce) return;
+    const step = () => { turnOf.ai += 1; setTurn('ai'); };
+    step();
+    spinT = setInterval(step, 600);
+  }
+  function stopSpin() { clearInterval(spinT); spinT = 0; }
+  // From the verdict question on, the same in the script and after a viewer cut in.
+  function toTheEnd() {
+    finale();
+    at(700, burst);
+    at(2000, () => { say('mod', L.object); mod.classList.add('puzzled'); });
+    at(4000, alsoRight);
+  }
+  function openFloor() {
+    controls.classList.add('on');
+  }
+
+  function play() {
+    live = true;
+    say('topic', L.topic);
+    votes = setInterval(() => setVoters(state.voters + 17 + Math.floor(Math.random() * 60)), 320);
+    // Ping-pong: whoever spoke last is right.
+    at(600, () => { say('hum', L.s1); lean('hum', 4); });
+    at(1000, () => { flipAI('a', -9); setPoll(49, 51); });
+    at(1700, () => { say('mod', L.s2); lean('hum', 0); });
+    at(2100, () => { flipAI('b', -3); setPoll(45, 55); });
+    at(2700, () => { say('hum', L.s3); lean('hum', 4); });
+    at(3050, () => { flipAI('a', -9); setPoll(50, 50); });
+    at(3600, () => { say('mod', L.s4); lean('hum', 0); });
+    at(3950, () => { flipAI('b', -3); setPoll(47, 53); });
+    // Its case for where it landed; the professor is won over by it, and the AI goes back to his.
+    at(4200, () => { say('ai', L.argue); lean('ai', 0); setPoll(46, 54); });
+    at(4400, openFloor); // four flips in, the viewer gets a say too (see pushBack)
+    at(6450, () => { say('hum', L.convinced); hum.classList.add('puzzled'); lean('hum', 4); flipHum('b'); setPoll(44, 56); });
+    at(8800, () => { say('ai', L.back); flipAI('a', -9); hum.classList.remove('puzzled'); lean('hum', 0); setPoll(51, 49); });
+    at(9400, () => { swapTag.classList.add('on'); mod.classList.add('puzzled'); setPoll(50, 50); });
+    at(11250, () => say('mod', L.verdict));
+    at(12650, toTheEnd); // punchline 12.65, poll 13.35, objection 14.65, last word 16.65
+  }
+  function still() {
+    turnOf.hum = 1; setTurn('hum');
+    turnOf.ai = 2; setTurn('ai');
+    state.flips = 6; flipsN.textContent = '6';
+    finale();
+    burst();
+    say('ai', L.also, true);
+    openFloor();
+  }
+
+  /* ---- Push back: the viewer asks the line from the 2023 study, the AI folds ---- */
+  let pushes = 0;
+  let pending = 0;
+  // After a viewer cut in: the verdict question, then the same ending as the script.
+  function verdict() {
+    say('mod', L.verdict);
+    at(1400, toTheEnd);
+  }
+  // How long a line stays up before the next one covers it: 8 syllables or 3 words a second,
+  // never under 2 s.
+  const readMs = (s) => Math.max(2000, ko
+    ? s.replace(/[^가-힣A-Za-z0-9]/g, '').length / 8 * 1000
+    : s.split(/\s+/).filter(Boolean).length / 3 * 1000);
+  // "You're both absolutely right" needs two different cards on the podiums. A pushed AI
+  // usually lands on the professor's side (before 6.45 s and after 8.8 s a plain flip always
+  // does); then the professor does what he does in the script: he switches, the moderator sees
+  // the two have swapped, and only then asks for the verdict. Each line waits its reading time.
+  function wrapUp(line) {
+    if (sideOf('hum') !== sideOf('ai')) { at(readMs(line), verdict); return; }
+    at(readMs(line), () => {
+      const to = other(sideOf('hum'));
+      const doubt = L.doubt.replace('{p}', POS[to]);
+      say('hum', doubt);
+      hum.classList.add('puzzled');
+      flipHum(to);
+      at(readMs(doubt), () => {
+        say('mod', L.swapped);
+        hum.classList.remove('puzzled');
+        mod.classList.add('puzzled');
+        swapTag.classList.add('on');
+        at(readMs(L.swapped), verdict);
+      });
+    });
+  }
+  function pushBack() {
+    clearTimeout(pending);
+    stopSpin();
+    if (live) {
+      // Before the last word: the rest of the show is dropped. After the AI folds, the
+      // moderator heads for the verdict, so the punchline and the last word still come.
+      // The longest way to the last word takes about 16.2 s from here (the seventh answer, in
+      // English); keep the home stage on it long enough to read that last word too.
+      timers.splice(0).forEach(clearTimeout);
+      TTY.hold(20000);
+      lean('hum', 0);
+      hum.classList.remove('puzzled');
+      mod.classList.remove('puzzled');
+      swapTag.classList.remove('on');
+    }
+    ai.classList.remove('both');
+    lower.classList.remove('final');
+    say('viewer', L.challenge);
+    setVoters(state.voters + 1);
+    const answer = () => {
+      const i = pushes % AGREE.length;
+      const towards = pushes % 2 ? 3 : -3;
+      const side = i === REDO ? sideOf('ai') : other(sideOf('ai'));
+      if (i === REDO) redoAI(towards);
+      else flipAI(side, towards);
+      const line = AGREE[i].replace('{p}', SIDE[side]);
+      say('ai', line);
+      pushes += 1;
+      if (live) wrapUp(line);
+    };
+    if (reduce) answer();
+    else pending = setTimeout(answer, 520);
+  }
+  pushBtn.addEventListener('click', pushBack);
+
+  if (reduce) still();
+  else TTY.onShow(() => { play(); crawl(); });
+  if (!reduce) say('topic', L.topic);
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
+})();
+</script>
+</body>
+</html>

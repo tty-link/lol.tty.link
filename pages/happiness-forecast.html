@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Happiness Forecast | tty.link</title>
+<script src="/pages/_kit.js"></script>
+<!-- Opened on its own, the tty.link nav ("?", ":)") goes to the top right: beside the presenter
+     card on tall screens, above the side panels on wide ones. The bottom right is the advisory
+     strip, whose counter and long lines it used to cover. -->
+<script>document.documentElement.setAttribute('data-tty-nav', 'top');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800&family=Barlow:wght@500;600&family=IBM+Plex+Sans+KR:wght@500;600&display=swap">
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="geumbak sebul sticker"></script>
+<style>
+  /* The TV weather, for smiles. The Happy Isles get their icons one by one, the hourly
+     chance of giggles rises, the smile index needle swings, and the alert strip flips
+     through all five alerts. Then a compliment front (a warm front whose pips are hearts)
+     sweeps across the map and sets off the weather on every island it crosses. The server
+     room's thermostat twitches and holds: still 18°. The presenter signs off. Tapping an
+     island replays its weather and shows its forecast. It opens with a storm: a scowling
+     black cloud rolls in, rumbles, flashes, pours down hearts, is startled by them, then
+     smiles and settles over the office as its drizzle. */
+  :root {
+    --sea: #1d4aa8;
+    --sea-deep: #143780;
+    --shallow: #3b72d9;
+    --ink: #0f1f4a;
+    --sun: #ffcc1a;
+    --heart: #ff5d8f;
+    --paper: #fffaf0;
+    --home: #ffd3a3;
+    --office: #d8c9ff;
+    --park: #a9e6a0;
+    --kitchen: #ffe78a;
+    --server: #c4ecff;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body {
+    container-type: size;
+    overflow: hidden;
+    background:
+      radial-gradient(90% 70% at 30% 35%, #2a5fc7 0%, var(--sea) 55%, var(--sea-deep) 100%);
+    color: #fff;
+    font-family: 'Barlow', 'IBM Plex Sans KR', system-ui, sans-serif;
+  }
+  .lang-ko body { font-family: 'IBM Plex Sans KR', 'Barlow', sans-serif; word-break: keep-all; }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "card" "hint" "map" "side" "ticker";
+    gap: 2.4cqmin;
+    --pad: 3.6cqmin;
+    padding: var(--pad) var(--pad) 0;
+  }
+  @container (orientation: landscape) {
+    .screen {
+      grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr) auto auto auto;
+      grid-template-areas: "map side" "hint side" "card side" "ticker ticker";
+      gap: 2.6cqmin 3.4cqmin;
+      --pad: 4cqmin;
+    }
+  }
+
+  /* ---- Map ---- */
+  .map { grid-area: map; display: grid; place-items: center; min-height: 0; container-type: size; }
+  .rig { position: relative; height: min(100cqh, 100cqw * 540 / 600); aspect-ratio: 600 / 540; container-type: size; }
+  .rig svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .waves path { fill: none; stroke: rgba(255,255,255,.12); stroke-width: 2; stroke-linecap: round; }
+  .isle { transform-box: fill-box; transform-origin: center; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; }
+  .isle:focus-visible .land { stroke: var(--sun); stroke-width: 6; }
+  .isle .shelf { fill: var(--shallow); opacity: .55; }
+  .isle .land { stroke: var(--ink); stroke-width: 3.5; }
+  .icon { transform-box: fill-box; transform-origin: center; }
+  .stroke { fill: none; stroke: var(--ink); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+  /* The compliment front: drawn like a warm front, with hearts for the semicircles. */
+  .front { opacity: 0; }
+  .front .line { fill: none; stroke: var(--heart); stroke-width: 5; stroke-linecap: round; }
+  .front .pip { fill: var(--heart); stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+  .front .tag rect { fill: var(--heart); stroke: var(--ink); stroke-width: 2.5; }
+  .front .tag text { fill: #fff; font: 800 19px 'Barlow Condensed', sans-serif; letter-spacing: .02em; }
+  .lang-ko .front .tag text { font: 600 17px 'IBM Plex Sans KR', sans-serif; letter-spacing: 0; }
+
+  .live .rays { animation: spin 14s linear infinite; transform-box: fill-box; transform-origin: center; }
+  .live .drip { animation: drip 1.6s cubic-bezier(.5, 0, 1, .6) infinite; }
+  .live .steam { animation: steam 2.2s ease-in-out infinite; }
+  .live .flake { animation: spin 9s linear infinite; transform-box: fill-box; transform-origin: center; }
+  .live .ha { animation: ha 2.4s cubic-bezier(.2, .9, .3, 1.3) infinite; transform-box: fill-box; transform-origin: center bottom; }
+  @keyframes spin { to { rotate: 360deg; } }
+  @keyframes drip { 0% { translate: 0 -6px; opacity: 0; } 20% { opacity: 1; } 100% { translate: 0 26px; opacity: 0; } }
+  @keyframes steam { 0%, 100% { translate: 0 0; opacity: .35; } 50% { translate: 0 -7px; opacity: 1; } }
+  @keyframes ha { 0%, 55%, 100% { scale: 0; opacity: 0; } 65% { scale: 1.12; opacity: 1; } 75%, 92% { scale: 1; opacity: 1; } }
+
+  .callout {
+    position: absolute;
+    translate: -50% 0;
+    padding: 1cqw 1.6cqw 1.2cqw;
+    background: var(--paper);
+    color: var(--ink);
+    border: .5cqw solid var(--ink);
+    border-radius: 1.4cqw;
+    box-shadow: .8cqw .8cqw 0 rgba(15,31,74,.35);
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* the number badge sits over the top-right corner; the name keeps out from under it */
+  .callout .name { padding-right: 2.2cqw; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 3.6cqw; line-height: 1; letter-spacing: .01em; }
+  .callout .what { margin-top: .4cqw; font-size: 2.15cqw; font-weight: 600; opacity: .8; }
+  .callout .pct { position: absolute; right: -2.6cqw; top: -2.6cqw; display: grid; place-items: center; width: 5.6cqw; aspect-ratio: 1; border-radius: 50%; background: var(--sun); border: .45cqw solid var(--ink); font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 2.6cqw; overflow: hidden; }
+  .callout .pct span { display: block; }
+  .callout.say { z-index: 1; }
+  /* the server room's last word is the punchline: as big as the island's name */
+  .callout.kept .what { font-size: 3.6cqw; font-weight: 700; opacity: 1; }
+  /* Small maps keep only the name and badge. An island's forecast line opens for a moment when
+     the front crosses it or it is tapped (.say), so phones get the lines too. */
+  @container (max-width: 460px) {
+    .callout .what { display: none; }
+    .callout.say .what { display: block; font-size: max(3.4cqw, 11px); }
+    .callout.kept .what { font-size: max(4.4cqw, 12px); }
+    .callout { padding: max(1cqw, 2px) max(2cqw, 4px); border-width: max(.5cqw, 1.5px); }
+    .callout .name { padding-right: max(5cqw, 11px); font-size: 4.4cqw; }
+    .callout .pct { width: 7cqw; font-size: 3.2cqw; right: -3.4cqw; top: -3.4cqw; border-width: max(.45cqw, 1.5px); }
+    /* The bottom row's cards (kitchen, server room) open upwards: an open card slides up over its
+       island's south coast (still under the icon), so its line stays on the map instead of
+       running into the panel titles or the hint below. Shut, they stay low, out from under the
+       park's open card. */
+    .callout.low { transition: margin-top .3s cubic-bezier(.3, .8, .3, 1); }
+    .callout.low.say { margin-top: -8cqh; }
+  }
+  /* The smallest maps (a phone's home stage draws the map about 180 px wide): names and badges
+     stay at 10 px, so both still read. */
+  @container (max-width: 300px) {
+    .callout .name { font-size: max(4.4cqw, 10px); padding-right: max(5cqw, 12px); }
+    .callout .pct { width: max(7cqw, 20px); font-size: max(3.2cqw, 10px); right: min(-3.4cqw, -9px); top: min(-3.4cqw, -9px); }
+  }
+
+  /* ---- Presenter card (lower third) ---- */
+  .card {
+    grid-area: card;
+    justify-self: start;
+    align-self: end;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: stretch;
+    max-width: 100%;
+    container-type: inline-size;
+    width: min(100%, 64cqmin);
+  }
+  @container (orientation: landscape) { .card { width: min(100%, 58cqw); } }
+  .card .tab { width: 2.6cqi; background: var(--sun); transform-origin: 0 50%; }
+  .card .body { padding: 2.4cqi 4cqi 2.6cqi; background: var(--ink); }
+  .card h1 { font-family: 'Barlow Condensed', sans-serif; font-style: italic; font-weight: 800; font-size: 9cqi; line-height: .95; letter-spacing: .005em; color: #fff; }
+  /* The byline and the sign-off share one cell, so the card is sized for the longer one from the
+     start and nothing moves when the presenter signs off. */
+  .card .sub { display: grid; margin-top: 1.2cqi; font-size: max(4.2cqi, 10px); font-weight: 600; line-height: 1.25; color: var(--sun); }
+  .card .sub > span { grid-area: 1 / 1; }
+  .card .sub .bye { opacity: 0; }
+  .lang-ko .card h1 { font-style: normal; }
+
+  /* ---- Side: smile index and chance of giggles ---- */
+  .side { grid-area: side; display: grid; gap: 2.4cqmin; align-content: center; min-height: 0; container-type: inline-size; }
+  /* Portrait: the gauge stays, as a compact panel beside the chart. */
+  @container (orientation: portrait) { .side { grid-template-columns: minmax(0, .82fr) minmax(0, 1.5fr); align-items: stretch; gap: 2cqmin; } }
+  .panel { padding: 3.2cqi 4cqi 3.6cqi; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.22); border-radius: 3cqi; }
+  .panel h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 6.4cqi; line-height: 1; }
+  .gauge svg { display: block; width: 100%; height: auto; margin-top: 1cqi; }
+  .gauge .num { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; fill: #fff; }
+  #needle { transform-box: view-box; transform-origin: 100px 100px; }
+  .chart { margin-top: 3cqi; display: grid; grid-template-columns: repeat(13, 1fr); align-items: end; gap: 1.2cqi; height: 30cqi; border-bottom: 2px solid rgba(255,255,255,.6); }
+  .chart b { display: block; height: calc(var(--v) * 1%); background: linear-gradient(var(--sun), #ff9f1a); border-radius: 1cqi 1cqi 0 0; transform-origin: 50% 100%; }
+  .chart b.peak { background: linear-gradient(#fff, var(--sun)); }
+  .hours { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1.2cqi; margin-top: 1cqi; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 3.6cqi; opacity: .8; }
+  .hours span { text-align: center; }
+  @container (orientation: portrait) {
+    /* the Korean titles are font-kku; they shrink with the English ones so the map keeps its room */
+    .side { --panel-kku: 4.2cqi; }
+    .chart { height: 11cqh; gap: .8cqi; }
+    .panel { padding: 2.4cqi 2.6cqi 2.8cqi; border-radius: 2.4cqi; }
+    .panel h2 { font-size: 3.9cqi; line-height: 1.1; }
+    .hours { font-size: max(2.6cqi, 10px); gap: .8cqi; }
+    .gauge { display: grid; align-content: start; }
+    /* the gauge is no taller than the chart, so on short phones the map gets the height */
+    .gauge svg { margin-top: 2cqi; max-height: 12.5cqh; }
+  }
+
+  /* ---- Ticker ---- */
+  .ticker {
+    grid-area: ticker;
+    margin: 0 calc(-1 * var(--pad));
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    height: clamp(34px, 6.4cqmin, 54px);
+    background: var(--sun);
+    color: var(--ink);
+  }
+  .ticker .label { position: relative; z-index: 1; flex: none; height: 100%; display: grid; place-items: center; padding: 0 2.6cqmin; background: var(--ink); color: var(--sun); font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(15px, 2.6cqmin, 22px); }
+  .lang-ko .ticker .label { font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 600; font-size: clamp(13px, 2.2cqmin, 18px); }
+  /* One advisory at a time, flipping up every few seconds, so all five fit in the slot. */
+  .ticker .track { position: relative; flex: 1; align-self: stretch; overflow: hidden; }
+  .ticker .item {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    gap: 1.6cqmin;
+    padding: 0 2cqmin;
+    font-weight: 600;
+    font-size: clamp(14px, 2.3cqmin, 19px);
+    line-height: 1.2;
+    opacity: 0;
+    translate: 0 100%;
+    transition: translate .45s cubic-bezier(.3, .9, .3, 1), opacity .3s ease;
+  }
+  .ticker .item.on { opacity: 1; translate: 0 0; }
+  .ticker .item.off { opacity: 0; translate: 0 -100%; }
+  .ticker .item svg { flex: none; width: 1.2em; height: 1.2em; }
+  .ticker .count { flex: none; padding: 0 2.4cqmin; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(13px, 2.1cqmin, 17px); opacity: .7; }
+  @container (orientation: portrait) {
+    .ticker { height: clamp(44px, 9cqmin, 58px); }
+    .ticker .item { font-size: clamp(12.5px, 3.4cqmin, 15px); }
+  }
+
+  /* ---- The opening storm: drawn in screen pixels over everything, then removed ---- */
+  .storm { position: fixed; inset: 0; z-index: 5; pointer-events: none; overflow: hidden; }
+  .storm svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .storm .stroke { stroke-width: 2.6; }
+  .storm .eye { transform-box: fill-box; transform-origin: center; }
+
+  /* ---- Hint ---- */
+  .hint {
+    grid-area: hint;
+    justify-self: center;
+    margin-top: -.8cqmin;
+    font-size: clamp(11.5px, 2.1cqmin, 15px);
+    font-weight: 600;
+    line-height: 1.25;
+    color: rgba(255, 255, 255, .8);
+    text-align: center;
+    opacity: 0;
+    transition: opacity .6s;
+  }
+  .hint.on { opacity: 1; }
+  @container (orientation: portrait) {
+    .hint { margin: -.6cqmin 0 -.4cqmin; }
+    /* On the home stage (no tty.link nav) the hint takes the empty sea beside the card, so the
+       map keeps its height on short phones. */
+    html.embedded .screen {
+      grid-template-columns: min(100%, 64cqmin) minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      grid-template-areas: "card hint" "map map" "side side" "ticker ticker";
+    }
+    html.embedded .hint { justify-self: end; align-self: center; margin: 0; text-align: right; text-wrap: balance; }
+  }
+  /* Tapped with less motion: the island is outlined for a moment instead of jumping. */
+  .isle.ping .land { stroke: var(--sun); stroke-width: 6; }
+  .callout.ping { outline: .5cqw solid var(--sun); outline-offset: .3cqw; }
+
+  @media (prefers-reduced-motion: reduce) { .live * { animation: none !important; } .ticker .item, .hint, .callout.low { transition: none; } }
+  /* Opened on its own, the tty.link nav sits at the top right (pinned in <head>); keep that
+     corner empty: room above the side panels on wide screens, and beside the presenter card
+     on tall ones (the kit's nav is about 290 x 46 px above 600 px wide, 84 x 50 below). */
+  @container (orientation: landscape) { html:not(.embedded) .side { padding-top: 54px; } }
+  @media (min-width: 601px) { @container (orientation: portrait) { html:not(.embedded) .card { width: min(100%, 64cqmin, 100% - 306px); } } }
+  @media (max-width: 600px) { @container (orientation: portrait) { html:not(.embedded) .card { width: min(100%, 64cqmin, 100% - 96px); } } }
+</style>
+</head>
+<body>
+<main class="screen">
+  <div class="map"><div class="rig">
+    <svg viewBox="0 0 600 540" aria-hidden="true">
+      <defs><clipPath id="sea"><rect x="-20" y="-20" width="640" height="580" rx="24"/></clipPath></defs>
+      <g class="waves"></g>
+      <g class="isles"></g>
+      <g clip-path="url(#sea)"><g class="front"></g></g>
+    </svg>
+  </div></div>
+
+  <div class="card">
+    <div class="tab"></div>
+    <div class="body">
+      <h1 data-lang="en">The Happiness Forecast</h1>
+      <h1 data-lang="ko" aria-label="오늘의 행복 예보"><font-kku font="geumbak" size="9cqi">오늘의 행복 예보</font-kku></h1>
+      <p class="sub">
+        <span class="who" data-lang="en">with Sunny Day, chief smile meteorologist</span>
+        <span class="who" data-lang="ko">기상캐스터 김맑음</span>
+        <span class="bye" data-lang="en" aria-hidden="true">And that was your happiness. Back to you.</span>
+        <span class="bye" data-lang="ko" aria-hidden="true">지금까지 행복이었습니다.</span>
+      </p>
+    </div>
+  </div>
+
+  <p class="hint" id="isle-hint">
+    <span data-lang="en">Tap an island for its forecast.</span>
+    <span data-lang="ko">섬을 누르면 그곳 예보가 나와요.</span>
+  </p>
+
+  <aside class="side">
+    <section class="panel gauge">
+      <h2 data-lang="en">Smile index</h2>
+      <h2 data-lang="ko"><font-kku font="sticker" size="var(--panel-kku, 6.4cqi)">행복 지수</font-kku></h2>
+      <svg viewBox="0 0 200 118" aria-hidden="true">
+        <g class="arcs"></g>
+        <g id="needle"><path d="M100 100 L100 26" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="100" r="9" fill="#fff"/></g>
+        <text class="num" x="100" y="96" text-anchor="middle" font-size="0">87</text>
+      </svg>
+    </section>
+    <section class="panel">
+      <h2 data-lang="en">Chance of giggles, by the hour</h2>
+      <h2 data-lang="ko"><font-kku font="sticker" size="var(--panel-kku, 6.4cqi)">시간대별 웃음 확률</font-kku></h2>
+      <div class="chart" aria-hidden="true"></div>
+      <div class="hours" aria-hidden="true"></div>
+    </section>
+  </aside>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="label"><span data-lang="en">Alerts</span><span data-lang="ko">특보</span></div>
+    <div class="track"></div>
+    <div class="count"></div>
+  </div>
+</main>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const $ = (s) => document.querySelector(s);
+  const svg = (tag, attrs = {}, html = '') => {
+    const el = document.createElementNS(NS, tag);
+    Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+    if (html) el.innerHTML = html;
+    return el;
+  };
+
+  /* ---- Islands ---- */
+  function rng(seed) { return () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646; }
+  function blob(cx, cy, rx, ry, seed, n = 9) {
+    const r = rng(seed);
+    const pts = [...Array(n)].map((_, i) => {
+      const a = (i / n) * Math.PI * 2, k = .8 + r() * .32;
+      return [cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k];
+    });
+    let d = `M${pts[0].map((v) => v.toFixed(1))}`;
+    for (let i = 0; i < n; i++) {
+      const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += ` C${c1.map((v) => v.toFixed(1))} ${c2.map((v) => v.toFixed(1))} ${p2.map((v) => v.toFixed(1))}`;
+    }
+    return d + 'Z';
+  }
+
+  // The office cloud: the same shape is the storm cloud of the opening, drawn four times larger.
+  const CLOUD = 'M-30 6 a14 14 0 0 1 8-24 a19 19 0 0 1 35-4 a13 13 0 0 1 17 16 a10 10 0 0 1-4 18 h-48 a10 10 0 0 1-8-6z';
+  const EYES = '<circle cx="-7" cy="-3" r="2.4" fill="#0f1f4a"/><circle cx="9" cy="-3" r="2.4" fill="#0f1f4a"/>';
+  const SMILE = 'M-5 4 Q2 10 9 4';
+  const ICONS = {
+    sun: `<g class="rays">${[...Array(8)].map((_, i) => `<path class="stroke" d="M0 -40 V-31" transform="rotate(${i * 45})" stroke="#ffcc1a" stroke-width="5"/>`).join('')}</g>
+      <circle r="24" fill="#ffcc1a" stroke="#0f1f4a" stroke-width="3.5"/>
+      <circle cx="-8" cy="-5" r="2.8" fill="#0f1f4a"/><circle cx="8" cy="-5" r="2.8" fill="#0f1f4a"/>
+      <path class="stroke" d="M-10 6 Q0 15 10 6"/>`,
+    cloud: `<path d="${CLOUD}" fill="#fff" stroke="#0f1f4a" stroke-width="3.5"/>${EYES}<path class="stroke" d="${SMILE}" stroke-width="2.6"/>
+      ${[-16, 0, 16].map((x, i) => `<path class="drip" style="animation-delay:${i * .5}s" d="M${x} 22 c-4-4-8 1-4 5 l4 4 4-4 c4-4 0-9-4-5z" fill="#ff5d8f" stroke="#0f1f4a" stroke-width="2"/>`).join('')}`,
+    mug: `<path d="M-22 -10 h36 v24 a12 12 0 0 1-12 12 h-12 a12 12 0 0 1-12-12z" fill="#fff" stroke="#0f1f4a" stroke-width="3.5"/>
+      <path class="stroke" d="M14 -4 h5 a8 8 0 0 1 0 16 h-5"/>
+      ${[-12, -4, 4].map((x, i) => `<path class="stroke steam" style="animation-delay:${i * .35}s" d="M${x} -16 q-4-6 0-12 q4-6 0-12" stroke-width="3"/>`).join('')}`,
+    flake: `<g class="flake">${[0, 60, 120].map((a) => `<g transform="rotate(${a})"><path class="stroke" d="M0 -24 V24 M-7 -17 L0 -10 L7 -17 M-7 17 L0 10 L7 17" stroke="#fff" stroke-width="4"/></g>`).join('')}</g>
+      <circle r="5" fill="#fff" stroke="#0f1f4a" stroke-width="2.5"/>`,
+    // Korean laughs twice: a lone 하 reads as a sigh. Its bubbles are wider and set further apart.
+    // (drawn a quarter larger than the other icons so the laugh reads on a desktop stage's map)
+    ha: '<g transform="scale(1.25)">' + TTY.t({ en: [[-18, -8, 0], [14, -18, .8], [6, 12, 1.6]], ko: [[-22, -8, 0], [19, -18, .8], [6, 12, 1.6]] }).map(([x, y, d]) =>
+      `<g class="ha" style="animation-delay:${d}s" transform="translate(${x} ${y})"><rect x="${TTY.t({ en: -15, ko: -20 })}" y="-11" width="${TTY.t({ en: 30, ko: 40 })}" height="20" rx="9" fill="#fff" stroke="#0f1f4a" stroke-width="3"/><path d="M-4 9 l-3 7 9-7z" fill="#fff" stroke="#0f1f4a" stroke-width="2.5" stroke-linejoin="round"/><text y="4" text-anchor="middle" font-family="'Barlow Condensed', 'IBM Plex Sans KR', sans-serif" font-weight="800" font-size="${TTY.t({ en: 13, ko: 14 })}" fill="#0f1f4a">${TTY.t({ en: 'ha', ko: '하하' })}</text></g>`).join('') + '</g>',
+  };
+
+  const ISLES = [
+    { key: 'home', c: [142, 128], r: [100, 74], seed: 7, fill: 'var(--home)', icon: 'sun', pct: 96, call: [142, 212],
+      en: ['Home', 'Sunny and cozy'], ko: ['우리 집', '맑고 포근함'] },
+    { key: 'office', c: [455, 116], r: [110, 72], seed: 11, fill: 'var(--office)', icon: 'cloud', pct: 71, call: [462, 198],
+      en: ['Office', 'Light drizzle of compliments'], ko: ['사무실', '칭찬 이슬비'] },
+    { key: 'park', c: [300, 272], r: [72, 54], seed: 23, fill: 'var(--park)', icon: 'ha', pct: 88, call: [300, 336],
+      en: ['Park', 'Scattered giggles'], ko: ['공원', '곳곳에 웃음 소나기'] },
+    { key: 'kitchen', c: [140, 404], r: [94, 60], seed: 31, fill: 'var(--kitchen)', icon: 'mug', pct: 100, call: [150, 472],
+      en: ['Kitchen', '100% chance of snacks'], ko: ['부엌', '간식 확률 100%'] },
+    // four chances and one temperature: the server room's badge is in degrees
+    { key: 'server', c: [466, 404], r: [94, 62], seed: 41, fill: 'var(--server)', icon: 'flake', pct: 18, badge: '18°', call: [468, 474],
+      en: ['Server room', 'Cool and stable, 18°'], ko: ['서버실', '오늘도 18도, 늘 그렇듯'] },
+  ];
+  // What the server room says once the front has been and gone.
+  const STILL = TTY.t({ en: 'Still 18°.', ko: '여전히 18도.' });
+  const SAY_MS = 2400; // how long a small map shows an island's forecast line
+
+  const waves = $('.waves');
+  for (let y = 30; y < 540; y += 46) {
+    for (let x = (y / 46) % 2 ? 10 : 40; x < 600; x += 120) waves.append(svg('path', { d: `M${x} ${y} q10 -7 20 0 t20 0` }));
+  }
+
+  const isles = $('.isles');
+  const rig = $('.rig');
+  let onTop = 1; // the z-index of the card opened last
+  const parts = ISLES.map((isle) => {
+    const d = blob(isle.c[0], isle.c[1], isle.r[0], isle.r[1], isle.seed);
+    const g = svg('g', { class: 'isle' });
+    g.append(svg('path', { class: 'shelf', d, 'stroke-width': 26, stroke: 'var(--shallow)', 'stroke-linejoin': 'round' }));
+    const land = svg('path', { class: 'land', d, fill: isle.fill });
+    g.append(land);
+    // The outer group places the icon; the inner one is free to be animated.
+    const spot = svg('g', { transform: `translate(${isle.c[0]} ${isle.c[1] - 14})` });
+    const icon = svg('g', { class: 'icon' }, ICONS[isle.icon]);
+    spot.append(icon);
+    g.append(spot);
+    isles.append(g);
+
+    const call = document.createElement('div');
+    call.className = isle.c[1] > 300 ? 'callout low' : 'callout'; // .low: the bottom row (see the CSS)
+    call.style.left = (isle.call[0] / 600 * 100) + '%';
+    call.style.top = (isle.call[1] / 540 * 100) + '%';
+    const [name, what] = isle[TTY.lang];
+    call.innerHTML = `<div class="name"></div><div class="what"></div><div class="pct"><span>${isle.badge || isle.pct}</span></div>`;
+    if (TTY.lang === 'ko') {
+      const k = document.createElement('font-kku');
+      k.setAttribute('font', 'sebul');
+      k.setAttribute('size', 'max(3.6cqw, 12px)');
+      k.textContent = name;
+      call.querySelector('.name').append(k);
+    } else {
+      call.querySelector('.name').textContent = name;
+    }
+    call.querySelector('.what').textContent = what;
+    rig.append(call);
+
+    // Tapping an island replays its weather and opens its forecast line.
+    g.setAttribute('tabindex', '0');
+    g.setAttribute('role', 'button');
+    g.setAttribute('aria-label', `${name}: ${what}${isle.badge ? '' : `, ${isle.pct}`}`);
+    g.setAttribute('aria-describedby', 'isle-hint');
+    const whatEl = call.querySelector('.what');
+    const badge = call.querySelector('.pct');
+    // Open the forecast line on small maps (ms = 0: keep it open). The card opened last goes on
+    // top, so a line that has just opened is never under a neighbour's.
+    const say = (ms) => {
+      clearTimeout(call.sayTimer);
+      call.classList.add('say');
+      call.style.zIndex = ++onTop;
+      const fold = () => { call.classList.remove('say'); call.style.zIndex = ''; };
+      if (ms && !call.kept) call.sayTimer = setTimeout(fold, ms);
+      if (!ms) call.kept = true;
+    };
+    const ping = () => {
+      // less motion: outline the island and its card for a moment instead of jumping
+      [g, call].forEach((el) => el.classList.add('ping'));
+      clearTimeout(g.ping);
+      g.ping = setTimeout(() => [g, call].forEach((el) => el.classList.remove('ping')), 1200);
+    };
+    const pop = (k, ms) => call.animate([{ transform: 'none' }, { transform: `scale(${k})`, offset: .4 }, { transform: 'none' }],
+      { duration: ms, easing: 'cubic-bezier(.2, .9, .3, 1.3)' });
+    // The icon jumps and the card pops (less motion: the outline instead).
+    const jump = () => {
+      if (TTY.reduce) { ping(); return; }
+      icon.animate([
+        { transform: 'none' },
+        { transform: 'translateY(-26px) scale(1.25) rotate(-8deg)', offset: .35 },
+        { transform: 'translateY(4px) scale(.95) rotate(4deg)', offset: .7 },
+        { transform: 'none' },
+      ], { duration: 720, easing: 'cubic-bezier(.3, .8, .3, 1)' });
+      pop(1.18, 520);
+    };
+    const replay = () => { say(SAY_MS); jump(); };
+    // The server room does not do weather. Its icon stays put; the thermostat twitches (19°, 17°)
+    // and settles back on 18°, and the forecast line says so.
+    const deadpan = () => {
+      const settle = () => { whatEl.textContent = STILL; call.classList.add('kept'); say(0); };
+      if (TTY.reduce) { ping(); settle(); return; }
+      clearTimeout(call.rolling);
+      ['19°', '17°', '18°'].forEach((v, i) => setTimeout(() => {
+        badge.firstChild.textContent = v;
+        badge.firstChild.animate([{ transform: 'translateY(-70%)', opacity: 0 }, { transform: 'none', opacity: 1 }],
+          { duration: 170, easing: 'cubic-bezier(.2, .8, .3, 1)' });
+      }, i * 230));
+      badge.animate([{ transform: 'none' }, { transform: 'scale(1.4)', offset: .15 }, { transform: 'scale(1.4)', offset: .8 }, { transform: 'none' }],
+        { duration: 760, easing: 'ease-in-out' });
+      call.rolling = setTimeout(() => { settle(); pop(1.1, 420); }, 520);
+    };
+    const act = isle.badge ? deadpan : replay;
+    g.addEventListener('click', act);
+    call.addEventListener('click', act); // the name card sits over the coast; tapping it counts too
+    g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
+    return { g, land, icon, call, act, jump, say, isle };
+  });
+
+  /* ---- Gauge ---- */
+  const arcs = $('.arcs');
+  const SEG = 10;
+  for (let i = 0; i < SEG; i++) {
+    const a0 = Math.PI * (1 - i / SEG) - .03, a1 = Math.PI * (1 - (i + 1) / SEG) + .03;
+    const p = (a, r) => [100 + Math.cos(a) * r, 100 - Math.sin(a) * r];
+    const [x0, y0] = p(a0, 88), [x1, y1] = p(a1, 88), [x2, y2] = p(a1, 66), [x3, y3] = p(a0, 66);
+    const hue = 210 - i * 17;
+    arcs.append(svg('path', { d: `M${x0} ${y0} A88 88 0 0 1 ${x1} ${y1} L${x2} ${y2} A66 66 0 0 0 ${x3} ${y3}Z`, fill: i < 9 ? `hsl(${hue} 90% ${55 + i * 2}%)` : 'rgba(255,255,255,.18)' }));
+  }
+  const needle = $('#needle');
+  const num = $('.num');
+  num.setAttribute('font-size', '34');
+  num.setAttribute('y', '76');
+  const SCORE = 87;
+  const angle = (v) => -90 + v * 1.8;
+  needle.style.transform = `rotate(${angle(SCORE)}deg)`;
+
+  /* ---- Chart ---- */
+  const HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+  const GIGGLES = [28, 34, 42, 66, 92, 58, 40, 46, 70, 96, 78, 64, 50];
+  const chart = $('.chart');
+  const bars = GIGGLES.map((v) => {
+    const b = document.createElement('b');
+    b.style.setProperty('--v', v);
+    if (v > 90) b.className = 'peak';
+    chart.append(b);
+    return b;
+  });
+  $('.hours').innerHTML = HOURS.map((h) => `<span>${h % 3 === 0 ? (TTY.lang === 'ko' ? h + '시' : h) : ''}</span>`).join('');
+
+  /* ---- The compliment front ----
+     A warm front, drawn the way weather maps draw one: a line with semicircles on the side
+     it is moving towards. Here the semicircles are hearts. It is built at x = 0 and slides east. */
+  const front = $('.front');
+  const frontLine = svg('path', { class: 'line', d: 'M34 -30 C-6 70 62 150 30 250 S-14 420 26 570' });
+  front.append(frontLine);
+  const heart = 'M0 4 C-7 -1 -6 -8 0 -4 C6 -8 7 -1 0 4Z';
+  const flen = frontLine.getTotalLength();
+  for (let at = 26; at < flen - 10; at += 44) {
+    const p = frontLine.getPointAtLength(at), q = frontLine.getPointAtLength(at + 1);
+    const deg = Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI;
+    // lobes face east (the way it moves), the tip sits on the line
+    const nx = -(q.y - p.y), ny = q.x - p.x, nl = Math.hypot(nx, ny);
+    front.append(svg('path', { class: 'pip', d: heart, transform: `translate(${p.x - nx / nl * 7} ${p.y - ny / nl * 7}) rotate(${deg}) scale(1.5)` }));
+  }
+  const tag = svg('g', { class: 'tag', transform: 'translate(58 10)' });
+  const tagText = svg('text', { x: 12, y: 21 });
+  tagText.textContent = TTY.t({ en: 'Compliment front', ko: '칭찬 전선' });
+  tag.append(svg('rect', { x: 0, y: 0, width: 10, height: 30, rx: 8 }), tagText);
+  front.append(tag);
+  const FRONT_FROM = -70, FRONT_TO = 640, FRONT_AT = 3300, FRONT_MS = 10200;
+
+  /* ---- Ticker ---- */
+  // Alerts in the broadcaster's own grammar (advisory, watch, warning; in effect, expected to lift).
+  // The second one depends on what day it is for the viewer. Monday's is read on Monday mornings
+  // (the home page leads with this page then), so it is still in effect and lifts later.
+  const TODAY = TTY.t({
+    en: [
+      'Sunday Scaries Watch from 8 pm',
+      'Monday Blues Advisory in effect. Expected to lift by 3 pm.',
+      'Tuesday: no advisories. Suspiciously calm.',
+      'Hump-day relief spreading after lunch',
+      'Weekend front approaching. Arrives Friday, 6 pm.',
+      'Friday Joy Warning in effect from 6 pm',
+      'Sleep-in Warning until 11 am',
+    ],
+    ko: [
+      '일요일 밤 8시부터 월요병 예비특보',
+      '월요병주의보 발효 중 · 오후 3시 해제 예정',
+      '화요일은 특보 없음 · 조용해서 더 수상함',
+      '수요일 점심 이후 “반 왔다” 안도감 확산',
+      '주말 전선 접근 중 · 금요일 저녁 6시 도착 예정',
+      '금요일 오후 6시부터 기쁨경보 발효',
+      '토요일 오전 11시까지 늦잠경보',
+    ],
+  })[new Date().getDay()];
+  // The third is the afternoon dip in the chart (3 pm, 40); the fourth is up while the front
+  // crosses the server room.
+  const NEWS = TTY.t({
+    en: [
+      'Compliment Advisory in effect until 6 pm. Blushing possible.',
+      TODAY,
+      'Dense Meeting Advisory, 2 to 4 pm. Visibility near zero.',
+      'Server room: 18°. Tomorrow: 18°. The day after: 18°.',
+      'Scattered good news overnight. Leave the umbrella at home.',
+    ],
+    ko: [
+      '칭찬주의보 발효 중 · 오후 6시까지 얼굴 붉어짐에 유의하세요',
+      TODAY,
+      '오후 2~4시 회의 안개 · 한 치 앞도 안 보이겠습니다',
+      '서버실 18도 · 내일도 18도 · 모레도 18도',
+      '밤사이 곳곳에 좋은 소식 · 우산은 두고 나오세요',
+    ],
+  });
+  const sunGlyph = '<svg viewBox="-30 -30 60 60" aria-hidden="true"><circle r="13" fill="#0f1f4a"/>' +
+    [...Array(8)].map((_, i) => `<path d="M0 -26 V-19" transform="rotate(${i * 45})" stroke="#0f1f4a" stroke-width="5" stroke-linecap="round"/>`).join('') + '</svg>';
+  const track = $('.track');
+  const counter = $('.ticker .count');
+  track.innerHTML = NEWS.map((t) => `<span class="item">${sunGlyph}<span>${t}</span></span>`).join('');
+  const items = [...track.children];
+  let current = -1;
+  function flip() {
+    if (current >= 0) { items[current].classList.remove('on'); items[current].classList.add('off'); }
+    current = (current + 1) % items.length;
+    const next = items[current];
+    next.classList.remove('off');
+    // Start below, then slide up into place.
+    next.style.transition = 'none';
+    next.style.translate = '0 100%';
+    void next.offsetWidth;
+    next.style.transition = '';
+    next.style.translate = '';
+    next.classList.add('on');
+    counter.textContent = `${current + 1}/${items.length}`;
+  }
+  // A new alert every 2.7 s, except that the server room's (4/5) stays up until the front has
+  // crossed the server room: on at 8.1 s, off at 11.8 s. All five still show within 15 s.
+  const FLIPS = [2700, 5400, 8100, 11800];
+  const flipAt = (n) => (n < FLIPS.length ? FLIPS[n] : FLIPS[FLIPS.length - 1] + (n - FLIPS.length + 1) * 2700);
+  let ticking = false;
+  function startTicker() {
+    if (ticking) return;
+    ticking = true;
+    flip();
+    const t0 = performance.now();
+    let n = 0;
+    const next = () => setTimeout(() => { flip(); n++; next(); }, flipAt(n) - (performance.now() - t0));
+    next();
+  }
+
+  /* ---- The broadcast ---- */
+  const screen = $('.screen');
+  const hideAll = () => {
+    parts.forEach(({ g, icon, call }) => { g.style.opacity = 0; icon.style.opacity = 0; call.style.opacity = 0; });
+    $('.card').style.opacity = 0;
+    bars.forEach((b) => { b.style.transform = 'scaleY(0)'; });
+    needle.style.transform = `rotate(${angle(0)}deg)`;
+    num.textContent = '0';
+  };
+  if (!TTY.reduce) hideAll();
+
+  // The label is sized to its text, and scaled up where the map is drawn small (phones).
+  let tagW = 0; // its width in map units
+  const sizeTag = () => {
+    tag.firstChild.setAttribute('width', tagText.getComputedTextLength() + 24);
+    const k = Math.max(1, 12 / (17 * rig.clientWidth / 600));
+    tag.setAttribute('transform', `translate(58 10) scale(${k.toFixed(2)})`);
+    tagW = (tagText.getComputedTextLength() + 24) * k;
+  };
+  // The label rides along with the front, but its right end never passes x = TAG_EDGE: the sea
+  // is clipped at 620, and a label cut in half mid-word reads as a glitch. Where it would pass,
+  // it stops at the edge and the line runs on under it.
+  const TAG_EDGE = 606;
+  const tagStop = () => TAG_EDGE - 58 - tagW; // the front's x when the label reaches the edge
+  document.fonts.ready.then(sizeTag);
+
+  /* ---- The opening storm ----
+     A scowling black cloud rolls in over the map and the screen darkens. It rumbles, there is a
+     flash, and what pours out is hearts. The cloud is startled (brows up, eyes wide, mouth an
+     'o'), then whitens, smiles, shrinks and settles over the office, where it becomes the
+     office's own cloud (its icon is shown only when it lands). */
+  const STORM = { in: 100, rumble: 650, flash: 720, pour: 950, cheer: 1250, settle: 1500, landed: 1950, gone: 2500 };
+  function storm(officeIcon) {
+    const r = rig.getBoundingClientRect();
+    const u = r.width / 600; // one map unit, in px
+    const big = r.width * .5 / 66; // the cloud is half the map wide
+    const at = [r.left + 300 * u, r.top + 128 * u];
+    const home = [r.left + 455 * u, r.top + 102 * u]; // the office icon's spot
+    const layer = document.createElement('div');
+    layer.className = 'storm';
+    layer.setAttribute('aria-hidden', 'true');
+    layer.innerHTML = `<svg><rect class="flash" width="100%" height="100%" fill="#fff" opacity="0"/><g class="hearts"></g>
+      <g class="cloud"><g class="shake">
+        <path class="bolt" d="M-3 15 L8 15 L2 27 L11 27 L-7 49 L-1 32 L-10 32Z" fill="#ffcc1a" stroke="#0f1f4a" stroke-width="2" stroke-linejoin="round" opacity="0"/>
+        <path class="body" d="${CLOUD}" fill="#4d5a7c" stroke="#0f1f4a" stroke-width="3.5"/>
+        ${EYES.replaceAll('<circle', '<circle class="eye"')}
+        <path class="brows stroke" d="M-13 -11 L-4 -7 M15 -11 L6 -7"/>
+        <path class="brows-up stroke" d="M-13 -12 Q-8.5 -16 -4 -12.5 M15 -12 Q10.5 -16 6 -12.5" opacity="0"/>
+        <path class="frown stroke" d="M-5 8 Q2 3 9 8"/>
+        <circle class="oh" cx="2" cy="7" r="3" fill="#0f1f4a" opacity="0"/>
+        <path class="smile stroke" d="${SMILE}" opacity="0"/>
+      </g></g></svg>`;
+    document.body.append(layer);
+    const $$ = (sel) => layer.querySelector(sel);
+    const cloud = $$('.cloud');
+    const T = STORM;
+    layer.animate([
+      { backgroundColor: 'rgba(8, 10, 24, 0)' },
+      { backgroundColor: 'rgba(8, 10, 24, .5)', offset: (T.rumble - T.in) / (T.settle - T.in) },
+      { backgroundColor: 'rgba(8, 10, 24, .5)', offset: (T.pour - T.in) / (T.settle - T.in) },
+      { backgroundColor: 'rgba(8, 10, 24, 0)' },
+    ], { duration: T.settle - T.in, delay: T.in, fill: 'both' });
+    cloud.animate([
+      { transform: `translate(${r.left - 40 * big}px, ${at[1] - 10 * big}px) scale(${big})`, easing: 'cubic-bezier(.2, .8, .3, 1)' },
+      { transform: `translate(${at[0]}px, ${at[1]}px) scale(${big})`, offset: (T.rumble - T.in) / (T.landed - T.in) },
+      { transform: `translate(${at[0]}px, ${at[1]}px) scale(${big})`, offset: (T.settle - T.in) / (T.landed - T.in), easing: 'cubic-bezier(.5, 0, .3, 1)' },
+      { transform: `translate(${home[0]}px, ${home[1]}px) scale(${u})` },
+    ], { duration: T.landed - T.in, delay: T.in, fill: 'both' });
+    $$('.shake').animate([
+      { transform: 'translate(0, 0)' }, { transform: 'translate(-2px, 1px)' }, { transform: 'translate(2px, -1px)' },
+      { transform: 'translate(-1.5px, 0)' }, { transform: 'translate(1.5px, 1px)' }, { transform: 'translate(0, 0)' },
+    ], { duration: T.pour - T.rumble, delay: T.rumble });
+    $$('.bolt').animate([{ opacity: 1 }, { opacity: 1, offset: .6 }, { opacity: 0 }], { duration: 160, delay: T.flash });
+    $$('.flash').animate([{ opacity: 0 }, { opacity: .5, offset: .15 }, { opacity: 0 }], { duration: 260, delay: T.flash });
+    // It pours, and it is hearts. The cloud is startled for a beat, then cheers up.
+    const swap = (sel, from, to, at, ms = 90) => $$(sel).animate([{ opacity: from }, { opacity: to }], { duration: ms, delay: at, fill: 'forwards' });
+    swap('.brows', 1, 0, T.pour);
+    swap('.frown', 1, 0, T.pour);
+    swap('.brows-up', 0, 1, T.pour);
+    swap('.oh', 0, 1, T.pour);
+    layer.querySelectorAll('.eye').forEach((eye) => eye.animate(
+      [{ scale: '1' }, { scale: '1.5', offset: .25 }, { scale: '1.5', offset: .85 }, { scale: '1' }],
+      { duration: T.cheer - T.pour + 80, delay: T.pour, easing: 'ease-out' }));
+    $$('.body').animate([{ fill: '#4d5a7c' }, { fill: '#fff' }], { duration: 260, delay: T.cheer, fill: 'forwards' });
+    swap('.brows-up', 1, 0, T.cheer, 120);
+    swap('.oh', 1, 0, T.cheer, 120);
+    swap('.smile', 0, 1, T.cheer + 40, 120);
+    const hearts = $$('.hearts');
+    const hs = Math.max(1.1, u * 2.2);
+    const N = 36;
+    for (let i = 0; i < N; i++) {
+      const x = at[0] + ((i * 23) % N / (N - 1) - .5) * 64 * big + (Math.random() - .5) * 5 * big;
+      const y = at[1] + 12 * big;
+      const fall = r.height * (.34 + ((i * 11) % 9) / 9 * .34);
+      const h = svg('path', { class: 'pip', d: 'M0 4 C-7 -1 -6 -8 0 -4 C6 -8 7 -1 0 4Z', fill: 'var(--heart)', stroke: 'var(--ink)', 'stroke-width': 1.4 });
+      hearts.append(h);
+      const sway = (i % 2 ? 1 : -1) * (6 + (i % 5) * 3) * u;
+      h.animate([
+        { transform: `translate(${x}px, ${y}px) scale(${hs}) rotate(0deg)`, opacity: 0 },
+        { opacity: 1, offset: .12 },
+        { transform: `translate(${x + sway}px, ${y + fall * .55}px) scale(${hs}) rotate(${sway > 0 ? 14 : -14}deg)`, opacity: 1, offset: .55 },
+        { transform: `translate(${x - sway * .4}px, ${y + fall}px) scale(${hs}) rotate(0deg)`, opacity: 0 },
+      ], { duration: 900 + (i % 4) * 100, delay: T.pour + ((i * 7) % 13) * 42, easing: 'cubic-bezier(.4, 0, .8, .6)', fill: 'both' });
+    }
+    setTimeout(() => {
+      cloud.style.visibility = 'hidden';
+      officeIcon.style.opacity = 1;
+      officeIcon.animate([{ transform: 'scale(1.12, .9)' }, { transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.2, .9, .3, 1.3)' });
+    }, T.landed);
+    setTimeout(() => layer.remove(), T.gone);
+  }
+
+  // The presenter signs off: the byline under the title gives way to the closing line.
+  const SIGN_OFF = 12500; // 2.5 s before the page goes: the line is seven words long
+  function signOff() {
+    const who = $('.card .who'), bye = $('.card .bye');
+    who.setAttribute('aria-hidden', 'true');
+    bye.removeAttribute('aria-hidden');
+    if (!TTY.reduce) {
+      // the yellow tab sweeps out and back, the way a lower third changes its line
+      $('.card .tab').animate([{ transform: 'none' }, { transform: 'scaleX(3.2)', offset: .45 }, { transform: 'none' }], { duration: 520, easing: 'cubic-bezier(.5, 0, .3, 1)' });
+      who.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-45%)' }], { duration: 260, easing: 'ease-in' });
+      bye.animate([{ opacity: 0, transform: 'translateY(45%)' }, { opacity: 1, transform: 'none' }], { duration: 300, delay: 100, easing: 'ease-out', fill: 'backwards' });
+    }
+    who.style.opacity = 0;
+    bye.style.opacity = 1;
+  }
+
+  // When the front's hearts reach the middle of an island. The line bows (west in the south), so
+  // its x is taken at the island's own height: the server room is crossed a little after the office.
+  const lineX = (y) => {
+    let best = frontLine.getPointAtLength(0);
+    for (let s = 0; s <= flen; s += 3) {
+      const p = frontLine.getPointAtLength(s);
+      if (Math.abs(p.y - y) < Math.abs(best.y - y)) best = p;
+    }
+    return best.x;
+  };
+  // (x: the point on the island's row to reach; its middle unless asked for another)
+  const crossAt = (isle, x = isle.c[0]) => FRONT_AT + (x - lineX(isle.c[1]) - 10 - FRONT_FROM) / (FRONT_TO - FRONT_FROM) * FRONT_MS;
+  // Where the still map (less motion) parks the front: between the islands, then east of the
+  // server room once it has been past it.
+  const parkFront = (x) => {
+    front.setAttribute('transform', `translate(${x} 0)`);
+    tag.style.translate = `${Math.min(0, tagStop() - x)}px 0px`;
+  };
+
+  const hint = $('.hint');
+  function play() {
+    screen.classList.add('live');
+    startTicker();
+    sizeTag();
+    setTimeout(signOff, SIGN_OFF);
+    const server = parts.find((p) => p.isle.badge);
+    const punchAt = crossAt(server.isle);
+    if (TTY.reduce) {
+      // A still weather map: the front parked between the islands. When the moving map's front
+      // would reach the server room, it is east of it and the server room says it is still 18°
+      // (the badge does not roll: deadpan() only outlines it here).
+      parkFront(214);
+      front.style.opacity = 1;
+      hint.classList.add('on');
+      setTimeout(() => { parkFront(560); server.act(); }, punchAt);
+      return;
+    }
+    const office = parts.find((p) => p.isle.key === 'office');
+    storm(office.icon);
+    // once every island is up
+    setTimeout(() => hint.classList.add('on'), 2900);
+    const ease = 'cubic-bezier(.2, .9, .3, 1.2)';
+
+    const card = $('.card');
+    card.style.opacity = 1;
+    card.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 650, delay: 150, easing: 'cubic-bezier(.7, 0, .2, 1)', fill: 'backwards' });
+
+    parts.forEach(({ g, land, icon, call }, i) => {
+      const at = 350 + i * 330;
+      setTimeout(() => {
+        g.style.opacity = 1;
+        const len = land.getTotalLength();
+        land.animate([{ strokeDasharray: `${len}`, strokeDashoffset: len, fillOpacity: 0 }, { strokeDasharray: `${len}`, strokeDashoffset: 0, fillOpacity: 0, offset: .7 }, { strokeDasharray: `${len}`, strokeDashoffset: 0, fillOpacity: 1 }],
+          { duration: 700, easing: 'ease-out' });
+      }, at);
+      setTimeout(() => {
+        // the office's cloud is the storm cloud of the opening; it shows itself when it lands
+        if (ISLES[i].key !== 'office') {
+          icon.style.opacity = 1;
+          icon.animate([{ transform: 'translateY(-60px) scale(.4)', opacity: 0 }, { transform: 'translateY(4px) scale(1.08)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }],
+            { duration: 560, easing: ease });
+        }
+        call.style.opacity = 1;
+        call.animate([{ transform: 'scale(.3)', opacity: 0 }, { transform: 'scale(1.06)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }],
+          { duration: 480, delay: 120, easing: ease, fill: 'backwards' });
+      }, at + 520);
+    });
+
+    const chartAt = 1500;
+    bars.forEach((b, i) => {
+      b.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1.06)', offset: .75 }, { transform: 'scaleY(1)' }],
+        { duration: 620, delay: chartAt + i * 70, easing: 'cubic-bezier(.3, .8, .3, 1)', fill: 'forwards' });
+    });
+
+    const gaugeAt = 1700;
+    needle.animate([
+      { transform: `rotate(${angle(0)}deg)` },
+      { transform: `rotate(${angle(SCORE + 9)}deg)`, offset: .6 },
+      { transform: `rotate(${angle(SCORE - 4)}deg)`, offset: .8 },
+      { transform: `rotate(${angle(SCORE)}deg)` },
+    ], { duration: 1400, delay: gaugeAt, easing: 'cubic-bezier(.3, .7, .3, 1)', fill: 'forwards' });
+    const t0 = performance.now() + gaugeAt;
+    const count = (now) => {
+      const k = Math.min(1, Math.max(0, (now - t0) / 1100));
+      num.textContent = Math.round(SCORE * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(count);
+    };
+    requestAnimationFrame(count);
+
+    // The front sweeps east. Where it crosses an island the weather there goes off again;
+    // the server room's thermostat twitches and holds at 18 degrees.
+    front.animate([
+      { transform: `translate(${FRONT_FROM}px, 0)`, opacity: 0 },
+      { opacity: 1, offset: .08 },
+      { opacity: 1, offset: .9 },
+      { transform: `translate(${FRONT_TO}px, 0)`, opacity: 0 },
+    ], { duration: FRONT_MS, delay: FRONT_AT, fill: 'both' });
+    // (the front moves at a steady pace, so holding the label still is a steady pull back)
+    const stop = tagStop();
+    if (stop < FRONT_TO) {
+      const at = (stop - FRONT_FROM) / (FRONT_TO - FRONT_FROM);
+      tag.animate(at > 0
+        ? [{ translate: '0px 0px' }, { translate: '0px 0px', offset: at }, { translate: `${stop - FRONT_TO}px 0px` }]
+        : [{ translate: `${stop - FRONT_FROM}px 0px` }, { translate: `${stop - FRONT_TO}px 0px` }],
+      { duration: FRONT_MS, delay: FRONT_AT, fill: 'both' });
+    }
+    // The office is crossed just before the server room. Its line (open on small maps) opens as
+    // the front reaches its west coast and folds when the front reaches the server room, so the
+    // punch has the map to itself; its icon still jumps when the hearts reach it.
+    parts.forEach(({ act, jump, say, isle }) => {
+      if (isle.key !== 'office') { setTimeout(act, crossAt(isle)); return; }
+      const open = crossAt(isle, isle.c[0] - isle.r[0]);
+      setTimeout(() => say(punchAt - open), open);
+      setTimeout(jump, crossAt(isle));
+    });
+  }
+
+  const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
+  const drawn = Promise.all([loaded, document.fonts.ready]);
+  drawn.then(TTY.ready);
+  // Opened on its own the page is shown at once; the broadcast waits until it is drawn.
+  TTY.onShow(() => drawn.then(play));
+})();
+</script>
+</body>
+</html>

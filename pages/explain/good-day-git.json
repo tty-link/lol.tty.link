@@ -1,0 +1,136 @@
+{
+  "id": "good-day-git",
+  "title": {
+    "en": "Today, Merged",
+    "ko": "오늘, 머지 완료"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "좋은 하루를 개발자가 코드 변경을 기록하는 방식(git 커밋 그래프)으로 적고, 그 그래프를 지하철 노선도처럼 그렸다.",
+    "points": [
+      "13:10 점심 머지역에서 부딪히는 두 열차 → 부제 \"충돌 하나 없던 하루. 음, 거의요.\"의 '거의'가 여기다. 본선은 11:00에 \"점심 전에 쿠키 하나\"를 먹었고, 지선은 점심과 케이크를 먹었다. 둘 다 같은 '배'를 고쳤으니 git 충돌 경고 \"CONFLICT (content): 배\"가 뜬다. 그러다 VS Code의 충돌 해결 버튼 \"두 변경 사항 모두 수락\"(Accept Both Changes)으로 풀린다. 쿠키도 점심도 케이크도 다 먹겠다는 뜻이다. 버리는 쪽이 없으니 두 열차가 이어 붙어 함께 가고, 충돌 줄은 줄이 그어진 채 노선도에 남는다.",
+      "\"fix: 커피 온도 회귀 버그\", \"revert: “저녁은 다음 스프린트에”\" → 하루의 일을 개발자 커밋 메시지 말투로 쓴다. 식어 버린 커피는 전에는 잘 되던 게 다시 망가진 회귀 버그다. 저녁은 일감처럼 다음 스프린트로 미뤘다가, 그 커밋을 되돌려서(revert) 제대로 먹었다.",
+      "메시지 아래 작은 줄 \"+케이크 1, 테스트 0\"과 (가로로 넓은 화면에서) \"−피드 47분, +6,214걸음\" → 코드가 몇 줄 늘고 줄었는지 적는 자리에 하루가 무엇이 늘고 줄었는지 적었다. 기획에 없던 디저트에 테스트가 하나도 없는 것까지 개발 현장 그대로다.",
+      "종점 \"v1.0 좋은 하루 · 배포 완료\" → 하루를 정식 버전으로 출시했다."
+    ],
+    "terms": [
+      {
+        "term": "커밋·브랜치·머지",
+        "plain": "git에서 변경 하나를 기록한 것이 커밋, 본선에서 갈라져 따로 작업하는 길이 브랜치, 그 길을 다시 본선에 합치는 것이 머지다. 노선도의 지선과 환승역이 바로 이것이다."
+      },
+      {
+        "term": "충돌(conflict)",
+        "plain": "같은 곳을 양쪽에서 다르게 고쳐서 git이 혼자 합치지 못하는 상황. 사람이 한쪽이나 양쪽을 골라 줘야 한다. 실제 git은 \"CONFLICT (content): Merge conflict in 파일이름\"이라고 알리는데, 여기서는 파일 자리에 '배'가 들어갔다. 본선의 쿠키와 지선의 점심·케이크가 모두 같은 '배'를 고쳤다."
+      },
+      {
+        "term": "feat·fix·revert",
+        "plain": "커밋 메시지 앞에 붙이는 종류 표시. Conventional Commits 규칙이 정한 것은 feat(새 기능)와 fix(버그 수정)이고, revert(되돌리기)·docs(문서)·chore(잡일)·refactor(정리) 같은 것도 흔히 함께 쓴다."
+      },
+      {
+        "term": "스프린트",
+        "plain": "개발 팀이 일을 1~2주 단위로 끊어서 하는 묶음. 회의에서 '다음 스프린트에'라고 하면 대개 지금은 안 한다는 뜻이다."
+      },
+      {
+        "term": "둠스크롤링",
+        "plain": "나쁜 소식이나 끝없는 피드를 하염없이 내려 보는 것."
+      }
+    ],
+    "links": [
+      {
+        "title": "Git - 브랜치와 Merge 의 기초",
+        "url": "https://git-scm.com/book/ko/v2/Git-브랜치-브랜치와-Merge-의-기초",
+        "note": "브랜치를 합치다 \"CONFLICT (content)\" 충돌이 나는 실제 예와 푸는 법."
+      },
+      {
+        "title": "Resolve merge conflicts in VS Code",
+        "url": "https://code.visualstudio.com/docs/sourcecontrol/merge-conflicts",
+        "note": "Accept Current·Accept Incoming·Accept Both Changes 버튼이 각각 무엇을 남기는지.",
+        "lang": "en"
+      },
+      {
+        "title": "Conventional Commits 1.0.0",
+        "url": "https://www.conventionalcommits.org/ko/v1.0.0/",
+        "note": "feat·fix 같은 커밋 접두사 규칙."
+      },
+      {
+        "title": "둠스크롤링 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/둠스크롤링",
+        "note": "산책으로 교체된 그것.",
+        "lang": "ko"
+      }
+    ],
+    "deep": [
+      "충돌 난 파일이 '배'인데 \"두 변경 사항 모두 수락\"으로 풀었다 → 쿠키도 점심도 케이크도 다 들어갔다. \"디저트 배는 따로\"를 git이 처리해 준 셈이다.",
+      "\"두 변경 사항 모두 수락\" → VS Code 한국어 화면에서 충돌 구역 위에 실제로 뜨는 버튼 이름 그대로다(영어 \"Accept Both Changes\").",
+      "11:00 쿠키 → 지선이 나가 있는 동안 본선에도 같은 파일을 고친 커밋이 있어야 git에서 진짜 충돌이 난다. 그래서 점심 전에 쿠키를 먹었다. 밥 먹기 전에 과자 먹지 말라는 말이 맞았다.",
+      "산책 지선의 보라 열차는 서지 않고, 15:40에는 빨간 느낌표 없이 초록 체크만 뜬다 → 산책하는 동안 본선에서는 아무것도 고치지 않아서 충돌 없이 합쳐진다. 부딪히는 건 점심 하나뿐이라 부제가 \"거의요\"다.",
+      "17:20의 docs: → 문서 커밋은 다들 미루다 끝내 안 쓰는 커밋이다. 칭찬도 그렇다.",
+      "\"Merge branch 'go-outside'\" → main 브랜치에 머지할 때 git이 머지 커밋에 저절로 쓰는 메시지 그대로다. 그래서 한국어판에서도 영어로 둔다.",
+      "(가로로 넓은 화면에서) \"화분 3개 변경\" → git이 변경 요약 맨 끝에 쓰는 `3 files changed`의 모양을 빌렸다.",
+      "노선 색 → 서울 지하철 2호선 초록(#00A84D), 3호선 주황(#EF7C1C), 5호선 보라(#996CAC)의 색값 그대로다."
+    ]
+  },
+  "en": {
+    "line": "A good day is written up as a git commit history, and that history is drawn as a subway map.",
+    "points": [
+      "The two trains bumping at the 13:10 lunch merge → the subtitle promises zero conflicts, \"Well, almost.\" This is the almost. At 11:00 the main line had \"one cookie before lunch\"; the branch had lunch and cake. Both changed the same stomach, so git warns \"CONFLICT (content): stomach\", and it's resolved with VS Code's \"Accept Both Changes\": cookie, lunch and cake, all of it. Nothing gets thrown away, so the two trains couple up and carry on together, and the conflict stays on the map, struck out.",
+      "\"fix: coffee temperature regression\", \"revert: “push dinner to next sprint”\" → everyday life in commit-message style. Coffee going lukewarm is a regression (something that used to work broke again). Dinner got pushed to next sprint like a ticket, and then that commit was reverted: dinner happened.",
+      "The small lines under the messages, \"+1 cake, 0 tests\" and (on landscape screens) \"−47 min feed, +6,214 steps\" → where git counts lines added and removed, the day counts what it gained and lost. The unplanned dessert ships with no tests, as unplanned features do.",
+      "The terminus \"v1.0 a good day · shipped\" → the day is released as version 1.0."
+    ],
+    "terms": [
+      {
+        "term": "Commit, branch, merge",
+        "plain": "a commit records one change; a branch splits off the main line to work on something separately; a merge joins it back. They are the branch lines and interchanges on this map."
+      },
+      {
+        "term": "Merge conflict",
+        "plain": "both sides changed the same spot, so git can’t combine them on its own and a person has to keep one side or both. Real git says \"CONFLICT (content): Merge conflict in\" followed by a file name; here the file is your stomach. The main line's cookie and the branch's lunch and cake all changed the same stomach."
+      },
+      {
+        "term": "feat, fix, revert",
+        "plain": "type prefixes for commit messages. The Conventional Commits rules define feat (a new feature) and fix (a bug fix); revert (an undo), docs, chore and refactor are common extras."
+      },
+      {
+        "term": "Sprint",
+        "plain": "the one- or two-week block a software team plans its work in. \"Next sprint\" is where things go when nobody is doing them now."
+      },
+      {
+        "term": "Doomscrolling",
+        "plain": "scrolling endlessly through bad news or a feed."
+      }
+    ],
+    "links": [
+      {
+        "title": "Git - Basic Branching and Merging",
+        "url": "https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging",
+        "note": "a real \"CONFLICT (content)\" while merging branches, and how to resolve it."
+      },
+      {
+        "title": "Resolve merge conflicts in VS Code",
+        "url": "https://code.visualstudio.com/docs/sourcecontrol/merge-conflicts",
+        "note": "what Accept Current, Accept Incoming and Accept Both Changes keep."
+      },
+      {
+        "title": "Conventional Commits 1.0.0",
+        "url": "https://www.conventionalcommits.org/en/v1.0.0/",
+        "note": "the rules behind prefixes like feat and fix."
+      },
+      {
+        "title": "Doomscrolling - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Doomscrolling",
+        "note": "the thing the walk replaced.",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "\"Accept Both Changes\" → the exact name of the button VS Code shows above a merge conflict, and the button you press when you can't choose. The cookie, or lunch and cake? All three. The Korean page uses the Korean VS Code label, \"두 변경 사항 모두 수락\".",
+      "The 11:00 cookie → for git to really conflict, the main line has to change the same file while the branch is out. So: a cookie before lunch. Everyone who was told not to snack before a meal was right.",
+      "The purple walk train never stops, and the 15:40 merge gets a green tick with no red exclamation mark → nothing on the main line changed during the walk, so it merges cleanly. Lunch is the only bump of the day, hence \"Well, almost.\"",
+      "The docs: prefix at 17:20 → docs commits are the ones everyone means to write and never does. Compliments too.",
+      "\"Merge branch 'go-outside'\" → exactly the message git writes by itself when you merge a branch into main, which is why it stays in English on the Korean page too.",
+      "(On landscape screens) \"3 pots changed\" → borrowed from the last line of git’s change summary, `3 files changed`.",
+      "The line colours → the exact colours of Seoul’s subway Line 2 (green #00A84D), Line 3 (orange #EF7C1C) and Line 5 (purple #996CAC)."
+    ]
+  }
+}

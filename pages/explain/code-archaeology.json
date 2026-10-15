@@ -1,0 +1,160 @@
+{
+  "id": "code-archaeology",
+  "title": {
+    "en": "Code Archaeology",
+    "ko": "코드 발굴 현장"
+  },
+  "updated": "2026-10-15",
+  "ko": {
+    "line": "오래된 코드베이스를 땅속 지층처럼 그려 놓고, 시대마다 남은 이상한 코드를 화석처럼 붓으로 털어 박물관 라벨을 붙인다.",
+    "points": [
+      "연도가 붙은 지층마다 진짜 옛 코드 화석 → 코드는 오래 쓸수록 시대마다 유행과 땜질이 겹겹이 쌓인다는 개발자들의 공감대를 지질학으로 옮겼다. 화석은 \"// TODO: fix later\"(나중에 고침. 그 나중은 오지 않았다), 닫는 괄호만 남은 \"}); }); }); });\", 한국 웹을 기억하는 사람이면 웃을 액티브X 설치 유도 코드까지 모두 진짜 코드 모양이고, 점잖은 학술 라벨 말투가 더 웃기게 만든다. 화석은 올 때마다 바뀌어서, 여기 든 예가 이번 화면에는 없을 수도 있다.",
+      "첫 화석이 다리를 내밀고 버둥대다 죽은 척함 → 화석인 줄 알았던 옛 코드가 아직 살아 있는 벌레, 곧 버그다. 오래된 코드는 죽은 게 아니라 아직 운영 중이라는 개발자들의 공포를 한 장면에 담았다. 박물관 라벨은 벌레가 굳은 뒤에야 아무 일 없었다는 듯 뜬다.",
+      "라벨 끝줄 \"git blame: …\" → 박물관 라벨의 기증자 자리에 그 코드를 쓴 사람이 나온다. 대부분 퇴사했고, \"// do not touch\"를 쓴 사람은 지금 CTO이고, 가끔은 굵은 글씨로 '나'다.",
+      "마지막 도장 \"발굴 완료\"와 메모 \"결정: 전부 보존. 리팩터링은 다음 분기에.\" → 이렇게 다 파내 놓고도 아무것도 안 고친다. 박물관에서 보존은 유물을 지킨다는 뜻이지만, 코드에서는 아무도 손대지 않는다는 뜻이다. 도장이 찍히고 1초 뒤 1번 삼엽충이 또 버둥대니, 보존된 것에는 살아 있는 버그도 들어 있다."
+    ],
+    "terms": [
+      {
+        "term": "레거시 코드",
+        "plain": "오래전에 짜여 아무도 자신 있게 고치지 못하지만 여전히 돌아가는 코드."
+      },
+      {
+        "term": "git blame",
+        "plain": "파일의 각 줄을 마지막으로 누가 언제 고쳤는지 보여 주는 명령어. 이 페이지에서는 탄소 연대 측정 역할이다."
+      },
+      {
+        "term": "리팩터링",
+        "plain": "하는 일은 그대로 두고 코드 구조만 깔끔하게 고치는 일. 흔히 '다음 분기'로 미뤄진다."
+      },
+      {
+        "term": "SQL 인젝션",
+        "plain": "사용자가 입력한 글을 데이터베이스 명령에 그대로 이어 붙였을 때, 누군가 따옴표 하나로 자기 명령을 끼워 넣을 수 있는 보안 구멍."
+      },
+      {
+        "term": "콜백 피라미드",
+        "plain": "함수 안에 함수를 겹겹이 넣다 보니 끝이 \"}); }); });\"로 끝나는 코드 모양. '콜백 지옥'이라고도 한다."
+      },
+      {
+        "term": "버그",
+        "plain": "프로그램의 오류. 영어로 '벌레'라는 뜻이라 이 페이지에서는 진짜 벌레처럼 다리가 달려 있다."
+      }
+    ],
+    "links": [
+      {
+        "title": "기술 부채 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/기술_부채",
+        "note": "쉬운 길을 택한 대가로 나중에 치르는 재작업 비용",
+        "lang": "ko"
+      },
+      {
+        "title": "SQL 삽입 - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/SQL_삽입",
+        "note": "문자열로 이어 붙인 SQL이 왜 위험한지",
+        "lang": "ko"
+      },
+      {
+        "title": "액티브X - 위키백과",
+        "url": "https://ko.wikipedia.org/wiki/액티브X",
+        "note": "한때 한국의 인터넷 뱅킹과 공공 사이트가 설치를 요구하던 기술과 그 퇴출 과정",
+        "lang": "ko"
+      },
+      {
+        "title": "git-blame Documentation",
+        "url": "https://git-scm.com/docs/git-blame",
+        "note": "git blame 공식 설명",
+        "lang": "en"
+      },
+      {
+        "title": "xkcd 327: Exploits of a Mom",
+        "url": "https://xkcd.com/327/",
+        "note": "SQL 인젝션 하면 누구나 떠올리는 '꼬마 바비 테이블' 만화",
+        "lang": "en"
+      }
+    ],
+    "deep": [
+      "깨어난 1번 화석의 모양 → 몸 양옆으로 줄지어 난 다리와 앞쪽(왼쪽 끝)의 더듬이 한 쌍. 실제 삼엽충도 더듬이는 한 쌍뿐이고, 그 뒤로 머리 밑에 몇 쌍, 몸마디마다 한 쌍씩 다리가 줄지어 있었다.",
+      "1번 자리에 `var self = this;`가 묻힌 날(올 때마다 바뀐다) → 라벨이 \"2015년 화살표 함수가 나오면서 멸종 판정을 받음.\"이라고 적는다. 2015년 자바스크립트에 들어온 화살표 함수는 바깥의 this를 그대로 쓰기 때문에 this를 self에 옮겨 담을 일이 없어졌다. 그 멸종했다는 화석이 방금 버둥댔다.",
+      "1번 자리에 묻힐 수 있는 화석 중 하나가 `$('.btn').live('click', save);` → jQuery 1.9에서 없어진 '멸종한 메서드'의 이름이 하필 `.live()`(살아 있는)이고, 그게 살아 있는 벌레 자리에서 나온다.",
+      "'발굴 완료' 도장이 찍히고 1초쯤 뒤 → 1번 삼엽충이 한 번 더 버둥댄다. 그 뒤로도 가끔 다리를 움찔한다. '전부 보존'에는 살아 있는 버그도 들어간다.",
+      "척추 자리의 `catch (e) { log(\"should never happen\"); }`(올 때마다 바뀐다) → 일어날 리 없다고 적어 둔 예외가 로그에는 2012년에만 41,000번 찍혔다. 작성자 yhshin도 그해 퇴사했다.",
+      "2017 돌 자리의 \"0밀리초 기다려서 레이스 컨디션을 고쳤음\"(올 때마다 바뀐다) → `setTimeout(fn, 0)`은 정말 0밀리초 뒤에 도는 게 아니라, 지금 돌고 있는 코드가 다 끝나고 줄 선 차례가 와야 돈다. 그래서 순서가 꼬이던 버그가 고쳐진 것처럼 보인다.",
+      "라벨 끝줄 'git blame: 나' → 한 번 발굴에 많아야 한 번만 나온다(임시 수정과 사과문은 함께 묻히지 않는다).",
+      "이미 털린 화석을 누르면 → 그 라벨이 다시 열린다. 1번을 누르면 또 버둥댄다."
+    ]
+  },
+  "en": {
+    "line": "This page draws an old codebase as layers of rock and digs up its strange old code like fossils, each with a proper museum label.",
+    "points": [
+      "Layers with years, each holding real old code → code that lives long enough piles up the fashions and quick fixes of every era, like rock strata. The fossils are real code: \"// TODO: fix later\", the closing brackets \"}); }); }); });\" of a callback pyramid, an Internet Explorer conditional comment, \"// ask Dave before changing\" written by Dave himself the year he left. The solemn museum-label voice makes them funnier. The dig turns over on every visit, so some of these may not be on your screen this time.",
+      "The first fossil sprouts legs, scuttles, then plays dead → what looked like a fossil of old code is a live bug. Old code is never really dead; it is still running in production. Its museum label only appears once it has gone still, as if nothing happened.",
+      "The last line of each label, \"git blame: …\" → where a museum credits the donor, git blame names the author: mostly people who left, the one who wrote \"// do not touch\" is now the CTO, and sometimes it's you, in bold.",
+      "The final stamp \"Excavation complete\" and the note \"Decision: preserve everything. Refactor next quarter.\" → all that digging, and nothing gets fixed. In a museum, to preserve is to keep a find safe; in a codebase it means nobody touches it. A second after the stamp the trilobite scuttles again: what got preserved includes the live bug."
+    ],
+    "terms": [
+      {
+        "term": "Legacy code",
+        "plain": "old code nobody dares to change but everything still depends on."
+      },
+      {
+        "term": "git blame",
+        "plain": "a command that shows who last changed each line of a file, and when. Here it does the carbon dating."
+      },
+      {
+        "term": "Refactoring",
+        "plain": "tidying the structure of code without changing what it does; often scheduled for \"next quarter\"."
+      },
+      {
+        "term": "SQL injection",
+        "plain": "when what a user types is pasted straight into a database query, a single quote mark can let someone slip in commands of their own."
+      },
+      {
+        "term": "Callback pyramid",
+        "plain": "functions nested inside functions until the code ends in a staircase of \"}); }); });\"; also called \"callback hell\"."
+      },
+      {
+        "term": "Bug",
+        "plain": "an error in a program. Here it is drawn literally, with legs."
+      }
+    ],
+    "links": [
+      {
+        "title": "Technical debt - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Technical_debt",
+        "note": "the cost of quick fixes that has to be paid back later",
+        "lang": "en"
+      },
+      {
+        "title": "git-blame Documentation",
+        "url": "https://git-scm.com/docs/git-blame",
+        "note": "the official description of git blame"
+      },
+      {
+        "title": "SQL injection - Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/SQL_injection",
+        "note": "why gluing strings into SQL is dangerous",
+        "lang": "en"
+      },
+      {
+        "title": "xkcd 327: Exploits of a Mom",
+        "url": "https://xkcd.com/327/",
+        "note": "Little Bobby Tables, the classic SQL injection comic"
+      },
+      {
+        "title": ".live() - jQuery API Documentation",
+        "url": "https://api.jquery.com/live/",
+        "note": "the \"extinct method\", deprecated in jQuery 1.7 and removed in 1.9"
+      }
+    ],
+    "deep": [
+      "The shape of the first find once it wakes → a row of legs along both sides and one pair of feelers at the front (the left end). Real trilobites also had just one pair of antennae, followed by pairs of legs: a few under the head, then one pair for every body segment.",
+      "When `var self = this;` turns up in that first slot (it changes from visit to visit) → its label reads \"Declared extinct in 2015, when arrow functions arrived.\" Arrow functions, added to JavaScript in 2015, keep the surrounding `this`, so nobody needed to copy it into `self` any more. The extinct fossil has just scuttled.",
+      "One of the finds that can turn up in that first slot is `$('.btn').live('click', save);` → the \"extinct method\" jQuery removed in version 1.9 is called `.live()`, and it turns up in the slot of the bug that is still alive.",
+      "About a second after the \"Excavation complete\" stamp lands → the trilobite scuttles once more, and twitches a leg now and then after that. \"Preserve everything\" includes the live bug.",
+      "The spine's `catch (e) { log(\"should never happen\"); }` (when it is buried this visit) → the case that could never happen was logged 41,000 times in 2012 alone, the year its author yhshin left.",
+      "\"Fixed a race condition by waiting zero milliseconds\" (in the 2017 stone, when it is buried this visit) → `setTimeout(fn, 0)` does not run after zero milliseconds; it waits until the code running now has finished and its turn in the queue comes, which is why it can make an ordering bug seem to go away.",
+      "\"git blame: you\" → it appears at most once per dig (the temporary fix and the apology are never buried together).",
+      "The Korean dig buries different finds → an ActiveX install prompt (for years Korean banking and government sites made every visitor install ActiveX plug-ins they called security programs) and \"// 수정 전 김 대리에게 문의\" (roughly: ask Assistant Manager Kim before changing), the Korean Dave. Kim is the surname of about one in five South Koreans, and assistant manager is a junior office rank.",
+      "Press a find that has already been dug → its label opens again. Press the first one and it scuttles again."
+    ]
+  }
+}

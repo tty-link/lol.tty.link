@@ -17,7 +17,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap">
 <link rel="stylesheet" href="/assets/lol-player.css">
-<link rel="stylesheet" href="/assets/lol-service.css">
+<link rel="stylesheet" href="/assets/lol-service.css?v=lol-wordmark-1">
+<script src="/assets/tty-glyphs.js?v=lol-wordmark-1" defer></script>
 <script type="module" src="/assets/lol-service.js"></script>
 </head>
 <body>
@@ -39,6 +40,11 @@
     <p class="error" role="status" hidden></p>
   </footer>
 </div>
+<script>
+  addEventListener('DOMContentLoaded', () => {
+    window.TTYGlyphs?.wordmark(document.querySelector('.logo'), null, ['LOL', ':)']);
+  }, { once: true });
+</script>
 <noscript><p>Turn on JavaScript to play LOL. <a href="/all/">Browse all pages</a>.</p></noscript>
 </body>
 </html>

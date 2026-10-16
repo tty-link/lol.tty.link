@@ -82,10 +82,10 @@
   @media (max-height: 560px) { .placard .desc { display: none; } }
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap">
-<script src="/assets/tty-glyphs.js"></script>
+<script src="/assets/tty-glyphs.js?v=lol-wordmark-1"></script>
 </head>
 <body>
-<a class="mark" href="/" aria-label="tty.link">tty.link :)</a>
+<a class="mark" href="/" aria-label="LOL home">LOL :)</a>
 <main>
   <article class="placard" aria-label="Museum placard">
     <div class="no" data-t="no">Exhibit 404</div>
@@ -96,11 +96,11 @@
     <span class="sticker" data-t="sticker">citation needed</span>
   </article>
   <h1 aria-label="No page here :(">No page here :(</h1>
-  <p><span data-t="checked">Checked. Still 100%. Still not here.</span> <a href="/" data-t="home">Go to the tty.link home page</a></p>
+  <p><span data-t="checked">Checked. Still 100%. Still not here.</span> <a href="/" data-t="home">Go to the LOL home page</a></p>
   <p class="more"><a href="/pages/hallucination-museum.html" data-t="museum">More exhibits at the Museum of Confident Answers</a></p>
 </main>
 <script>
-  TTYGlyphs.wordmark(document.querySelector('.mark'));
+  TTYGlyphs.wordmark(document.querySelector('.mark'), null, ['LOL', ':)']);
   TTYGlyphs.setWords(document.querySelector('h1'), ['No', 'page', 'here', ':(']);
 
   // Same language choice as the rest of the site: ?lang=, then the visitor's pick, then the browser.
@@ -122,7 +122,7 @@
       conf: '확신도',
       sticker: '출처 필요',
       checked: '확인 완료. 여전히 100%. 그리고 여전히 없음.',
-      home: 'tty.link 첫 화면으로 가기',
+      home: 'LOL 첫 화면으로 가기',
       museum: '자신만만한 답변 박물관에서 더 보기',
     };
     document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = KO[el.dataset.t]; });

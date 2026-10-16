@@ -104,7 +104,7 @@
   .card:hover .preview { box-shadow: 0 0 0 3px var(--ink); }
 </style>
 <script src="https://font.tty.link/lib/font-kku.js" data-fonts="sebul"></script>
-<script src="/assets/tty-glyphs.js"></script>
+<script src="/assets/tty-glyphs.js?v=lol-wordmark-1"></script>
 </head>
 <body>
 <header class="top">
@@ -123,6 +123,7 @@
 </main>
 <script>
 (() => {
+  window.TTYGlyphs?.wordmark(document.querySelector('.mark'), null, ['LOL', ':)']);
   const root = document.documentElement;
   const h1 = document.querySelector('h1');
   const lede = document.querySelector('.lede');

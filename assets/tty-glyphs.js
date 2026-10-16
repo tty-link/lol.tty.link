@@ -6,7 +6,7 @@
  *   TTYGlyphs.setWords(el, ['Making', 'fun', '|', 'to'])  build words of letters into el
  *                                                       ("|" breaks the line, "|n" only
  *                                                       on narrow screens)
- *   TTYGlyphs.wordmark(el, px)                          draw "tty.link :)" into el
+ *   TTYGlyphs.wordmark(el, px, words)                   draw a wordmark (default "tty.link :)")
  *   TTYGlyphs.GLYPHS                                    the letters, to add new ones
  *
  * Units: x-height 1, baseline at 0, ascender -1.42, descender .42.
@@ -21,8 +21,10 @@
   if (window.TTYGlyphs) return;
 
   const GLYPHS = {
+    L: [.88, ['M0 -1.42V0', 'M0 0H.88']],
     M: [1.24, ['M0 0V-1.42', 'M0 -1.42L.62 -.42', 'M.62 -.42L1.24 -1.42', 'M1.24 -1.42V0']],
     N: [1.1, ['M0 0V-1.42', 'M0 -1.42L1.1 0', 'M1.1 0V-1.42']],
+    O: [1.42, ['O.71 -.71 .71']],
     a: [1, ['O.5 -.5 .5', 'M1 -1V0']],
     e: [1, ['M.02 -.5H.98', 'M.98 -.5A.48 .5 0 1 0 .86 -.16']],
     f: [.72, ['M.3 0V-1.08C.3 -1.3 .44 -1.42 .62 -1.42L.72 -1.42', 'M0 -1H.66']],
@@ -108,12 +110,12 @@
     }));
   }
 
-  // Draws "tty.link :)" into el. el keeps (or gets) an accessible name "tty.link".
-  function wordmark(el, px) {
+  // Keep the studio wordmark as the default for pages/_kit.js.
+  function wordmark(el, px, words = ['tty.link', ':)']) {
     el.classList.add('tty-wordmark');
     if (px) el.style.fontSize = px + 'px';
-    if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'tty.link');
-    setWords(el, ['tty.link', ':)'], PREFIXED);
+    if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', words[0]);
+    setWords(el, words, PREFIXED);
   }
 
   window.TTYGlyphs = { GLYPHS, glyph, setWords, wordmark };

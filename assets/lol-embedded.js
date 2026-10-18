@@ -8,6 +8,7 @@ if (origin && parent !== window) {
     if (data.type === 'configure') player.configure(data.values);
     if (data.type === 'show') player.start();
     if (data.type === 'next') player.advance();
+    if (data.type === 'goto' && typeof data.id === 'string') player.goto(data.id);
     if (data.type === 'focus') player.focus();
   });
   const player = new LOLPlayer(document.querySelector('.lol-stage'), {

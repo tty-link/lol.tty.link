@@ -138,6 +138,15 @@ export class LOLPlayer {
     if (!this.current && this.upcoming && this.status === 'ready') this.advance();
   }
 
+  // Shows a given page next, now (the home's previous button). The shuffled order carries on after it.
+  goto(id) {
+    const page = this.pages.find((p) => p.id === id);
+    if (!page) return;
+    this.drop(this.upcoming);
+    this.upcoming = this.load(page);
+    if (this.active) this.advance();
+  }
+
   load(page) {
     const slot = document.createElement('div');
     slot.className = 'slot';

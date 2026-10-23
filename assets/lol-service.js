@@ -1,4 +1,4 @@
-import { LOLPlayer } from './lol-player.js';
+import { LOLPlayer } from './lol-player.js?v=goto-1';
 
 const params = new URLSearchParams(location.search);
 let picked;

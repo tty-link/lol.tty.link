@@ -26,6 +26,11 @@
     --lead: #f4b400;
     --cand: #ff8a3d;
     --cut: #6c5ce7;
+    /* One size for every line that carries the joke (the setup line in the log, the two tags) and for
+       the titles, so no title is bigger than them. The punch in the ring is bigger still. */
+    --say: clamp(12.5px, 2.2vmin, 18px);
+    /* the title, and the two pills in the ring (on the smallest stages the ring has room for 11px pills) */
+    --title: var(--say);
   }
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; }
@@ -53,9 +58,10 @@
   }
 
   .head { grid-area: head; display: flex; justify-content: space-between; align-items: end; gap: 16px; }
-  .head h1 { font-size: clamp(22px, 4.2cqmin, 44px); font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+  /* the title is a header at the copy's size: weight, not size, sets it apart */
+  .head h1 { font-size: var(--title); font-weight: 800; line-height: 1.15; letter-spacing: .01em; }
   .head h1 > font-kku { color: var(--ink); }
-  .head .sub { margin-top: 8px; font-size: clamp(13px, 2cqmin, 17px); color: var(--soft); font-weight: 600; }
+  .head .sub { margin-top: 4px; font-size: max(10.5px, calc(var(--say) - 1.5px)); color: var(--soft); font-weight: 600; }
   .again {
     flex: none;
     min-height: 38px;
@@ -89,6 +95,8 @@
   .node.leader .badge { opacity: 1; }
   .node .zzz { opacity: 0; font: 800 22px 'Hanken Grotesk', sans-serif; fill: var(--soft); }
   .node.napping .zzz { opacity: 1; }
+  /* a node that dozed off keeps a faint z until the next order: the visitor's nap stays on the ring */
+  .node.napped:not(.napping) .zzz { opacity: .4; }
   .node.napping .body { fill: #d8cbc0 !important; }
   .node .timer { fill: none; stroke: var(--cand); stroke-width: 6; stroke-linecap: round; opacity: 0; }
   /* --name is set from script so a name never renders below about 11px, however small the ring. */
@@ -115,7 +123,8 @@
   .verdict {
     position: absolute;
     left: 50%;
-    top: 48.6%;
+    /* 2026-10-15: up from 48.6% once the pills took the copy's size, so the second one clears Jihoon's gold ring */
+    top: 47.8%;
     /* a column, so the pill below stays centred even when its 11px floor makes it wider than the disc */
     display: flex;
     flex-direction: column;
@@ -132,29 +141,35 @@
   .verdict svg { position: static; display: block; width: 19cqmin; height: auto; margin: 0 auto; }
   .verdict .dish { display: block; margin-top: .5cqmin; font-size: 8cqmin; font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
   .verdict .dish > font-kku { color: var(--ink); }
-  .verdict .done { display: inline-block; margin-top: 1cqmin; padding: .18em .8em; line-height: 1.25; border-radius: 999px; background: var(--ink); color: var(--card); font-size: max(11px, 2.5cqmin); font-weight: 700; white-space: nowrap; }
+  .verdict .done { display: inline-block; margin-top: 1cqmin; padding: .18em .8em; line-height: 1.25; border-radius: 999px; background: var(--ink); color: var(--card); font-size: var(--title); font-weight: 700; white-space: nowrap; }
   /* the second pill, a beat later: nobody asked for what everyone agreed on */
   .verdict .done.odd { margin-top: .6cqmin; background: var(--card); color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); opacity: 0; }
 
   /* ---- the event log ---- */
   .log { grid-area: log; display: flex; flex-direction: column; min-height: 0; padding: clamp(14px, 2.6cqmin, 22px); border: 2px solid var(--ink); border-radius: 18px; background: var(--card); box-shadow: 0 5px 0 var(--ink); }
-  .log h2 { font-size: clamp(14px, 2.1cqmin, 18px); font-weight: 800; }
-  .log h2 .term { float: right; font-family: 'DM Mono', monospace; font-size: .85em; color: var(--soft); }
+  .log h2 { font-size: var(--title); font-weight: 800; }
+  .log h2 .term { float: right; font-family: 'DM Mono', monospace; font-size: max(10px, .85em); color: var(--soft); }
   .events { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; margin-top: 12px; padding: 0; list-style: none; overflow: hidden; }
-  .events li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 8px 10px; border-radius: 10px; font-size: clamp(13px, 1.9cqmin, 15.5px); line-height: 1.35; background: #f7ece0; transition: background .6s; }
+  .events li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 8px 10px; border-radius: 10px; font-size: var(--say); line-height: 1.35; background: #f7ece0; transition: background .6s; }
+  .events li > span:last-child { text-wrap: balance; }
   .events li.fresh { background: #ffe1a6; }
   .events .t { font-family: 'DM Mono', monospace; font-size: .82em; color: var(--soft); padding-top: .1em; }
   .events li.alert { background: #ece8ff; }
   .events li.win { background: var(--ink); color: var(--card); }
   .events li.win .t { color: #d7c4b2; }
   /* The wrap-up line waits for the verdict, then takes the ink (on narrow stages, the hint's place). */
-  .aside { margin-top: 10px; font-size: clamp(14px, 2.3cqmin, 18px); font-weight: 800; line-height: 1.3; color: var(--ink); text-wrap: balance; opacity: 0; }
-  .room.served .aside { opacity: 1; animation: aside-in .6s ease-out both; }
+  .aside { margin-top: 10px; font-size: var(--say); font-weight: 800; line-height: 1.3; color: var(--ink); text-wrap: balance; opacity: 0; }
+  .room.served .aside { opacity: 1; animation: aside-in .45s ease-out both; }
+  /* Where the aside needs two lines, it breaks after the first word, so the last line is never one word alone. */
+  .aside .nobr { white-space: nowrap; }
   @keyframes aside-in { from { opacity: 0; translate: 0 6px; } }
   @media (prefers-reduced-motion: reduce) { .room.served .aside { animation: none; } }
-  /* The one-line hint, at the foot of the log card on every layout. */
-  .hint { margin-top: 8px; font-size: clamp(12px, 1.7cqmin, 14px); line-height: 1.3; color: var(--soft); }
+  /* The one-line hint, at the foot of the log card on every layout. Once someone taps, the same line
+     says what their tap did (a nap, a wake-up), so the visitor's news never pushes the story's log. */
+  .hint { margin-top: 8px; font-size: max(11px, calc(var(--say) - 1.5px)); line-height: 1.3; color: var(--soft); text-wrap: balance; }
   .hint::before { content: "\2192\00a0"; color: var(--cand); font-weight: 800; }
+  .hint.said { color: var(--ink); }
+  .hint.said::before { content: "z\00a0"; color: var(--soft); }
   /* Opened on its own, _kit.js puts its "?" and ":)" buttons bottom-right; end the log card above
      them (small landscape stages below take a little more). */
   @media (min-width: 601px) { html:not(.embedded) .log { margin-bottom: 26px; } }
@@ -168,7 +183,7 @@
     .room.served .aside { display: block; margin-top: 8px; }
     .room.served .hint { display: none; }
     /* the hint holds the aside's line height, so the swap after the verdict doesn't move the ring */
-    .hint { min-height: calc(clamp(14px, 2.3cqmin, 18px) * 1.3); }
+    .hint { min-height: calc(var(--say) * 1.3); }
     .events li:not(:last-child) { display: none; }
     /* at least two lines, so a one-line entry doesn't make the ring jump */
     .events li:last-child { min-height: calc(2 * 1.35em + 16px); }
@@ -176,6 +191,7 @@
     /* "Half & half" is as large as 짬짜면, and the pizza (80 × 74) is taller than the bowl (80 × 56):
        draw both a little smaller here, so the verdict clears Jihoon's ring */
     .verdict svg { width: 16cqmin; }
+    .verdict { top: 47%; }
   }
   @media (max-aspect-ratio: 4/5) and (min-height: 700px) {
     .events li:nth-last-child(2) { display: grid; }
@@ -186,21 +202,24 @@
   @media (max-aspect-ratio: 1/1) and (max-height: 560px) {
     .room { padding: 12px 14px; gap: 8px; }
     .head { flex-wrap: nowrap; align-items: center; gap: 8px; }
-    .head h1 { font-size: 16px; }
-    .head .sub { margin-top: 4px; font-size: 12.5px; }
     .again { min-height: 32px; padding: 0 12px; font-size: 13px; }
+    /* lift the verdict a little, so the second pill clears Jihoon's gold ring (360 × 520) */
+    .verdict { top: 47.6%; }
     .log { padding: 10px 12px 10px; }
     .events { margin-top: 8px; }
   }
   @media (max-aspect-ratio: 1/1) and (max-height: 470px) {
+    /* the pills between the names need 11px here, and the title is no bigger than they are */
+    :root { --title: 11px; }
+    .head h1 { letter-spacing: .03em; }
     .head .sub, .log h2 { display: none; }
     .events { margin-top: 0; }
     .events .t { display: none; }
-    .events li { grid-template-columns: minmax(0, 1fr); padding: 5px 8px; font-size: 12.5px; line-height: 1.3; }
+    .events li { grid-template-columns: minmax(0, 1fr); padding: 5px 8px; line-height: 1.3; }
     .events li:last-child { min-height: calc(2 * 1.3em + 10px); }
     .log { padding: 7px 8px 8px; border-radius: 14px; box-shadow: 0 3px 0 var(--ink); }
-    .hint { margin-top: 5px; font-size: 11.5px; min-height: calc(13px * 1.3); }
-    .aside, .room.served .aside { margin-top: 5px; font-size: 13px; }
+    .hint { margin-top: 5px; }
+    .aside, .room.served .aside { margin-top: 5px; }
     /* the 11px pills are large next to so small a ring: lift the verdict a little off Jihoon's
        ring, draw the dish a little smaller so the stack clears Minji's, and narrow the pills so
        "5 of 5 committed" clears Haeun's and Junho's names */
@@ -211,21 +230,34 @@
   /* Small landscape stages (a phone held sideways): the log column is narrow, so keep only the
      latest line; the aside waits for the verdict, then takes the hint's place. */
   @media (max-height: 440px) and (min-aspect-ratio: 1001/1000) {
+    :root { --title: 11px; }
     .room { grid-template-areas: "head log" "scene log"; }
     .head { flex-wrap: wrap; align-items: start; gap: 8px; }
-    .head h1 { font-size: 16px; }
     .again { min-height: 32px; padding: 0 12px; }
     .aside { display: none; }
-    .room.served .aside { display: block; margin-top: 6px; font-size: 13px; }
+    .room.served .aside { display: block; margin-top: 6px; }
     .room.served .hint { display: none; }
+    .hint { min-height: calc(var(--say) * 1.3); }
     .events li:not(:last-child) { display: none; }
     .events .t { display: none; }
-    .events li { grid-template-columns: minmax(0, 1fr); padding: 6px 8px; font-size: 12.5px; line-height: 1.3; }
+    .events li { grid-template-columns: minmax(0, 1fr); padding: 6px 8px; line-height: 1.3; }
     .log { padding: 10px 10px 12px; }
     html:not(.embedded) .log { margin-bottom: 38px; }
     /* the same short ring as above: lift the verdict off Jihoon's star (the home page's 508 × 339) */
     .verdict { top: 46%; }
     .verdict svg { width: 16cqmin; }
+  }
+  /* The smallest stage, a 360 × 520 phone's home stage (328 × 288): the ring is so small that the verdict
+     needs the room Haeun's and Junho's names take, so those two names fade once the dish is served (their
+     faces keep their colours), the dish is drawn smaller, and the subtitle and the log's heading go. */
+  @media (max-height: 300px) and (min-aspect-ratio: 1001/1000) {
+    .head .sub, .log h2 { display: none; }
+    .room.served .aside { font-size: var(--title); }
+    .nodes > g:is(:nth-child(2), :nth-child(5)) > .name { transition: opacity .3s; }
+    .room.dished .nodes > g:is(:nth-child(2), :nth-child(5)) > .name { opacity: 0; }
+    .verdict { top: 46.5%; }
+    .verdict svg { width: 11cqmin; }
+    .verdict .done { padding-inline: .45em; }
   }
   /* Opened on a phone held upright, the same buttons sit under the log card. */
   @media (max-aspect-ratio: 1/1) and (max-width: 600px) { html:not(.embedded) .room { padding-bottom: 50px; } }
@@ -236,7 +268,7 @@
   <header class="head">
     <div>
       <h1 data-lang="en">Lunch, by Consensus</h1>
-      <h1 data-lang="ko"><font-kku font="sebul" size="4.4cqmin">점심 메뉴 합의 알고리즘</font-kku></h1>
+      <h1 data-lang="ko"><font-kku font="sebul" size="var(--title)">점심 메뉴 합의 알고리즘</font-kku></h1>
       <p class="sub" data-lang="en">Five nodes. Two camps. One pizza.</p>
       <p class="sub" data-lang="ko">노드 다섯, 면 두 종류, 그릇 하나.</p>
     </div>
@@ -271,20 +303,20 @@
       <svg viewBox="-40 -37 80 74" aria-hidden="true" data-lang="en">
         <g class="pizza-big" transform="scale(1.32)"></g>
       </svg>
-      <span class="dish" data-lang="en">Half &amp; half</span>
-      <span class="dish" data-lang="ko"><font-kku font="sebul" size="8cqmin">짬짜면</font-kku></span>
+      <span class="dish" data-lang="en" data-tty-line="punch">Half &amp; half</span>
+      <span class="dish" data-lang="ko" data-tty-line="punch"><font-kku font="sebul" size="8cqmin">짬짜면</font-kku></span>
       <span class="done" data-lang="en">5 of 5 committed</span>
       <span class="done" data-lang="ko">다섯 노드 모두 커밋</span>
-      <span class="done odd" data-lang="en">0 of 5 ordered it</span>
-      <span class="done odd" data-lang="ko">아무도 안 시킴</span>
+      <span class="done odd" data-lang="en" data-tty-line="tag">0 of 5 ordered it</span>
+      <span class="done odd" data-lang="ko" data-tty-line="tag">아무도 안 시킴</span>
     </div>
   </section>
 
   <aside class="log">
     <h2><span data-lang="en">Event log</span><span data-lang="ko">사건 기록</span> <span class="term">term 0</span></h2>
     <ol class="events" aria-live="polite"></ol>
-    <p class="aside" data-lang="en">Not majority rule. Half-and-half rule.</p>
-    <p class="aside" data-lang="ko">다수결이 아니라 반반결입니다.</p>
+    <p class="aside" data-lang="en" data-tty-line="tag">Not majority rule. Half-and-half rule.</p>
+    <p class="aside" data-lang="ko" data-tty-line="tag">다수결이 <span class="nobr">아니라 반반결입니다.</span></p>
     <p class="hint" data-lang="en">Tap Junho, Seoyeon or Haeun to make them nap.</p>
     <p class="hint" data-lang="ko">준호·서연·하은을 누르면 잠깐 졸아요.</p>
   </aside>
@@ -329,7 +361,8 @@
   const DISH = {
     A: { en: 'pineapple', ko: '짜장' },
     B: { en: 'no pineapple', ko: '짬뽕' },
-    half: { en: 'half & half', ko: '짬짜면' },
+    // the nodes' logs read 반반; only the kitchen's dish in the middle is called 짬짜면
+    half: { en: 'half & half', ko: '반반' },
   };
 
   // A pizza from above, r 25: crust, then each half either pineapple (cheese and yellow chunks)
@@ -404,7 +437,7 @@
     const badge = el('g', { class: 'badge', transform: 'translate(34 -36)' }, av);
     el('circle', { r: 15, fill: '#f4b400', stroke: '#2b1d14', 'stroke-width': 3 }, badge);
     el('path', { d: 'M0 -8 L2.4 -2.4 L8.4 -2.4 L3.6 1.4 L5.2 7.6 L0 4 L-5.2 7.6 L-3.6 1.4 L-8.4 -2.4 L-2.4 -2.4 Z', fill: '#fff' }, badge);
-    const zzz = el('text', { class: 'zzz', x: 30, y: -40 }, av);
+    const zzz = el('text', { class: 'zzz', x: 30, y: -40, 'data-tty-line': 'decor' }, av);
     zzz.textContent = 'z z';
     // Minji's name goes above her, outside the ring, so the verdict in the middle never covers it
     // (and inside her avatar, so it rides along when she hops instead of being hit by her head).
@@ -473,22 +506,28 @@
   const awake = (i, pool = ALL) => pool.filter((j) => j !== i && !nodes[j].napping);
   const reach = (i, pool = ALL) => awake(i, pool).filter((j) => !(partitioned && CUT.includes(i) !== CUT.includes(j)));
 
-  // The log on the right.
+  // The log on the right. A line that no longer fits pushes the oldest out whole, never half cut off.
   let tick = 0;
-  function log(text, kind = '') {
+  const trim = () => {
+    const top = events.getBoundingClientRect().top - 0.5;
+    while (events.children.length > 1 && events.firstElementChild.getBoundingClientRect().top < top) events.firstElementChild.remove();
+  };
+  function log(text, kind = '', mark = '') {
     tick += 1;
     const li = document.createElement('li');
-    li.className = 'fresh ' + kind;
+    li.className = (TTY.reduce ? '' : 'fresh ') + kind;
     const t = document.createElement('span');
     t.className = 't';
     t.textContent = `#${String(tick).padStart(2, '0')}`;
     const body = document.createElement('span');
     body.textContent = text;
+    if (mark) body.dataset.ttyLine = mark; // for the page checker (_kit.js data-tty-line)
     li.append(t, body);
     events.append(li);
-    while (events.children.length > 7) events.firstElementChild.remove();
-    setTimeout(() => li.classList.remove('fresh'), 1400);
+    trim();
+    if (!TTY.reduce) setTimeout(() => li.classList.remove('fresh'), 1400);
   }
+  if (window.ResizeObserver) new ResizeObserver(trim).observe(events);
   const term = (n) => { termEl.textContent = 'term ' + n; };
 
   // 서연 → 서연이가, 준호 → 준호가
@@ -498,66 +537,67 @@
   };
 
   // ---- the story ----
-  const L = TTY.t({
-    en: {
-      timeout: 'Minji\'s election timer runs out first. Term 1: she asks for votes.',
-      leader: (t, v) => `They glare, but they vote. Minji is leader of term ${t} with ${v} of 5 votes.`,
-      lost: (n, t, v) => `${n} gets ${v} of 5 votes in term ${t}. No majority, so the timer starts again.`,
-      partition: 'Network partition. Minji and Haeun are cut off from the other three.',
-      stale: (k) => `Minji, still leader in her own mind, writes "pineapple" at index 1. ${k} of 5 nodes have it: no commit.`,
-      second: (t, v) => `No heartbeats reach the far side. Jihoon times out and wins term ${t} with ${v} of 5 votes.`,
-      commit: 'Jihoon writes "no pineapple" at index 1. Three of five have it: committed.',
-      stall: 'Not enough nodes awake for a majority. The commit waits.',
-      two: 'Two leaders, two lunches. Only one side can commit.',
-      heal: (t) => `Partition heals. Minji sees term ${t} and steps down. Her uncommitted pineapple is overwritten.`,
-      retry: (k) => `Minji retries. Of course she does. Index 2: pineapple, committed on ${k} of 5.`,
-      apply: 'The kitchen applies the log in order: half no pineapple, half pineapple.',
-      done: (k) => `${k} of 5 committed`,
-      nap: (n, ok) => `${n} is napping. ${ok ? 'A majority is still awake.' : 'No majority awake on this side.'}`,
-      wake: (n) => `${n} is back and catches up on the log.`,
-    },
-    ko: {
-      timeout: '민지의 선거 타이머가 먼저 끝났어요. 1기 출마, 한 표씩 부탁합니다.',
-      leader: (t, v) => (v === 5 ? `째려보면서도 표는 다 줬어요. 민지, 만장일치로 ${t}기 리더.` : `째려보면서도 표는 줬어요. 민지가 5표 중 ${v}표로 ${t}기 리더.`),
-      lost: (n, t, v) => `${subject(n)} ${t}기 선거에서 5표 중 ${v}표만 받았어요. 과반이 아니라 다시 기다려요.`,
-      partition: '네트워크 분할! 민지랑 하은이가 나머지 셋과 끊겼어요.',
-      stale: (k) => `민지는 아직 리더인 줄 알고 1번 칸에 짜장을 적어요. 적힌 노드는 5개 중 ${k}개, 커밋 못 해요.`,
-      second: (t, v) => `건너편엔 하트비트가 안 와요. 지훈이가 ${t}기에 나서서 5표 중 ${v}표로 당선.`,
-      commit: '지훈이가 1번 칸에 짬뽕을 적어요. 5개 노드 중 3개에 적혔으니 커밋.',
-      stall: '깨어 있는 노드가 과반이 안 돼요. 커밋은 기다립니다.',
-      two: '리더 둘, 점심 둘. 커밋은 한쪽만 됩니다.',
-      heal: (t) => `분할 복구. 민지는 ${t}기를 보고 물러나요. 커밋 못 한 짜장은 덮어써져요.`,
-      retry: (k) => `민지는 포기를 몰라요. 다시 주문해서 2번 칸에 짜장, ${k === 5 ? '다섯 노드 모두 커밋' : `5개 중 ${k}개에 적혀 커밋`}.`,
-      apply: '주방은 로그를 순서대로 한 그릇에 담습니다. 짬뽕, 그다음 짜장.',
-      done: (k) => (k === 5 ? '다섯 노드 모두 커밋' : `5개 중 ${k}개에 커밋`),
-      nap: (n, ok) => `${subject(n)} 조는 중. ${ok ? '그래도 과반은 깨어 있어요.' : '이쪽은 깨어 있는 노드가 과반이 안 돼요.'}`,
-      wake: (n) => `${subject(n)} 깨서 밀린 로그를 따라잡아요.`,
-    },
-  });
+  // The log's lines in both languages: each stays up until the longer of the two has been read,
+  // so the story keeps one pace in either language. Short on purpose: on a phone only
+  // the latest line shows, and the ring tells the rest (stars, the crack, faint and solid dishes).
+  const NAME = { en: ['Minji', 'Junho', 'Seoyeon', 'Jihoon', 'Haeun'], ko: ['민지', '준호', '서연', '지훈', '하은'] };
+  const L = {
+    vote: (all) => ({ en: 'They glare, but they vote.', ko: all ? '째려보면서도 표는 다 줬어요.' : '째려보면서도 표는 줬어요.' }),
+    lost: (i, t, v) => ({ en: `Term ${t}: ${NAME.en[i]} gets ${v} of 5 votes. No majority.`, ko: `${t}기 선거, ${NAME.ko[i]} ${v}표. 과반이 아니라 다시.` }),
+    // two words: read in well under the usual 2 s, and the crack says it too
+    partition: { en: 'Network partition!', ko: '네트워크 분할!', min: 1500 },
+    two: { en: 'Two leaders, two lunches. Only one side can commit.', ko: '리더 둘, 점심 둘. 커밋은 한쪽만 됩니다.' },
+    stall: { en: 'Too few awake for a majority. The commit waits.', ko: '깨어 있는 노드가 과반이 안 돼요. 커밋은 기다립니다.' },
+    heal: { en: 'Partition heals. Minji\'s pineapple is overwritten.', ko: '분할 복구. 민지 짜장은 덮어써졌어요.' },
+    retry: { en: 'Minji retries. Of course she does.', ko: '민지는 포기를 몰라요. 다시 주문.' },
+    apply: { en: 'Kitchen applies the log in order: half no pineapple, half\u00a0pineapple.', ko: '주방은 로그를 순서대로 한 그릇에 담습니다. 짬뽕, 그다음 짜장.' },
+    done: (k) => TTY.t({ en: `${k} of 5 committed`, ko: k === 5 ? '다섯 노드 모두 커밋' : `5개 중 ${k}개에 커밋` }),
+    // What a visitor's tap did, in the hint's line under the log.
+    nap: (i, ok) => TTY.t({
+      en: `${NAME.en[i]} naps. ${ok ? 'A majority is still awake.' : 'No majority awake on this side.'}`,
+      ko: `${subject(NAME.ko[i])} 졸아요. ${ok ? '과반은 아직 깨어 있어요.' : '이쪽엔 깨어 있는 과반이 없어요.'}`,
+    }),
+    wake: (i) => TTY.t({ en: `${NAME.en[i]} wakes up and catches up on the log.`, ko: `${subject(NAME.ko[i])} 깨서 밀린 로그를 따라잡아요.` }),
+  };
+  // A tenth of a second over the count, so a line is never caught short of it.
+  const readBoth = (pair) => Math.max(TTY.readMs(pair.en, pair.min), TTY.readMs(pair.ko, pair.min)) + 100;
 
-  let run = 0;
+  let run = 0;   // counts the runs: the first one keeps a nap tapped before it started
+  let gen = 0;   // bumps when reset() clears the naps, so an older wake-up stays quiet
   let T = 0;
   const leaders = new Set();
-  const stale = () => new Error('stale');
-  const wait = (ms, id) => new Promise((go, stop) => setTimeout(() => (id === run ? go() : stop(stale())), TTY.reduce ? 0 : ms));
-  // Await packets (or a timer), then stop if a newer run has started meanwhile.
-  const step = (p, id) => p.then((v) => { if (id !== run) throw stale(); return v; });
-  const until = (ok, id) => new Promise((go, stop) => {
-    const check = () => (id !== run ? stop(stale()) : ok() ? go() : setTimeout(check, 120));
-    check();
-  });
   const majority = (n) => n >= 3;
+  const STALE = new Error('stale');
+  // When the last log line went up (autoplay ms) and how long it must stay.
+  let said = { at: 0, need: 0 };
 
-  function reset() {
+  // The hint's line says what a tap did. Each piece of news stays up until it can be read; a newer one waits.
+  const hint = document.querySelector('.hint');
+  const HINT = hint.textContent;
+  const note = (() => {
+    let at = 0, need = 0, timer = 0;
+    const show = (text) => { hint.textContent = text; hint.classList.add('said'); at = performance.now(); need = TTY.readMs(text); };
+    const say = (text) => {
+      clearTimeout(timer);
+      const left = at + need - performance.now();
+      if (left > 0) timer = setTimeout(() => show(text), left); else show(text);
+    };
+    say.clear = () => { clearTimeout(timer); at = 0; need = 0; hint.textContent = HINT; hint.classList.remove('said'); };
+    return say;
+  })();
+
+  function reset(naps) {
     events.replaceChildren();
     tick = 0;
     T = 0;
     term(0);
     leaders.clear();
     partitioned = false;
+    said = { at: 0, need: 0 };
+    if (naps) { gen += 1; note.clear(); }
     nodes.forEach((n, i) => {
-      clearTimeout(n.wakeTimer);
-      setRole(i, 'follower'); setDish(i, null); n.napping = false; n.g.classList.remove('napping');
+      setRole(i, 'follower'); setDish(i, null);
+      if (naps) { clearTimeout(n.wakeTimer); n.napping = false; n.g.classList.remove('napping', 'napped'); }
       n.timer.getAnimations().forEach((a) => a.cancel());
       n.timer.style.opacity = 0;
     });
@@ -568,7 +608,7 @@
     verdict.style.opacity = 0;
     odd.getAnimations().forEach((a) => a.cancel());
     odd.style.opacity = '';
-    room.classList.remove('served');
+    room.classList.remove('served', 'dished');
     prelude().forEach((e) => e.getAnimations().forEach((a) => a.cancel()));
     packetsG.replaceChildren();
   }
@@ -615,18 +655,20 @@
     tween(n.smile, 'opacity', down ? '0' : '1', ms);
     tween(n.frown, 'opacity', down ? '1' : '0', ms);
   }
-  // Everyone turns to the dish, then beams and hops, one after another.
-  const HOP = [
+  // Everyone turns to the dish, then beams and hops, one after another. Minji, whose name sits
+  // above her and rides along, hops low so the name stays clear of the title.
+  const hop = (up) => [
     { transform: 'translateY(0px)', easing: 'cubic-bezier(.2, .7, .4, 1)' },
-    { transform: 'translateY(-22px)', offset: .4, easing: 'cubic-bezier(.6, 0, .8, .4)' },
+    { transform: `translateY(${-up}px)`, offset: .4, easing: 'cubic-bezier(.6, 0, .8, .4)' },
     { transform: 'translateY(0px)' },
   ];
-  function cheer(id) {
+  async function cheer(t) {
     nodes.forEach((n, i) => mood(i, 'look', 260));
-    return wait(420, id).then(() => nodes.forEach((n, i) => {
+    await t.wait(420);
+    nodes.forEach((n, i) => {
       mood(i, 'joy', 140);
-      n.av.animate(HOP, { duration: 520, delay: i * 80 });
-    }));
+      if (!TTY.reduce) n.av.animate(hop(i === 0 ? 8 : 22), { duration: 520, delay: i * 80 });
+    });
   }
   function squabble() {
     if (TTY.reduce) return;
@@ -658,176 +700,200 @@
 
   function showVerdict() {
     verdict.style.opacity = 1;
+    room.classList.add('dished');
     if (!TTY.reduce) verdict.animate([{ opacity: 0, scale: .6 }, { opacity: 1, scale: 1.06, offset: .7 }, { opacity: 1, scale: 1 }], { duration: 700, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
   }
   // The centre pill counts the nodes that have the whole log (a napper catches up later).
   const countDone = () => { doneEl.textContent = L.done(nodes.filter((n) => n.dish === 'half').length); };
 
+  // ---- steps of a run (t: the run's TTY.timeline handle) ----
+  // Await an animation (packets, a timer), then stop if this run was stopped meanwhile.
+  const live = (t, p) => p.then((v) => { if (!t.live()) throw STALE; return v; });
+  // Poll in autoplay time; with reduced motion autoplay time does not pass, so poll in real time.
+  const pause = (t, ms) => (TTY.reduce ? live(t, new Promise((go) => setTimeout(go, ms))) : t.wait(ms));
+  // Wait until the last log line has been up long enough to read, less `lead` ms: the time the next
+  // line's picture takes, so the picture lands as the line goes up.
+  async function readUp(t, lead = 0) {
+    const left = said.at + said.need - lead - t.now();
+    if (left > 0) await t.wait(left);
+    if (!t.live()) throw STALE;
+  }
+  // The story's lines in order up to the punch: from one of them to the punch is about the time
+  // they take to read (the pace is set by reading, see say()).
+  const MAIN = ['vote', 'partition', 'two', 'heal', 'retry'];
+  // when: the line is still true by the time the one before it has been read (a stall may be over).
+  async function say(t, pair, kind = '', mark = '', key = '', when = () => true) {
+    await readUp(t);
+    if (!when()) return;
+    log(TTY.t(pair), kind, mark);
+    said = { at: t.now(), need: readBoth(pair) };
+    // Ask the home stage for the time the story still needs, plus 3 s to read the punch.
+    // On schedule this asks for less than is left anyway; after a pause, "Order again" or a nap that
+    // cost Raft an election or a commit (a line with no key), it keeps the punch on stage.
+    if (!key) { TTY.hold(17000); return; }
+    const i = MAIN.indexOf(key);
+    const left = (i < 0 ? 0 : MAIN.slice(i).reduce((sum, k) => sum + readBoth(k === 'vote' ? L.vote(true) : L[k]), 0)) + 200;
+    TTY.hold(left + 3500);
+  }
   // An election timer running out on node i.
-  async function countdown(i, ms, id) {
+  async function countdown(t, i, ms) {
     const timer = nodes[i].timer;
     timer.style.opacity = 1;
-    await step(timer.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: 1 }], { duration: ms, easing: 'linear', fill: 'forwards' }).finished, id);
+    await live(t, timer.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: 1 }], { duration: TTY.reduce ? 0 : ms, easing: 'linear', fill: 'forwards' }).finished);
     timer.style.opacity = 0;
   }
-  // Raft's election: the candidate bumps the term, votes for itself and asks its side.
-  // Without a majority it waits for another timeout and tries again with a higher term.
-  async function elect(c, pool, ms, id, first, hop = 620) {
+  // Raft's election: the candidate bumps the term, votes for itself and asks its side. Without a
+  // majority it waits for another timeout and tries again with a higher term. ms 0: its timer has
+  // already run out. Returns the votes it won.
+  async function elect(t, c, pool, ms, hop) {
     for (let k = 0; ; k++) {
-      await countdown(c, k ? 900 : ms, id);
+      if (k || ms) await countdown(t, c, k ? 900 : ms);
       T += 1;
       term(T);
       setRole(c, 'candidate');
-      if (!k && first) log(first);
       const asked = reach(c, pool);
-      await step(Promise.all(awake(c, pool).map((j) => packet(c, j, ASK, hop))), id);
-      await wait(150, id);
+      await live(t, Promise.all(awake(c, pool).map((j) => packet(c, j, ASK, hop))));
+      await t.wait(100);
       const yes = asked.filter((j) => !nodes[j].napping);
-      await step(Promise.all(yes.map((j) => packet(j, c, YES, hop))), id);
+      await live(t, Promise.all(yes.map((j) => packet(j, c, YES, hop))));
       if (majority(yes.length + 1)) {
         setRole(c, 'leader');
         leaders.add(c);
         return yes.length + 1;
       }
       setRole(c, 'follower');
-      log(L.lost(NAMES[c], T, yes.length + 1), 'alert');
+      await say(t, L.lost(c, T, yes.length + 1), 'alert');
     }
   }
   // Jihoon, the leader, sends an entry to every awake node he can reach in pool. It commits once a
   // majority has it; until then the commit waits for nappers to wake. Returns who has it, him included.
-  async function replicate(pool, dish, ms, id, landed = () => {}) {
+  async function replicate(t, pool, dish, ms, landed = () => {}) {
     for (;;) {
       const got = reach(3, pool);
-      await step(Promise.all(got.map((j) => packet(3, j, INK[dish], ms))), id);
+      await live(t, Promise.all(got.map((j) => packet(3, j, INK[dish], ms))));
       const have = [3, ...got.filter((j) => !nodes[j].napping)];
       landed(have);
       if (majority(have.length)) return have;
-      log(L.stall, 'alert');
-      await until(() => majority(reach(3, pool).length + 1), id);
+      await say(t, L.stall, 'alert', '', '', () => !majority(reach(3, pool).length + 1));
+      while (!majority(reach(3, pool).length + 1)) await pause(t, 120);
     }
   }
 
-  async function story() {
-    const id = ++run;
-    reset();
-    if (TTY.reduce) {
-      [[L.partition, 'alert'], [L.stale(2)], [L.second(2, 3)], [L.commit], [L.heal(2)], [L.retry(5)], [L.apply, 'win']].forEach(([t, kind]) => log(t, kind));
-      [...events.children].forEach((li) => li.classList.remove('fresh'));
-      nodes.forEach((n, i) => { setRole(i, i === 3 ? 'leader' : 'follower'); setDish(i, 'half'); mood(i, 'joy', 0); });
-      countDone();
-      term(2);
-      showVerdict();
-      odd.style.opacity = 1;
-      room.classList.add('served');
-      return;
-    }
+  // The whole story, one run. A tap stands it still for a moment (TTY.timeline) and a nap changes
+  // what Raft does; "Order again" starts a new run and the old one never writes again. With reduced
+  // motion the same run plays in no time and stops on the same last scene.
+  const play = TTY.timeline(async (t) => {
+    run += 1;
+    reset(run > 1);
+    const ms = (n) => (TTY.reduce ? 0 : n);
     squabble();
     try {
-      await wait(400, id);
-      // Term 1: Minji's timer runs out first, and the whole cluster votes.
-      const v1 = await elect(0, ALL, 1400, id, L.timeout);
-      log(L.leader(T, v1));
-      await wait(400, id);
+      // Term 1: Minji's timer runs out first, and the whole cluster votes, glaring at the other camp.
+      await t.at(100);
+      const v1 = await elect(t, 0, ALL, 500, 300);
+      await say(t, L.vote(v1 === 5), '', '', 'vote');
 
-      // The partition: a crack cuts Minji and Haeun off from the other three.
-      crack.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: 650, easing: 'cubic-bezier(.6, 0, .3, 1)', fill: 'forwards' });
-      svg.animate([{ transform: 'translate(0, 0)' }, { transform: 'translate(-5px, 2px)' }, { transform: 'translate(4px, -2px)' }, { transform: 'none' }], { duration: 360, delay: 380 });
-      await wait(420, id);
+      // The partition: a crack cuts Minji and Haeun off from the other three, right between the camps.
+      await t.at(2650);
+      crack.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: ms(650), easing: 'cubic-bezier(.6, 0, .3, 1)', fill: 'forwards' });
+      if (!TTY.reduce) svg.animate([{ transform: 'translate(0, 0)' }, { transform: 'translate(-5px, 2px)' }, { transform: 'translate(4px, -2px)' }, { transform: 'none' }], { duration: 360, delay: 380 });
+      await t.wait(600);
       partitioned = true;
       links.forEach((l) => { if (CUT.includes(l.a) !== CUT.includes(l.b)) l.line.classList.add('cut'); });
-      log(L.partition, 'alert');
-      await wait(500, id);
+      // From here no heartbeat reaches the far side: Jihoon's election timer starts.
+      const farTimer = countdown(t, 3, 800);
+      farTimer.catch(() => {}); // awaited below; a newer run may abandon it first
+      await say(t, L.partition, 'alert', '', 'partition');
+      await t.wait(200);
       unsquabble();
 
       // Minji doesn't know. She writes A (짜장 / pineapple) and sends it to everyone; only her side
-      // hears it, so it stays uncommitted. Meanwhile the far side stops hearing heartbeats.
-      const farTimer = countdown(3, 1300, id);
-      farTimer.catch(() => {}); // awaited below; a newer run may abandon it first
+      // hears it, so it stays uncommitted (faint).
       setDish(0, 'A', true);
       const heard = reach(0);
-      await step(Promise.all(awake(0).map((j) => packet(0, j, INK.A, 700))), id);
-      heard.forEach((j) => setDish(j, 'A', true));
-      await step(Promise.all(heard.map((j) => packet(j, 0, YES, 450))), id);
-      log(L.stale(heard.length + 1));
+      const minority = (async () => {
+        await live(t, Promise.all(awake(0).map((j) => packet(0, j, INK.A, 600))));
+        heard.filter((j) => !nodes[j].napping).forEach((j) => setDish(j, 'A', true));
+        await live(t, Promise.all(heard.map((j) => packet(j, 0, YES, 400))));
+      })();
+      minority.catch(() => {});
       await farTimer;
 
-      // Term 2 on the majority side (term 3 or more, if someone there dozed off).
-      // The timer above already ran out, so the first try starts straight away.
-      const v2 = await elect(3, MAJOR, 1, id, null, 520);
-      log(L.second(T, v2));
-      await wait(200, id);
+      // Term 2 on the majority side (term 3 or more, if someone there dozes off).
+      await elect(t, 3, MAJOR, 0, 380);
+      await minority;
+      await say(t, L.two, 'alert', 'setup', 'two');
 
       // Jihoon writes B (짬뽕 / no pineapple). With three awake on his side, it commits.
       setDish(3, 'B', true);
-      const wrote = await replicate(MAJOR, 'B', 600, id, (have) => have.forEach((j) => setDish(j, 'B', true)));
+      const wrote = await replicate(t, MAJOR, 'B', 550, (have) => have.forEach((j) => setDish(j, 'B', true)));
       wrote.forEach((j) => setDish(j, 'B'));
-      log(L.commit);
-      await wait(400, id);
+      await t.wait(250);
+      // Both leaders shout their lunch at the gap; nothing gets across.
+      await live(t, Promise.all([packet(0, 2, INK.A, 600), packet(3, 4, INK.B, 600)]));
 
-      // Two leaders at once, each shouting its dish at the gap; nothing gets across. This line
-      // stays up two seconds: on a phone it is the only one showing.
-      log(L.two, 'alert');
-      await step(Promise.all([packet(0, 2, INK.A, 600), packet(3, 4, INK.B, 600)]), id);
-      await wait(800, id);
-
-      // Heal: Jihoon's next heartbeat carries a higher term. Minji steps down, and the
-      // uncommitted A on her side is replaced by the committed B. The glares ease; Minji sulks.
-      crack.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: -1 }], { duration: 600, easing: 'cubic-bezier(.6, 0, .3, 1)', fill: 'forwards' });
+      // Heal, timed so Jihoon's heartbeat lands as "Two leaders" has been read. It carries a higher
+      // term: Minji steps down, and the uncommitted A on her side is replaced by the committed B.
+      await readUp(t, 800);
+      crack.animate([{ strokeDashoffset: 0 }, { strokeDashoffset: -1 }], { duration: ms(600), easing: 'cubic-bezier(.6, 0, .3, 1)', fill: 'forwards' });
       partitioned = false;
       links.forEach((l) => l.line.classList.remove('cut'));
       const back = reach(3, CUT);
-      await step(Promise.all(back.map((j) => packet(3, j, INK.B))), id);
+      await live(t, Promise.all(back.map((j) => packet(3, j, INK.B))));
       leaders.delete(0);
       setRole(0, 'follower');
-      back.forEach((j) => setDish(j, 'B'));
+      back.filter((j) => !nodes[j].napping).forEach((j) => setDish(j, 'B'));
       ALL.forEach((j) => mood(j, j === 0 ? 'sulk' : 'calm'));
-      log(L.heal(T));
-      await wait(300, id);
+      await say(t, L.heal, '', '', 'heal');
 
-      // The client retries: Minji's order goes through the leader as index 2, and commits
-      // once a majority has it (anyone napping catches up when they wake).
-      await step(packet(0, 3, INK.A, 500), id);
-      const k = (await replicate(ALL, 'A', 600, id)).length;
+      // The client retries: Minji's order goes through the leader as index 2 and commits once a
+      // majority has it (anyone napping catches up when they wake).
+      await readUp(t, 1150);
+      await live(t, packet(0, 3, INK.A, 500));
+      await replicate(t, ALL, 'A', 600);
       mood(0, 'calm');
-      log(L.retry(k));
-      await wait(1000, id);
+      await say(t, L.retry, '', '', 'retry');
 
       // The punchline: every log is [B, A], and the kitchen serves it in one dish.
+      await readUp(t);
       ALL.filter((j) => !nodes[j].napping).forEach((j) => setDish(j, 'half'));
       countDone();
-      log(L.apply, 'win');
       showVerdict();
-      await cheer(id);
+      await say(t, L.apply, 'win', '', 'apply');
+      await cheer(t);
       // Tag: nobody ordered it. Then the wrap-up line under the log.
-      await wait(280, id);
-      odd.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'ease-out', fill: 'forwards' });
-      await wait(700, id);
+      await t.wait(580);
+      odd.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: ms(300), easing: 'ease-out', fill: 'forwards' });
+      await t.wait(300);
       room.classList.add('served');
-    } catch (e) { /* replaced by a newer run */ }
-  }
+    } catch (e) {
+      if (t.live()) throw e; // a stopped run ends quietly, whatever it was waiting on
+    }
+  }, { punch: 12.8 });
 
-  // Tapping Junho, Seoyeon or Haeun lets them nap for a while (Minji and Jihoon are not buttons). A napping node gets no
-  // packets and casts no vote; on its side a commit waits until a majority is awake.
+  // Tapping Junho, Seoyeon or Haeun lets them nap for a while (Minji and Jihoon are not buttons). A
+  // napping node gets no packets and casts no vote; on its side a commit waits until a majority is awake.
   nodes.forEach((n, i) => {
     if (!NAPPERS.includes(i)) return;
     const nap = () => {
       if (n.napping) return;
-      const mine = run;
+      const mine = gen;
       n.napping = true;
       n.g.classList.add('napping');
       const side = partitioned ? (CUT.includes(i) ? CUT : MAJOR) : ALL;
-      log(L.nap(NAMES[i], majority(side.filter((j) => !nodes[j].napping).length)));
+      note(L.nap(i, majority(side.filter((j) => !nodes[j].napping).length)));
       n.wakeTimer = setTimeout(() => {
-        if (mine !== run) return;
+        if (mine !== gen) return;
         n.napping = false;
         n.g.classList.remove('napping');
-        log(L.wake(NAMES[i]));
+        n.g.classList.add('napped');
+        note(L.wake(i));
         // Catch up from the leader on its side of the network, if there is one.
         const lead = [...leaders].find((l) => !partitioned || CUT.includes(l) === CUT.includes(i));
         if (lead === undefined || !nodes[lead].dish) return;
         const { dish, pending } = nodes[lead];
         packet(lead, i, INK[dish] || '#7a3a25').then(() => {
-          if (mine !== run || nodes[i].dish === 'half') return;
+          if (mine !== gen || nodes[i].dish === 'half') return;
           setDish(i, dish, pending);
           if (dish === 'half') countDone();
         });
@@ -837,7 +903,7 @@
     n.g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nap(); } });
   });
 
-  document.querySelectorAll('.again').forEach((b) => b.addEventListener('click', story));
+  document.querySelectorAll('.again').forEach((b) => b.addEventListener('click', () => play.start()));
 
   // The pizza in the middle of the ring (English): one pizza, half and half.
   const big = document.querySelector('.pizza-big');
@@ -853,15 +919,16 @@
     const base = TTY.lang === 'ko' ? 21 : 18, need = 10.3 / (.72 * scale);
     svg.style.setProperty('--chip', `${Math.max(base, need).toFixed(1)}px`);
     // A label grown past its base size runs into the faces beside it: drop it instead. The long
-    // English ones ("no pineapple") never grow; 짬짜면 may grow by a fifth.
+    // English ones ("no pineapple") never grow; the Korean ones (짜장, 짬뽕, 반반) may grow by a fifth.
     svg.classList.toggle('tiny-chips', need > base * (PIZZA ? 1 : 1.2));
   };
   if (window.ResizeObserver) new ResizeObserver(sizeNames).observe(svg);
   sizeNames();
 
-  // Before the story starts every node is a quiet follower.
+  // Before the story starts every node is a quiet follower. The first second is the gag, so the
+  // story waits for the fonts (TTY.onPlay).
   nodes.forEach((n, i) => setRole(i, 'follower'));
-  TTY.onShow(story);
+  TTY.onPlay(play.start);
   const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
   Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
 })();

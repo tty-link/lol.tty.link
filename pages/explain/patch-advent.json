@@ -4,13 +4,13 @@
     "en": "The Patch Calendar",
     "ko": "패치 달력"
   },
-  "updated": "2026-10-14",
+  "updated": "2026-10-26",
   "ko": {
     "line": "컴퓨터가 \"재시작이 필요합니다\"라고 할 때마다 미루는 우리와, 재시작해도 또 재시작하라는 업데이트를 겨울 카운트다운 달력으로 꾸며 놀린다.",
     "points": [
       "\"24번은 아껴 두세요.\" → 카운트다운 달력은 마지막 문에 가장 큰 선물을 숨겨 둔다. 그런데 금색 24번 문 뒤에 있는 건 모두가 미뤄 본 바로 그 창, \"재시작이 필요합니다\".",
-      "문을 열 때마다 금 간 드라이브에 반창고가 찰싹 → 보안 수정을 '패치'라고 부르니 정말 반창고로 땜질했다. 영수증에 찍히는 노트는 보안 담당자라면 한 번쯤 본 장면이다. 커피 머신에 열려 있던 22번 포트(원격으로 들어가는 SSH의 문), 'Spring2026!'을 'Summer2026!'로 바꾸기(비밀번호를 정기적으로 바꾸라고 하면 사람들은 이렇게 조금만 바꾼다. 그래서 미국 표준 기관 NIST는 정기 변경을 요구하지 말라고 한다).",
-      "'10분 뒤에 다시 알림'을 누를수록 쌓이는 '지금까지 미룬 시간' → 누구나 이 버튼을 누른다. 겨우 재시작하면 눈 깜짝할 새 99%까지 가서 거기서 멈추고, \"랙 전원을 뽑지 마세요.\" 밑에 한 줄이 더 붙는다. \"아직 99%예요. 그래도 뽑지 마세요.\"",
+      "문을 열 때마다 금 간 드라이브에 반창고가 찰싹 → 보안 수정을 '패치'라고 부르니 정말 반창고로 땜질했다. 영수증에 찍히는 노트는 보안 담당자라면 한 번쯤 본 장면이다. 커피 머신에 열려 있던 22번 포트(원격으로 들어가는 SSH의 문), \"변경: 비밀번호. 끝에 ! 하나 더.\"(비밀번호를 정기적으로 바꾸라고 하면 사람들은 이렇게 조금만 바꾼다. 그래서 미국 표준 기관 NIST는 정기 변경을 요구하지 말라고 한다). 그 뒤로는 노트가 읽을 새도 없이 쏟아진다. 패치는 늘 다 읽기엔 너무 많다.",
+      "'10분 뒤에 다시 알림'을 누르자 창이 0.5초 만에 \"10분 지났습니다.\"로 돌아온다. 또 누르면 \"또 10분 지났습니다.\", 지금까지 미룬 시간 20분 → 누구나 이 버튼을 누르고, 10분은 늘 눈 깜짝할 새 지나간다. 겨우 재시작하면 눈 깜짝할 새 99%까지 가서 거기서 멈추고, \"랙 전원을 뽑지 마세요.\" 밑에 한 줄이 더 붙는다. \"아직 99%예요. 그래도 뽑지 마세요.\"",
       "\"마지막 패치까지 카운트다운.\"이라더니, \"패치 23개 적용 완료. 가동 시간 0일.\" 1초 뒤 새 영수증 \"#25 재시작이 필요합니다.\"가 나오고 반창고로 덧댄 25번 문이 랙에 붙는다 → 재시작을 끝내자마자 또 재시작하라고 한다. 마지막 패치는 오지 않는다.",
       "직접 다섯 번 미루면(누를 때만) 미루기 버튼이 흐려지고 \"관리자 정책에 따라 5분 뒤 재시작됩니다.\" → 회사 컴퓨터는 정말 그렇게 한다. 기한이 지나 강제 재시작이 다가오면 닫을 수도 미룰 수도 없는 마지막 카운트다운이 뜨고, 그 막대는 빨갛다. 흐려진 버튼을 그래도 누르면 고개를 젓고 \"*일부 설정은 조직에서 관리합니다.\" 윈도 설정 화면에서 회사 PC 사용자가 늘 보는 그 문장이다."
     ],
@@ -63,16 +63,16 @@
       {
         "title": "Log4Shell - 위키백과",
         "url": "https://ko.wikipedia.org/wiki/Log4Shell",
-        "note": "노트의 \"log4j. 네, 아직도요.\"가 가리키는 2021년 취약점",
+        "note": "쏟아지는 노트 사이에 가끔 지나가는 log4j가 가리키는 2021년 취약점",
         "lang": "ko"
       }
     ],
     "deep": [
-      "23번 영수증은 판마다 늘 \"백업: 백업의 백업\" → 천천히 열리는 1–4번 노트는 첫 판에 늘 같고, 빠르게 지나가는 5–22번은 34개 중에서 판마다 새로 뽑는다. 다시 보면 노트 대부분이 바뀌어 있다.",
+      "23번 영수증은 판마다 늘 \"백업: 백업의 백업\" → 쏟아지던 노트가 거기서 멈춘다. 천천히 열리는 1·2번은 늘 같고, 쏟아지는 3–22번은 34개 중에서 판마다 새로 뽑는다. 다시 보면 노트 대부분이 바뀌어 있다.",
       "\"패치 23개가 기다리고 있어요.\" → 24번은 패치가 아니라 재시작 그 자체라서 23개다. 그래서 끝나면 \"패치 23개 적용 완료.\"",
-      "재시작 고리는 0.5초 만에 99%까지 달려가서 거기서 1.7초를 멈췄다가 100%가 된다 → 재시작의 대부분이 마지막 1%다.",
-      "재시작이 끝나면 드라이브마다 달린 작은 주황 불이 초록으로 바뀌는데, 1초 뒤 #25 영수증, 0.7초 뒤 반창고로 덧댄 25번 문이 나타나 주황 불을 깜빡인다 → 24칸 달력에 문이 하나 더 생겼다.",
-      "25번 문을 누르면(누를 때만) 재시작 창이 제목에 (2/∞)를 달고 다시 뜬다. \"방금 한 재시작에 재시작이 필요해요.\" → 또 재시작하면 완료 띠는 \"재시작 완료. 또.\", 그리고 #26과 26번 문, 그다음은 (3/∞). 미룬 시간은 이어서 쌓여 1시간, 2시간이 된다.",
+      "재시작 고리는 0.5초 만에 99%까지 달려가서 거기서 2.1초를 멈췄다가 100%가 된다 → 재시작의 대부분이 마지막 1%다.",
+      "재시작이 끝나면 드라이브마다 달린 작은 주황 불이 초록으로 바뀌는데, 1초 뒤 #25 영수증, 1.1초 뒤 반창고로 덧댄 25번 문이 나타나 주황 불을 깜빡인다 → 24칸 달력에 문이 하나 더 생겼다.",
+      "직접 더 미루면(누를 때만) '지금까지 미룬 시간'이 30분, 40분 … 쌓인다. 25번 문을 누르면(누를 때만) 재시작 창이 제목에 (2/∞)를 달고 다시 뜬다. \"방금 한 재시작에 재시작이 필요해요.\" → 또 재시작하면 완료 띠는 \"재시작 완료. 또.\", 그리고 #26과 26번 문, 그다음은 (3/∞). 미룬 시간은 이어서 쌓여 1시간, 2시간이 된다.",
       "한 판에 다섯 번 미루면 나오는 5분 카운트다운은 진짜 5분이다 → 끝까지 기다리면 랙이 스스로 재시작하고 다음 영수증과 문까지 똑같이 나온다. 첫 판이면 그때 '지금까지 미룬 시간'은 정확히 50분(10분 × 5).",
       "매달 둘째 화요일(Patch Tuesday)에는 홈을 열 때 이 달력이 맨 먼저 뜰 수 있다 → 패치가 쏟아지는 날에 맞춘 달력이다."
     ]
@@ -81,8 +81,8 @@
     "line": "It pokes fun at how we all put off \"Restart required\", and at updates that want another restart right after the last one, dressed up as a winter countdown calendar.",
     "points": [
       "\"Save 24 for last.\" → a countdown calendar keeps its best treat behind the last door. Behind the gold door 24 is the one window everyone has snoozed: \"Restart required.\"",
-      "Every door opens on a cracked drive, and a sticking plaster (a small adhesive bandage) slaps onto the crack → security fixes are called \"patches\", so here they are literal ones. The printed notes are things security people have really seen: port 22 (the door for remote logins over SSH) open on the coffee machine, or 'Spring2026!' rotated to 'Summer2026!' (make people change passwords on a schedule and they change them as little as possible, which is why the US standards body NIST says not to require it).",
-      "\"Remind me in 10 minutes\" and the growing \"Snoozed so far\" → everyone presses that button. When you finally restart, it shoots to 99% and stays there, and under \"Don't unplug the rack.\" comes one more line: \"Still 99%. Still don't.\"",
+      "Every door opens on a cracked drive, and a sticking plaster (a small adhesive bandage) slaps onto the crack → security fixes are called \"patches\", so here they are literal ones. The printed notes are things security people have really seen: port 22 (the door for remote logins over SSH) open on the coffee machine, or 'Spring2026!' rotated to 'Summer2026!' (make people change passwords on a schedule and they change them as little as possible, which is why the US standards body NIST says not to require it). After that the notes pour out too fast to read. There are always more patches than anyone reads.",
+      "\"Remind me in 10 minutes\" is pressed and the window is back half a second later: \"It has been 10 minutes.\" Pressed again: \"It has been 10 more minutes.\", 20 min snoozed so far → everyone presses that button, and the ten minutes always fly. When you finally restart, it shoots to 99% and stays there, and under \"Don't unplug the rack.\" comes one more line: \"Still 99%. Still don't.\"",
       "\"Counting down to the last patch.\" Then \"All 23 patches applied. Uptime: 0 days.\", a second later a fresh slip, \"#25 Restart required.\", and a 25th door taped onto the rack → the restart is barely done and it wants another one. The last patch never comes.",
       "Snooze five times yourself (only if you press it) and the snooze button fades: \"Your organization will restart this device in 5 minutes.\" → managed work PCs really do this. Once the deadline has passed and the forced restart is close, a final countdown appears that you can't close or snooze, with a red bar. Press the faded button anyway and it shakes its head: \"*Some of these settings are managed by your organization.\", the line every work PC shows somewhere in its Windows settings."
     ],
@@ -135,16 +135,16 @@
       {
         "title": "Log4Shell - Wikipedia",
         "url": "https://en.wikipedia.org/wiki/Log4Shell",
-        "note": "the 2021 vulnerability behind \"Updated: log4j. Yes, still.\"",
+        "note": "the 2021 vulnerability behind the log4j note that sometimes flashes past",
         "lang": "en"
       }
     ],
     "deep": [
-      "Slip #23 is always \"Backed up: the backups.\" → notes 1–4, the slow ones, are the same every first round; the fast notes 5–22 are drawn fresh from 34 each round. Watch again and most of the notes are different.",
-      "\"23 patches are waiting\" → 23, because #24 is not a patch, it is the restart itself. Hence \"All 23 patches applied.\" at the end.",
-      "The restart ring races to 99% in half a second, then sits there for 1.7 s before 100% → most of the restart is the last 1%.",
-      "After the restart every drive's little amber light turns green; a second later slip #25 prints, and 0.7 s after that a 25th door, taped on with plasters, drops onto the corner blinking amber → the 24-door calendar just grew another door.",
-      "Press door 25 (only if you press it) and the restart window comes back with (2/∞) in its title: \"The last restart needs a restart.\" → restart again and the band says \"Restart done. Again.\", then slip #26 and door 26, then (3/∞). The snooze total keeps adding up, into hours.",
+      "Slip #23 is always \"Backed up: the backups.\" → that is where the flood of notes stops. Notes 1–2, the slow ones, never change; the notes that pour past (3–22) are drawn fresh from 34 each round. Watch again and most of the notes are different.",
+      "\"23 patches await\" → 23, because #24 is not a patch, it is the restart itself. Hence \"All 23 patches applied.\" at the end.",
+      "The restart ring races to 99% in half a second, then sits there for 2.1 s before 100% → most of the restart is the last 1%.",
+      "After the restart every drive's little amber light turns green; a second later slip #25 prints, and 1.1 s after that a 25th door, taped on with plasters, drops onto the corner blinking amber → the 24-door calendar just grew another door.",
+      "Snooze more yourself (only if you press it) and the total keeps going: 30 min, 40 min… Press door 25 (only if you press it) and the restart window comes back with (2/∞) in its title: \"The last restart needs a restart.\" → restart again and the band says \"Restart done. Again.\", then slip #26 and door 26, then (3/∞). The snooze total keeps adding up, into hours.",
       "The 5-minute countdown after the fifth snooze in a round is a real five minutes → wait it out and the rack restarts by itself, next slip and door and all. In the first round \"Snoozed so far\" then says exactly 50 min (5 × 10).",
       "On the second Tuesday of the month (Patch Tuesday), the home page may open with this calendar first → it is timed to the day the patches pour in."
     ]

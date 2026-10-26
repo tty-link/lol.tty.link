@@ -4,12 +4,12 @@
     "en": "Lunch, by Consensus",
     "ko": "점심 메뉴 합의 알고리즘"
   },
-  "updated": "2026-10-15",
+  "updated": "2026-10-26",
   "ko": {
     "line": "서버 여러 대가 같은 기록에 합의하는 방법인 Raft 알고리즘을, 팀원 다섯이 점심 메뉴를 정하는 이야기로 규칙 그대로 따라가는 페이지다.",
     "points": [
       "점심 메뉴 하나 정하는 데 서버용 합의 알고리즘을 통째로 돌린다 → 다섯 명이 점심 하나 못 정하는 건 정말로 분산 합의 문제다. 선거, 분할, 리더 교체까지 다 거쳐 도착한 답은 중국집이 이미 메뉴판에 올려 둔 짬짜면.",
-      "처음부터 말풍선이 짜장 둘, 짬뽕 셋으로 갈라져 서로 째려보더니, 보라색 균열이 정확히 그 두 패 사이를 가르고 리더가 둘이 된다(\"리더 둘, 점심 둘\") → 네트워크 분할이 메뉴 취향대로 났다. 갈라져 있는 동안 두 패는 계속 째려본다. Raft에서도 네트워크가 갈라지면 기수(term)가 다른 리더 둘이 실제로 생길 수 있다. 하지만 기록이 과반(5명 중 3명)에 적힌 쪽만 커밋할 수 있어서, 둘만 있는 민지 쪽 짜장은 흐린 채로 남는다.",
+      "처음부터 말풍선이 짜장 둘, 짬뽕 셋으로 갈라져 서로 째려보는데 표는 다 준다(\"째려보면서도 표는 다 줬어요\"). 그러더니 보라색 균열이 정확히 그 두 패 사이를 가르고 리더가 둘이 된다(\"리더 둘, 점심 둘\") → 네트워크 분할이 메뉴 취향대로 났다. 갈라져 있는 동안 두 패는 계속 째려본다. Raft에서도 네트워크가 갈라지면 기수(term)가 다른 리더 둘이 실제로 생길 수 있다. 하지만 기록이 과반(5명 중 3명)에 적힌 쪽만 커밋할 수 있어서, 둘뿐인 민지 쪽 짜장은 흐린 채로 남고 셋인 지훈 쪽 짬뽕만 진해진다.",
       "분할이 풀리면 민지가 물러나 혼자 시무룩해지고 짜장이 덮어써진다. 그래도 \"민지는 포기를 몰라요\": 다시 주문한다 → 더 높은 term(기수)을 본 옛 리더는 물러나고, 커밋 못 한 기록은 새 리더 것으로 덮인다. 주문이 안 들어갔으면 다시 넣는 것(재시도)도 클라이언트가 실제로 하는 일이다.",
       "결론은 짬짜면, 알약 두 개가 \"다섯 노드 모두 커밋\", \"아무도 안 시킴\"이고, 다섯 얼굴이 활짝 웃으며 폴짝 뛴다 → 다섯 모두 합의했는데 그걸 시킨 사람은 없다. 규칙을 하나도 어기지 않았는데 \"다수결이 아니라 반반결\"이 났다. 주방은 로그를 순서대로 담았을 뿐이다(1번 칸 짬뽕, 2번 칸 짜장, 한 그릇). Raft의 과반은 어느 메뉴가 이겼나를 정하는 투표가 아니라 주문이 몇 대에 적혔나를 세는 것이다. 그래서 민지가 다시 넣은 주문도 반칙이 아니라 정당한 2번 칸이다."
     ],
@@ -69,10 +69,11 @@
     ],
     "deep": [
       "말풍선의 두 패가 그대로 이야기의 두 편이다. 짜장을 떠올린 민지·하은이 분할 뒤 소수파가 되고 흐린 짜장을 받으며, 짬뽕을 떠올린 준호·서연·지훈이 과반이 되어 짬뽕을 커밋한다.",
-      "민지의 선거 타이머가 '먼저' 끝나는 것 → Raft는 노드마다 선거 타이머를 무작위로 잡아(보통 150~300ms) 대개 한 노드만 먼저 출마하게 해서 표가 갈리는 일을 줄인다.",
-      "지훈이는 '2기' 리더다 → 선거를 할 때마다 term이 하나씩 오른다. 지훈이 선거 중에 준호나 서연을 재우면 2표로 지고 3기, 4기로 다시 나가며 term이 계속 오른다.",
-      "\"째려보면서도 표는 다 줬어요\" → Raft의 투표는 메뉴 취향을 보지 않는다. 후보의 term이 낮지 않고, 그 기수에 아직 다른 후보를 안 찍었고, 후보의 기록이 자기 것보다 뒤처지지 않으면 표를 준다. 그래서 건너편 패도 만장일치로 찍는다.",
-      "준호·서연·하은을 누르면 존다(누를 때만 나오는 장면) → 깨어 있는 노드가 과반이 안 되면 선거도 커밋도 멈춘다. 민지의 재주문 중에 한 명만 재우면 넷에 적혀 바로 커밋되고, 가운데 알약이 \"5개 중 4개에 커밋\"이었다가 그 노드가 깨서 따라잡으면 \"다섯 노드 모두 커밋\"으로 바뀐다. 민지와 지훈은 선거를 맡아서 졸지 않는다.",
+      "민지 얼굴을 도는 주황 원호(선거 타이머)가 맨 먼저 다 줄어든다 → Raft는 노드마다 선거 타이머를 무작위로 잡아(보통 150~300ms) 대개 한 노드만 먼저 출마하게 해서 표가 갈리는 일을 줄인다.",
+      "분할 뒤 지훈이 얼굴에도 주황 원호가 돈다 → 리더의 하트비트가 균열을 못 넘어오니 건너편의 선거 타이머가 끝난 것이다. 지훈이는 2기 리더가 되고, 선거를 할 때마다 기수가 하나씩 오른다(넓은 화면에서는 기록 카드 머리의 term 숫자로 보인다).",
+      "넓은 화면에서 보이는 노드 옆 작은 그릇 이름표는 반반인데 가운데 그릇만 짬짜면이다 → 각 서버의 기록에는 1번 칸 짬뽕, 2번 칸 짜장이 적혀 있을 뿐이고, 그 기록을 순서대로 실행한 결과(상태 기계)가 짬짜면이다.",
+      "\"째려보면서도 표는 다 줬어요\" → Raft의 투표는 메뉴 취향을 보지 않는다. 후보의 term이 낮지 않고, 그 기수에 아직 다른 후보를 안 찍었고, 후보의 기록이 자기 것보다 뒤처지지 않으면 표를 준다. 그래서 건너편 패도 다 찍는다.",
+      "준호·서연·하은을 누르면 존다(누를 때만 나오는 장면) → 깨어 있는 노드가 과반이 안 되면 선거도 커밋도 멈춘다. 지훈이 선거 중에 준호나 서연을 재우면 2표로 지고 3기, 4기로 다시 나가며 기수가 계속 오른다. 결과 직전에 한 명을 재우면 가운데 알약이 \"5개 중 4개에 커밋\"이었다가 그 노드가 깨서 따라잡으면 \"다섯 노드 모두 커밋\"으로 바뀐다. 민지와 지훈은 선거를 맡아서 졸지 않는다.",
       "영어판은 같은 이야기를 피자로 한다. 영어권의 오랜 싸움인 '피자에 파인애플을 올리느냐'로 패가 갈리고, 커밋 순서대로 담은 결과는 반쪽만 파인애플인 반반 피자다."
     ]
   },
@@ -80,7 +81,7 @@
     "line": "Five teammates pick lunch (pizza with or without pineapple) using Raft, a method servers use to agree on one shared record, and every step follows Raft's real rules.",
     "points": [
       "It runs a full server consensus algorithm just to pick lunch → getting five coworkers to agree on lunch really is a distributed-consensus problem. After an election, a partition and a change of leader, the answer is the one every pizza place already sells: half and half.",
-      "From the first second, the thought bubbles split two pineapple pizzas against three without, and the two camps glare at each other; then a purple crack splits the ring exactly between them and there are two leaders (\"Two leaders, two lunches\") → the network partition follows the pizza line, and the glaring lasts as long as the split. In Raft a partition really can leave two leaders, from different terms, but only the side that gets an entry written on a majority (3 of 5) can commit. Minji's pineapple stays faint.",
+      "From the first second, the thought bubbles split two pineapple pizzas against three without, and the two camps glare at each other, yet everyone votes (\"They glare, but they vote.\"). Then a purple crack splits the ring exactly between them and there are two leaders (\"Two leaders, two lunches\") → the network partition follows the pizza line, and the glaring lasts as long as the split. In Raft a partition really can leave two leaders, from different terms, but only the side that gets an entry written on a majority (3 of 5) can commit. Minji's pineapple stays faint on two nodes; Jihoon's no pineapple goes solid on three.",
       "When the network heals, Minji steps down, sulks, and her pineapple is overwritten. Then \"Minji retries. Of course she does.\" → an old leader that sees a higher term steps down, uncommitted entries are replaced, and a client whose order didn't stick sends it again. Those are Raft's actual rules.",
       "The verdict is a half-and-half pizza, with \"5 of 5 committed\" and then \"0 of 5 ordered it\", and five faces beaming and hopping → everyone agreed on something nobody asked for. No rule was broken: \"Not majority rule. Half-and-half rule.\" The kitchen applied the log in order: half no pineapple, half pineapple. Raft's majority isn't a vote on which lunch wins; it counts how many servers have written an order down. So Minji's retry isn't cheating: it is a legitimate entry at index 2."
     ],
@@ -137,11 +138,11 @@
       }
     ],
     "deep": [
-      "The two camps in the bubbles are the two sides of the story: Minji and Haeun, who pictured pineapple, end up as the minority with a faint pineapple; Junho, Seoyeon and Jihoon, who pictured none, are the majority that commits \"no pineapple\".",
-      "Minji's election timer runs out \"first\" → Raft gives every node a randomized election timeout (typically 150–300 ms), so usually one node stands first and the votes don't split.",
-      "Jihoon is leader of \"term 2\" → every election bumps the term by one. Put Junho or Seoyeon to sleep during Jihoon's election and he loses with 2 votes and tries again in term 3, 4…",
+      "The two camps in the bubbles are the two sides of the story: Minji and Haeun, who pictured pineapple, end up as the minority with a faint pineapple; Junho, Seoyeon and Jihoon, who pictured none, are the majority that commits no pineapple.",
+      "The orange arc around Minji's face (her election timer) runs out before anyone else's → Raft gives every node a randomized election timeout (typically 150–300 ms), so usually one node stands first and the votes don't split.",
+      "After the split an orange arc runs around Jihoon too → the leader's heartbeats can't cross the crack, so the far side's election timer runs out. Jihoon becomes leader of term 2, and every election bumps the term by one (on wide screens the term counter sits at the top of the event log).",
       "\"They glare, but they vote.\" → a Raft vote ignores taste. A node grants it when the candidate's term isn't behind, it hasn't voted for someone else this term, and the candidate's log is at least as up to date as its own. So the other camp votes for Minji too, 5 of 5.",
-      "Tap Junho, Seoyeon or Haeun and they nap (only when you tap) → without a majority awake, elections and commits stall. Put one to sleep during Minji's retry and the entry commits on 4 of 5 at once; the centre pill reads \"4 of 5 committed\" until the napper wakes and catches up. Minji and Jihoon run the elections, so they never nap.",
+      "Tap Junho, Seoyeon or Haeun and they nap (only when you tap) → without a majority awake, elections and commits stall. Put Junho or Seoyeon to sleep during Jihoon's election and he loses with 2 votes and tries again in term 3, 4… Put one to sleep just before the verdict and the centre pill reads \"4 of 5 committed\" until the napper wakes and catches up. Minji and Jihoon run the elections, so they never nap.",
       "The Korean version fights over jajangmyeon (noodles in a thick black-bean sauce) versus jjamppong (a spicy red noodle soup, often with seafood), the classic hard choice at Korea's Chinese restaurants. Its verdict is jjamjjamyeon, a real dish: one bowl with a divider down the middle, half of each."
     ]
   }

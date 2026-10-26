@@ -84,7 +84,7 @@
     {"id": "agent-permissions", "file": "agent-permissions.html", "seconds": 24, "family": ["consent-fatigue"],
       "title": {"en": "Your Agent Would Like To…", "ko": "에이전트가 묻습니다"},
       "summary": {"en": "It asks before everything. Then it waters your plant.", "ko": "모든 걸 허락받는 에이전트. 결국 화분에 물을 줍니다."} },
-    {"id": "patch-advent", "file": "patch-advent.html", "seconds": 23, "family": ["loop-ending", "consent-fatigue"], "when": {"days": [2], "nth": 2},
+    {"id": "patch-advent", "file": "patch-advent.html", "seconds": 26, "family": ["loop-ending", "consent-fatigue"], "when": {"days": [2], "nth": 2},
       "title": {"en": "The Patch Calendar", "ko": "패치 달력"},
       "summary": {"en": "A countdown calendar built into a server rack. Guess what's behind door 24.", "ko": "서버 랙으로 만든 카운트다운 달력. 24번 문 뒤에는 뭐가 있을까요?"} },
     {"id": "switch-sommelier", "file": "switch-sommelier.html", "seconds": 26, "family": ["hardware", "keyboard"],

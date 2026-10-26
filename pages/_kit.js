@@ -188,6 +188,8 @@
         };
         current = run;
         timelines.add(run);
+        // a press just before the start already stands this run still: ask for its time too
+        if (busyEnd > t0) run.held();
         try { performance.mark('tty-play'); } catch (e) { /* old browsers */ }
         Promise.resolve().then(() => fn(t)).catch((e) => setTimeout(() => { throw e; }));
         return t;

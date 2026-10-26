@@ -35,7 +35,7 @@
   body {
     container: page / size;
     position: relative;
-    overflow: hidden;
+    overflow: clip;
     background:
       radial-gradient(70cqw 26cqh at 50% -4cqh, rgba(255,255,255,.75), transparent 70%),
       linear-gradient(#a9b8c3 0, #c7d3da 16%, #d5dee3 62%, #bcc8cf 100%);
@@ -390,6 +390,8 @@
   .unit-side .art { height: calc(min(var(--ah), var(--aw) / var(--ar)) * .94); width: calc(min(var(--ah), var(--aw) / var(--ar)) * .94 * var(--ar)); }
   .unit-back { position: absolute; left: 50%; bottom: 7cqh; translate: -30% 0; filter: brightness(.86); z-index: -1; }
   .unit-main.gone { visibility: hidden; }
+  /* Before the first show the lights are still off: no cartons, no labels (the opening brings them in). */
+  .fridge.pre .unit { opacity: 0; }
   @media (hover: hover) { .prod:hover .unit-main { translate: 0 -3cqh; } }
   .pedestal { position: absolute; left: 50%; bottom: calc(var(--rail) + .6cqh); width: 32cqw; height: 8cqh; translate: -50% 0; border-radius: 2px 2px 0 0; background: linear-gradient(#1f6b45, #0f4a2e); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
   .cell[data-kind="ev"] .prod { bottom: calc(var(--rail) + 8.6cqh); }
@@ -713,7 +715,7 @@
   .r-val .mono { font-family: 'Archivo Narrow', sans-serif; font-weight: 700; font-size: 1.04em; }
   .r-hint { margin-left: .35em; font: 500 max(10px, .82em)/1 'Archivo Narrow', 'IBM Plex Sans KR', sans-serif; color: #5a6772; }
   .lang-ko .r-hint { font-family: 'IBM Plex Sans KR', sans-serif; }
-  .chk { display: grid; place-items: center; width: 1.45em; height: 1.45em; border-radius: 50%; background: var(--ok); color: #fff; font: 900 .8em/1 'Archivo', sans-serif; }
+  .chk { display: grid; place-items: center; width: 1.45em; height: 1.45em; border-radius: 50%; background: var(--ok); color: #fff; font: 900 max(10px, .8em)/1 'Archivo', sans-serif; }
   .chk.bad { background: var(--warn); }
   .chk.none { background: #cfd6db; }
   .rv { opacity: 0; }
@@ -786,6 +788,34 @@
     .st-via { display: none; }
     .insp .note { left: .6em; top: 2.8em; width: 6.6em; }
   }
+  /* Short phone stages (328x288, 508x339): the sheet is taller than the stage and its head went off the top.
+     Size the card by height, put the rows under a small drawing, and drop the red slip (the verdict below says the same). */
+  @container page ((max-aspect-ratio: 9/10) or (max-width: 560px)) and (max-height: 380px) {
+    .insp { --u: clamp(10.5px, 3.7cqh, 14px); grid-template-areas: "art head" "rows rows" "trace trace" "verdict verdict"; padding-top: .6em; }
+    .insp-art { width: 3.2em; min-height: 4.2em; }
+    .insp-head { align-self: center; }
+    .insp-title { margin-top: .15em; }
+    .insp-tag { margin-top: .1em; }
+    .insp-rows { margin-top: .4em; padding-top: .4em; row-gap: .15em; }
+    .insp-trace { margin-top: .5em; }
+    .trace-h { margin-bottom: .35em; }
+    .stations { gap: .6em; }
+    .station { padding: .3em .4em .35em; }
+    .insp-verdict { margin-top: .5em; }
+    .insp .note { display: none; }
+  }
+  /* The robot turns up while a visitor's label is open: the floor comes out above the dimmed shelves.
+     On phones the label is a sheet over the floor: only the robot and his excuse show on it, in a
+     strip kept free at the bottom of the sheet (on short stages the sheet has no room to spare). */
+  .robot-up .floor { z-index: 9; }
+  .robot-up .robot-arm { visibility: hidden; }   /* his arm would reach up through the label */
+  @container page (max-aspect-ratio: 9/10) or (max-width: 560px) {
+    .robot-up .floor { background: none; }
+    .robot-up .floor::before, .robot-up .floor-hint, .robot-up .cart { visibility: hidden; }
+  }
+  @container page ((max-aspect-ratio: 9/10) or (max-width: 560px)) and (min-height: 381px) {
+    .scene.robot-up .insp { padding-bottom: 4.8em; }
+  }
   .flyer { position: fixed; z-index: 9; pointer-events: none; }
   .flyer .art { width: 100%; height: 100%; }
 </style>
@@ -796,8 +826,8 @@
   <div class="banner-zone">
     <button class="banner" type="button" aria-describedby="poster-hint">
       <svg class="flake l" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><path d="M9.4 3.6L12 6l2.6-2.4M9.4 20.4L12 18l2.6 2.4M3.6 10.6L6.6 9.6 5.9 6.5M18.1 17.5l-.7-3.1 3-1M3.6 13.4l3 1-.7 3.1M18.1 6.5l-.7 3.1 3 1"/></g></svg>
-      <span class="banner-l1"><span data-lang="en">47 days max from 2029.</span><span data-lang="ko">2029년부터 최대 47일.</span></span>
-      <span class="banner-l2"><span data-lang="en">Certificates now need refrigeration.</span><span data-lang="ko">이제 인증서도 냉장 보관.</span></span>
+      <span class="banner-l1" data-tty-line="setup"><span data-lang="en">47 days max from 2029.</span><span data-lang="ko">2029년부터 최대 47일.</span></span>
+      <span class="banner-l2" data-tty-line="setup"><span data-lang="en">Certificates now need refrigeration.</span><span data-lang="ko">이제 인증서도 냉장 보관.</span></span>
       <svg class="flake r" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><path d="M9.4 3.6L12 6l2.6-2.4M9.4 20.4L12 18l2.6 2.4M3.6 10.6L6.6 9.6 5.9 6.5M18.1 17.5l-.7-3.1 3-1M3.6 13.4l3 1-.7 3.1M18.1 6.5l-.7 3.1 3 1"/></g></svg>
     </button>
   </div>
@@ -861,7 +891,7 @@
       </svg>
       <span class="cart-plate"><span data-lang="en">Browser</span><span data-lang="ko">브라우저</span></span>
       <span class="cart-lock hide"><svg class="lock-ico" viewBox="0 0 24 24"><path d="M7 11V8a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2.6"/><rect x="4.5" y="11" width="15" height="10.5" rx="2.4" fill="currentColor"/></svg></span>
-      <span class="say cart-say hide"></span>
+      <span class="say cart-say hide" data-tty-line="setup"></span>
     </div>
 
     <div class="robot">
@@ -883,7 +913,7 @@
       </svg>
       <span class="robot-chest" aria-hidden="true">ACME</span>
       <div class="robot-crate"><div class="crate-load"></div><div class="crate-front" aria-hidden="true"></div></div>
-      <span class="say robot-say hide"><span data-lang="en"><span class="say-l">My cron died.</span> <span class="say-l">I was due on day <span class="due">60</span>.</span></span><span data-lang="ko"><span class="say-l">크론이 죽어 있었어요.</span> <span class="say-l">원래 <span class="due">60</span>일째 오거든요.</span></span></span>
+      <span class="say robot-say hide" data-tty-line="punch"><span data-lang="en"><span class="say-l">My cron died.</span> <span class="say-l">I was due on day <span class="due">60</span>.</span></span><span data-lang="ko"><span class="say-l">크론이 죽어 있었어요.</span> <span class="say-l">원래 <span class="due">60</span>일째 오거든요.</span></span></span>
     </div>
   </div>
 
@@ -1106,19 +1136,19 @@
         ${bars}</svg>`;
     }
     const brand = brandLong
-      ? `<text x="43" y="117" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="12.5" textLength="66" lengthAdjust="spacingAndGlyphs" fill="${k.ink}">${p.cn}</text>`
-      : `<text x="43" y="119" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="17" textLength="62" lengthAdjust="spacingAndGlyphs" fill="${k.ink}">${p.cn}</text>`;
+      ? `<text data-tty-line="decor" x="43" y="117" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="12.5" textLength="66" lengthAdjust="spacingAndGlyphs" fill="${k.ink}">${p.cn}</text>`
+      : `<text data-tty-line="decor" x="43" y="119" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="17" textLength="62" lengthAdjust="spacingAndGlyphs" fill="${k.ink}">${p.cn}</text>`;
     return `<svg class="art-svg" viewBox="0 0 100 200" aria-hidden="true">${defs}${silhouette}
-      <text x="50" y="28.6" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6.6" fill="#3b4852">~${fin(p.end)}</text>
+      <text data-tty-line="decor" x="50" y="28.6" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6.6" fill="#3b4852">~${fin(p.end)}</text>
       <path d="M22 46H72" stroke="#fff" stroke-opacity=".35" stroke-width="5"/>
       <path d="M6 60H80V83C62 93 38 75 6 89Z" fill="${k.c}"/>
       <path d="M6 89C38 75 62 93 80 83" fill="none" stroke="#fff" stroke-width="2.4"/>
       <path d="M58 68c3-4 8-4 10 0" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
       ${brand}
-      <text x="43" y="133" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="8.6" letter-spacing="1.4" fill="${k.c}">${k.sub}</text>
+      <text data-tty-line="decor" x="43" y="133" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="8.6" letter-spacing="1.4" fill="${k.c}">${k.sub}</text>
       <path d="M43 141C43 141 30.5 155 30.5 164A12.5 12.5 0 0 0 55.5 164C55.5 155 43 141 43 141Z" fill="${k.c}" opacity=".14"/>
       ${LOCK(43, 161, k.c, .95)}
-      <text x="43" y="189" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6.2" letter-spacing=".6" fill="#6b7987">LET'S ENCRYPT · ${p.days} DAYS</text>
+      <text data-tty-line="decor" x="43" y="189" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6.2" letter-spacing=".6" fill="#6b7987">LET'S ENCRYPT · ${p.days} DAYS</text>
       <rect x="8" y="92" width="3.4" height="84" fill="#fff" opacity=".7"/>
     </svg>`;
   }
@@ -1137,16 +1167,16 @@
     if (back) {
       return `<svg class="art-svg" viewBox="0 0 90 200" aria-hidden="true">${body}${top}
         <g font-family="Permanent Marker" fill="#3a2614" text-anchor="middle">
-          <text x="45" y="112" font-size="9" transform="rotate(-4 45 112)">issued by: us</text>
-          <text x="45" y="128" font-size="9" transform="rotate(-4 45 128)">for: us</text>
-          <text x="46" y="148" font-size="8" transform="rotate(-4 46 148)">valid 10 yrs!</text>
+          <text data-tty-line="decor" x="45" y="112" font-size="9" transform="rotate(-4 45 112)">issued by: us</text>
+          <text data-tty-line="decor" x="45" y="128" font-size="9" transform="rotate(-4 45 128)">for: us</text>
+          <text data-tty-line="decor" x="46" y="148" font-size="8" transform="rotate(-4 46 148)">valid 10 yrs!</text>
         </g></svg>`;
     }
     return `<svg class="art-svg" viewBox="0 0 90 200" aria-hidden="true">${body}${top}
       <g font-family="Permanent Marker" fill="#3a2614" text-anchor="middle">
-        <text x="45" y="112" font-size="10.5" transform="rotate(-6 45 112)">Homemade</text>
-        <text x="44" y="136" font-size="19" transform="rotate(-5 44 136)">MILK</text>
-        <text x="40" y="153" font-size="8" transform="rotate(-4 40 153)">Cow says OK</text>
+        <text data-tty-line="decor" x="45" y="112" font-size="10.5" transform="rotate(-6 45 112)">Homemade</text>
+        <text data-tty-line="decor" x="44" y="136" font-size="19" transform="rotate(-5 44 136)">MILK</text>
+        <text data-tty-line="decor" x="40" y="153" font-size="8" transform="rotate(-4 40 153)">Cow says OK</text>
       </g>
       <path d="M60 147c0-2.6 3.6-2.6 3.6 0 0-2.6 3.6-2.6 3.6 0 0 2.6-3.6 4.6-3.6 4.6s-3.6-2-3.6-4.6Z" fill="#d8443a"/>
       <rect x="17" y="170" width="3" height="20" rx="1.5" fill="#fff" opacity=".8"/></svg>`;
@@ -1166,19 +1196,19 @@
     if (back) {
       return `<svg class="art-svg" viewBox="0 0 90 200" aria-hidden="true">${defs}${bottle}
         <rect x="21" y="92" width="48" height="78" rx="3" fill="#fbf6e7" stroke="#c9a44a" stroke-width="1.2"/>
-        <text x="45" y="106" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6" fill="#0b6b38">O = tty.link Dairy</text>
+        <text data-tty-line="decor" x="45" y="106" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6" fill="#0b6b38">O = tty.link Dairy</text>
         <g fill="#b9ad8a">${[114, 121, 128, 135, 142, 149, 156].map((y, i) => `<rect x="26" y="${y}" width="${30 + (i * 5) % 12}" height="2.4"/>`).join('')}</g></svg>`;
     }
     return `<svg class="art-svg" viewBox="0 0 90 200" aria-hidden="true">${defs}${bottle}
       <rect x="20" y="90" width="50" height="82" rx="3" fill="#fbf6e7" stroke="#c9a44a" stroke-width="1.4"/>
       <rect x="23" y="93" width="44" height="76" rx="2" fill="none" stroke="#c9a44a" stroke-width=".6"/>
-      <text x="45" y="105" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="6.2" letter-spacing="1.6" fill="#8a6a1f">PREMIUM</text>
-      <text x="45" y="128" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="23" fill="#0b6b38">EV</text>
-      <text x="45" y="138" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="7" letter-spacing="1.4" fill="#8a6a1f">MILK</text>
+      <text data-tty-line="decor" x="45" y="105" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="6.2" letter-spacing="1.6" fill="#8a6a1f">PREMIUM</text>
+      <text data-tty-line="decor" x="45" y="128" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="23" fill="#0b6b38">EV</text>
+      <text data-tty-line="decor" x="45" y="138" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="7" letter-spacing="1.4" fill="#8a6a1f">MILK</text>
       <rect x="24" y="145" width="42" height="11" rx="5.5" fill="#fff" stroke="#0b8043" stroke-width="1"/>
       ${LOCK(30, 149, '#0b8043', .55)}
-      <text x="34" y="152.8" font-family="Archivo Narrow" font-weight="700" font-size="5.6" fill="#0b8043">tty.link Dairy [KR]</text>
-      <text x="45" y="164" text-anchor="middle" font-family="Archivo Narrow" font-weight="600" font-size="4.6" letter-spacing=".5" fill="#8a6a1f">EXTENDED VALIDATION</text>
+      <text data-tty-line="decor" x="34" y="152.8" font-family="Archivo Narrow" font-weight="700" font-size="5.6" fill="#0b8043">tty.link Dairy [KR]</text>
+      <text data-tty-line="decor" x="45" y="164" text-anchor="middle" font-family="Archivo Narrow" font-weight="600" font-size="4.6" letter-spacing=".5" fill="#8a6a1f">EXTENDED VALIDATION</text>
     </svg>`;
   }
 
@@ -1190,13 +1220,13 @@
     if (back) {
       return `<svg class="art-svg" viewBox="0 0 160 110" aria-hidden="true"><g transform="translate(160 0) scale(-1 1)">${shape}</g>
         <g transform="rotate(6.5 80 76)"><rect x="40" y="62" width="80" height="28" rx="3" fill="#fff" stroke="#9aa7b1"/>
-        <text x="80" y="73" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="7.5" fill="#13284a">SAN: *.example.com</text>
+        <text data-tty-line="decor" x="80" y="73" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="7.5" fill="#13284a">SAN: *.example.com</text>
         <g fill="#9aa7b1"><rect x="48" y="78" width="40" height="2.4"/><rect x="48" y="83" width="56" height="2.4"/></g></g></svg>`;
     }
     return `<svg class="art-svg" viewBox="0 0 160 110" aria-hidden="true">${shape}
       <g transform="rotate(-6.5 80 76)"><rect x="34" y="62" width="88" height="29" rx="3" fill="#fff" stroke="#2a6fd6" stroke-width="1.4"/>
-      <text x="78" y="72.5" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="7" letter-spacing="1.6" fill="#2a6fd6">WILDCARD</text>
-      <text x="78" y="85.5" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="11.5" fill="#13284a">*.example.com</text></g></svg>`;
+      <text data-tty-line="decor" x="78" y="72.5" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="7" letter-spacing="1.6" fill="#2a6fd6">WILDCARD</text>
+      <text data-tty-line="decor" x="78" y="85.5" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="11.5" fill="#13284a">*.example.com</text></g></svg>`;
   }
 
   function svgHoney() {
@@ -1212,9 +1242,9 @@
       <rect x="20" y="28" width="80" height="7" rx="1.5" fill="#d6a740"/>
       <path d="M52 34C52 44 56 47 56 52C56 56 49 56 49 52C49 48 47 44 47 34Z" fill="#f6b21b"/>
       <path d="M60 64 80 75.5V98.5L60 110 40 98.5V75.5Z" fill="#fff6dc" stroke="#8a5a1b" stroke-width="1.4"/>
-      <text x="60" y="85" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="9.5" fill="#6b3d0e">ROOT</text>
-      <text x="60" y="95" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6" fill="#6b3d0e">ISRG Root X1</text>
-      <text x="60" y="103" text-anchor="middle" font-family="Archivo Narrow" font-weight="600" font-size="4.6" fill="#8a5a1b">2015–2035</text>
+      <text data-tty-line="decor" x="60" y="85" text-anchor="middle" font-family="Archivo" font-weight="900" font-size="9.5" fill="#6b3d0e">ROOT</text>
+      <text data-tty-line="decor" x="60" y="95" text-anchor="middle" font-family="Archivo Narrow" font-weight="700" font-size="6" fill="#6b3d0e">ISRG Root X1</text>
+      <text data-tty-line="decor" x="60" y="103" text-anchor="middle" font-family="Archivo Narrow" font-weight="600" font-size="4.6" fill="#8a5a1b">2015–2035</text>
     </svg>`;
   }
 
@@ -1435,8 +1465,12 @@
   function openCard() {
     card.classList.add('on');
     scrim.classList.add('on');
+    liftRobot();
     placeCard();
   }
+  // The robot can turn up while a visitor's label is open (the autoplay goes on under it): on phones
+  // the label is a sheet over the floor, so the floor, the robot and his excuse come out above it.
+  const liftRobot = () => scene.classList.toggle('robot-up', robotAt !== 'off' && scrim.classList.contains('on'));
   function cardIn() {
     if (!reduce) {
       card.animate(narrow()
@@ -1447,6 +1481,7 @@
   function closeCard(instant) {
     clearCardTimers();
     scrim.classList.remove('on');
+    liftRobot();
     if (instant || reduce) { card.classList.remove('on'); cardArt.replaceChildren(); return; }
     const a = card.animate(narrow()
       ? [{ transform: 'none' }, { transform: 'translateY(100%)' }]
@@ -1505,7 +1540,7 @@
     const box = { left: cr.left + local.left, top: cr.top + local.top, width: local.width, height: local.height };
     cardIn();
     const art = makeArt(id);
-    held = { id, slot, art };
+    held = { id, slot, art, auto };
     slot.btn.setAttribute('aria-expanded', 'true');
     if (slot.vault) {
       // The honey stays behind glass: the padlock rattles, the label is read through the glass.
@@ -1521,6 +1556,8 @@
       else { await fly(art, from, box, { ms: 480, flip: true }); if (held?.art !== art) return; seat(art, p); }
     }
     revealChecks(p, auto ? pace : reduce ? 0 : pace);
+    // A visitor's own label: the autoplay stands still until it is all read out, and 2.5 s more.
+    if (!auto && !reduce && held?.art === art) TTY.busy(pace * $$('.rv', card).length + 320 + 2500);
   }
 
   function revealChecks(p, pace) {
@@ -1628,6 +1665,7 @@
   }
   function robotTo(where, ms = 0) {
     robotAt = where;
+    liftRobot();
     const w = robot.offsetWidth;
     let x = where === 'off' ? floor.offsetWidth + w * .3 : floorX(slots[5]) - w * .5;
     if (where === 'aside') x = clearOfNav(x);
@@ -1725,13 +1763,16 @@
       slot.main.classList.add('gone');
       einkOff(slot);
       armTo(0, 460);
-      fly(makeArt('yesterday'), from, to, { ms: 460, lift: false }).then(() => { if (g === gen) unit.style.visibility = ''; });
+      // Under a visitor's open label the cartons change places without flying over it.
+      if (scrim.classList.contains('on')) unit.style.visibility = '';
+      else fly(makeArt('yesterday'), from, to, { ms: 460, lift: false }).then(() => { if (g === gen) unit.style.visibility = ''; });
       later(560, () => {
         // Up goes the fresh one.
         fresh.remove();
         const target = rect($('.art', slot.main));
         armTo(reach(), 420);
-        fly(makeArt('fresh'), freshFrom, target, { ms: 440, lift: false }).then(() => { if (g === gen) slot.main.classList.remove('gone'); });
+        if (scrim.classList.contains('on')) slot.main.classList.remove('gone');
+        else fly(makeArt('fresh'), freshFrom, target, { ms: 440, lift: false }).then(() => { if (g === gen) slot.main.classList.remove('gone'); });
       });
       later(1080, () => { armTo(0, 380); swing(slot, false); einkOn(slot, true); slot.btn.disabled = false; });
       later(1100, () => robotTo('aside', 600));   // arm coming down, he rolls clear of the kit's nav
@@ -1774,6 +1815,7 @@
   // The sticker for the 47-day bar (the last beat of the loop).
   const cold = document.createElement('span');
   cold.className = 'p-stk';
+  cold.dataset.ttyLine = 'tag';
   cold.innerHTML = L.cold;
   if (nowIdx === 3) cold.classList.add('after-pin');   // from 2029 the NOW pin is on this bar too
   $('.p-track.p-row-47', poster).append(cold);
@@ -1790,11 +1832,11 @@
     banner.animate([{ transform: 'none', visibility: 'visible' }, { transform: 'rotateX(-90deg)', visibility: 'visible' }], { duration: 260, easing: 'ease-in' });
     poster.animate([{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 100% 0)', offset: .3 }, { clipPath: 'inset(0 0 0 0)' }], { duration: slow ? 820 : 560, easing: 'cubic-bezier(.3, .7, .3, 1)' });
     const bars = $$('.p-bar', poster);
-    bars.forEach((b, k) => b.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }], { duration: slow ? 600 : 400, delay: (slow ? 550 : 300) + k * (slow ? 180 : 70), easing: 'cubic-bezier(.3, .8, .3, 1)', fill: 'backwards' }));
+    bars.forEach((b, k) => b.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }], { duration: slow ? 600 : 400, delay: (slow ? 550 : 300) + k * (slow ? 120 : 70), easing: 'cubic-bezier(.3, .8, .3, 1)', fill: 'backwards' }));
     const pin = $('.p-pin', poster);
     if (pin) pin.animate([{ opacity: 0, transform: 'translateY(-60%)' }, { opacity: 1, transform: 'none' }], { duration: 380, delay: slow ? 1500 : 700, easing: 'cubic-bezier(.3, 1.5, .5, 1)', fill: 'backwards' });
     // Then the 47-day bar gets slapped like the milk did, and the poster shakes the same way.
-    const late = slow ? 1900 : 1000;
+    const late = slow ? 1550 : 1000;
     cold.animate([{ transform: 'scale(2.4) rotate(14deg)', opacity: 0 }, { transform: 'scale(.92)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }], { duration: 360, delay: late, easing: 'cubic-bezier(.5, 0, .9, .5)', fill: 'backwards' });
     poster.animate([{ transform: 'none' }, { transform: 'translate(.5%, 1.2%) rotate(.5deg)' }, { transform: 'translate(-.4%, -.5%)' }, { transform: 'none' }], { duration: 280, delay: late + 240 });
   }
@@ -1857,14 +1899,13 @@
   }
 
   /* ---- Autoplay: one 24-second scene, the same functions a visitor uses ---- */
-  let timers = [];
-  let auto = false;
-  let idle = 0;
-  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
-  const stopTimers = () => { timers.forEach(clearTimeout); timers = []; };
+  // A TTY.timeline: a visitor's touch stands the scene still (the kit's TTY.busy; a label they open
+  // keeps it still until it is read out, and 2.5 s more), then it goes on from where it was.
+  const mine = () => !!held && !held.auto;   // the label up is one the visitor opened
   const SCRIPT = [
     [0, () => {
       reset();
+      fridge.classList.remove('pre');
       lightsOn();
       if (!reduce) {
         $$('.unit, .vault .prod', fridge).forEach((u, k) => u.animate([{ transform: 'translateY(-14%)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 360, delay: 260 + k * 45, easing: 'cubic-bezier(.3, 1.3, .5, 1)', fill: 'backwards' }));
@@ -1880,18 +1921,19 @@
     [1550, () => setD(slots[5], dOf(0), false)],
     [2000, () => { updateTags(slots[5]); einkOn(slots[5], true); spoil('yesterday'); }],
     [2500, () => slapExpired('yesterday')],
-    // Then the browser goes shopping and reads every label.
+    // Then the browser goes shopping and reads every label (not over a label the visitor has open).
     [3000, () => cartTo('ttylink', 700)],
-    [3650, () => pick('ttylink', { pace: 460, auto: true })],
-    // The trust-store tick stays up 2 s; the carton lands in the basket just before the cart moves on (8.0 s).
+    [3650, () => { if (!mine()) pick('ttylink', { pace: 200, auto: true }); }],
+    // The ticks come in quickly so the verdict stays up 2 s; the carton lands in the basket just before the cart moves on (8.0 s).
     [7500, () => {
       const mini = addToCart('ttylink');
+      if (!(held?.auto && held.id === 'ttylink')) { showLock(); return; }
       mini.style.visibility = 'hidden';
       putBack({ ms: 450, into: { box: rect(mini), done: () => { mini.style.visibility = ''; showLock(); } } });
     }],
     [8000, () => cartTo('homemade', 650)],
-    [8600, () => pick('homemade', { pace: 420, auto: true })],
-    [12650, () => putBack({ ms: 520 })],
+    [8600, () => { if (!mine()) pick('homemade', { pace: 220, auto: true }); }],
+    [12650, () => { if (held?.auto) putBack({ ms: 520 }); }],
     [13000, () => cartTo('yesterday', 650)],
     [13650, () => einkBlink(slots[5])],
     [13800, () => say(cartSay, DATE_SAY, true)],
@@ -1902,38 +1944,33 @@
     [17900, restock],
     [19650, () => posterDown(true)],
   ];
-
-  function startLoop() {
-    stopTimers();
-    auto = true;
-    SCRIPT.forEach(([t, fn]) => at(t, fn));
-    at(24000, startLoop);
-  }
-  // A visitor takes over: the autoplay stops where it is and comes back 12 s after the last touch.
-  function takeOver() {
-    if (reduce) return;
-    if (auto) { auto = false; stopTimers(); }
-    clearTimeout(idle);
-    idle = setTimeout(startLoop, 12000);
-  }
-  // Any touch or key counts (the kit also asks the home page to hold this page meanwhile).
-  addEventListener('pointerdown', takeOver, { passive: true });
-  addEventListener('keydown', takeOver);
+  const play = TTY.timeline(async (t) => {
+    for (const [ms, fn] of SCRIPT) {
+      await t.at(ms);
+      if (!t.live()) return;
+      fn();
+    }
+    await t.at(24000);
+    // Start over, but never over a label the visitor still has open.
+    while (mine()) await t.wait(250);
+    if (t.live()) play.start();
+  }, { punch: 17.93 });
+  // Any touch or key counts: the kit stands the scene still and asks the home page to hold this page.
 
   /* ---- Visitor input ---- */
   function onProduct(slot) {
-    takeOver();
-    if (held && held.id === slot.id) putBack();
-    else pick(slot.id);
+    if (held && held.id === slot.id) return;
+    pick(slot.id);
   }
   [...slots, vaultSlot].forEach((slot) => slot.btn.addEventListener('click', () => onProduct(slot)));
-  $('.insp-x').addEventListener('click', () => { takeOver(); putBack(); });
+  $('.insp-x').addEventListener('click', () => putBack());
   // A tap on the dimmed shelf: if it lands on another product, that one is picked instead.
+  // A tap where the held product stood keeps its label up (tapping again must not wipe what the visitor opened);
+  // an empty dark spot, the ×, or Esc puts it back.
   scrim.addEventListener('click', (e) => {
-    takeOver();
     const under = document.elementsFromPoint(e.clientX, e.clientY).find((el) => el.matches('.prod, .crate-unit[data-id="yesterday"]'));
     const slot = under && [...slots, vaultSlot, crateSlot].find((sl) => sl.btn === under);
-    if (slot && slot.id !== held?.id) pick(slot.id); else putBack();
+    if (slot && slot.id !== held?.id) pick(slot.id); else if (!slot) putBack();
   });
   // While the card is still fading in or out, the product under it is still showing: a tap there picks that product.
   // Once the card is fully up, a tap on it does nothing.
@@ -1942,11 +1979,11 @@
     if (!card.getAnimations().some((a) => a.playState === 'running')) return;
     const under = document.elementsFromPoint(e.clientX, e.clientY).find((el) => el.matches('.prod, .crate-unit[data-id="yesterday"]'));
     const slot = under && [...slots, vaultSlot, crateSlot].find((sl) => sl.btn === under);
-    if (slot && slot.id !== held?.id) { takeOver(); pick(slot.id); }
+    if (slot && slot.id !== held?.id) pick(slot.id);
   });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape' && held) { takeOver(); putBack(); } });
-  banner.addEventListener('click', () => { takeOver(); posterDown(false); });
-  const togglePoster = () => { takeOver(); posterUp(false); };
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && held) putBack(); });
+  banner.addEventListener('click', () => posterDown(false));
+  const togglePoster = () => posterUp(false);
   poster.addEventListener('click', togglePoster);
   poster.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePoster(); } });
 
@@ -1971,8 +2008,9 @@
 
   /* ---- Start ---- */
   if (reduce) finalScene();
-  else { reset(); slots.forEach((s) => s.eink.classList.remove('off')); }
-  TTY.onShow(() => { if (!reduce) startLoop(); });
+  // Wait in the dark for the first show, as the opening frame has it, so nothing is lit and then put out at 0 s.
+  else { reset(); [...slots, vaultSlot].forEach(einkOff); fridge.classList.add('pre'); }
+  TTY.onShow(() => { if (!reduce) play.start(); });
   const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
   Promise.all([loaded, document.fonts.ready]).then(() => { relayout(); if (reduce) finalScene(); TTY.ready(); });
 })();

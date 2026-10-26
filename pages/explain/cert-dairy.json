@@ -4,7 +4,7 @@
     "en": "The Certificate Dairy Aisle",
     "ko": "인증서 신선 코너"
   },
-  "updated": "2026-10-15",
+  "updated": "2026-10-26",
   "ko": {
     "line": "웹사이트의 HTTPS 인증서를 마트 냉장 코너의 우유처럼 진열해서, 인증서 유효 기간이 정말로 우유처럼 짧아지고 있다는 실제 변화와, 자동 갱신이 조용히 멈춰 사이트가 하루아침에 경고 화면이 되는 개발자의 흔한 사고를 놀리는 페이지다.",
     "points": [
@@ -71,7 +71,7 @@
     ],
     "deep": [
       "꿀 병의 \"2015–2035\"와 꿀 라벨 '20년 · 꿀은 잘 안 상함'(꿀은 누르거나 맨 위 유리장을 봐야 보인다) → 맨 위 루트 인증서 ISRG Root X1의 실제 유효 기간(2015년 6월 4일 ~ 2035년 6월 4일, 정확히 20년)이다. 루트도 결국 만료되므로 꿀 가격표도 남은 날을 센다.",
-      "tty.link 우유 뒷면의 이력 조회(목장 ISRG Root X1, 집유장 YR1과 그 아래 'Root YR 경유', 포장 tty.link) → 이 사이트의 실제 인증서 체인 그대로다(tty.link ← YR1 ← Root YR ← ISRG Root X1).",
+      "tty.link 우유 뒷면의 이력 조회(목장 ISRG Root X1, 집유장 YR1과 그 아래 'Root YR 경유'(이 줄은 큰 화면에서만 보인다), 포장 tty.link) → 이 사이트의 실제 인증서 체인 그대로다(tty.link ← YR1 ← Root YR ← ISRG Root X1).",
       "로봇이 놓은 새 우유의 가격표가 D-90, 로봇이 와야 했던 날이 60일째 → 지금 Let's Encrypt 인증서의 기본 유효 기간이 90일이고 60일은 그 3분의 2다. 페이지는 날짜를 보고 2027년 2월 10일부터 64일, 2028년 2월 16일부터 45일짜리로 진열을 바꾸고, 로봇의 '원래 오는 날'도 43일째, 30일째로 따라 줄어든다.",
       "자체 서명 우유의 가격표는 D-3620 언저리, 병 뒤 손글씨는 \"valid 10 yrs!\" → 최대 200일 같은 규칙은 공개적으로 신뢰받는 인증 기관이 지켜야 하는 것이라, 자체 서명 인증서에는 10년도 적을 수 있다. 그래도 브라우저는 믿지 않는다.",
       "영어판 가격표는 남은 날을 숫자로만 센다(`DAYS LEFT 87`). 그래서 첫 장면은 `1` → `0` → `-1`이고, 어제까지 우유를 눌러 뒷면 라벨을 보면 \"-1 days left\"가 찍혀 있다. 남은 날이 음수가 되는 것도 개발자 농담이다."
@@ -145,7 +145,7 @@
     ],
     "deep": [
       "The honey jar says \"2015–2035\" and its label \"20 years · honey keeps\" (you only see the honey up in the locked cabinet, or its label when you press it): the real lifetime of the root at the top, ISRG Root X1, 4 June 2015 to 4 June 2035, exactly twenty years. Roots expire too, so even the honey's label counts its days.",
-      "The tty.link milk's traceability label (farm ISRG Root X1, collection center YR1 \"via Root YR\", packaging tty.link) is this site's actual certificate chain (tty.link ← YR1 ← Root YR ← ISRG Root X1).",
+      "The tty.link milk's traceability label (farm ISRG Root X1, collection center YR1 \"via Root YR\" (that line shows on big screens only), packaging tty.link) is this site's actual certificate chain (tty.link ← YR1 ← Root YR ← ISRG Root X1).",
       "The robot's fresh carton reads 90 days left and he was due on day 60: a Let's Encrypt certificate lasts 90 days by default for now, and 60 is two thirds of it. The page reads the date: from 10 February 2027 it stocks 64-day milk and from 16 February 2028 45-day milk, and the robot's excuse moves to day 43 and day 30.",
       "The homemade milk's label reads around 3620 days left, and the bottle's back says \"valid 10 yrs!\": limits like 200 days bind publicly trusted certificate authorities, so a self-signed certificate can say ten years. The browser still won't trust it."
     ]

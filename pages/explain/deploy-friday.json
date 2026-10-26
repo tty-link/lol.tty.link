@@ -4,7 +4,7 @@
     "en": "Friday, 4:59 PM: Deploy",
     "ko": "금요일 오후 4시 59분, 배포"
   },
-  "updated": "2026-10-15",
+  "updated": "2026-10-26",
   "ko": {
     "line": "\"금요일엔 배포하지 마라\"는 개발자들의 오래된 금기를, 퇴근 1분 전에 배포 버튼을 누르는 막내 개발자의 예능 한 편으로 보여 준다.",
     "points": [
@@ -72,6 +72,7 @@
       "첫 장면 모니터의 커밋 메시지가 \"fix: 간단한 수정, 별일 없을 듯\"이다. '별일 없을 듯'이라고 적은 수정이 사고를 내는 것은 개발자들의 단골 농담이고, 정지 화면의 복선이다.",
       "선배들은 장애 0건에도 나오지 않는다. \"주말 사수 성공!\" 장면에서 눈만 칸막이 위로 다시 올라와 지켜보고, 흑백 정지 화면에도 그 눈이 남아 있다. 처음부터 안 믿었다.",
       "화면 아래 편집 타임라인의 마지막 클립은 정지 화면이 방송되기 전까지 이름이 물음표 셋이다. 그 장면이 나와야 \"새벽 3시\"로 바뀐다.",
+      "정지 화면을 눌러도(누를 때만) 처음으로 돌아가지 않는다. 알림이 한 번 더 부르르 떨 뿐이다. 새벽 3시 호출은 건너뛸 수 없다.",
       "로고 옆 표시는 보는 사람의 시계로 진짜 금요일에만 빨간 '생방송'이고, 다른 날은 '재방송'이다.",
       "벽시계 분침은 4시 59분에 있다가 \"주말 사수 성공!\" 장면에서 5시 정각으로 톡 넘어간다.",
       "큰 자막은 글자가 튀어나온 뒤 받침만 늦게 툭 떨어진다. 한글 자모를 따로 움직이는 글꼴(font-kku)이라서 되는, 한국어판만의 자막 개그다."
@@ -140,6 +141,7 @@
       "The commit message in the first shot is \"fix: tiny change, should be fine\". Developers joke that \"should be fine\" is exactly the change that breaks things; it sets up the freeze-frame.",
       "The seniors never come out, even at \"0 incidents\". In the \"Weekend: saved!\" scene only their eyes rise over the partitions again, and they are still there in the black-and-white freeze-frame. They never believed it.",
       "The last clip on the edit timeline under the screen is named with three question marks until the freeze-frame airs. Only then does it become \"Sat 3 AM\".",
+      "Tap the freeze-frame (tap only) and the clip does not start over: the phone just buzzes again. A 3 AM page cannot be skipped.",
       "The badge by the logo is a red \"LIVE\" only when it really is Friday on your clock, and \"RERUN\" on any other day.",
       "The wall clock’s minute hand sits at 4:59 and ticks over to 5:00 in the \"Weekend: saved!\" scene.",
       "Switch to Korean and the panic caption reads \"동공지진\", literally a pupil earthquake (eyes shaking with shock), in a glitchy font. In the big Korean captions the final consonants drop in a beat late: Korean writes every syllable as one block (a first consonant, a vowel and sometimes a final consonant underneath), and the page’s font (font-kku) can move the letters inside a block separately."

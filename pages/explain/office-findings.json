@@ -4,7 +4,7 @@
     "en": "Find the Vulnerabilities",
     "ko": "취약점 찾기"
   },
-  "updated": "2026-10-15",
+  "updated": "2026-10-26",
   "ko": {
     "line": "아늑해 보이는 사무실도 보안 점검자의 빨간 펜으로 보면 구멍이 숭숭 뚫려 있고, 비밀번호를 바꾸라고 하면 숫자 하나만 올린다는 것을 놀린다.",
     "points": [
@@ -79,7 +79,7 @@
       "Red marker rings between the plants and the sunshine → a sticky-note password, an unlocked screen, a USB stick from the parking lot: every classic from security awareness training in one room. The verdict, \"Cozy. Also critical.\", takes the top severity from the USB stick's chip and gives it to the whole office. It is funny because both are true.",
       "The unlocked screen, \"Has since promised everyone donuts\" → the classic prank on anyone who walks off without locking their screen: a coworker sends a donut offer in their name. They went out for coffee and came back owing the team donuts.",
       "(Only when you click) The green pass notes on harmless things, \"Lamp: no firmware. Pass.\" → the only safe things in this office are the ones not on the internet.",
-      "(Only when you press the Retest stamp) \"They say it's all fixed\", and everything is, except the whiteboard now says hunter3 instead of hunter2, and the verdict reads \"Tidy. Also hunter3.\" → asked to change the password, they bumped the number and wrote the new one under \"do not share\" again. It is a real habit: in a US university study, knowing someone's old password let researchers guess the new one in fewer than five tries for 17% of accounts.",
+      "(Only when you press the Retest stamp) The hint says \"All fixed, they say\", and everything is, except the whiteboard now says hunter3 instead of hunter2, and the verdict reads \"Tidy. Also hunter3.\" → asked to change the password, they bumped the number and wrote the new one under \"do not share\" again. It is a real habit: in a US university study, knowing someone's old password let researchers guess the new one in fewer than five tries for 17% of accounts.",
       "(Each time you press it again) The stamp goes from \"Retest\" to \"Re-retest\" → audits never end. Each press adds one to the password and, up to four, one more \"re-\"."
     ],
     "terms": [

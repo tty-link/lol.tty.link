@@ -4,15 +4,15 @@
     "en": "A Wild Bug Appeared",
     "ko": "야생의 버그가 나타났다"
   },
-  "updated": "2026-10-14",
+  "updated": "2026-10-27",
   "ko": {
     "line": "프로그램의 오류(버그)를 몬스터 게임의 '야생 몬스터'로 세워 두고, 개발자가 실제로 쓰는 디버깅 습관을 배틀 기술로 붙여 본 페이지다.",
     "points": [
       "화난 무당벌레와 'Lv.404' → 영어 bug는 벌레이면서 프로그램 오류다. 404는 웹에서 '페이지를 찾을 수 없음' 오류 번호라 레벨부터 오류다.",
-      "이기는 기술이 '오리에게 묻기' 하나뿐 → 고무 오리에게 코드를 한 줄씩 설명하다 보면 설명하는 사람이 스스로 실수를 찾는다는 실제 디버깅 방법이다. 개발자는 몬스터를 내보내듯 '가랏! 고무 오리!'를 외치는데 오리는 \"꽥.\" 한마디뿐이다. 버그는 설명하던 개발자가 스스로 찾는데('절반쯤에서 버그가 보였다!'), '효과가 굉장했다!'는 오리 몫이다. 아무도 안 고르면 커서가 알아서 오리로 간다.",
-      "마지막 '평화로운 오후를 얻었다.' → 몬스터 게임에서 이기면 '경험치를 얻었다'가 뜨는 자리다. 개발자가 버그를 잡고 받는 보상은 경험치가 아니라 조용한 오후다. 하이젠버그는 고쳐도 '적어도 그 뒤로 본 사람은 없다'고만 말할 수 있고, 메모리 누수를 고치면 'RAM 11GB를 되찾았다'.",
-      "console.log, stash 하고 튀기, 껐다 켜기(직접 고를 때) → 개발자가 정말 먼저 해 보는 것들인데 하나도 안 통한다. console.log는 '효과가 별로인 듯하다', 도망치면 '월요일에도 기다리고 있을 것이다' 하고는 바로 '월요일 아침.' 두고 간 자리에 그대로 있다. 껐다 켜면 되긴 하는데 아무도 이유를 모른다.",
-      "stash로 세 번 연달아 도망치면(직접 고를 때만) → 혼자 남은 버그가 하얗게 빛나다 날개 달린 '기능(FEATURE)'으로 진화한다. 고치지 않고 오래 버티면 \"그건 버그가 아니라 기능입니다\"가 된다는 개발자들의 오래된 농담을, 몬스터 게임의 진화 장면으로 보여 준다."
+      "이기는 기술이 '오리에게 묻기' 하나뿐 → 고무 오리에게 코드를 한 줄씩 설명하다 보면 설명하는 사람이 스스로 실수를 찾는다는 실제 디버깅 방법이다. 개발자는 몬스터를 내보내듯 '가랏! 고무 오리!'를 외치는데 오리는 \"꽥.\" 한마디뿐이다. 버그는 설명하던 개발자가 스스로 찾는데('절반쯤에서 버그가 보였다!'), '효과가 굉장했다!'는 오리 몫이고, 오리는 한 번 더 \"꽥.\" 하며 그 공을 챙긴다. 아무도 안 고르면 커서가 알아서 오리로 간다.",
+      "마지막 '평화로운 오후를 얻었다.' → 몬스터 게임에서 이기면 '경험치를 얻었다'가 뜨는 자리다. 개발자가 버그를 잡고 받는 보상은 경험치가 아니라 조용한 오후다. 두 번째 배틀부터 가끔 나오는 다른 버그도 보상이 제각각이다: 하이젠버그는 고쳐도 '적어도 그 뒤로 본 사람은 없다'고만 말할 수 있고, 메모리 누수를 고치면 'RAM 11GB를 되찾았다'.",
+      "console.log, stash 하고 튀기, 껐다 켜기(누를 때만) → 개발자가 정말 먼저 해 보는 것들인데 하나도 안 통한다. console.log는 '효과가 별로인 듯하다', 도망치면 '월요일에도 기다리고 있을 것이다' 하고는 바로 '월요일 아침.' 두고 간 자리에 그대로 있다. 껐다 켜면 되긴 하는데 아무도 이유를 모른다.",
+      "stash로 세 번 연달아 도망치면(누를 때만) → 혼자 남은 버그가 하얗게 빛나다 날개 달린 '기능(FEATURE)'으로 진화한다. 고치지 않고 오래 버티면 \"그건 버그가 아니라 기능입니다\"가 된다는 개발자들의 오래된 농담을, 몬스터 게임의 진화 장면으로 보여 준다."
     ],
     "terms": [
       {
@@ -73,21 +73,21 @@
       }
     ],
     "deep": [
-      "오프바이원은 Lv.405(404에서 하나 더)이고 오른쪽 다리가 하나 더 있다. 오리의 일격에도 HP가 정확히 1 남았다가, `<=`를 `<`로 고쳐야 0이 된다.",
-      "하이젠버그가 나오면(네 번에 한 번) 아무도 안 눌러도 커서가 먼저 console.log를 고른다. \"여기\" 상자가 뜨자 버그가 사라졌다가 로그를 지우자 돌아오고, 그다음에야 오리로 간다. 진짜 하이젠버그도 그렇다. 출력 문장을 끼워 넣으면 프로그램의 실행 타이밍과 메모리 배치가 미묘하게 바뀌어 버그가 숨어 버리곤 한다.",
-      "메모리 누수는 Lv.512에서 시작해 0.25초마다 레벨이 오르고 몸이 조금씩 커진다. 껐다 켜면(직접 고를 때) 정말로 Lv.512와 원래 크기로 돌아가지만 '…당분간은.'이라는 말이 끝나자마자 다시 오른다. 재시작은 새던 메모리를 비워 줄 뿐 새는 곳을 막지는 않는다.",
-      "console.log도 아주 조금은 먹힌다. 버그의 HP 막대가 100%에서 97%로, 눈을 크게 떠야 보일 만큼 준다.",
-      "진화는 개발자가 도망가 있는 동안 일어난다. 아무도 안 보는 사이에 버그가 기능이 된다. 그 직전 두 번째 도망에서 버그가 두 번 하얗게 깜빡이는 것이 예고다."
+      "오프바이원(가끔: 두 번째 배틀부터)은 Lv.405(404에서 하나 더)이고 오른쪽 다리가 하나 더 있다. 오리의 일격에도 HP가 정확히 1 남았다가, `<=`를 `<`로 고쳐야 0이 된다. 오리가 공을 챙긴 바로 다음이라 더 머쓱하다.",
+      "하이젠버그가 나오면(두 번째 배틀부터 가끔) 아무도 안 눌러도 커서가 먼저 console.log를 고른다. \"여기\" 상자가 뜨자 버그가 사라졌다가 로그를 지우자 돌아오고, 그다음에야 오리로 간다. 진짜 하이젠버그도 그렇다. 출력 문장을 끼워 넣으면 프로그램의 실행 타이밍과 메모리 배치가 미묘하게 바뀌어 버그가 숨어 버리곤 한다.",
+      "메모리 누수(가끔: 두 번째 배틀부터)는 Lv.512에서 시작해 0.25초마다 레벨이 오르고 몸이 조금씩 커진다. 껐다 켜면(누를 때만) 정말로 Lv.512와 원래 크기로 돌아가지만 '…당분간은.'이라는 말이 끝나자마자 다시 오른다. 재시작은 새던 메모리를 비워 줄 뿐 새는 곳을 막지는 않는다.",
+      "console.log도 아주 조금은 먹힌다(누를 때만). 버그의 HP 막대가 100%에서 97%로, 눈을 크게 떠야 보일 만큼 준다.",
+      "진화(누를 때만)는 개발자가 도망가 있는 동안 일어난다. 아무도 안 보는 사이에 버그가 기능이 된다. 그 직전 두 번째 도망에서 버그가 두 번 하얗게 깜빡이는 것이 예고다."
     ]
   },
   "en": {
     "line": "A software bug shows up as a wild monster in a Pokémon-style battle, and the only moves are the debugging habits developers really have.",
     "points": [
       "An angry ladybug at \"Lv.404\" → in English a bug is both an insect and a software error, and 404 is the web's \"page not found\" error number, so even its level is an error.",
-      "The only move that wins is \"Ask the duck\" → rubber duck debugging is real: explain your code line by line to a rubber duck and you spot your own mistake halfway through. DEV sends the duck out like a monster, \"Go! RUBBER DUCK!\", the duck only says \"Quack.\", DEV finds the bug while explaining, and still it's the duck that was \"super effective!\". Left alone, the cursor walks to the duck by itself.",
-      "The last line, \"DEV gained a quiet afternoon.\" → where a monster game says you gained experience points. A fixed bug pays out in quiet afternoons. A fixed HEISENBUG only gets \"At least, nobody has seen it since.\", and a fixed MEMORY LEAK hands back \"11 GB of RAM\".",
-      "console.log, git stash & run, off and on (if you pick them) → what developers really try first, and none of it works. console.log is \"not very effective…\", running away leaves the bug waiting \"here on Monday\", and the next line is \"Monday morning.\" with the bug right where DEV left it. Turning it off and on works, but nobody knows why.",
-      "Run away with git stash three times in a row (only if you pick it) → the bug, left alone, glows white and evolves into a winged FEATURE. It is the old developer line \"it's not a bug, it's a feature\", shown as a monster-game evolution: ignore a bug long enough and it becomes one."
+      "The only move that wins is \"Ask the duck\" → rubber duck debugging is real: explain your code line by line to a rubber duck and you spot your own mistake halfway through. DEV sends the duck out like a monster, \"Go! RUBBER DUCK!\", the duck only says \"Quack.\", DEV finds the bug while explaining, and still it's the duck that was \"super effective!\", and the duck says \"Quack.\" once more to take the credit. Left alone, the cursor walks to the duck by itself.",
+      "The last line, \"DEV gained a quiet afternoon.\" → where a monster game says you gained experience points. A fixed bug pays out in quiet afternoons. The other bugs that sometimes turn up from the second battle on pay out differently: a fixed HEISENBUG only gets \"At least, nobody has seen it since.\", and a fixed MEMORY LEAK gets DEV \"11 GB of RAM back\".",
+      "console.log, git stash & run, off and on (only if you press them) → what developers really try first, and none of it works. console.log is \"not very effective…\", running away leaves the bug waiting \"here on Monday\", and the next line is \"Monday morning.\" with the bug right where DEV left it. Turning it off and on works, but nobody knows why.",
+      "Run away with git stash three times in a row (only if you press it) → the bug, left alone, glows white and evolves into a winged FEATURE. It is the old developer line \"it's not a bug, it's a feature\", shown as a monster-game evolution: ignore a bug long enough and it becomes one."
     ],
     "terms": [
       {
@@ -148,11 +148,11 @@
       }
     ],
     "deep": [
-      "OFF-BY-ONE is Lv.405 (one more than 404) and has one leg too many. The duck's hit leaves it on exactly 1 HP until `<=` is changed to `<`.",
-      "When the HEISENBUG comes up (one battle in four), the cursor tries console.log first, even if nobody touches anything. As soon as \"here\" is printed the bug disappears, it comes back once the logs are gone, and only then does the cursor go for the duck. Real heisenbugs do this too: adding print statements shifts a program's timing and memory layout just enough to hide the bug.",
-      "MEMORY LEAK starts at Lv.512, gains a level every quarter second and slowly grows. Turn it off and on (if you pick it) and it really is back to Lv.512 and its old size, \"For now.\": the moment that is said, it starts climbing again. A restart empties leaked memory; it doesn't plug the leak.",
-      "console.log isn't completely useless: the bug's HP bar drops from 100% to 97%, a sliver you have to look hard to see.",
-      "The evolution happens while DEV is away: nobody is looking when the bug becomes a feature. The second escape in a row is the warning, when the bug flickers white twice."
+      "OFF-BY-ONE (sometimes, from the second battle on) is Lv.405 (one more than 404) and has one leg too many. The duck's hit leaves it on exactly 1 HP until `<=` is changed to `<`, right after the duck has taken the credit.",
+      "When the HEISENBUG comes up (sometimes, from the second battle on), the cursor tries console.log first, even if nobody touches anything. As soon as \"here\" is printed the bug disappears, it comes back once the logs are gone, and only then does the cursor go for the duck. Real heisenbugs do this too: adding print statements shifts a program's timing and memory layout just enough to hide the bug.",
+      "MEMORY LEAK (sometimes, from the second battle on) starts at Lv.512, gains a level every quarter second and slowly grows. Turn it off and on (only if you press it) and it really is back to Lv.512 and its old size, \"For now.\": the moment that is said, it starts climbing again. A restart empties leaked memory; it doesn't plug the leak.",
+      "console.log isn't completely useless (only if you press it): the bug's HP bar drops from 100% to 97%, a sliver you have to look hard to see.",
+      "The evolution (only if you press stash three times) happens while DEV is away: nobody is looking when the bug becomes a feature. The second escape in a row is the warning, when the bug flickers white twice."
     ]
   }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-tty-nav-phone="bottom right">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -32,10 +32,12 @@
   }
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; }
+  /* clip, not hidden: a size container that hides its overflow scrolls itself, and focus or a tap
+     would shift the whole kitchen */
   body {
     container: page / size;
     position: relative;
-    overflow: hidden;
+    overflow: clip;
     /* Sunflower tiles with cream grout and a little glaze on every tile. */
     --tile: clamp(26px, 6.4vmin, 56px);
     background-color: var(--sun);
@@ -63,11 +65,13 @@
     --pad-t: 1.8cqh;
     --gap: 2cqw;
     --cook: clamp(8px, 1.8cqh, 20px);
-    --title: clamp(22px, 7.2cqw, 40px);
-    --title-kku: clamp(24px, 7.8cqw, 46px);
-    --sub: clamp(12px, 3.3cqw, 17px);
+    --sub: clamp(11px, 3cqw, 17px);
     --kick: clamp(11px, 3cqw, 15px);
-    --sent: clamp(13px, 3.75cqw, 21px);
+    --sent: clamp(13px, 4cqw, 22px);
+    /* The title is as big as the card's sentence, never bigger: the punch is the sentence.
+       Weight, outline and the rust drop make it the heading. */
+    --title: var(--sent);
+    --title-kku: var(--sent);
     --tip: clamp(11px, 3cqw, 15px);
     --jar: clamp(11px, 2.1cqh, 15px);
     --bowl: clamp(12px, 3.4cqw, 20px);
@@ -77,6 +81,8 @@
     --dl: 11px;
     position: absolute;
     inset: 0;
+    /* the chef's note swings in from past the right edge on phones: it must not widen the page */
+    overflow: clip;
     display: grid;
     grid-template-columns: minmax(0, 36fr) minmax(0, 64fr);
     grid-template-rows: auto auto auto minmax(0, 1fr) auto;
@@ -94,9 +100,7 @@
       --pad-t: 2.6cqh;
       --gap: 3cqw;
       --cook: clamp(12px, 2.4cqh, 22px);
-      --title: clamp(30px, 5.6cqmin, 62px);
-      --title-kku: clamp(32px, 6.4cqmin, 70px);
-      --sub: clamp(13px, 2cqmin, 19px);
+      --sub: clamp(12px, 1.8cqmin, 17px);
       --kick: clamp(12px, 1.75cqmin, 16px);
       --sent: clamp(15px, 2.65cqmin, 25px);
       --tip: clamp(11.5px, 1.6cqmin, 15px);
@@ -143,6 +147,10 @@
   /* The one-line hint, under the subtitle from the start. */
   .hint { margin-top: .3em; font-size: var(--small); line-height: 1.25; font-weight: 600; color: rgba(59, 36, 20, .8); transition: opacity .35s; }
   .lang-ko .hint { font-weight: 400; color: var(--brown-d); }
+  /* Once a visitor has touched something they know what to do: the hint goes, a
+     moment after the first touch, and its room stays so nothing moves. It is back with the next
+     turn of the loop, when the visitor's bowls are gone. */
+  .head.played .hint { opacity: 0; }
   @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
     .head { margin: .2em var(--gap) 0 var(--pad-x); }
     .title .tl { display: block; }
@@ -197,6 +205,8 @@
   .sentence .w { font-weight: 800; color: var(--rust-d); }
   .lang-ko .sentence .w { font-weight: 700; }
   .sentence .blank { display: inline-block; width: 4.2em; border-bottom: 2px solid currentColor; translate: 0 -.18em; opacity: .55; }
+  /* The word a bowl just got: it is there at once (the reading time starts as it lands) and a
+     marker pen sweeps under it. */
   .sentence .new .w, .sentence .w.new, .sentence .tok.new {
     background: linear-gradient(rgba(224, 165, 38, .55), rgba(224, 165, 38, .55)) 0 85% / 100% .42em no-repeat;
     animation: marker .9s cubic-bezier(.3, .7, .2, 1) both;
@@ -204,16 +214,17 @@
   /* A word the sieve has just filtered out: struck through in the lid's grey. */
   .sentence .w.off { color: rgba(59, 36, 20, .5); text-decoration: line-through 2px #6d6a62; }
   @keyframes marker {
-    from { background-size: 0 .42em; opacity: 0; }
-    30% { opacity: 1; }
-    to { background-size: 100% .42em; opacity: 1; }
+    from { background-size: 0 .42em; }
+    to { background-size: 100% .42em; }
   }
-  .sentence .tok { display: inline-block; font-weight: 800; color: #7a2e8c; }
+  /* The shaky words of the third day are inline, part of the sentence's own line of text, so they
+     wrap with it; they shake by their offset (an inline box cannot be transformed). */
+  .sentence .tok { position: relative; font-weight: 800; color: #7a2e8c; }
   .sentence.shaky .tok { animation: jitter .16s steps(2) infinite alternate; }
   .sentence.shaky .tok.new { animation: marker .9s cubic-bezier(.3, .7, .2, 1) both, jitter .16s .9s steps(2) infinite alternate; }
   @keyframes jitter {
-    from { transform: translate(0, 0) rotate(var(--r, 0deg)); }
-    to { transform: translate(.05em, -.06em) rotate(calc(var(--r, 0deg) * -1)); }
+    from { left: 0; top: 0; }
+    to { left: var(--jx, .05em); top: -.06em; }
   }
   .tip {
     display: flex;
@@ -248,7 +259,7 @@
     .tip { min-height: calc(var(--tip-lines, 2) * 1.3em + .8em + 1.5px); margin: .5em -1em -.6em; padding: .38em 1em .42em; }
   }
 
-  /* The chef's note (the medium-heat scene, then singed after the flambé): on phones it is taped
+  /* The chef's note (after the heat-off soup, then singed after the flambé): on phones it is taped
      over the hint line and the card's top corner, and the hint steps aside meanwhile; on wide
      stages it hangs on the tiles under the title, above the pot. */
   .head { position: relative; z-index: 3; }
@@ -273,7 +284,7 @@
     pointer-events: none;
     transition: opacity .4s;
   }
-  /* The medium-heat note covers the hint line on phones, so the hint steps aside for it. The
+  /* The first note ("Creativity happens at medium heat.") covers the hint line on phones, so the hint steps aside for it. The
      singed note is short and sits right of the hint text, so the hint stays (it is what tells
      a visitor, at the end and in the reduced-motion scene, what to touch). */
   .head.noted:not(.burnt) .hint { opacity: 0; }
@@ -297,7 +308,7 @@
   /* The narrowest phone stage (328 px): the Korean note is a size smaller so it starts right of
      the hint "손잡이를 돌리고 한 국자 더 떠 보세요." (it overlapped it by 17 px). */
   @container page (max-width: 345px) {
-    .lang-ko .note.burnt { --note-kku: 13.5px; padding-left: .35em; padding-right: .35em; }
+    .lang-ko .note.burnt { --note-kku: max(13.5px, var(--sent)); padding-left: .35em; padding-right: .35em; }
   }
   @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
     .note { right: auto; left: .2em; bottom: auto; top: calc(100% + 1.1em); max-width: 100%; padding: .35em .9em .45em; font-size: clamp(19px, 3.2cqmin, 34px); white-space: normal; rotate: -3deg; translate: 0; }
@@ -331,7 +342,9 @@
     column-gap: .55em;
     line-height: 1.12;
   }
-  .jar .name { order: 1; text-align: right; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* The name clips its overflow (a long name ends in "…"); the clip reaches .15em above and below
+     the row, so Gowun Dodum's tall line box is not cut, and the row keeps its height. */
+  .jar .name { order: 1; text-align: right; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-block: .15em; margin-block: -.15em; }
   .lang-ko .jar .name { font-weight: 400; }
   .jar .glass { order: 2; position: relative; height: .78em; border-radius: 999px; background: rgba(255, 255, 255, .7); box-shadow: inset 0 0 0 1.5px rgba(91, 59, 34, .32); overflow: hidden; }
   .jar .num { order: 3; font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
@@ -459,7 +472,9 @@
       justify-content: center;
       width: 100%;
       height: var(--nh);
+      margin-block: 0;
       padding-top: .92em;
+      padding-bottom: 0;
       font-size: 1em;
       line-height: 1.02;
       text-align: center;
@@ -656,6 +671,8 @@
   @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
     .panel { padding: 1em 0 .7em; }
     .dl .v { display: block; }
+    /* Gowun Dodum's line box is taller than Fraunces's: the name and its number would touch */
+    .lang-ko .dl { line-height: 1.3; }
     .dial { --r: calc(var(--k) * .66 + .45em); --cy: calc(var(--r) + 2.35em); height: calc(var(--cy) + var(--k) * .5 + .5em); }
   }
 
@@ -715,7 +732,7 @@
      ladle drawer above keeps its full width. Wider stacked stages (tablets; the nav is a row about
      260 × 30 px, 12 px up): the drawers end 48 px above the bottom instead. */
   @media (max-width: 600px) { html:not(.embedded) #sieve-btn { margin-right: calc(88px - var(--pad-x)); } }
-  @container page not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
+  @container page (not ((min-width: 700px) and (min-aspect-ratio: 1/1))) and (min-height: 500.02px) {
     @media (min-width: 601px) { html:not(.embedded) .btns { padding-bottom: 48px; } }
   }
   @container page (min-width: 700px) and (min-aspect-ratio: 1/1) {
@@ -743,17 +760,16 @@
     .drawer { min-height: 2.8em; }
   }
 
-  /* ---------- Short stacked stages ----------
-     The home page's small phone stages (about 358 × 396 and 328 × 408) and any portrait stage up to
-     500 px tall (a landscape phone, 667 × 375, stays as before: below the supported height). Ten
-     jars in one column left the pot and the bowls no row at all (0 px) and spilled the list onto
-     the drawers. Here the jars stand in two columns of five (a subgrid, so each column's names
-     line up), the card drops its kicker, the knob is a little smaller, and the counter row keeps
-     a floor. The shelf is never squeezed below its jars. */
-  @container page (max-height: 500px) and (max-width: 699.98px) and (max-aspect-ratio: 1/1) {
+  /* ---------- Short stages ----------
+     The home page's small phone stages (about 358 × 396 and 328 × 408), any stage up to 500 px tall
+     and under 700 px wide, and a phone on its side (the home's 508 × 339, 667 × 375 on its own; their
+     columns are below). Ten jars in one column left the pot and the bowls no row at all (0 px) and
+     spilled the list onto the drawers. Here the jars stand in two columns of five (a subgrid, so
+     each column's names line up), the card drops its kicker, the knob is a little smaller, and the
+     counter row keeps a floor. The shelf is never squeezed below its jars. */
+  @container page (max-height: 500px) and (max-width: 699.98px) {
     .kitchen {
       --pad-t: 1.2cqh;
-      --title-kku: clamp(22px, 6.4cqw, 30px);
       --k: 34px;
       grid-template-rows: auto auto auto minmax(60px, 1fr) auto;
     }
@@ -783,6 +799,78 @@
     .jar.filtered .lid { left: 0; right: 0; top: 0; bottom: 0; translate: none; display: grid; place-items: center; padding: 0; line-height: 1; overflow: hidden; white-space: nowrap; }
     .panel { padding: .45em 0 .35em; }
   }
+  /* A phone on its side: too low for the stacked kitchen, too small for the bottles. The wide
+     layout's columns (the stove on the left: title, pot, knob; on the right: card, shelf, bowls,
+     drawers), with the short stage's parts: bar jars in two columns, a small knob without its
+     numbers, no kicker, no fine print. The cooktop and the counter still meet on one line. */
+  @container page (max-height: 500px) and (max-width: 699.98px) and (min-aspect-ratio: 1/1) {
+    .kitchen {
+      --pad-x: 3cqw;
+      --gap: 2.4cqw;
+      --cook: clamp(8px, 2.4cqh, 14px);
+      --sent: clamp(13px, 4.2cqh, 16px);
+      --sub: 11px;
+      --tip: 11px;
+      --jar: 11px;
+      --bowl: 12.5px;
+      --note-kku: 15px;
+      --k: 32px;
+      grid-template-columns: minmax(0, 37fr) minmax(0, 63fr);
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        "head card"
+        "pot shelf"
+        "pot bowls"
+        "panel btns";
+    }
+    .head { margin: .2em var(--gap) 0 var(--pad-x); }
+    .title .tl { display: block; }
+    .lang-ko .title .tl + .tl { margin-top: .12em; }
+    .card { margin: .8cqh var(--pad-x) 0 var(--gap); }
+    .shelf { margin: .9cqh var(--pad-x) 0 var(--gap); }
+    .bowls { padding: 0 var(--pad-x) var(--cook) var(--gap); }
+    .bowl .dishwrap { width: min(100%, 17cqh); }
+    /* the note hangs on the tiles under the title, above the pot, so the hint stays */
+    .note { right: auto; left: .2em; bottom: auto; top: calc(100% + .7em); max-width: 100%; font-size: 15px; white-space: normal; rotate: -3deg; translate: 0; }
+    .head.noted:not(.burnt) .hint { opacity: 1; }
+    .lang-ko .note.burnt { --note-kku: 15px; }
+    .btns { font-size: 12px; gap: .35em; padding-top: .45em; padding-bottom: .4em; }
+    .drawer { min-height: 2.2em; }
+    /* opened on its own wider than 600 px (667 × 375), the folded nav sits right of the sieve drawer */
+    @media (min-width: 601px) { html:not(.embedded) #sieve-btn { margin-right: calc(88px - var(--pad-x)); } }
+  }
+  /* The smallest of them, the home's 328 × 288 (a 360 × 520 phone): the knob drops its readout (the
+     dial names say the heat), which ran off the bottom. Everything else is packed so the bowls have
+     a row of their own above the drawers: the right column gets more of the width, the title
+     column runs down into the pot's empty top, the jars sit closer, the card's lines and the
+     drawers are tighter, and the bowls are smaller (one line of word, a smaller dish). */
+  @container page (max-height: 500px) and (max-width: 439.98px) and (min-aspect-ratio: 1/1) {
+    .readout { display: none; }
+    .kitchen { --bowl: 11px; grid-template-columns: minmax(0, 30fr) minmax(0, 70fr); }
+    .panel { padding: .25em 0 .2em; }
+    /* the title column runs down past the card into the pot's empty top: the Korean title,
+       subtitle and hint are taller than the card, and the card's row no longer waits for them */
+    .head { grid-row: 1 / 3; }
+    /* the singed note on one line (I said medium.), a little past the narrow title column */
+    .lang-en .note.burnt { max-width: none; white-space: nowrap; padding-left: .35em; padding-right: .35em; }
+    .tip-text { text-wrap: pretty; }
+    .card { margin-top: .4cqh; padding-top: .3em; }
+    .sentence { line-height: 1.2; min-height: calc(var(--sent-lines, 2) * 1.2em); }
+    .tip { line-height: 1.2; min-height: calc(var(--tip-lines, 2) * 1.2em + .3em + 1.5px); margin-top: .25em; padding-top: .15em; padding-bottom: .15em; }
+    .shelf { margin-top: .5cqh; padding: .2em .35em; }
+    .jars { grid-template-columns: max-content minmax(0, 1fr) max-content .2em max-content minmax(0, 1fr) max-content; column-gap: .3em; row-gap: 0; }
+    .jar { column-gap: .3em; line-height: 1; }
+    /* Gowun Dodum's digits stand taller: the Korean rows keep the short stage's spacing */
+    .lang-ko .jars { row-gap: .12em; }
+    .lang-ko .jar { line-height: 1.05; }
+    .bowls { column-gap: .5cqw; }
+    .bowl .word { min-height: 1.1em; }
+    .bowl .dishwrap { width: min(100%, 11cqh); }
+    .btns { gap: .25em; padding-top: .3em; padding-bottom: .3em; }
+    .drawer { min-height: 2em; padding-top: .15em; padding-bottom: .15em; }
+    /* on its own, both drawers stop short of the nav (the bowls above it are clear of it) */
+    html:not(.embedded) #ladle-btn { margin-right: calc(88px - var(--pad-x)); }
+  }
   /* "filtered" is about 38 px wide at 11 px, "걸러짐" about 29 px. */
   @container glass (max-width: 41.98px) {
     .lang-en .jar.filtered .lid { font-size: 0; background: repeating-linear-gradient(-45deg, #6d6a62 0 2px, #8f8b82 2px 4px); }
@@ -810,12 +898,12 @@
       <span data-lang="ko"><span class="tl"><font-kku class="title-kku" font="retro" size="var(--title-kku)">온도 조절</font-kku></span> <span class="tl"><font-kku class="title-kku" font="retro" size="var(--title-kku)">요리 교실</font-kku></span></span>
     </h1>
     <p class="sub">
-      <span data-lang="en">How a chatbot picks its next word</span>
+      <span data-lang="en">How a chatbot picks its next&nbsp;word</span>
       <span data-lang="ko">챗봇이 다음 단어를 고르는 법</span>
     </p>
     <p class="hint" id="tk-hint">
-      <span data-lang="en">Turn the knob, then ladle one more.</span>
-      <span data-lang="ko">손잡이를 돌리고 한 국자 더 떠 보세요.</span>
+      <span data-lang="en">Turn the knob, then ladle one&nbsp;more.</span>
+      <span data-lang="ko">손잡이를 돌리고 한 국자 더 떠&nbsp;보세요.</span>
     </p>
     <aside class="note">
       <span class="note-a">
@@ -1087,13 +1175,15 @@
       '강불: 의외의 메뉴가 늘어요.',
       '불쇼: 그 밖의 49,991개가 냄비를 덮쳐요.',
       '강불에 체(top-p 0.9)를 받치면 탄 건 걸러져요.',
-      '불쇼: 그 밖의 49,991개가 냄비를 덮쳤어요. 체는 최선을 다했어요.',
+      '불쇼: 그 밖의 49,991개가 냄비를 덮쳤어요. 체는 최선을 다했어요.', // (no lone last word on a phone)
     ],
   });
   // Not in the autoplay: shown when a visitor leaves the knob on Low.
   const TIP_LOW = TTY.t({ en: 'Low: mostly the top word, sometimes the runner-up.', ko: '약불: 대개 1등, 가끔 2등.' });
-  // The sentence: one bowl per day.
-  const LEAD = TTY.t({ en: ["For lunch today, I'm having ", 'Tomorrow, ', 'The day after, '], ko: ['오늘 점심은 ', '내일 점심', '모레 점심'] });
+  // The sentence: one bowl per day. (Short, so each day's whole sentence can be read before the
+  // next scene: the reading-time rule counts every word.)
+  // (A day's name never breaks over two lines: "Day / after:" read as two words.)
+  const LEAD = TTY.t({ en: ['Lunch\u00a0today: ', 'Tomorrow: ', 'Day\u00a0after: '], ko: ['오늘\u00a0점심은 ', '내일\u00a0점심', '모레\u00a0점심'] });
   // At flambé the third day comes apart before its bowl arrives: three shaky words, each from
   // its own jar (j: Wednesday, purple, the sack), go in front of the word the ladle brings.
   const GARNISH = TTY.t({
@@ -1184,7 +1274,7 @@
     el.innerHTML = '<span class="n"></span> <span class="v"></span>';
     $('.n', el).textContent = d.name;
     $('.v', el).textContent = d.v;
-    el.addEventListener('click', () => { takeOver(); aim = i; goAngle(d.a, 520); });
+    el.addEventListener('click', () => { touch(KNOB_BUSY); aim = i; goAngle(d.a, 520, true); });
     dial.append(el);
     return el;
   });
@@ -1193,15 +1283,16 @@
   const bowls = $$('.bowl').map((el, i) => {
     $('.day', el).textContent = L.days[i];
     // src: the jar the word came from (an index, or 'tail'); garnish: shaky words in front of it;
-    // struck: the sieve is on and filters that jar.
-    return { el, wordEl: $('.word', el), dish: $('.dishwrap', el), word: null, src: null, garnish: [], struck: false, serial: -1 };
+    // struck: the sieve is on and filters that jar; mine: a visitor ladled it, so the autoplay
+    // leaves it alone until the next turn of the loop.
+    return { el, wordEl: $('.word', el), dish: $('.dishwrap', el), word: null, src: null, garnish: [], struck: false, serial: -1, mine: false };
   });
 
   /* ---------- Heat ---------- */
   let ang = -120;       // knob angle, -120 (Off) .. 120 (Flambé)
   let T = 0;
   let aim = 0;          // the detent the knob is heading to
-  let cooking = false;  // false: empty jars (numbers '–'); the page starts cooking at medium heat
+  let cooking = true;   // false would show empty jars (numbers '–'); the page starts at medium heat, jars full
   let sieveOn = false;
   let lastFire = 0;     // to jolt the sieve once as the flambé column comes up through it
   const angleToT = (a) => {
@@ -1223,7 +1314,6 @@
     knob.setAttribute('aria-valuenow', T.toFixed(2));
     knob.setAttribute('aria-valuetext', exact ? `${DETENTS[n].name} ${DETENTS[n].v}` : `${L.temp} ${T.toFixed(2)}`);
     readout.innerHTML = `${L.temp} <b>${T.toFixed(2)}</b>`;
-    if (visitor && exact && !drag && (!tween || Math.abs(tween.to - ang) < 0.5)) visitorTip(n);
     // Flames: blue tongues grow with T; past 1.3 the orange column comes up.
     const on = clamp(T / 0.06, 0, 1);
     const h = T <= 1.2 ? 0.28 + 0.62 * (T / 1.2) : 0.9 + 0.5 * ((T - 1.2) / 0.8);
@@ -1248,10 +1338,11 @@
     ], { duration: 720, easing: 'ease-out' });
   }
 
+  // A turn of the knob. A visitor's turn shows the tip for where it stops.
   let tween = null;
-  function goAngle(a, ms = 700) {
-    if (TTY.reduce || ms === 0) { tween = null; setAngle(a); return; }
-    tween = { from: ang, to: a, t0: performance.now(), ms };
+  function goAngle(a, ms = 700, byVisitor = false) {
+    if (TTY.reduce || ms === 0) { tween = null; setAngle(a); if (byVisitor) visitorTip(); return; }
+    tween = { from: ang, to: a, t0: performance.now(), ms, byVisitor };
     wake();
   }
 
@@ -1316,12 +1407,15 @@
     ], { duration: 520, delay, easing: 'cubic-bezier(.2, .8, .4, 1)', fill: 'both' }).onfinish = () => c.remove();
   }
 
-  // While a visitor cooks, the tip follows their heat and sieve. The two sieve tips name high
-  // heat and flambé, so they show only there; at off, low and medium the heat's own tip shows.
-  let visitor = false;
+  // When a visitor turns the knob or moves the sieve, the tip follows their heat and sieve. The two
+  // sieve tips name high heat and flambé, so they show only there; at off, low and medium the heat's
+  // own tip shows. A tip the visitor brought up stays on the tip strip until the next turn of the
+  // loop: the autoplay puts the knob and sieve back, but leaves their tip alone.
+  let tipMine = false;
   function visitorTip(n = nearest(ang)) {
     if (Math.abs(DETENTS[n].a - ang) > 0.5) return;
     setTip(sieveOn && n >= 3 ? (n === 4 ? 5 : 4) : [0, 'low', 1, 2, 3][n]);
+    tipMine = true;
   }
   function setSieve(on) {
     sieveOn = on;
@@ -1364,8 +1458,12 @@
       b.el.classList.add('landed');
     }
   }
-  function clearBowls() {
+  // A new scene empties the bowls, all but the ones a visitor filled; the next turn of the loop
+  // (all = true) empties those too.
+  function clearBowls(all = false) {
     bowls.forEach((b) => {
+      if (b.mine && !all) return;
+      b.mine = false;
       b.word = null;
       b.src = null;
       b.garnish = [];
@@ -1386,17 +1484,25 @@
     return best;
   }
   // One shaky word from jar g.j goes in front of bowl i's word; a pinch of that spice falls in.
+  // A bowl a visitor filled keeps its dish and the day comes apart around it, all three words at
+  // the last beat (so the sentence changes once, not three times in half a second): the punch
+  // still lands, ending on the visitor's dish.
   function addGarnish(i, k) {
-    const g = GARNISH[k];
-    bowls[i].garnish.push(g.t);
-    flash(jars[g.j].el);
-    sprinkle(i, g.j === jars.length - 1 ? TAIL_COLOR : SPICE[g.j]);
-    renderSentence(i, bowls[i].garnish.length - 1);
+    const b = bowls[i];
+    if (b.mine && b.word && k < GARNISH.length - 1) return;
+    const add = b.mine && b.word ? GARNISH.slice(b.garnish.length) : [GARNISH[k]];
+    add.forEach((g) => {
+      b.garnish.push(g.t);
+      flash(jars[g.j].el);
+      sprinkle(i, g.j === jars.length - 1 ? TAIL_COLOR : SPICE[g.j]);
+    });
+    renderSentence(i, b.garnish.length - 1);
   }
 
-  // One day per bowl: "For lunch today, I'm having {1}. Tomorrow, {2}. The day after, {3}."
+  // One day per bowl: "Lunch today: {1}. Tomorrow: {2}. Day after: {3}."
   // changed: the day that just changed (marker pen); tok: the shaky word that just came, if any.
   // (list and el let reserveCard() lay out a sentence that is not on the card yet.)
+  // The word that completes a day that came apart is the punch (data-tty-line, for tests).
   function renderSentence(changed = -1, tok = -1, list = bowls, el = sentenceEl) {
     const frag = document.createDocumentFragment();
     const filled = list.map((b) => b.word);
@@ -1419,7 +1525,7 @@
       g.forEach((t, k) => {
         const s = document.createElement('span');
         s.className = 'tok' + (i === changed && k === tok ? ' new' : '');
-        s.style.setProperty('--r', ((k % 2 ? 1 : -1) * (1.2 + (k % 3))).toFixed(1) + 'deg');
+        s.style.setProperty('--jx', (k % 2 ? -0.05 : 0.05) + 'em');
         s.textContent = t;
         if (k) part.append(' ');
         part.append(s);
@@ -1428,7 +1534,9 @@
         const ws = document.createElement('span');
         ws.className = 'w' + (b.struck ? ' off' : '') + (i === changed && tok < 0 && g.length ? ' new' : '');
         ws.textContent = w;
-        if (g.length) part.append(' ');
+        if (g.length) ws.dataset.ttyLine = 'punch';
+        // the last shaky word and the dish keep to one line, so the punch never ends on a lone word
+        if (g.length) part.append(' ');
         part.append(ws);
       }
       // A day that came apart trails off without its full stop.
@@ -1443,13 +1551,20 @@
   /* ---------- The ladle ---------- */
   const tpl = $('#ladle-tpl');
   let flights = 0;
-  function serve(pick, bowl) {
+  let gen = 0; // goes up when the loop starts over: a ladle still in the air from before lands nowhere
+  // One ladle into bowl `bowl` (the autoplay's script) or, for a visitor (mine), into the oldest
+  // bowl. The autoplay never ladles into a bowl a visitor filled, even one still on its way.
+  function serve(pick, bowl, mine = false) {
     const i = bowl === undefined ? oldestBowl() : bowl;
+    if (!mine && bowls[i].mine) return Promise.resolve(null);
+    const g = gen;
     bowls[i].serial = ++serial;
+    if (mine) bowls[i].mine = true;
     const text = pick.tail ? pick.word : WORDS[pick.i];
     const color = pick.tail ? TAIL_COLOR : SPICE[pick.i];
     flash(jars[pick.tail ? jars.length - 1 : pick.i].el);
     const land = () => {
+      if (g !== gen || (!mine && bowls[i].mine)) return;
       fillBowl(i, text, color, pick.tail ? 'tail' : pick.i);
       bowls[i].struck = false;
       bowls[i].el.classList.remove('struck');
@@ -1518,11 +1633,12 @@
     $('.tip-text', tipEl).textContent = text;
     if (text && !TTY.reduce) tipEl.animate([{ opacity: 0, transform: 'translateY(.3em)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'ease-out' });
   }
-  // The chef's note: taped up at medium heat, drops off at high, and comes back singed (burnt)
-  // after the flambé.
+  // The chef's note: taped up after the third bowl of the same soup, drops off at high heat, and
+  // comes back singed (burnt) after the flambé.
   function setNote(on, burnt = false) {
     const was = note.classList.contains('on');
     if (on) note.classList.toggle('burnt', burnt);
+    if (on) note.dataset.ttyLine = burnt ? 'tag' : 'setup'; // the note sets up the tag; singed, it is the tag
     note.classList.toggle('on', on);
     $('.head').classList.toggle('noted', on);
     $('.head').classList.toggle('burnt', on && burnt);
@@ -1533,7 +1649,8 @@
 
   // Phones crop the headroom above the pot so the pot itself is bigger; steam and flames
   // still draw past the box (overflow is visible) and rise behind the spice rack.
-  const isWide = () => innerWidth >= 700 && innerWidth >= innerHeight;
+  // the whole pot with its headroom where the stove has a column of its own (the wide layout, and a phone on its side)
+  const isWide = () => innerWidth >= innerHeight && (innerWidth >= 700 || innerHeight <= 500);
   function fitStove() { stove.setAttribute('viewBox', isWide() ? '0 0 320 300' : '0 92 320 208'); }
   fitStove();
   addEventListener('resize', fitStove);
@@ -1559,7 +1676,7 @@
       const k = clamp((now - tween.t0) / tween.ms, 0, 1);
       const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
       setAngle(tween.from + (tween.to - tween.from) * e);
-      if (k >= 1) tween = null; else busy = true;
+      if (k >= 1) { const done = tween; tween = null; if (done.byVisitor) visitorTip(); } else busy = true;
     }
     for (const j of jars) {
       if (TTY.reduce) { j.f = j.tf; j.k = j.tk; j.vf = j.vk = 0; } else {
@@ -1589,13 +1706,18 @@
         parts.push({ x: r.left + r.width * (0.2 + Math.random() * 0.6), y: r.top + r.height * 0.1, vx: (Math.random() - 0.5) * 1.6 * k, vy: (-2 - Math.random() * 3.2 * fire) * k, g: -0.02 * k, life: 1, decay: 0.012 + Math.random() * 0.02, size: (1 + Math.random() * 2.2) * Math.max(0.6, k), color: Math.random() < 0.5 ? '#ffd166' : '#ff8a2a' });
       }
     }
-    if (spill > 0.02 && document.visibilityState === 'visible') {
-      const r = $('.glass', sack.el).getBoundingClientRect();
-      const wide = r.height > r.width;
+    const glass = $('.glass', sack.el).getBoundingClientRect();
+    if (spill > 0.02 && glass.width > 0 && document.visibilityState === 'visible') {
+      const r = glass;
+      // a bottle (taller than wide, and tall); a bar squeezed narrower than its own height (the
+      // 328 × 288 stage) is still a bar
+      const wide = r.height > Math.max(r.width, 24);
       for (let n = 0; n < 1.4 * spill * dt; n++) {
         const c = [...SPICE, TAIL_COLOR][Math.floor(Math.random() * 10)];
         if (wide) parts.push({ x: r.left + r.width * (0.3 + Math.random() * 0.4), y: r.bottom - r.height * sack.f, vx: (Math.random() - 0.5) * 2.4, vy: -1.6 - Math.random() * 1.6, g: 0.16, floor: r.bottom + 4, life: 1, decay: 0.012, size: 1.2 + Math.random() * 1.3, color: c });
-        else parts.push({ x: r.left + r.width * sack.f, y: r.top + r.height * Math.random(), vx: 0.6 + Math.random() * 1.6, vy: -0.8 - Math.random(), g: 0.12, floor: r.bottom + 3, life: 1, decay: 0.02, size: 1 + Math.random(), color: c });
+        // a bar: the grains hop back over the sack's own bar, never over its number or its name
+        // (nor, on a narrow bar, over the name in the row above: they stop at the bar's left end)
+        else parts.push({ x: r.left + r.width * sack.f, y: r.top + r.height * Math.random(), vx: -0.15 - Math.random() * 0.55, vy: -0.8 - Math.random(), g: 0.12, floor: r.bottom + 3, wall: r.left + 2, life: 1, decay: 0.032, size: 1 + Math.random(), color: c });
       }
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1606,6 +1728,7 @@
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       if (p.floor && p.y > p.floor) { p.y = p.floor; p.vy *= -0.3; p.vx *= 0.6; }
+      if (p.wall && p.x < p.wall) { p.x = p.wall; p.vx = 0; }
       p.life -= p.decay * dt;
       if (p.life <= 0) { parts.splice(i, 1); continue; }
       ctx.globalAlpha = Math.min(1, p.life * 1.5);
@@ -1629,7 +1752,7 @@
   const pointerAngle = (e, c) => (Math.atan2(e.clientX - c.x, -(e.clientY - c.y)) * 180) / Math.PI;
   knob.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
-    takeOver();
+    touch(KNOB_BUSY);
     tween = null;
     const r = knob.getBoundingClientRect();
     const c = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
@@ -1640,6 +1763,7 @@
   });
   knob.addEventListener('pointermove', (e) => {
     if (!drag || e.pointerId !== drag.id) return;
+    TTY.busy(1500); // the autoplay stands still while the knob is in the visitor's hand
     if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 5) return;
     drag.moved = true;
     knob.classList.add('dragging');
@@ -1654,9 +1778,10 @@
   const release = (e) => {
     if (!drag || e.pointerId !== drag.id) return;
     knob.classList.remove('dragging');
-    if (drag.moved) { aim = nearest(ang); goAngle(DETENTS[aim].a, 220); } else { aim = (aim + 1) % DETENTS.length; goAngle(DETENTS[aim].a, aim === 0 ? 700 : 480); }
+    const moved = drag.moved;
     drag = null;
-    takeOver();
+    if (moved) { aim = nearest(ang); goAngle(DETENTS[aim].a, 220, true); } else { aim = (aim + 1) % DETENTS.length; goAngle(DETENTS[aim].a, aim === 0 ? 700 : 480, true); }
+    touch(KNOB_BUSY);
   };
   knob.addEventListener('pointerup', release);
   knob.addEventListener('pointercancel', release);
@@ -1669,97 +1794,158 @@
     else if (e.key === 'Enter' || e.key === ' ') to = (aim + 1) % DETENTS.length;
     if (to === null) return;
     e.preventDefault();
-    takeOver();
+    touch(KNOB_BUSY);
     aim = to;
-    goAngle(DETENTS[to].a, 450);
+    goAngle(DETENTS[to].a, 450, true);
   });
 
   ladleBtn.addEventListener('click', () => {
-    takeOver();
+    touch(LADLE_BUSY);
     const pick = sample(T, sieveOn);
     const text = pick.tail ? pick.word : WORDS[pick.i];
-    serve(pick).then(() => { status.textContent = `${L.ladled}: ${text}. ${sentenceText()}`; });
+    serve(pick, undefined, true).then(() => { status.textContent = `${L.ladled}: ${text}. ${sentenceText()}`; });
   });
   sieveBtn.addEventListener('click', () => {
-    takeOver();
+    touch(SIEVE_BUSY);
     setSieve(!sieveOn);
     visitorTip();
     status.textContent = sieveOn ? L.sieveOn : L.sieveOff;
   });
 
-  /* ---------- Autoplay ----------
-     Times are seconds from the start of a 24-second loop (it starts once the page has drawn).
-     Each scene turns the knob, then the ladle serves scripted words (so the story is always
-     the same); only the visitor's "one more ladle" samples for real. What the card reads:
-
-       start   For lunch today, I'm having ___                       / 오늘 점심은 ___   (medium heat, jars full)
-       0.3 Off      For lunch today, I'm having tomato soup. Tomorrow, tomato soup. The day after, tomato soup.
-                    오늘 점심은 김치찌개. 내일 점심도 김치찌개. 모레 점심도 김치찌개.
-       5.2 Medium   For lunch today, I'm having tomato soup. Tomorrow, a sandwich. The day after, ramen.   (chef's note)
-                    오늘 점심은 김치찌개. 내일 점심은 된장찌개. 모레 점심은 비빔밥.
-       8.6 High     For lunch today, I'm having salad. Tomorrow, leftovers. The day after, clouds.   (the note drops)
-                    오늘 점심은 김밥. 내일 점심은 어제 남은 거. 모레 점심은 구름.
-      12.3 + sieve  "clouds" is filtered: crossed out, then the third bowl is ladled again
-                    For lunch today, I'm having salad. Tomorrow, leftovers. The day after, ramen.
-                    오늘 점심은 김밥. 내일 점심은 어제 남은 거. 모레 점심은 비빔밥.
-      15.4 Flambé, sieve still on: the lids fly off, the sieve bucks, the sack overflows
-                    For lunch today, I'm having staircase. Tomorrow, fridge hum. The day after, Wednesday purple flavored galaxy
-                    오늘 점심은 계단. 내일 점심은 냉장고 소리. 모레 점심은 수요일의 보라색 맛 은하수
-                    (complete when the third bowl lands, about 18.7 s, and up to the end)
-      20.3          the chef's note comes back singed: "I said medium." / "중불이라고 했잖아요."  */
-  const LOOP = 24;
-  const SCENES = [
-    // the turn to Off is the opening beat; its tip waits until the knob has stopped
-    { at: 0.3, T: 0, tip: 0, tipAt: 1.0, picks: [0, 0, 0], first: 0.6, step: 0.7 },
-    { at: 5.2, T: 0.7, tip: 1, clear: true, note: true, picks: [0, 1, 2], first: 0.6, step: 0.6 },
-    { at: 8.6, T: 1.2, tip: 2, clear: true, note: false, picks: [3, 5, 6], first: 0.7, step: 0.7 },
-    // the sieve: no clearing; only the third bowl (clouds) is ladled again
-    { at: 12.3, T: 1.2, tip: 4, sieve: true, picks: [, , 2], first: 1.3, step: 0 },
-    // flambé: the tip waits for the column; the third day's shaky words come before its bowl
-    { at: 15.4, T: 2.0, tip: 5, tipAt: 0.6, clear: true, picks: ['t0', 't1', 't2'], first: 0.9, step: 0.85, garnish: [2.55, 2.8, 3.05] },
-  ];
-  const TAG_AT = 20.3;
-  const angleOf = (t) => DETENTS.find((d) => d.T === t).a;
-  let run = 0;
-  let idle = 0;
-  function play() {
-    const mine = ++run;
-    visitor = false;
-    const at = (sec, fn) => setTimeout(() => { if (run === mine) fn(); }, sec * 1000);
-    at(0, () => { clearBowls(); setNote(false); setSieve(false); setTip(null); });
-    SCENES.forEach((sc) => {
-      at(sc.at, () => {
-        cooking = true;
-        if (sc.clear) clearBowls();
-        if (sc.sieve !== undefined) setSieve(sc.sieve);
-        aim = DETENTS.findIndex((d) => d.T === sc.T);
-        if (Math.abs(ang - angleOf(sc.T)) < 0.5) {
-          updateJars();
-          if (!TTY.reduce) knob.animate([{ rotate: '0deg' }, { rotate: '-7deg' }, { rotate: '3deg' }, { rotate: '0deg' }], { duration: 360, easing: 'ease-out' });
-        } else goAngle(angleOf(sc.T), 820);
-        if (!sc.tipAt) setTip(sc.tip);
-        if (sc.note !== undefined) setNote(sc.note);
-      });
-      if (sc.tipAt) at(sc.at + sc.tipAt, () => setTip(sc.tip));
-      // (forEach skips the holes in a sparse list like [, , 2])
-      (sc.picks || []).forEach((p, k) => at(sc.at + sc.first + k * sc.step, () => {
-        serve(typeof p === 'number' ? { i: p } : { tail: true, word: TAIL_WORDS[+p.slice(1)] }, k);
-      }));
-      (sc.garnish || []).forEach((t, k) => at(sc.at + t, () => addGarnish(2, k)));
-    });
-    at(TAG_AT, () => setNote(true, true));
-    at(LOOP, play);
-  }
-  // A visitor's turn: autoplay stops, and starts over 12 s after the last touch.
-  function takeOver() {
+  /* ---------- A visitor's turn ----------
+     Touching the knob, a dial name or a drawer never stops the autoplay: it only stands still
+     (TTY.busy) until the visitor's result has been on screen for two or three seconds, then goes
+     on. What the visitor ladled stays in its bowl until the next turn of the loop; the autoplay
+     ladles around it. If the visitor left the knob or the sieve somewhere else, the class turns
+     it back before its next ladle, so a scripted word always matches the heat it came from. */
+  const KNOB_BUSY = 3000, LADLE_BUSY = 3000, SIEVE_BUSY = 2500;
+  const head = $('.head');
+  let hintTimer = 0;
+  function touch(ms) {
     cooking = true;
-    visitor = true;
-    if (note.classList.contains('on')) setNote(false); // the visitor's turn: the hint line comes back
-    if (TTY.reduce) return;
-    run++;
-    clearTimeout(idle);
-    idle = setTimeout(play, 12000);
+    TTY.busy(ms);
+    // the hint has done its job: it goes a moment after the first touch
+    if (!hintTimer) hintTimer = setTimeout(() => head.classList.add('played'), 2500);
   }
+
+  /* ---------- Autoplay ----------
+     A TTY.timeline: times are seconds of autoplay from the start of a 25-second loop (it starts
+     once the page has drawn, and stands still while a visitor is busy). Each scene turns the knob,
+     then the ladle serves scripted words (so the story is always the same); only the visitor's
+     "one more ladle" samples for real. Every sentence stays up for its reading time
+     before the next scene clears it. What the card reads:
+
+       start        Lunch today: ___                                          / 오늘 점심은 ___   (medium heat, jars full)
+       0.3 Off      Lunch today: tomato soup. Tomorrow: tomato soup. Day after: tomato soup.
+                    오늘 점심은 김치찌개. 내일 점심도 김치찌개. 모레 점심도 김치찌개.
+                    (complete at 2.75; 0.8 s later the chef's note goes up: "Creativity happens at medium heat.")
+       7.0 High     Lunch today: salad. Tomorrow: leftovers. Day after: clouds.   (the note drops off)
+                    오늘 점심은 김밥. 내일 점심은 어제 남은 거. 모레 점심은 구름.
+      11.0 + sieve  "clouds" is filtered: crossed out, then the third bowl is ladled again (12.9)
+                    Lunch today: salad. Tomorrow: leftovers. Day after: ramen.
+                    오늘 점심은 김밥. 내일 점심은 어제 남은 거. 모레 점심은 비빔밥.
+      16.8 Flambé, sieve still on: the lids fly off, the sieve bucks, the sack overflows
+                    Lunch today: staircase. Tomorrow: fridge hum. Day after: Wednesday purple flavored galaxy
+                    오늘 점심은 계단. 내일 점심은 냉장고 소리. 모레 점심은 수요일의 보라색 맛 은하수
+                    (complete when the third bowl lands, about 19.05 s, and up to the end)
+      ~20.55        1.5 s after that bowl, the chef's note comes back singed: "I said medium." / "중불이라고 했잖아요."  */
+  // The loop is a second longer than the 24 s the home shows the page: the punch is never wiped
+  // while the next page slides in (and a page opened on its own keeps it a second more).
+  const LOOP = 25;
+  const PUNCH_AT = 19.4; // the third flambé bowl has landed: TTY.timeline asks the home for time until then
+  const SCENES = [
+    // Heat off. The turn to Off is the opening beat; its tip waits until the knob has stopped. The
+    // chef's note goes up 0.8 s after the third bowl of the same soup lands.
+    { at: 0.3, d: 0, sieve: false, tip: 0, tipAt: 1.3, clear: true, setup: true, picks: [0, 0, 0], ladles: [0.85, 1.45, 2.05], note: 0.8 },
+    // High heat: the note drops off; the third bowl is clouds.
+    { at: 7.0, d: 3, sieve: false, tip: 2, clear: true, dropNote: true, picks: [3, 5, 6], ladles: [7.55, 8.0, 8.45] },
+    // The sieve: nothing is cleared; clouds is crossed out, and only the third bowl is ladled again.
+    // (forEach skips the holes in a sparse list like [, , 2])
+    { at: 11.0, d: 3, sieve: true, tip: 4, picks: [, , 2], ladles: [, , 12.2] },
+    // Flambé, the sieve still on: the tip waits for the column; the third day's shaky words come
+    // before its bowl; the singed note (the tag) 1.5 s after that bowl lands.
+    { at: 16.8, d: 4, sieve: true, tip: 5, tipAt: 17.4, clear: true, picks: ['t0', 't1', 't2'], ladles: [17.35, 17.85, 18.35], garnish: [18.6, 18.75, 18.9], tag: 1.5 },
+  ];
+  const pickOf = (p) => (typeof p === 'number' ? { i: p } : { tail: true, word: TAIL_WORDS[+p.slice(1)] });
+  // The knob to a scene's heat: a turn, or a nudge when it is there already.
+  function turnTo(d) {
+    aim = d;
+    if (!tween && Math.abs(ang - DETENTS[d].a) < 0.5) {
+      updateJars();
+      if (!TTY.reduce) knob.animate([{ rotate: '0deg' }, { rotate: '-7deg' }, { rotate: '3deg' }, { rotate: '0deg' }], { duration: 360, easing: 'ease-out' });
+    } else goAngle(DETENTS[d].a, 820);
+  }
+  // Before a scripted ladle: if a visitor left the knob or the sieve somewhere else, the class puts
+  // them back first (a scripted word always matches the heat it came from).
+  async function settle(t, sc) {
+    while (drag) { await t.wait(200); if (!t.live()) return; }
+    const heading = tween ? tween.to : ang;
+    if (Math.abs(heading - DETENTS[sc.d].a) < 0.5 && sieveOn === sc.sieve) return;
+    if (sieveOn !== sc.sieve) setSieve(sc.sieve);
+    turnTo(sc.d);
+    if (!tipMine) setTip(sc.tip);
+    await t.wait(700);
+  }
+  // The next turn of the loop: everything goes, the visitor's bowls too, and the hint is back.
+  function reset() {
+    gen++;
+    clearBowls(true);
+    setNote(false);
+    setSieve(false);
+    tipMine = false;
+    setTip(null);
+    clearTimeout(hintTimer);
+    hintTimer = 0;
+    head.classList.remove('played');
+  }
+  let loops = 0;
+  // The visitor's own last press (not an autoplay tap), for the next turn of the loop.
+  let lastPress = -1e9;
+  for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, (e) => { if (e.isTrusted) lastPress = performance.now(); }, { capture: true, passive: true });
+  const play = TTY.timeline(async (t) => {
+    if (loops++) reset();
+    for (const sc of SCENES) {
+      await t.at(sc.at * 1000);
+      if (sc.setup) sentenceEl.dataset.ttyLine = 'setup'; else sentenceEl.removeAttribute('data-tty-line');
+      if (sc.clear) clearBowls();
+      if (sc.dropNote) setNote(false);
+      if (sieveOn !== sc.sieve) setSieve(sc.sieve);
+      turnTo(sc.d);
+      if (!sc.tipAt && !tipMine) setTip(sc.tip);
+      // the scene's beats, in time order
+      let last = Promise.resolve();
+      const beats = [];
+      if (sc.tipAt) beats.push([sc.tipAt, () => { if (!tipMine) setTip(sc.tip); }]);
+      sc.picks.forEach((p, k) => beats.push([sc.ladles[k], async () => { await settle(t, sc); if (t.live()) last = serve(pickOf(p), k); }]));
+      (sc.garnish || []).forEach((s, k) => beats.push([s, async () => { await settle(t, sc); if (t.live()) addGarnish(2, k); }]));
+      beats.sort((x, y) => x[0] - y[0]);
+      for (const [s, fn] of beats) {
+        await t.at(s * 1000);
+        await fn();
+        if (!t.live()) return;
+      }
+      // (With reduced motion the third bowl lands before its shaky words; the marker pen goes back
+      // to the dish, as in the autoplay.)
+      if (TTY.reduce && sc.garnish) renderSentence(2);
+      // the chef reacts to the bowl that just landed, a beat later
+      const react = sc.note || sc.tag;
+      if (react) {
+        await last;
+        if (!t.live()) return;
+        await t.wait(react * 1000);
+        setNote(true, !!sc.tag);
+      }
+    }
+    await t.at(LOOP * 1000);
+    if (TTY.reduce) return; // (with reduced motion the last scene stays)
+    // A visitor who has been playing keeps the home's hold (12 s after each press): the next turn
+    // waits until 12.5 s after their last press, so it never wipes their tip, bowls or punch.
+    for (let left; (left = lastPress + 12500 - performance.now()) > 0;) {
+      await t.wait(left);
+      if (!t.live()) return;
+    }
+    play.start();
+  }, { punch: PUNCH_AT });
 
   /* ---------- The card's height ----------
      Lay out every sentence the autoplay will write, and every tip, off screen at this size, and
@@ -1812,28 +1998,17 @@
   if (document.fonts) document.fonts.addEventListener('loadingdone', () => reserveCard(true));
 
   /* ---------- Start ---------- */
+  // Medium heat with full jars, so the opening turn to "Off" is something to see.
   setSieve(false);
-  if (TTY.reduce) {
-    // The last scene of the autoplay: flambé with the sieve still on, three bowls from the
-    // long tail, the third day come apart, and the singed note.
-    cooking = true;
-    aim = 4;
-    setSieve(true);
-    setAngle(120);
-    [0, 1, 2].forEach((i) => { bowls[i].serial = ++serial; fillBowl(i, TAIL_WORDS[i], TAIL_COLOR, 'tail'); });
-    bowls[2].garnish = GARNISH.map((g) => g.t);
-    renderSentence();
-    setTip(5);
-    setNote(true, true);
-  } else {
-    // Medium heat with full jars, so the opening turn to "Off" is something to see.
-    cooking = true;
-    aim = 2;
-    setAngle(0);
-    renderSentence();
-  }
-  // The first second is the gag (and the ladle measures the bowls), so wait for the fonts.
-  TTY.onShow(() => TTY.drawn.then(() => { reserveCard(true); if (!TTY.reduce) play(); }));
+  aim = 2;
+  setAngle(0);
+  renderSentence();
+  // The first second is the gag (and the ladle measures the bowls), so the autoplay waits for the
+  // fonts (TTY.onPlay). With reduced motion the same timeline runs through at once and stops on its
+  // own last scene: flambé with the sieve on, the third day come apart, the singed note.
+  if (TTY.reduce) TTY.onShow(play.start);
+  else TTY.onPlay(() => { reserveCard(true); play.start(); });
+  TTY.drawn.then(() => reserveCard(true));
   const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
   Promise.all([loaded, document.fonts.ready]).then(TTY.ready);
 })();

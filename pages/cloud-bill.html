@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@600;700&family=Nanum+Gothic:wght@400;700;800&display=swap">
-<script src="https://font.tty.link/lib/font-kku.js" data-fonts="gothic pilgi"></script>
+<script src="https://font.tty.link/lib/font-kku.js" data-fonts="pilgi"></script>
 <style>
   /* A cloud bill printed as an apartment maintenance-fee statement. This month's bar in the
      usage chart does not fit on the paper. The line items are the usual cloud surprises in
@@ -30,10 +30,12 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
+  /* clip, not hidden: a size container that hides its overflow is a scroll box of its own, and the
+     paper scraps flying off the bar would widen the page (phones then zoom it out). */
   body {
     container: page / size;
     position: relative;
-    overflow: hidden;
+    overflow: clip;
     background:
       radial-gradient(80cqmax 60cqmax at 30% 20%, #dbe3de, var(--bg) 70%);
     color: var(--ink);
@@ -47,9 +49,12 @@
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
   /* ---------- Stage and paper (phone layout first; the wide layout is at the end) ---------- */
+  /* The stage is the viewport: the scraps that fly off the bar end at its edge (clip, so that
+     neither the body nor the page grows wider while they fly). */
   .stage {
     position: absolute;
     inset: 0;
+    overflow: clip;
     display: grid;
     padding: max(18px, 5cqh) 8px 8px;
   }
@@ -82,16 +87,18 @@
   .org { display: flex; align-items: center; gap: .4em; color: var(--green); font-weight: 700; font-size: max(11px, .8em); letter-spacing: .02em; }
   .lang-en .org { text-transform: uppercase; letter-spacing: .08em; }
   .logo { flex: none; width: 1.35em; height: 1.35em; }
-  .title { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1em .5em; color: var(--green); font-size: 1em; line-height: 1.05; }
-  .title .t-en { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.5em; letter-spacing: .01em; }
-  .title .kku-title { --kku-title: clamp(18px, 6cqw, 30px); color: var(--green); --fy-element-width: 0.11em; }
-  .period { font-weight: 700; font-size: 1.05em; color: var(--ink); }
+  /* The title is a printed green band at the size of the rows: the joke lines (line 8, the note)
+     are never smaller than it. Weight, spacing and the band make it the header. */
+  .title { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1em .55em; padding: .22em .55em .26em; background: var(--green); color: #fff; font-size: 1em; line-height: 1.15; border-radius: 2px; }
+  .title .t-en { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1em; letter-spacing: .09em; text-transform: uppercase; }
+  .title .t-ko { font-weight: 800; font-size: 1em; letter-spacing: .14em; }
+  .period { font-weight: 600; font-size: 1em; color: #d6ece1; }
   .meta { display: grid; gap: .1em; font-size: max(11px, .84em); color: var(--soft); }
   .meta div { display: flex; gap: .45em; }
   .meta dt { flex: none; min-width: 4.4em; color: var(--green); }
   .lang-en .meta dt { min-width: 3.6em; }
   .meta dd { color: var(--ink); font-weight: 600; }
-  .meta small { font-weight: 400; color: var(--soft); }
+  .meta small { font-weight: 400; color: var(--soft); font-size: max(10px, .86em); }
   .wide-only { display: none; }
   .meta dt, .meta .m-span { display: none; }
 
@@ -200,7 +207,7 @@
   .amt .more { align-self: flex-start; color: var(--pen); font: 700 max(11px, .78em)/1.2 'Barlow', 'Nanum Gothic', sans-serif; white-space: nowrap; }
   @container page (min-width: 560px) { .amt .more { align-self: auto; } }
   .prev { color: var(--soft); text-align: right; white-space: nowrap; }
-  .delta { text-align: right; white-space: nowrap; font-size: .92em; }
+  .delta { text-align: right; white-space: nowrap; font-size: max(10px, .92em); }
   .delta.up { color: var(--red); }
   .delta.down { color: var(--blue); }
   .tag {
@@ -223,6 +230,8 @@
   .row.pending .lbl > :not(.wait) { display: none; }
   .row.pending .amt, .row.pending .prev, .row.pending .delta { visibility: hidden; }
   .row.pending .ico { opacity: .35; }
+  /* The three dots are drawn by CSS: they blink, the words "looking up" stay put. */
+  .dots i::before { content: "."; }
   .dots i { animation: dot 1.1s infinite; font-style: normal; }
   .dots i:nth-child(2) { animation-delay: .18s; }
   .dots i:nth-child(3) { animation-delay: .36s; }
@@ -273,8 +282,8 @@
   .pn-notice { display: none; }
   .pn-memo { display: grid; gap: .25em; }
   .mh { color: var(--green); font-weight: 800; font-size: max(11px, .84em); letter-spacing: .02em; }
-  .mt { font-size: 1em; line-height: 1.4; }
-  /* The punchline and its tag line read bigger than the 11 px rows on a phone (_rules 5). */
+  .mt { font-size: 1em; line-height: 1.4; text-wrap: pretty; }
+  /* The punchline and its tag line read bigger than the 11 px rows on a phone. */
   .pn-memo.punch .mt { font-size: max(13px, 1.15em); }
   .foot { color: var(--soft); font-size: max(11px, .9em); line-height: 1.35; }
   .foot.tagline { color: var(--ink); font-size: 1em; font-weight: 700; }
@@ -326,35 +335,33 @@
     }
     .paper::before { inset: .5em; }
     .head { gap: .45em; }
-    .title .kku-title { --kku-title: clamp(22px, 3.1cqw, 40px); }
-    .title .t-en { font-size: 2.3em; }
-    .period { font-size: 1.45em; }
-    .meta { grid-template-columns: auto auto auto; justify-content: start; column-gap: 1.6em; font-size: .9em; margin-top: .15em; }
+    .title { padding: .3em .7em .34em; }
+    .meta { grid-template-columns: auto auto auto; justify-content: start; column-gap: 1.6em; font-size: max(10px, .9em); margin-top: .15em; }
     .meta div { flex-direction: column; gap: 0; }
-    .meta dt { min-width: 0; font-size: .92em; }
+    .meta dt { min-width: 0; font-size: max(10px, .92em); }
     .wide-only { display: inline; }
     .ph-only { display: none; }
     .meta dt { display: block; }
     .meta .m-span { display: flex; }
     .logo { width: 1.7em; height: 1.7em; }
     .chart { padding: .25em 0 0; border: 1px solid var(--rule-soft); border-width: 0 0 0 1px; padding-left: 1.2em; }
-    .ch-title { font-size: .9em; }
+    .ch-title { font-size: max(10px, .9em); }
     .plot { flex: 1; height: auto; min-height: 0; margin: .5em 0 0 3.2em; }
     .tick b { display: block; position: absolute; right: calc(100% + .5em); top: -.65em; color: var(--soft); font-size: max(11px, .74em); font-weight: 500; white-space: nowrap; }
-    .mons { margin-left: 3.2em; font-size: .82em; }
+    .mons { margin-left: 3.2em; font-size: max(10px, .82em); }
     .pct { font-size: 2.6em; left: 4%; top: 5%; }
     .pct small { display: block; margin-top: .2em; }
     .cont { font-size: 13px; }
     .items { --cols: 1.6em minmax(0, 1fr) 6.4em 5.4em 5.8em; }
-    .thead { padding: .4em .45em; font-size: .86em; }
+    .thead { padding: .4em .45em; font-size: max(10px, .86em); }
     .thead .c-prev, .thead .c-delta, .row .prev, .row .delta { display: block; }
-    .row .prev, .row .delta { font-size: .9em; }
+    .row .prev, .row .delta { font-size: max(10px, .9em); }
     .thead .c-prev, .thead .c-delta { text-align: right; }
     .row { padding: .2em .45em; }
     .ico { width: 1.55em; height: 1.55em; }
     .nm { font-size: 1.04em; }
-    .sub { font-size: .84em; }
-    .tag { font-size: .76em; }
+    .sub { font-size: max(10px, .84em); }
+    .tag { font-size: max(10px, .76em); }
     .panel {
       position: relative;
       display: flex;
@@ -365,16 +372,16 @@
       overflow: visible;
     }
     .panel::after { display: none; }
-    .pn-title { display: block; padding: .35em .7em; background: var(--tint); color: var(--green); font-weight: 800; font-size: .86em; letter-spacing: .02em; border-bottom: 1px solid var(--rule-soft); }
-    .pn-notice { display: block; flex: 1; padding: .55em .8em .2em 1.9em; font-size: .9em; line-height: 1.45; }
+    .pn-title { display: block; padding: .35em .7em; background: var(--tint); color: var(--green); font-weight: 800; font-size: max(10px, .86em); letter-spacing: .02em; border-bottom: 1px solid var(--rule-soft); }
+    .pn-notice { display: block; flex: 1; padding: .55em .8em .2em 1.9em; font-size: max(10px, .9em); line-height: 1.45; }
     .pn-notice li { margin-bottom: .3em; }
     .pn-notice li::marker { color: var(--green); }
     .pn-memo { display: none; flex: 1; align-content: end; padding: .55em .8em .7em; }
     .panel.memo .pn-notice { display: none; }
     .panel.memo .pn-memo { display: grid; }
-    .mt { font-size: .98em; }
-    .pn-memo.punch .mt { font-size: .98em; }
-    .pn-memo.punch .tagline { font-size: 1em; }
+    .mt { font-size: max(10px, .98em); }
+    /* the note box has room above the note: the punchline reads bigger than the rows here too */
+    .pn-memo.punch .mt { font-size: 1.12em; }
     .pen { margin-left: -2.7em; }
     .parrow { display: block; }
     .band {
@@ -384,10 +391,10 @@
       padding-top: .7em;
     }
     .due { flex-direction: row; align-items: baseline; gap: .55em; padding: .35em .8em .4em; }
-    .due .lab { font-size: .9em; }
+    .due .lab { font-size: max(10px, .9em); }
     .total { font-size: 2.1em; }
-    .late { justify-items: start; text-align: left; font-size: .86em; }
-    .apply { justify-self: end; font-size: .95em; }
+    .late { justify-items: start; text-align: left; font-size: max(10px, .86em); }
+    .apply { justify-self: end; font-size: max(10px, .95em); }
   }
 
   /* Tall phones and tablets have room for last month and the change. */
@@ -395,7 +402,7 @@
     .items { --cols: 1.55em minmax(0, 1fr) 6.4em 5.4em 5.8em; }
     .thead .c-prev, .thead .c-delta, .row .prev, .row .delta { display: block; }
     .thead .c-prev, .thead .c-delta { text-align: right; }
-    .row .prev, .row .delta { font-size: .9em; }
+    .row .prev, .row .delta { font-size: max(10px, .9em); }
   }
 
   /* Short phone stages (the home page's stage on a phone is about 345×395): one line a row. */
@@ -412,6 +419,24 @@
     .hint { margin-bottom: .15em; }
     .thead { padding: .2em .35em; }
     .band { padding-top: .35em; gap: .25em .9em; }
+  }
+  /* Very short phone stages (the home page's stage in a 360×520 window is about 328×288): eight
+     lines and the header do not fit at full size, so the second-order lines go (unit and due date,
+     the tap hint, the late fee and the "made up" line), the chart is lower, the amount due sits on
+     one line beside the request box, and every line keeps its full height instead of being squeezed. */
+  @container page (max-height: 320px) and ((max-width: 699px) or (max-aspect-ratio: 1/1)) {
+    .meta, .hint, .late { display: none; }
+    .plot { height: 40px; }
+    .rows { flex: none; grid-auto-rows: auto; }
+    .rows > li { min-height: auto; }
+    .row { flex-shrink: 0; min-height: auto; padding-block: 0; line-height: 1.2; }
+    .nm { line-height: 1.2; }
+    .ico { width: 1.2em; height: 1.2em; }
+    .thead { padding: .1em .35em; }
+    .paper { grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "head chart" "due chart" "items items" "apply apply"; }
+    .band { display: contents; }
+    .due { justify-self: start; align-self: end; flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: .45em; padding: .1em .5em; }
+    .apply { justify-self: start; }
   }
 
   /* Opened on its own at tablet width, the kit's two links sit at the bottom right. */
@@ -459,7 +484,7 @@
       </p>
       <h1 class="title" id="bill-title">
         <span data-lang="en" class="t-en">Monthly Statement</span>
-        <font-kku data-lang="ko" class="kku-title" font="gothic" size="var(--kku-title, 22px)">관리비 고지서</font-kku>
+        <span data-lang="ko" class="t-ko">관리비 고지서</span>
         <span class="period" data-period></span>
       </h1>
       <dl class="meta">
@@ -613,8 +638,8 @@
       en: ['Electricity', 'dev server, on all weekend'],
       ko: ['세대 전기료', '개발 서버 · 주말 내내 켜 둠'],
       key: { en: 'dev server', ko: '개발 서버' },
-      memo: { en: 'The server stayed on all weekend with nobody home. A running server is billed by the hour or the second. Lights on in an empty unit.',
-              ko: '아무도 없는 주말에도 서버가 켜져 있었어요. 켜져 있는 동안은 시간(또는 초) 단위로 요금이 쌓입니다. 빈집에 불 켜 두신 셈이에요.' } },
+      memo: { en: 'The server ran all weekend with nobody home, billed by the hour. Lights on in an empty unit.',
+              ko: '아무도 없는 주말 내내 서버가 켜져 있었어요. 켜져 있으면 시간마다 요금이 쌓입니다. 빈집에 불 켜 두신 셈이에요.' } },
     { icon: 'room',
       en: ['Vacant room', "stopped server's 500 GB disk"],
       ko: ['빈방 관리비', '꺼 둔 서버의 디스크 500GB'],
@@ -625,14 +650,14 @@
       en: ['Move-out fee', '1.2 TB out · moving in is free'],
       ko: ['이사비', '나간 데이터 1.2TB · 들어온 건 무료'],
       key: { en: 'egress', ko: '나간 데이터' },
-      memo: { en: 'Data coming in from the internet is generally free. Data going out is charged per GB. Moving in: free. Moving out: you pay the movers.',
+      memo: { en: 'Data coming in is generally free. Data going out is billed per GB. Moving out: you pay the movers.',
               ko: '인터넷에서 들어오는 데이터는 대개 무료, 나가는 데이터는 GB마다 요금이에요. 들어올 땐 공짜, 나갈 땐 이사비.' } },
     { icon: 'gate',
       en: ['Front gate toll', 'NAT gateway · per hour + per GB'],
       ko: ['공동 현관 통행료', 'NAT 게이트웨이 · 시간당 + GB당'],
       key: { en: 'NAT', ko: 'NAT' },
-      memo: { en: 'Private servers go out to the internet through a NAT gateway. It bills for every hour it is open, and again for every GB that passes.',
-              ko: '사설망 서버들이 밖으로 나갈 때 지나는 문(NAT 게이트웨이)은 열어 둔 시간만큼, 그리고 지나간 데이터만큼 따로 받습니다.' } },
+      memo: { en: 'Private servers reach the internet through the NAT gateway. It charges by the hour, then again per GB.',
+              ko: '사설망 서버가 밖으로 나가는 문(NAT 게이트웨이)은 열어 둔 시간만큼, 지나간 데이터만큼 또 받습니다.' } },
     { icon: 'park',
       en: ['Parking', '6 public IPv4 spaces · 4 empty'],
       ko: ['주차 자리', '공인 IPv4 6개 · 4개는 빈자리'],
@@ -655,8 +680,8 @@
       en: ['Balance inquiry fee', ''],
       ko: ['관리비 조회 수수료', ''],
       key: { en: 'bill-alert bot', ko: '요금 알림 봇' },
-      memo: { en: 'Looking at the bill on screen is free, but some providers charge for every cost-API request. The alert bot called it every minute.',
-              ko: '요금 화면은 무료지만, 비용 조회 API는 물을 때마다 요금을 받는 곳이 있어요. 알림 봇이 그 API를 1분마다 불렀습니다.' } },
+      memo: { en: 'The bill on screen is free, but some clouds charge per cost-API request. The bot called it every minute.',
+              ko: '요금 화면은 무료지만 비용 조회 API는 물을 때마다 요금을 받는 곳이 있어요. 알림 봇이 그걸 1분마다 불렀습니다.' } },
   ];
   // Line 8's second line is the bot: one lookup for every minute of the month. The office notes
   // read after line 8 printed are counted on their own, under the amount, so "every minute" stays true.
@@ -668,7 +693,7 @@
   const STAYS = { en: 'billed anyway', ko: '꺼도 그대로' };
   const PUNCH = {
     pen: { en: '#1 this month', ko: '이번 달 1위' },
-    text: { en: 'You checked your balance every minute to avoid bill shock. It changes a few times a day.',
+    text: { en: 'You checked every minute to avoid bill shock. It changes a few times a day.',
             ko: '요금 폭탄 막으시려고 1분마다 조회하셨습니다. 요금은 하루에 몇 번만 바뀝니다.' },
   };
   // The tag beat: reading the punchline note was one more lookup (n = that lookup's number).
@@ -694,8 +719,8 @@
     const li = document.createElement('li');
     li.innerHTML = `<button type="button" class="row" aria-describedby="hint">
         <svg class="ico" aria-hidden="true"><use href="#i-${line.icon}"/></svg>
-        <span class="lbl"><b class="nm">${name}</b><small class="sub">${sub}</small><span class="key">${TTY.t(line.key)}</span><span class="tag">${TTY.t(STAYS)}</span>
-          ${i === 7 ? `<span class="wait">${TTY.t({ en: 'looking up', ko: '조회 중' })}<span class="dots"><i>.</i><i>.</i><i>.</i></span></span>` : ''}</span>
+        <span class="lbl"><b class="nm"${i === 7 ? ' data-tty-line="setup"' : ''}>${name}</b><small class="sub">${sub}</small><span class="key">${TTY.t(line.key)}</span><span class="tag">${TTY.t(STAYS)}</span>
+          ${i === 7 ? `<span class="wait">${TTY.t({ en: 'looking up', ko: '조회 중' })}<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></span>` : ''}</span>
         <span class="amt mono"><s class="was" hidden></s><span class="now"></span>${i === 7 ? '<small class="more" hidden></small>' : ''}</span>
         <span class="prev mono"></span>
         <span class="delta mono"></span>
@@ -842,6 +867,7 @@
   let barAnim = null;
   function shootBar(run) {
     nowFill.style.transform = 'none';
+    if (TTY.reduce) { settleBar(); return; }
     const gray = Math.max(...HISTORY) / AXIS / (total / AXIS);   // where the gray months end, as a share of this bar
     // Up to the gray months' height, a hair over and back (it has arrived), a long stop as if this
     // were a normal month, then it goes.
@@ -868,8 +894,14 @@
   // punchline note (PUNCH_NOTE). The punchline note sits over line 8 but is not line 8's note.
   let memoFor = -1;
   const PUNCH_NOTE = 8;
+  // The punchline note (its sentence and the pen's "#1 this month") is the page's punch for the checker;
+  // a line's note in the same box is not.
+  const notePunch = (on) => {
+    memoEl.classList.toggle('punch', on);
+    if (on) memoEl.dataset.ttyLine = 'punch'; else delete memoEl.dataset.ttyLine;
+  };
   const isWide = () => wideMQ.matches;
-  function showMemo(html, anchor, where) {
+  function showMemo(html, anchor, where, fade = true) {
     memoEl.innerHTML = html;
     panel.classList.add('memo');
     if (isWide()) {
@@ -879,7 +911,7 @@
       panel.classList.add('open');
       placeCard(anchor, where);
     }
-    if (!TTY.reduce) memoEl.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' });
+    if (fade && !TTY.reduce) memoEl.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' });
   }
   function placeCard(anchor, where) {
     const pr = paper.getBoundingClientRect();
@@ -897,35 +929,48 @@
     panel.style.setProperty('--px', Math.max(14, Math.min(ir.width - 26, ar.left + ar.width * .3 - ir.left)) + 'px');
   }
   function closeMemo() {
+    leavePunch();
     memoFor = -1;
-    memoEl.classList.remove('punch');
+    notePunch(false);
     rows.forEach((r) => r.btn.classList.remove('sel'));
     panel.classList.remove('memo', 'open', 'above', 'below');
     panel.style.cssText = '';
   }
   const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  const tagHtml = (n) => `<p class="mt foot tagline">${TAG(count(n))}</p>`;
+  const tagHtml = (n) => `<p class="mt foot tagline" data-tty-line="tag">${TAG(count(n))}</p>`;
   function memoHtml(title, text, pen, foot = '') {
     const penHtml = !pen ? '' : `<p class="pen"><svg class="parrow" viewBox="0 0 60 24" aria-hidden="true"><path d="M58 9 C 44 4, 26 6, 5 15 M5 15 L 15 8.5 M5 15 L 16 18.5"/></svg>${
       ko ? `<font-kku font="pilgi" size="clamp(22px, 2em, 30px)">${pen}</font-kku>` : `<span class="p-en">${pen}</span>`}</p>`;
     return `${title ? `<p class="mh">${esc(title)}</p>` : ''}<p class="mt">${esc(text)}</p>${foot}${penHtml}`;
   }
   let memoFoot = false;      // the open line note was fetched (and counted) after line 8 printed
-  let memoAt = -Infinity;    // when the visitor last opened a note or ticked the box
+  let memoAt = -Infinity;    // when the visitor opened the note that is up (a line's note fetched again keeps it)
+  let memoNeed = 0;          // how long that note takes to read (TTY.readMs)
   let punchNote = 0;         // the lookup number that reading the punchline note became (0: not yet)
+  // A note the visitor opens over the punchline before it has been read does not lose it: the
+  // punchline is owed, and comes back once the visitor's note has had its own reading time.
+  const PUNCH_READ = TTY.readMs(TTY.t(PUNCH.text));
+  let punchShownAt = -Infinity;
+  let punchOwed = false;
+  const leavePunch = () => {
+    if (memoFor === PUNCH_NOTE && performance.now() - punchShownAt < PUNCH_READ) punchOwed = true;
+  };
   function rowMemo(i, foot = memoFoot) {
+    leavePunch();
+    const again = memoFor === i;   // the same note fetched again stays put (no fade-in)
     rows.forEach((r, k) => r.btn.classList.toggle('sel', k === i));
     memoFor = i;
     memoFoot = foot;
-    memoEl.classList.remove('punch');
+    notePunch(false);
     const title = TTY.t({ en: 'Office note · ', ko: '관리사무소 메모 · ' }) + TTY.t(LINES[i])[0];
     showMemo(memoHtml(title, TTY.t(LINES[i].memo), '', foot ? `<p class="foot">${TTY.t(FOOT)}</p>` : ''),
-      rows[i].btn, i <= 3 ? 'below' : 'above');
+      rows[i].btn, i <= 3 ? 'below' : 'above', !again);
   }
   function punchMemo() {
     rows.forEach((r) => r.btn.classList.remove('sel'));
+    if (memoFor !== PUNCH_NOTE) punchShownAt = performance.now();   // redrawn for a new layout: same clock
     memoFor = PUNCH_NOTE;
-    memoEl.classList.add('punch');
+    notePunch(true);
     showMemo(memoHtml('', TTY.t(PUNCH.text), TTY.t(PUNCH.pen), punchNote ? tagHtml(punchNote) : ''), rows[7].btn, 'above');
   }
   // "+1" rising off line 8, and its amount ticking over.
@@ -941,19 +986,20 @@
   }
 
   // ---------- Timeline ----------
-  // tag is counted from the moment the punchline note actually opens.
-  const T = { gray: 120, bar: 450, pct: 2600, rows: 3300, gap: 1000, wait: 10300, last: 11500, ring: 12600, punch: 13200, tag: 2800, loop: 21500 };
-  let runId = 0;
-  let timers = [];
+  // Autoplay time (TTY.timeline): it stands still while the visitor taps or types, so a tap slows the
+  // bill down and never races it. tag is counted from the moment the punchline note actually opens.
+  // tagLate: the tag's gap when taps held the punchline back, so it still fits the time the home stage has left.
+  const T = { gray: 120, bar: 450, pct: 2600, rows: 3300, gap: 1000, wait: 10300, last: 11500, ring: 12600, punch: 13200, tag: 2800, tagLate: 1500, loop: 21500 };
+  let runId = 0;            // a new run stops the old bar's frame loop
   let revealed = false;     // has line 8 printed?
-  const at = (ms, fn) => { const run = runId; timers.push(setTimeout(() => { if (run === runId) fn(); }, ms)); };
-  function stop() { runId++; timers.forEach(clearTimeout); timers = []; if (barAnim) { barAnim.cancel(); barAnim = null; } }
+  function stopBar() { runId++; if (barAnim) { barAnim.cancel(); barAnim = null; } }
 
-  function printRow(i, animate = true) {
+  function printRow(i) {
     const r = rows[i];
     r.btn.classList.remove('pending');
+    if (TTY.reduce) { r.btn.classList.add('on'); r.now.textContent = money(current[i]); return; }
+    r.now.textContent = money(0);   // the count starts at zero, not with a frame of the final amount
     r.btn.classList.add('on');
-    if (!animate || TTY.reduce) { r.now.textContent = money(current[i]); return; }
     r.btn.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 380, easing: 'cubic-bezier(.6, 0, .3, 1)' });
     countUp(r, current[i], i === 7 ? 1100 : 480, i === 7 ? (t) => t * t * t : undefined);
   }
@@ -969,22 +1015,16 @@
     const [m, ...cs] = RING;
     el.querySelector('path').setAttribute('d', `M${pt(...m)}` + cs.map((c) => ` C ${pt(c[0], c[1])}, ${pt(c[2], c[3])}, ${pt(c[4], c[5])}`).join(''));
   }
-  function ring(animate) {
+  function ring() {
     const el = $('.ring');
     drawRing();
-    if (!animate || TTY.reduce) { el.classList.add('on'); el.querySelector('path').style.transition = 'none'; return; }
-    el.querySelector('path').style.transition = 'stroke-dashoffset .7s cubic-bezier(.5, 0, .3, 1)';
+    el.querySelector('path').style.transition = TTY.reduce ? 'none' : 'stroke-dashoffset .7s cubic-bezier(.5, 0, .3, 1)';
     el.classList.add('on');
   }
 
-  // The punchline note waits while the visitor is still reading a note they just opened.
-  const READ_MS = 3500;
-  function autoPunch() {
-    const since = performance.now() - memoAt;
-    if (memoFor !== -1 && memoFor !== PUNCH_NOTE && since < READ_MS) { at(READ_MS - since + 50, autoPunch); return; }
-    punchMemo();
-    at(T.tag, tagBeat);
-  }
+  // The punchline note waits while the visitor is still reading a note they opened (its reading
+  // time plus the fade), and never writes over it before that.
+  const readLeft = () => (memoFor === -1 || memoFor === PUNCH_NOTE ? 0 : memoAt + memoNeed + 300 - performance.now());
   // Tag: reading the punchline note was itself a lookup. Line 8 and the total go up by one.
   function tagBeat() {
     if (memoFor !== PUNCH_NOTE || punchNote) return;
@@ -999,14 +1039,21 @@
     if (!TTY.reduce) line.animate([{ opacity: 0, transform: 'translateY(3px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'ease-out' });
   }
 
-  function reset() {
-    stop();
-    closeMemo();
-    extraLookups = 0;
+  // The bill back to blank. The visitor's own things (the checkbox, an open note, the lookups they
+  // made) are put back only when the bill starts over on its own, not when it first starts.
+  function reset(visitorToo) {
+    stopBar();
+    if (visitorToo) {
+      closeMemo();
+      extraLookups = 0;
+      memoFoot = false;
+      memoAt = -Infinity;
+      memoNeed = 0;
+      weekend.checked = false;
+    }
     punchNote = 0;
-    memoFoot = false;
-    memoAt = -Infinity;
-    weekend.checked = false;
+    punchOwed = false;
+    punchShownAt = -Infinity;
     revealed = false;
     pierced = exited = false;
     render();
@@ -1019,61 +1066,84 @@
     nowFill.style.transform = 'scaleY(0)';
   }
 
-  function finalScene() {
-    stop();
-    // The last scene includes the tag: the punchline note has been read once.
-    extraLookups = Math.max(extraLookups, 1);
-    punchNote = punchNote || MINUTES + extraLookups;
-    render();
-    grayFills.forEach((f) => { f.style.transform = 'none'; });
-    nowFill.style.transform = 'none';
-    pctEl.classList.add('on');
-    rows.forEach((r, i) => printRow(i, false));
-    revealed = true;
-    ring(false);
-    requestAnimationFrame(() => { settleBar(); placeTear(); punchMemo(); });
-  }
-
-  function play() {
-    if (TTY.reduce) { finalScene(); return; }
-    reset();
-    const run = runId;
-    at(T.gray, () => {
-      grayFills.forEach((f, k) => {
-        f.style.transform = 'none';
-        f.animate([{ transform: 'scaleY(0)' }, { transform: 'none' }], { duration: 380, delay: k * 70, easing: 'cubic-bezier(.2, .8, .3, 1)', fill: 'backwards' });
-      });
-    });
-    at(T.bar, () => shootBar(run));
-    at(T.pct, () => {
-      pctEl.classList.add('on');
-      pctEl.animate([{ transform: 'scale(.4)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: .65 }, { transform: 'none', opacity: 1 }],
-        { duration: 420, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
-    });
-    for (let i = 0; i < 7; i++) at(T.rows + i * T.gap, () => printRow(i));
-    at(T.wait, () => rows[7].btn.classList.add('pending'));
-    at(T.last, () => { revealed = true; printRow(7); });
-    at(T.ring, () => ring(true));
-    at(T.punch, autoPunch);
-    at(T.loop, maybeLoop);
-  }
-
   // Loop on its own, but never while someone is reading or playing.
   let lastTouch = -Infinity;
-  function maybeLoop() {
-    const idle = performance.now() - lastTouch;
-    if (idle < 12000) { at(12000 - idle + 50, maybeLoop); return; }
-    play();
-  }
   addEventListener('pointerdown', () => { lastTouch = performance.now(); }, { capture: true });
   addEventListener('keydown', () => { lastTouch = performance.now(); }, { capture: true });
+
+  // With TTY.reduce every wait passes at once: the same steps end on the autoplay's last scene
+  // (the punchline note with its tag), and it does not start over.
+  let runs = 0;
+  const play = TTY.timeline(async (t) => {
+    reset(runs++ > 0);
+    const run = runId;
+    const started = performance.now();
+    await t.at(T.gray);
+    grayFills.forEach((f, k) => {
+      f.style.transform = 'none';
+      if (!TTY.reduce) f.animate([{ transform: 'scaleY(0)' }, { transform: 'none' }], { duration: 380, delay: k * 70, easing: 'cubic-bezier(.2, .8, .3, 1)', fill: 'backwards' });
+    });
+    await t.at(T.bar);
+    shootBar(run);
+    await t.at(T.pct);
+    pctEl.classList.add('on');
+    if (!TTY.reduce) pctEl.animate([{ transform: 'scale(.4)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: .65 }, { transform: 'none', opacity: 1 }],
+      { duration: 420, easing: 'cubic-bezier(.2, .9, .3, 1.2)' });
+    for (let i = 0; i < 7; i++) { await t.at(T.rows + i * T.gap); printRow(i); }
+    await t.at(T.wait);
+    rows[7].btn.classList.add('pending');
+    await t.at(T.last);
+    revealed = true;
+    printRow(7);
+    await t.at(T.ring);
+    ring();
+    await t.at(T.punch);
+    while (!TTY.reduce && readLeft() > 0) await t.wait(readLeft() + 50);
+    punchMemo();
+    let punchedAt = performance.now();
+    // Taps held the bill back: the tag follows sooner, and the home stage is asked for the time to
+    // read the note and then its tag (the kit's own hold after a tap counts from the tap, not from now).
+    const late = !TTY.reduce && punchedAt - started > T.punch + 500;
+    // How long the punchline note needs from the moment it is up: its sentence, and the tag line
+    // (still to come `gap` from now, or already in it).
+    const readFor = (gap) => Math.max(PUNCH_READ, gap + TTY.readMs(TAG(punchNote || MINUTES + extraLookups + 1))) + 600;
+    let readNote = readFor(late ? T.tagLate : T.tag);
+    if (late) TTY.hold(readNote);
+    if (TTY.reduce) { await t.wait(T.tag); tagBeat(); return; }
+    let tagAt = t.now() + (late ? T.tagLate : T.tag);
+    // Until it starts over: the tag at its time, and a punchline the visitor covered before it was
+    // read comes back once their note has been read (it stays their result for that long), with
+    // the tag 1.5 s after it if the tag has not come yet. A note opened later stays put.
+    const left = () => Math.max(readNote - (performance.now() - punchedAt), 12000 - (performance.now() - lastTouch));
+    for (;;) {
+      if (punchOwed) {
+        while (readLeft() > 0) await t.wait(readLeft() + 50);
+        punchOwed = false;
+        punchMemo();
+        punchedAt = performance.now();
+        readNote = readFor(punchNote ? 0 : T.tagLate);
+        TTY.hold(readNote);
+        if (!punchNote) tagAt = t.now() + T.tagLate;
+      }
+      if (!punchNote && t.now() >= tagAt) {
+        if (memoFor === PUNCH_NOTE) tagBeat(); else { punchOwed = true; continue; }
+      }
+      // Start over only once the note and its tag have had their time, and nobody touched it for 12 s.
+      if (punchNote && t.now() >= T.loop && left() <= 0) break;
+      await t.wait(punchNote ? Math.max(50, Math.min(250, left() + 50)) : Math.max(20, Math.min(100, tagAt - t.now())));
+    }
+    play.start();
+  }, { punch: 13.5 });
 
   // ---------- Interaction ----------
   rows.forEach((r, i) => {
     r.btn.addEventListener('click', () => {
       if (!r.btn.classList.contains('on')) return;
-      if (memoFor === i && !isWide()) { closeMemo(); return; }
-      memoAt = performance.now();
+      // The same line again fetches its note again (one more lookup once line 8 is in); it does not
+      // put the note away, so quick taps never undo what the visitor opened. A tap elsewhere does.
+      // The same note fetched again is still being read: its reading clock keeps running.
+      if (memoFor !== i || memoFoot !== revealed) memoAt = performance.now();
+      memoNeed = TTY.readMs(TTY.t(LINES[i].memo));
       // Once the lookup fee is on the bill, every note is fetched from the cost API: one more lookup.
       if (revealed) {
         extraLookups++;
@@ -1088,9 +1158,11 @@
     render();
     const m = !weekend.checked ? WEEKEND_MEMO.off : revealed ? WEEKEND_MEMO.onLater : WEEKEND_MEMO.on;
     rows.forEach((r) => r.btn.classList.remove('sel'));
+    leavePunch();
     memoFor = -2;
     memoAt = performance.now();
-    memoEl.classList.remove('punch');
+    memoNeed = TTY.readMs(TTY.t(m.text));
+    notePunch(false);
     showMemo(memoHtml(TTY.t(m.title), TTY.t(m.text)), $('.band'), 'above');
     if (!TTY.reduce && nowFill.style.transform === 'none' && !barAnim) {
       nowFill.animate([{ transform: `scaleY(${before / total})` }, { transform: 'none' }], { duration: 600, easing: 'cubic-bezier(.3, .8, .3, 1)' });
@@ -1130,9 +1202,10 @@
   ro.observe(panel);
 
   render();
-  if (TTY.reduce) finalScene();
-  else reset();
-  TTY.onShow(play);
+  reset(false);
+  // The bar's first seconds are the 3-second gag and it measures the paper: start once the page has
+  // drawn with its fonts (on the home stage it nearly always has by the time it is shown).
+  TTY.onPlay(play.start);
   const loaded = new Promise((r) => (document.readyState === 'complete' ? r() : addEventListener('load', r, { once: true })));
   Promise.all([loaded, document.fonts.ready]).then(() => { placeTear(); TTY.ready(); });
 })();

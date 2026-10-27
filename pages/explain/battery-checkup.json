@@ -4,12 +4,12 @@
     "en": "Battery Health Checkup",
     "ko": "배터리 종합검진"
   },
-  "updated": "2026-10-14",
+  "updated": "2026-10-27",
   "ko": {
     "line": "몇 년 쓴 휴대폰 배터리에게 종합건강검진을 받게 해서, 진짜 배터리 상식을 검진표 말투로 전하고 마지막 소견을 사람에게도 돌려준다.",
     "points": [
       "진찰대에 누워 청진기를 건 얼굴 달린 휴대폰, 링거처럼 걸린 번개 충전기, 심전도 모니터에 뜬 배터리 잔량 → 배터리를 환자로 대하는 그림만으로 웃긴다(넓은 화면에서는 링거대와 배터리로 된 시력표까지, 휴대폰에서는 진찰대 양옆의 작은 링거 팩과 모니터).",
-      "'1% 지구력 23분'에 보라 '미스터리', '주인 배터리 불안: 20%에서 초조함'에 '보호자 상담' → 누구나 겪은 '1%가 왜 이렇게 오래 가지?'와 20%만 돼도 불안한 마음을 검진 판정으로 찍었다. 검사 대상이 슬쩍 주인으로 넘어가고, 휴대폰이 화면 밖 주인을 부른다. \"보호자분, 들어오시래요.\"",
+      "'1% 지구력 23분'에 보라 '미스터리', '주인 배터리 불안: 20%에서 초조함'에 보호자 상담 스티커 → 누구나 겪은 '1%가 왜 이렇게 오래 가지?'와 20%만 돼도 불안한 마음을 검진 판정으로 찍었다. 검사 대상이 슬쩍 주인으로 넘어가고, 휴대폰이 화면 밖 주인을 부른다. \"보호자분, 들어오시래요.\"",
       "충전기를 꽂으면 80%에서 멈추고 \"과식하면 배 나와요\" → 실제 휴대폰에도 충전을 80%에서 멈추는 기능이 있다(아이폰 15부터는 충전 한도를 80%로 정할 수 있고, 갤럭시는 '배터리 보호'). 가득 찬 채로 있는 시간을 줄여 배터리를 아끼는 기능이다. 배가 나온다는 말은 6번 줄 '배 부풂'(부푼 배터리)과 사람의 과식을 한꺼번에 가리켜, 그대로 소견의 \"사람도 그렇습니다\"로 이어진다.",
       "종합 소견 \"꽉 채우지도, 바닥까지 쓰지도 마세요. 20~80% 사이에서 오래 갑니다. 사람도 그렇습니다.\" → 리튬 이온 배터리는 끝까지 채우거나 바닥까지 쓰지 않고 중간에서 조금씩 충전할 때 실제로 더 오래 간다. 그 말을 사람에게 건넨 직후, 직인이 찍히자 8번 줄이 \"80%에서도 초조함\"으로 다시 찍힌다. 배터리는 처방대로 80%에서 멈췄는데 이번엔 주인이 왜 100%가 안 되냐며 초조하다. 80% 한도를 켠 사람이 실제로 많이 하는 걱정이다. 그 줄을 누르면 의사가 \"80%에서 멈추는 건 버그가 아니라 기능입니다.\""
     ],
@@ -75,9 +75,9 @@
       }
     ],
     "deep": [
-      "충전 1,042회인데 최대 용량 81% → 애플이 밝힌 설계(아이폰 14까지 500회, 아이폰 15 모델 1,000회에 80%)를 둘 다 넘겨 쓰고도 아직 80% 위다. 그래서 의사 설명이 \"연세에 비해 정정하십니다\"이고, 판정은 참고치 80%를 겨우 넘긴 경계라 정상B다(실제 검진표의 정상B도 이상은 없지만 관리가 필요하다는 뜻). 3년 동안 하루 한 번꼴로 다 쓴 셈이라 하루 충전량 그래프(아침 100% → 저녁 9%)와도 맞는다.",
-      "'1% 지구력' 설명의 \"0%가 돼도 보호를 위해 조금 남겨 둡니다\" → 실제로 대부분의 휴대폰은 셀 전압이 3.0V쯤 되면 꺼지는데, 그때 배터리에는 아직 5% 안팎이 남아 있다. 배터리가 무리하지 않게, 그리고 바로 충전하지 않아도 저절로 조금씩 빠지는 몫을 버티게 남겨 둔 것이다.",
-      "추위 반응의 '영하 5도'는 애플이 밝힌 아이폰 주변 온도 0~35°C의 바로 아래다. 충전 중 체온의 참고치 45°C는 리튬 이온 셀을 충전해도 되는 온도의 흔한 상한이라(배터리 유니버시티 표: 충전 0~45°C), 46°C면 딱 1도 넘었다. 5번 줄 설명의 \"배터리도 열받으면 늙습니다\"는 말장난이면서 사실이다.",
+      "충전 1,042회인데 최대 용량 81% → 애플이 밝힌 설계(아이폰 14까지 500회, 아이폰 15 모델 1,000회에 80%)를 둘 다 넘겨 쓰고도 아직 80% 위다. 그래서 1번 줄을 누르면 나오는 의사 설명이 \"연세에 비해 정정하십니다\"이고, 판정은 참고치 80%를 겨우 넘긴 경계라 정상B다(실제 검진표의 정상B도 이상은 없지만 관리가 필요하다는 뜻). 3년 동안 하루 한 번꼴로 다 쓴 셈이라 하루 충전량 그래프(아침 100% → 저녁 9%)와도 맞는다.",
+      "3번 줄 '1% 지구력'을 누르면 나오는 의사 설명 \"0%가 돼도 보호를 위해 조금 남겨 둡니다\" → 실제로 대부분의 휴대폰은 셀 전압이 3.0V쯤 되면 꺼지는데, 그때 배터리에는 아직 5% 안팎이 남아 있다. 배터리가 무리하지 않게, 그리고 바로 충전하지 않아도 저절로 조금씩 빠지는 몫을 버티게 남겨 둔 것이다.",
+      "추위 반응의 '영하 5도'는 애플이 밝힌 아이폰 주변 온도 0~35°C의 바로 아래다. 충전 중 체온의 참고치 45°C는 리튬 이온 셀을 충전해도 되는 온도의 흔한 상한이라(배터리 유니버시티 표: 충전 0~45°C), 46°C면 딱 1도 넘었다. 5번 줄을 누르면 나오는 의사 설명 \"배터리도 열받으면 늙습니다\"는 말장난이면서 사실이다.",
       "하루 충전량 그래프가 밤 23시부터 아침 7시까지 100%에 납작하게 붙어 있다 → 여덟 시간을 가득 찬 채로 보낸다는 뜻으로, 7번 줄 '밤샘 충전 습관: 매일 100%'가 그래프에도 그대로 있다. 바닥은 18시 \"퇴근길 9%\"(넓은 화면).",
       "충전기를 뽑아 20% 아래로 내려가면(누를 때만) 휴대폰이 땀을 흘리며 \"괜찮아요. 저 1%로도 23분 버텨요.\" → 3번 줄 '1% 지구력 23분'을 제 입으로 자랑한다."
     ]
@@ -86,7 +86,7 @@
     "line": "A phone battery that has worked for a few years gets a full health checkup; real battery facts come in the voice of a medical report, and the doctor's last note is for people too.",
     "points": [
       "A phone with a face lies on the exam table with a stethoscope on it, the charger hangs like a drip bag, and the heart monitor shows its battery → treating a battery as a patient is funny before you read a word (on a wide screen there is a whole drip stand and an eye chart made of batteries; on a phone, a small drip bag and monitor sit either side of the table). The report it gets copies the results letter of a Korean health checkup (see Normal A / Normal B under Terms).",
-      "\"1% endurance · 23 min\" stamped Mystery, \"Owner's battery anxiety · uneasy at 20%\" stamped Treat owner → the feeling that 1% somehow lasts forever and the panic at 20%, as test findings. The patient quietly becomes the owner, and the phone calls them in: \"The doctor will see you now.\"",
+      "Row 3, \"1% endurance\", reads \"23 min\" and gets a Mystery sticker; row 8, \"Owner's battery anxiety\", reads \"uneasy at 20%\" and gets Treat owner → the feeling that 1% somehow lasts forever and the panic at 20%, as test findings. The patient quietly becomes the owner, and the phone calls them in: \"The doctor will see you now.\"",
       "Plug it in and it stops at 80%: \"Any more and I'll bloat.\" → real phones can do this: iPhone 15 and later let you set an 80% charge limit, and Galaxy phones have Battery Protection. Less time sitting full means a longer life. \"Bloat\" is both a swollen battery (row 6, Swelling) and a stuffed stomach, which leads straight into the doctor's \"So do people.\"",
       "The doctor's summary, \"Don't fill all the way up. Don't run all the way down. Between 20 and 80, it lasts. So do people.\" → lithium-ion batteries really do last longer topped up a bit at a time than run from full to empty, and the advice is handed to the reader. Right after the seal, row 8 is typed over: \"uneasy even at 80%\". The battery took the advice; now the owner frets that it won't charge past 80, the very thing people worry about after turning on an 80% limit. Tap that row and the doctor says \"Stopping at 80% is a feature, not a bug.\""
     ],
@@ -153,8 +153,8 @@
       }
     ],
     "deep": [
-      "1,042 charge cycles, yet 81% maximum capacity → past both designs Apple gives (500 cycles for iPhone 14 and earlier, 1,000 for iPhone 15 models) and still above 80%. Hence the doctor's \"Remarkably spry for its age\", and a finding of Normal B: only just over the 80% reference, which is exactly what borderline means on a real Korean checkup. Over three years that is about one full cycle a day, which matches the day's chart (100% in the morning, 9% by evening).",
-      "The \"1% endurance\" note, \"Even at 0% a little is kept in reserve for protection\" → most phones switch off when the cell reaches about 3.0 V, with roughly 5% still in it, to spare the battery stress and leave room for the charge that slowly leaks away if you don't plug it in at once.",
+      "1,042 charge cycles, yet 81% maximum capacity → past both designs Apple gives (500 cycles for iPhone 14 and earlier, 1,000 for iPhone 15 models) and still above 80%. Hence the doctor's note you get by tapping row 1, \"Remarkably spry for its age\", and a finding of Normal B: only just over the 80% reference, which is exactly what borderline means on a real Korean checkup. Over three years that is about one full cycle a day, which matches the day's chart (100% in the morning, 9% by evening).",
+      "The doctor's note you get by tapping row 3, \"1% endurance\": \"Even at 0% a little is kept in reserve for protection\" → most phones switch off when the cell reaches about 3.0 V, with roughly 5% still in it, to spare the battery stress and leave room for the charge that slowly leaks away if you don't plug it in at once.",
       "The cold test at −5 °C is just below the 0–35 °C Apple gives for the air around an iPhone. The 45 °C reference while charging is the usual upper limit for charging a lithium-ion cell (Battery University's table: charge between 0 and 45 °C), so 46 °C is one degree over.",
       "The day's charge chart sits flat at 100% from 11 p.m. to 7 a.m. → eight hours spent full, the \"100% every night\" habit from row 7 drawn as a line. Its low point at 6 p.m. is labelled \"commute 9%\" (wide screens).",
       "Unplug it and let it drop below 20% (only when you tap) and the phone sweats: \"I'm fine. I can do 23 minutes on 1%.\" → it boasts about row 3's 23 minutes in its own voice."

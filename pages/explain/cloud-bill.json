@@ -4,7 +4,7 @@
     "en": "This Month's Cloud Bill",
     "ko": "클라우드 아파트 관리비"
   },
-  "updated": "2026-10-14",
+  "updated": "2026-10-27",
   "ko": {
     "line": "클라우드 요금 청구서를 아파트 관리비 고지서로 바꿔서, 개발자들이 매달 놀라는 '숨은 요금'을 관리비 항목처럼 읽게 만든 페이지다.",
     "points": [
@@ -81,7 +81,7 @@
       "막대 높이는 과장이 아니다 → 눈금(위끝 63만 원)에 맞춘 진짜 비율이라, 지난달의 6.7배쯤 되는 이번 달 막대가 그래프 칸 두 배 넘게 솟아 종이 밖으로 나간다.",
       "'A동 = 가용 영역 a'(넓은 화면에서만) → 클라우드 데이터 센터 묶음(가용 영역) 이름을 아파트 동 이름으로 썼다.",
       "조회 횟수는 그 달의 '분' 수다 → 30일인 달은 43,200회, 31일인 달은 44,640회. 고지서는 늘 지난달 것이고, 시간으로 매기는 항목도 그 달 시간 수로 다시 계산된다.",
-      "고지서 줄을 눌러 메모를 볼 때마다(누를 때만) 수수료가 1센트(약 14원)씩 오르고 메모 끝에 \"※ 이 메모도 비용 API로 불러왔습니다\"가 붙는다. 가만히 보기만 해도 16초쯤 1회가 붙는다 → 보는 것도 조회다.",
+      "8번 줄이 찍힌 뒤 고지서 줄을 눌러 메모를 볼 때마다(누를 때만, 같은 줄을 다시 눌러도) 수수료가 1센트(약 14원)씩 오르고 메모 끝에 \"※ 이 메모도 비용 API로 불러왔습니다\"가 붙는다. 가만히 보기만 해도 16초쯤 1회가 붙는다 → 보는 것도 조회다.",
       "'주말 소등 신청'(누를 때만)을 하면 전기료·이사비·통행료·음식물만 줄고 빈방·주차 자리·창고·조회 수수료엔 '꺼도 그대로'가 붙는다. 8번 줄이 찍힌 뒤라면 메모가 \"조회는 주말에도 1분마다 합니다.\" 전기료 전월 값 73,920원은 평일 22일(528시간)만 켠 값이라, 평일이 22일인 달(2026년 9월 등)에 신청하면 전기료가 전월과 똑같아지고 증감이 '–'가 된다."
     ]
   },
@@ -91,7 +91,7 @@
       "This month's bar punches through the top of the paper → cloud is pay-as-you-go, so one thing left running or one bad setting can multiply the bill in a month. The chart acts out the bill shock. The pause at last month's height is the bar pretending to be a normal month.",
       "Electricity for an empty unit, still paying for a vacant room → a server left on over a weekend with nobody using it keeps billing, and a stopped server still pays for the disk attached to it.",
       "Move-out fee, gate toll, parking → data coming in is generally free but data going out costs per GB; the NAT gateway (the shared front door private servers use to reach the internet) bills per hour and per GB; public IPv4 addresses cost by the hour, used or not. All real pricing models.",
-      "#1 is the balance inquiry fee → the cost dashboard is free, but one big provider charges a cent for every cost-API request. \"You checked your balance every minute to avoid bill shock\": a bot built to warn about a big bill asked every minute for numbers that change a few times a day, and checking the bill became the biggest line on the bill.",
+      "#1 is the balance inquiry fee → the cost dashboard is free, but one big provider charges a cent for every cost-API request. \"You checked every minute to avoid bill shock\": a bot built to warn about a big bill asked every minute for numbers that change a few times a day, and checking the bill became the biggest line on the bill.",
       "\"Reading this note just now was lookup 43,201.\" → reading the punchline was one more lookup, so the fee goes up again while you watch. On this bill, looking is a lookup."
     ],
     "terms": [
@@ -160,7 +160,7 @@
       "The bar is not exaggerated → it is drawn to the chart's scale (top line $450), so a month about 6.7 times the last one rises more than twice the chart's height and leaves the paper.",
       "\"Bldg A = availability zone a\" (wide screens only) → the cloud's groups of data centers become the apartment's buildings.",
       "The lookup count is the number of minutes in the month → 43,200 for a 30-day month, 44,640 for 31 days. The statement is always for last month, and the hourly lines are recalculated for that month's hours.",
-      "Every tap on a line to read its note (only when you tap) is one more lookup, adding a cent to line 8 and a line \"※ This note came from the cost API too.\" Even just watching adds one at about 16 seconds → reading the bill is checking the bill.",
+      "Once line 8 is in, every tap on a line to read its note (only when you tap, the same line again too) is one more lookup, adding a cent to line 8 and a line \"※ This note came from the cost API too.\" Even just watching adds one at about 16 seconds → reading the bill is checking the bill.",
       "Lights-out weekends (only when you tick it) lowers only electricity, move-out, the gate's per-GB part and trash; the empty room, parking, locker and lookups get \"billed anyway\", and once line 8 is in, the note says \"The lookups don't.\" Last month's electricity ($52.80) is exactly 22 weekdays (528 hours), so in a month with 22 weekdays, such as September 2026, ticking the box brings it to exactly that and the change column shows \"–\"."
     ]
   }

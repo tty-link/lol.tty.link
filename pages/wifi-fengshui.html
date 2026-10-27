@@ -30,7 +30,7 @@
   body {
     container: page / size;
     position: relative;
-    overflow: hidden;
+    overflow: clip;
     background-color: var(--paper);
     background-image:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .36 0 0 0 0 .29 0 0 0 0 .19 0 0 0 .11 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
@@ -337,7 +337,7 @@
   .lang-ko .room .rn { font-weight: 700; min-width: 2.2em; }
   .room .db { font-variant-numeric: lining-nums tabular-nums; text-align: right; white-space: nowrap; }
   .room .db b { font-weight: 600; font-size: 1.08em; }
-  .room .db small { margin-left: .2em; font-size: .7em; color: var(--soft); letter-spacing: .04em; }
+  .room .db small { margin-left: .2em; font-size: max(10px, .7em); color: var(--soft); letter-spacing: .04em; }
   .room .vd { display: inline-flex; align-items: center; gap: .3em; min-width: 2.2em; justify-content: flex-end; white-space: nowrap; }
   .room .glyph { font: 700 1.25em/1 'Noto Serif KR', serif; }
   .room .word { font-size: .82em; font-style: italic; }
@@ -378,7 +378,8 @@
     font-weight: 500;
     color: #1d1b19;
   }
-  .lang-ko .comment { font-style: normal; min-height: 2.9em; line-height: 1; }
+  /* Korean butgeul: balanced lines, so the remedy never leaves "산다." alone on its second line. */
+  .lang-ko .comment { font-style: normal; min-height: 2.9em; line-height: 1; text-wrap: balance; }
   .comment .kk-ink { color: #1d1b19; }
 
   .rules .list { position: relative; padding: 0; list-style: none; counter-reset: rule; }
@@ -391,6 +392,7 @@
   .rules .item.on { display: grid; }
   .rules .list { height: 2.6em; overflow: hidden; font-size: clamp(11.5px, 1.6cqmin, 15px); }
   .rules .item { font-size: inherit; }
+  .rules .item > span { text-wrap: balance; }   /* a rule that wraps keeps more than a word on its last line */
 
   .strays .list { padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 0 .9em; font-size: clamp(11px, 1.45cqmin, 14px); line-height: 1.35; color: var(--ink-2); }
   .strays .ssid { font-style: italic; }
@@ -402,7 +404,7 @@
   .strays .needle { display: none; }
   /* Narrow: the hint is a short line beside the remedy button, in the heading row of the rooms. */
   .actions { display: flex; align-items: center; gap: 8px; }
-  .hint { max-width: 9.5em; font-size: 11.5px; line-height: 1.2; color: var(--ink-2); font-style: italic; text-align: right; }
+  .hint { max-width: 9.5em; min-width: 0; flex: 1 1 auto; font-size: 11.5px; line-height: 1.2; color: var(--ink-2); font-style: italic; text-align: right; }
   .lang-ko .hint { font-style: normal; }
   .hint .l { display: none; }
   .mesh-btn {
@@ -500,6 +502,20 @@
      and its slips and seal floated over the ledger. The rules and the neighbours make room. */
   @container page (max-width: 699px) and (max-height: 340px) {
     .rules, .strays { display: none; }
+    /* Opened on its own, the kit's "? :)" sits over the end of the remedy's second line: balanced
+       lines both end near the right edge, so here the first line is the long one. */
+    html:not(.embedded).lang-ko .comment { text-wrap: pretty; }
+  }
+  /* The narrowest stage (288 px). The remedy button keeps its label, so the hint gives way and the
+     heading "Rooms" / "방별 길흉" keeps its place. Two English rules take three lines here; the plan
+     keeps its height because the stray networks keep only the kit's corner free, not a whole column. */
+  @container page (max-width: 300px) {
+    .actions { gap: 6px; }
+    .mesh-btn { padding: .36em .5em .4em; }
+    .lang-ko .actions { max-width: calc(100% - 68px); }
+    .lang-en .rules .list { height: 3.9em; }
+    html:not(.embedded).lang-en .strays { padding-right: 0; }
+    html:not(.embedded).lang-en .strays .list::after { content: ''; flex: 1 0 84px; height: 2.7em; }
   }
   /* The 328 px stage (360 × 640 and 360 × 520 phones on the home page): the study's note had only
      25–30 px and showed as "froz…" / "화…" / "잘 …", the kitchen's as "→ jitt…". The notes get
@@ -510,6 +526,16 @@
     .room .nt-s { display: none; }
     .room .nt-xs { display: inline; }
     .lang-ko .room .rn { min-width: 2em; }
+  }
+  /* At 288 px the study's note at the end ("back" / "잘 들림") had 11 / 18 px and was cut. Tighter
+     gaps give every room 12 px more; the Korean room names are all two syllables, so they need no
+     min-width. The note is centred so it does not touch the number. After the 340 px block so
+     these win. */
+  @container page (max-width: 300px) {
+    .rooms { column-gap: 8px; }
+    .room { column-gap: 2px; padding: 1px 2px; }
+    .room .nt { text-align: center; }
+    .lang-ko .room .rn { min-width: 0; }
   }
 
   /* Before the show starts, the plan is blank paper. */
@@ -533,7 +559,7 @@
           <span data-lang="ko">가택 무선 기운 감정 · <span class="client">의뢰인: 서재에서 화상 회의가 끊기는 집</span></span>
         </p>
       </div>
-      <div class="chop" aria-hidden="true">風水</div>
+      <div class="chop" aria-hidden="true" data-tty-line="decor">風水</div>
     </header>
 
     <div class="planwrap">
@@ -557,7 +583,7 @@
           <g class="sparks"></g>
         </svg>
         <svg class="walls" viewBox="-0.75 -0.85 13.05 9.2" aria-hidden="true"></svg>
-        <div class="compass" aria-hidden="true"></div>
+        <div class="compass" aria-hidden="true" data-tty-line="decor"></div>
         <p class="tag installer"></p>
         <p class="tag micro"></p>
         <p class="tag call"><span class="dot"></span><span class="txt"></span></p>
@@ -716,7 +742,6 @@
       ch: 'ch',
       needle: 'Compass needle: channel 11, the quiet road.',
       raise: 'Raise a remedy (mesh)',
-      take: 'Take it down',
       hint: ['Drag the router to try another spot.', 'Drag the router'],
       nextRule: 'Next rule',
       router: 'Router',
@@ -768,7 +793,6 @@
       ch: '',
       needle: '패철 바늘: 11번 길(옆집이 안 쓰는 길).',
       raise: '비보 세우기(메시)',
-      take: '비보 거두기',
       hint: ['공유기를 끌어 자리를 옮겨 보세요.', '공유기를 끌어 옮겨 보세요'],
       nextRule: '다음 비결',
       router: '공유기',
@@ -972,7 +996,7 @@
   el('rect', { class: 'f', x: 5.56, y: 1.74, width: .5, height: .44, rx: .03 }, mw);
   el('rect', { class: 'fl', x: 5.61, y: 1.8, width: .3, height: .32 }, mw);
   el('rect', { class: 'mw-disp', x: 5.93, y: 1.8, width: .1, height: .16 }, mw);
-  const mwText = el('text', { class: 'mw-text', x: 5.81, y: 1.96 }, mw);
+  const mwText = el('text', { class: 'mw-text', x: 5.81, y: 1.96, 'data-tty-line': 'decor' }, mw);
   F('rect', { x: 7.2, y: 0.1, width: 1.3, height: .74, rx: .04 });
   F('rect', { x: 7.36, y: 0.94, width: .36, height: .34, rx: .06 }); F('rect', { x: 8.12, y: 0.94, width: .36, height: .34, rx: .06 });
   F('rect', { x: 8.62, y: 0.43, width: .72, height: .78, rx: .03 });
@@ -1288,7 +1312,19 @@
     }
   }
   let ruleTimer = 0;
-  const ruleTick = () => { clearTimeout(ruleTimer); if (TTY.reduce) return; ruleTimer = setTimeout(() => { showRule(ruleAt + 1, true); ruleTick(); }, 3100); };
+  // Each rule stays as long as it takes to read (plus its 0.38 s slide in), never under 3.1 s. In the
+  // show, a rule that could not be read before the round ends waits: play() turns it over next round.
+  const ruleMs = (li) => Math.max(3100, TTY.readMs(li.textContent) + 600);
+  const ruleTick = () => {
+    clearTimeout(ruleTimer);
+    if (TTY.reduce) return;
+    ruleTimer = setTimeout(() => {
+      const next = ruleItems[(ruleAt + 1) % ruleItems.length];
+      if (mode === 'auto' && performance.now() + ruleMs(next) > loopStart + LOOP_MS - 300) return;
+      showRule(ruleAt + 1, true);
+      ruleTick();
+    }, ruleMs(ruleItems[ruleAt]));
+  };
   nextBtn.addEventListener('click', () => { showRule(ruleAt + 1, true); ruleTick(); });
 
   const straysList = $('.strays .list');
@@ -1520,6 +1556,7 @@
     tagCallTxt.textContent = L.call[cs];
     tagCall.classList.toggle('down', cs === 'hear' || cs === 'frozen');
     tagCall.classList.toggle('back', cs === 'back');
+    if (cs === 'back') tagCall.dataset.ttyLine = 'tag'; else tagCall.removeAttribute('data-tty-line');
     if (cs === 'back' && animateNow()) tagCall.animate([{ transform: 'scale(1.35)' }, { transform: 'scale(.95)', offset: .6 }, { transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
   }
   let readGen = 0;
@@ -1545,6 +1582,7 @@
         if (note) { row.ntL.textContent = note[0]; row.ntS.textContent = note[1]; row.ntXs.textContent = note[2] || note[1]; }
         row.nt.hidden = !note;
         row.nt.classList.toggle('ok', r.id === 'study' && cs === 'back');
+        if (r.id === 'study' && cs === 'back') row.nt.dataset.ttyLine = 'tag'; else row.nt.removeAttribute('data-tty-line');
         if (note && note[1] !== was && r.id === 'study' && cs === 'back' && animateNow()) {
           row.nt.animate([{ opacity: 0, transform: 'translateY(40%)' }, { opacity: 1, transform: 'none' }], { duration: 360, easing: 'ease-out' });
           row.li.animate([{ backgroundColor: 'rgba(79, 138, 122, .3)' }, { backgroundColor: 'rgba(79, 138, 122, 0)' }], { duration: 1100, easing: 'ease-out' });
@@ -1588,7 +1626,7 @@
 
   // The geomancer's comment, brushed in. Korean is written in butgeul.
   // A key is a comment name, or 'highBut:study,bath' for "the spot, except for those rooms".
-  let commentKey = null;
+  let commentKey = null, commentAt = 0;
   function commentText(key) {
     const [name, rooms] = key.split(':');
     if (name !== 'highBut') return L.comments[name];
@@ -1601,7 +1639,10 @@
   function setComment(key) {
     if (key === commentKey) return;
     commentKey = key;
-    if (!key) { commentEl.replaceChildren(); return; }
+    commentAt = performance.now();
+    if (!key) { commentEl.replaceChildren(); commentEl.removeAttribute('data-tty-line'); return; }
+    // The remedy is the punch; every other reading sets it up (marks for tests, no change on screen).
+    commentEl.dataset.ttyLine = key === 'mesh' ? 'punch' : 'setup';
     const text = commentText(key);
     if (ko) commentEl.replaceChildren(kk('butgeul', 'clamp(15px, 2.6cqmin, 24px)', text, 'kk-ink'));
     else commentEl.textContent = text;
@@ -1631,7 +1672,7 @@
   }
 
   function setMeshButton() {
-    meshBtn.textContent = state.mesh.on ? L.take : L.raise;
+    meshBtn.textContent = L.raise;
     meshBtn.setAttribute('aria-pressed', String(state.mesh.on));
   }
 
@@ -1784,6 +1825,7 @@
   let run = 0;
   let resumeTimer = 0;
   let loopStart = 0;
+  const LOOP_MS = 23000;
   const live = (mine) => run === mine;
   const until = async (ms, mine) => { const d = loopStart + ms - performance.now(); if (d > 0) await wait(d); return live(mine); };
 
@@ -1814,7 +1856,9 @@
 
   async function play() {
     clearTimeout(resumeTimer);
+    clearTimeout(remedyTimer);
     const mine = ++run;
+    const again = !!lastValues;
     mode = 'auto';
     // Wipe the previous round, if there was one, then brush the plan in again.
     if (lastValues && !TTY.reduce) {
@@ -1824,6 +1868,8 @@
     resetScene();
     [plan, commentEl, roomsList].forEach((n) => n.getAnimations().forEach((a) => a.cancel()));
     loopStart = performance.now();
+    if (again) showRule(ruleAt + 1, true);
+    ruleTick();
     drawIn();
 
     // 1.6 s: before anything else, a close-up of the shoe cabinet: the router among the shoes,
@@ -1893,7 +1939,8 @@
     state.callBack = true;
     readout();
 
-    if (!await until(22000, mine)) return;
+    // 23.0 s: the English remedy line is 15 words (5 s to read) and the home page shows a page for 23 s.
+    if (!await until(LOOP_MS, mine)) return;
     play();
   }
 
@@ -1915,6 +1962,33 @@
     showDevice(state.router, true);
     clearTimeout(resumeTimer);
     if (!TTY.reduce) resumeTimer = setTimeout(play, 12000);
+    remedyLater();
+  }
+
+  // After the visitor's last touch, once their reading has stayed up long enough to be read, the
+  // geomancer prescribes the remedy as in the show: a mesh in the study doorway (if there is none
+  // yet) and the punchline. The router stays where the visitor put it, and the punchline lands
+  // well inside the 12 s the home page waits after a touch.
+  let remedyTimer = 0;
+  function remedyLater(ms = 3000) { clearTimeout(remedyTimer); remedyTimer = setTimeout(remedy, ms); }
+  function remedy() {
+    if (mode !== 'manual' || dragging || commentKey === 'mesh') return; // a drag asks again when it ends
+    const left = commentKey ? commentAt + TTY.readMs(commentText(commentKey)) + 300 - performance.now() : 0;
+    if (left > 0) { remedyLater(left); return; }
+    if (!state.mesh.on) {
+      state.mesh.on = true;
+      state.mesh.x = SPOT.mesh.x; state.mesh.y = SPOT.mesh.y;
+      showDevice(state.mesh, true);
+      drawDevice(state.mesh);
+      pop(state.mesh.pop);
+      setMeshButton();
+      bibo.classList.add('on');
+      if (!TTY.reduce) bibo.animate([{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 700, easing: 'ease-out' });
+      spreadFrom(state.mesh, 900);
+    }
+    state.lastMoved = 'mesh';
+    readout(60);
+    setComment('mesh');
   }
 
   // The last scene, with nothing moving: used for reduced motion.
@@ -1984,6 +2058,7 @@
       dragging = false;
       verdictsSec.setAttribute('aria-busy', 'false');
       moved(d);
+      remedyLater();
     };
     d.el.addEventListener('pointerup', end);
     d.el.addEventListener('pointercancel', end);
@@ -2002,17 +2077,17 @@
   draggable(state.router);
   draggable(state.mesh);
 
+  // The remedy stays once it is raised (taking it down again would take the punchline with it):
+  // pressing again puts the mesh back in the study doorway.
   meshBtn.addEventListener('click', () => {
-    const want = !state.mesh.on;
     takeOver();
-    state.mesh.on = want;
-    if (state.mesh.on) { state.mesh.x = SPOT.mesh.x; state.mesh.y = SPOT.mesh.y; pop(state.mesh.pop); }
+    state.mesh.on = true;
+    state.mesh.x = SPOT.mesh.x; state.mesh.y = SPOT.mesh.y;
+    pop(state.mesh.pop);
     bibo.classList.remove('on');
-    showDevice(state.mesh, state.mesh.on);
+    showDevice(state.mesh, true);
     setMeshButton();
-    state.lastMoved = state.mesh.on ? 'mesh' : 'router';
-    if (state.mesh.on) moved(state.mesh, { spreadIt: true });
-    else { settleMap(); readout(); chooseComment(); }
+    moved(state.mesh, { spreadIt: true });
   });
 
   /* ================= Sizes that follow the plan's size on screen ================= */

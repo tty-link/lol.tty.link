@@ -4,16 +4,16 @@
     "en": "Wi-Fi Feng Shui",
     "ko": "공유기 풍수 감정서"
   },
-  "updated": "2026-10-15",
+  "updated": "2026-10-27",
   "ko": {
     "line": "공유기 놓을 자리를 풍수가가 감정서로 봐 주는데, 풍수 말투로 하는 조언이 하나하나 실제로 맞는 와이파이 상식인 페이지다.",
     "points": [
       "신발장 속 공유기에 큰 `흉` 도장 → 공유기는 흔히 인터넷 선이 들어오는 단자함 바로 옆에 놓인다. 새 아파트는 그 단자함이 현관 신발장 안에 있는 경우가 많아서 공유기가 신발 사이에서 산다. 집 한쪽 끝이라 끝방까지 신호가 잘 안 간다. 풍수로 봐도, 전파로 봐도 흉.",
       "\"배산임수는 사람에겐 명당, 공유기에겐 흉당\" → 산을 등지고 물을 내려다보는 배산임수는 풍수의 대표 명당이다. 그런데 물은 2.4GHz 전파를 잘 머금어서, 어항 바로 뒤에 둔 공유기는 실제로 어항 너머가 약하다.",
-      "\"높고 한가운데다. 명당이다. 서재만 빼고.\" → 책장 위 한가운데는 실제로 거의 모든 방에 신호가 잘 가는 자리다. 그런데 의뢰인의 서재만은 콘크리트 벽 두 장과 칸막이 한 장 너머라 −70dBm, 화상 회의가 버벅이는 세기에 머문다. 노트북에는 \"화면이 멈췄어요\"(휴대폰에서는 판정 칸 서재 줄에 \"화면 멈춤\"). 풍수가도 명당을 선언하자마자 예외를 달 수밖에 없다.",
+      "\"높고 한가운데다. 명당이다. 서재만 빼고.\" → 책장 위 한가운데는 실제로 거의 모든 방에 신호가 잘 가는 자리다. 그런데 의뢰인의 서재만은 콘크리트 벽 두 장과 칸막이 한 장 너머라 −70dBm, 화상 회의가 버벅이는 세기에 머문다. 큰 화면에서는 노트북에 \"화면이 멈췄어요\"가 뜬다(휴대폰에서는 판정 칸 서재 줄에 \"화면 멈춤\"). 풍수가도 명당을 선언하자마자 예외를 달 수밖에 없다.",
       "\"부엌 화기(火氣)가 2.4GHz를 흔든다\" → 풍수에서 부엌은 불을 다루는 화기의 자리다. 전자레인지는 2.45GHz 전파로 음식을 데우는데, 조금 새어 나온 전파가 같은 대역의 와이파이·블루투스를 방해할 수 있다(가까울수록 심하다). 부엌의 불기운이 정말로 기운을 흔든다.",
-      "\"옛사람은 기운이 모자란 땅에 탑을 세웠다. 우리는 메시를 산다.\" → 이 페이지의 결론이다. 풍수에는 기운이 모자란 땅에 절이나 탑을 세워 보태는 '비보(裨補)'가 있다. 신호가 약한 방 가까이에 메시 공유기를 하나 더 세우는 것이 정확히 그 일이다. 천 년 전에는 탑을 세웠고, 지금은 택배로 시킨다. 메시를 세우면 서재가 −47dBm 대길이 되고 2초 뒤 노트북에 \"잘 들려요!\"가 뜬다(휴대폰에서는 판정 칸 서재 줄의 \"잘 들림\"). 부제의 의뢰인, 화상 회의가 끊기던 서재가 그렇게 풀린다.",
-      "(공유기를 직접 끌어 볼 때만) \"비결로는 흉한데 숫자로는 길하다. 숫자를 따른다.\" → 먼 방이나 냉장고 옆처럼 비결로는 나쁜 자리인데 방마다 신호가 넉넉하면 풍수가가 비결 대신 측정값을 따른다. 와이파이 자리는 결국 재 보는 것이 답이라는 실제 조언이기도 하다."
+      "\"옛사람은 기운이 모자란 땅에 탑을 세웠다. 우리는 메시를 산다.\" → 이 페이지의 결론이다. 풍수에는 기운이 모자란 땅에 절이나 탑을 세워 보태는 '비보(裨補)'가 있다. 신호가 약한 방 가까이에 메시 공유기를 하나 더 세우는 것이 정확히 그 일이다. 천 년 전에는 탑을 세웠고, 지금은 택배로 시킨다. 메시를 세우면 서재가 −47dBm 대길이 되고 2초 뒤 큰 화면에서는 노트북에 \"잘 들려요!\"가 뜬다(휴대폰에서는 판정 칸 서재 줄의 \"잘 들림\"). 부제의 의뢰인, 화상 회의가 끊기던 서재가 그렇게 풀린다.",
+      "(누를 때만: 공유기를 직접 끌어 옮기면) \"비결로는 흉한데 숫자로는 길하다. 숫자를 따른다.\" → 먼 방이나 냉장고 옆처럼 비결로는 나쁜 자리인데 방마다 신호가 넉넉하면 풍수가가 비결 대신 측정값을 따른다. 와이파이 자리는 결국 재 보는 것이 답이라는 실제 조언이기도 하다."
     ],
     "terms": [
       {
@@ -82,9 +82,9 @@
     "points": [
       "The router stuffed in the shoe cabinet gets a big red 凶 (bad luck) seal → a router usually ends up right next to the box where the internet line enters the home. In many newer Korean apartments that box sits inside the shoe cabinet by the front door, so the router lives among the shoes, at one end of the flat, and the far rooms barely get a signal. Bad luck by feng shui and by physics.",
       "\"Water in front: good fortune for people, bad reception for routers.\" → the classic ideal site in Korean geomancy is baesan imsu: a mountain at your back and water in front of you. But water soaks up 2.4 GHz radio, and a router right behind a fish tank really is weaker on the far side. Fortune becomes reception halfway through the sentence.",
-      "\"High and central: the spot. Except for the study.\" → the top of the bookshelf, in the middle of the flat, really does reach nearly every room. But the client's study is two concrete walls and a partition away and stays at −70 dBm, where video calls stutter; its laptop says \"You’re frozen.\" (on phones, the study’s line in the ledger says \"frozen\"). The geomancer declares the perfect spot and has to add a footnote at once.",
+      "\"High and central: the spot. Except for the study.\" → the top of the bookshelf, in the middle of the flat, really does reach nearly every room. But the client's study is two concrete walls and a partition away and stays at −70 dBm, where video calls stutter; on larger screens its laptop says \"You’re frozen.\" (on phones, the study’s line in the ledger says \"frozen\"). The geomancer declares the perfect spot and has to add a footnote at once.",
       "\"Kitchen fire stirs the 2.4 GHz energy.\" → feng shui treats the kitchen, where the cooking happens, as the seat of fire. A microwave oven heats food at about 2.45 GHz, and the little that leaks out can interfere with 2.4 GHz Wi-Fi and Bluetooth, especially close by. The kitchen's fire really does stir the energy.",
-      "\"Where the land was weak, the ancients raised a pagoda. We buy a mesh node.\" → the page's last word. Korean geomancy has a word, bibo (literally patching up), for strengthening land whose energy is weak, traditionally by building a temple or a pagoda on it. Putting a mesh node near the weak room is exactly that: a pagoda then, a parcel from the courier now. With it the study reaches −47 dBm, and two seconds later the laptop says \"Oh, you’re back!\" (on phones, the study's line in the ledger says \"back\"). The client from the subtitle, the study that kept dropping video calls, is sorted.",
+      "\"Where the land was weak, the ancients raised a pagoda. We buy a mesh node.\" → the page's last word. Korean geomancy has a word, bibo (literally patching up), for strengthening land whose energy is weak, traditionally by building a temple or a pagoda on it. Putting a mesh node near the weak room is exactly that: a pagoda then, a parcel from the courier now. With it the study reaches −47 dBm, and two seconds later, on larger screens, the laptop says \"Oh, you’re back!\" (on phones, the study's line in the ledger says \"back\"). The client from the subtitle, the study that kept dropping video calls, is sorted.",
       "(Only when you drag the router yourself) \"By the book, bad luck. By the numbers, fine. I’ll go with the numbers.\" → on a spot the old rules frown on, like a far room or next to the fridge, but where every room still gets a good signal, the geomancer trusts the measurement over the rulebook. Which is the real advice for placing Wi-Fi, too: measure."
     ],
     "terms": [

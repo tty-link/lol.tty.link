@@ -102,7 +102,7 @@
     {"id": "tcp-manners", "file": "tcp-manners.html", "seconds": 25, "family": ["loop-ending", "network"], "opener": true,
       "title": {"en": "TCP Etiquette", "ko": "TCP 예절 교실"},
       "summary": {"en": "A manners textbook for connections. Hello takes three steps, goodbye takes four, and then you wave from the driveway.", "ko": "연결의 예절 교본. 인사는 세 번, 작별은 네 번, 그리고 수화기를 든 채 '네~ 들어가세요~'."} },
-    {"id": "wifi-fengshui", "file": "wifi-fengshui.html", "seconds": 22, "family": ["paperwork", "network"],
+    {"id": "wifi-fengshui", "file": "wifi-fengshui.html", "seconds": 23, "family": ["paperwork", "network"],
       "title": {"en": "Wi-Fi Feng Shui", "ko": "공유기 풍수 감정서"},
       "summary": {"en": "A geomancer reads your flat for signal. Inside the shoe cabinet is bad luck. So is behind the fish tank.", "ko": "공유기 자리를 풍수로 봐 드립니다. 신발장 속은 흉, 어항 뒤도 흉."} },
     {"id": "cert-dairy", "file": "cert-dairy.html", "seconds": 24, "family": ["paperwork"],

@@ -35,7 +35,7 @@
   body {
     container: page / size;
     position: relative;
-    overflow: hidden;
+    overflow: clip;
     background:
       radial-gradient(90cqmax 70cqmax at 70% 30%, #e6efef, var(--bg) 70%);
     color: var(--ink);
@@ -159,6 +159,8 @@
     container: report / size;
     position: relative;
     height: 100%;
+    /* a sticker stamped at the right edge starts at twice its size: keep it on the paper */
+    overflow-x: clip;
     background: var(--paper);
     box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 14px 34px rgba(20, 50, 55, .18);
   }
@@ -349,6 +351,7 @@
   .hand { min-height: 2.6em; color: #1d3a7a; font-family: 'Kalam', cursive; font-size: 1.22em; line-height: 1.32; }
   .hand > font-kku { color: #1d3a7a; }
   .hand .ch { display: inline; }
+  .hand .keep { display: inline-block; white-space: nowrap; }
   .sig { position: relative; display: grid; justify-items: center; min-width: 7.5em; padding-top: .2em; }
   .sig svg { display: block; width: 7.5em; height: 1.9em; overflow: visible; }
   .sig path { fill: none; stroke: #1d3a7a; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -434,6 +437,8 @@
     .sig svg { width: 3.6em; height: 1.1em; }
     .sig .who { width: auto; padding: 0; border: 0; font-size: max(11px, .95em); }
     .seal { position: static; width: 1.6em; height: 1.6em; }
+    /* Kalam's letters stand taller than their line: the first line keeps clear of the signature */
+    .lang-en .summary { row-gap: .4em; }
   }
 
   /* Korean findings on a narrow report: font-kku sticker ink under 14 px reads as thin outlines,
@@ -468,6 +473,49 @@
   @container report (max-height: 400px) and (max-aspect-ratio: 6/5) {
     .panels, .pbox, .hosp { display: none; }
     .logo { grid-row: auto; width: 1.7em; height: 1.7em; }
+  }
+  /* In the phone/portrait layout a short report gets the same whatever its shape (328×288, or a
+     phone on its side), so the eight rows and the summary still fit. */
+  @container page (max-width: 699px) or (max-aspect-ratio: 11/10) {
+    @container report (max-height: 440px) {
+      .thead { padding-block: .12em; }
+      .row { padding-block: .1em; }
+      .summary { padding-block: .2em .3em; }
+      .hand { line-height: 1.16; }
+    }
+    @container report (max-height: 400px) {
+      .panels, .pbox, .hosp { display: none; }
+      .logo { grid-row: auto; width: 1.7em; height: 1.7em; }
+      /* (a wide one would otherwise keep the summary in the X-ray and chart's column) */
+      .lower { grid-template-columns: minmax(0, 1fr); }
+    }
+    /* a phone on its side: the rows give up their padding and the Korean stickers become the
+       plain badges, so the last row still clears the summary (508×339) */
+    @container report (max-height: 400px) and (min-aspect-ratio: 6/5) {
+      .row { padding-block: 0; }
+      .stk { padding-block: .04em .06em; }
+      .lang-ko .stk > font-kku { display: none; }
+      .lang-ko .stk .stk-plain { display: inline; }
+      .lang-ko .stk { padding: .04em .5em .06em; border-radius: 999px; color: var(--tone-text, #fff); font-family: 'IBM Plex Sans KR', sans-serif; font-weight: 700; letter-spacing: 0; }
+    }
+    /* the very shortest (328×288): eight rows and the summary do not both fit, so the rows keep
+       the whole height until the summary is written; then the first five rows (read by then) step
+       out and the summary comes in under the last three, the owner's row among them (a row the
+       visitor opened stays, with its note) */
+    @container report (max-height: 230px) {
+      .lower:not(:has(.write.on)) { display: none; }
+      .sheet:has(.write.on) .rows > li:nth-child(-n+5):not(:has(.row.on)) { display: none; }
+      .thead { padding-block: 0; }
+      .row, .stk { line-height: 1.05; }
+    }
+  }
+  /* Wide screens with a short report (868×633): the eight rows get their height before the
+     X-ray and chart, so the last row is not under them. */
+  @container page (min-width: 700px) and (min-aspect-ratio: 11/10) {
+    @container report (max-height: 640px) and (max-aspect-ratio: 6/5) {
+      .row { min-height: 1.85em; padding-block: .15em; }
+      .panels { height: 6.8em; }
+    }
   }
 
   /* tablets opened on their own get the kit's two full links too */
@@ -548,7 +596,7 @@
               <rect class="mon-fill" x="2" y="2" width="13.6" height="9" rx="1.4" fill="#47e08a"/>
               <path class="bolt-on" d="M14.5 1.5 L9.5 7.3 H13 L11.5 11.5 L16.8 5.6 H13.2 Z" fill="#ffd84a" stroke="#0d1b24" stroke-width=".8"/>
             </g>
-            <text class="mon-pct" x="274" y="126" text-anchor="end" font-size="27" font-weight="600" fill="#8fe3ff">62%</text>
+            <text class="mon-pct" data-tty-line="decor" x="274" y="126" text-anchor="end" font-size="27" font-weight="600" fill="#8fe3ff">62%</text>
             <!-- IV pole, with the charger hung where the drip would be -->
             <rect x="38.5" y="98" width="5" height="392" rx="2.5" fill="url(#pole-g)"/>
             <path d="M41 100 C 41 90, 56 90, 56 100" fill="none" stroke="#9eacb1" stroke-width="2.4" stroke-linecap="round"/>
@@ -616,7 +664,7 @@
                 <rect class="ph-fill" x="1.8" y="1.8" width="10.7" height="6.9" rx="1.2" fill="#2e9d5b"/>
                 <path class="bolt-on" d="M11.8 .4 L7.6 5.6 H10.6 L9.4 10 L14 4.6 H10.8 Z" fill="#ffd84a" stroke="#263140" stroke-width=".7"/>
               </g>
-              <text class="ph-pct" x="197" y="282.5" text-anchor="end" font-size="12.5" font-weight="600" fill="#263140">62%</text>
+              <text class="ph-pct" data-tty-line="decor" x="197" y="282.5" text-anchor="end" font-size="12.5" font-weight="600" fill="#263140">62%</text>
               <!-- face -->
               <g class="eyes">
                 <g class="eye-open">
@@ -681,7 +729,7 @@
           <h1 class="title" id="doc-title">
             <span data-lang="en">Battery Health Checkup Report</span>
             <span data-lang="ko">배터리 건강검진 결과 통보서</span>
-            <span class="page-no mono" aria-hidden="true">No. 0062-0081</span>
+            <span class="page-no mono" aria-hidden="true" data-tty-line="decor">No. 0062-0081</span>
           </h1>
         </header>
 
@@ -741,15 +789,15 @@
                     <path class="curve"/>
                   </g>
                 </svg>
-                <span class="lbl yl mono minor" style="top:0%">100</span>
-                <span class="lbl yl mono" style="top:20%">80</span>
-                <span class="lbl yl mono" style="top:80%">20</span>
-                <span class="lbl yl mono minor" style="top:100%">0</span>
-                <span class="lbl xl mono" style="left:0%">0</span>
-                <span class="lbl xl mono minor" style="left:25%">6</span>
-                <span class="lbl xl mono" style="left:50%">12</span>
-                <span class="lbl xl mono minor" style="left:75%">18</span>
-                <span class="lbl xl mono" style="left:100%">24</span>
+                <span class="lbl yl mono minor" style="top:0%" data-tty-line="decor">100</span>
+                <span class="lbl yl mono" style="top:20%" data-tty-line="decor">80</span>
+                <span class="lbl yl mono" style="top:80%" data-tty-line="decor">20</span>
+                <span class="lbl yl mono minor" style="top:100%" data-tty-line="decor">0</span>
+                <span class="lbl xl mono" style="left:0%" data-tty-line="decor">0</span>
+                <span class="lbl xl mono minor" style="left:25%" data-tty-line="decor">6</span>
+                <span class="lbl xl mono" style="left:50%" data-tty-line="decor">12</span>
+                <span class="lbl xl mono minor" style="left:75%" data-tty-line="decor">18</span>
+                <span class="lbl xl mono" style="left:100%" data-tty-line="decor">24</span>
                 <span class="low-dot" style="left:75%; top:91%"><i><span data-lang="en">commute 9%</span><span data-lang="ko">퇴근길 9%</span></i></span>
                 <span class="band-label"><span data-lang="en">healthy range <span class="nw">20–80%</span></span><span data-lang="ko">건강 구간 <span class="nw">20~80%</span></span></span>
               </div>
@@ -758,7 +806,7 @@
 
           <section class="summary">
             <h2><span data-lang="en">Doctor's summary</span><span data-lang="ko">종합 소견</span></h2>
-            <p class="hand write"></p>
+            <p class="hand write" data-tty-line="punch"></p>
             <div class="sig">
               <svg viewBox="0 0 120 30" aria-hidden="true"><path class="scribble" pathLength="1" d="M4 22 C 12 4, 18 26, 26 14 S 38 6, 40 18 C 42 28, 52 6, 60 16 S 72 26, 80 12 C 84 6, 90 24, 98 16 L 116 12"/></svg>
               <span class="who write"></span>
@@ -827,6 +875,7 @@
   });
   const L = TTY.t({
     en: {
+      // (the last sentence is kept on one line where the summary is built)
       summary: "Don't fill all the way up. Don't run all the way down. Between 20 and 80, it lasts. So do people.",
       doctor: 'Dr. Lithium',
       guardian: 'The doctor will see you now.',
@@ -886,6 +935,7 @@
     $('.c-test', b).textContent = r.test;
     const full = $('.full', b);
     full.textContent = r.result;
+    if (i === ROWS.length - 1) full.dataset.ttyLine = 'setup';
     if (r.aside) {
       const a = document.createElement('span');
       a.className = 'aside';
@@ -979,12 +1029,24 @@
   const who = $('.sig .who');
   let handBits = [];
   if (ko) {
-    const el = document.createElement('font-kku');
-    el.setAttribute('font', 'pilgi');
-    el.setAttribute('size', '1em');
-    el.setAttribute('wrap-unit', 'word');
-    el.textContent = L.summary;
-    hand.append(el);
+    // each phrase ('꽉 채우지도,' '바닥까지 쓰지도 마세요.' '20~80% 사이에서' '오래 갑니다.'
+    // '사람도 그렇습니다.') is its own element in a box that does not wrap, so lines break only
+    // between phrases and no line ends on one word, at any width (font-kku breaks at a no-break
+    // space too)
+    const words = L.summary.split(' ');
+    [2, 3, 2, 2, 2].reduce((from, n, k) => {
+      const el = document.createElement('font-kku');
+      el.setAttribute('font', 'pilgi');
+      el.setAttribute('size', '1em');
+      el.setAttribute('wrap-unit', 'word');
+      el.textContent = words.slice(from, from + n).join(' ');
+      const keep = document.createElement('span');
+      keep.className = 'keep';
+      keep.append(el);
+      if (k) hand.append(' ');
+      hand.append(keep);
+      return from + n;
+    }, 0);
     const role = document.createElement('span');
     role.textContent = L.doctorRole;
     const name = document.createElement('font-kku');
@@ -993,8 +1055,10 @@
     name.textContent = L.doctor;
     who.append(role, name);
   } else {
-    // one span per letter, kept inside word spans so lines still break between words
-    L.summary.split(' ').forEach((word, k, all) => {
+    // one span per letter, kept inside word spans so lines still break between words; the last
+    // sentence ('So do people.') is one such span, so it is never split over two lines
+    const cut = L.summary.lastIndexOf('. ') + 2;
+    [...L.summary.slice(0, cut - 1).split(' '), L.summary.slice(cut)].forEach((word, k, all) => {
       const w = document.createElement('span');
       w.className = 'wd';
       w.style.whiteSpace = 'nowrap';
@@ -1042,9 +1106,13 @@
       el.textContent = text || '';
       el.classList.toggle('on', !!text);
       el.classList.toggle('low', !!low);
+      if (text === L.guardian || text === L.rest) el.dataset.ttyLine = 'setup';
+      else delete el.dataset.ttyLine;
       if (text && !reduce) el.animate([{ opacity: 0, transform: 'translateY(8px) scale(.94)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.2,.9,.3,1.2)' });
     });
-    side.classList.toggle('talking', !!text);
+    // on a phone the hint shares the bubble's place; it stays away while the phone charges,
+    // so it does not flash back for the three seconds between two bubbles
+    side.classList.toggle('talking', !!text || mode === 'charging');
   }
   function setRoom() {
     room.classList.toggle('plugged', battery.plugged);
@@ -1258,6 +1326,7 @@
     const i = rows.length - 1;
     const r = rows[i];
     r.full.textContent = L.fret;
+    r.full.dataset.ttyLine = 'tag';
     r.b.setAttribute('aria-label', rowLabel(ROWS[i], L.fret));
     if (noteFor === i) showNote(i);
     if (!animate) return;
@@ -1265,8 +1334,9 @@
     const per = Math.min(45, 420 / chars.length);
     r.res.classList.remove('done');
     r.typed.textContent = '';
-    chars.forEach((_, k) => at(k * per, () => { r.typed.textContent = chars.slice(0, k + 1).join(''); }));
-    at(chars.length * per + 10, () => { r.res.classList.add('done'); r.typed.textContent = ''; });
+    // the typing stops one letter short: the whole new result is only ever the marked .full
+    chars.slice(0, -1).forEach((_, k) => at(k * per, () => { r.typed.textContent = chars.slice(0, k + 1).join(''); }));
+    at((chars.length - 1) * per, () => { r.res.classList.add('done'); r.typed.textContent = ''; });
     r.b.animate([{ backgroundColor: 'rgba(214, 69, 69, .22)' }, { backgroundColor: 'rgba(214, 69, 69, .22)', offset: .5 }, { backgroundColor: 'rgba(214, 69, 69, 0)' }], { duration: 1800, easing: 'ease-out' });
     at(chars.length * per + 120, () => r.stk.animate([
       { transform: 'scale(1.7) rotate(-14deg)', opacity: .3 },
@@ -1337,6 +1407,7 @@
     clearTimeout(fretTimer);
     const last = rows[rows.length - 1];
     last.full.textContent = last.result;
+    last.full.dataset.ttyLine = 'setup';
     last.b.setAttribute('aria-label', rowLabel(ROWS[rows.length - 1], last.result));
   }
   function completeReport() {

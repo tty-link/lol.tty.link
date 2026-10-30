@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /embed/
 Disallow: /explain/
+Sitemap: https://lol.tty.link/sitemap.xml

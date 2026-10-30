@@ -20,6 +20,10 @@ export class LOLPlayer {
     this.status = 'loading';
     this.lastTick = performance.now();
     this.lastReport = 0;
+    // Pages that failed to load this visit are left out; only three failures in a row are an error.
+    this.broken = new Set();
+    this.failures = 0;
+    this.advancing = false;
     this.reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.receive = this.receive.bind(this);
     addEventListener('message', this.receive);
@@ -35,7 +39,7 @@ export class LOLPlayer {
       this.pages = (data.pages || []).filter((p) => /^[a-z0-9-]+$/.test(p.id) && /^[a-z0-9-]+\.html$/.test(p.file));
       if (!this.pages.length) throw new Error('empty manifest');
       this.upcoming = this.load(this.pages.find((p) => p.id === this.wanted) || this.first());
-      await this.upcoming.ready;
+      await this.next();
       this.status = 'ready';
       this.report();
       if (this.active) await this.advance();
@@ -61,8 +65,9 @@ export class LOLPlayer {
   }
 
   rotation() {
-    const kept = this.pages.filter((p) => !this.fits(p.skip));
-    return kept.length ? kept : this.pages;
+    const loads = this.pages.filter((p) => !this.broken.has(p.id));
+    const kept = loads.filter((p) => !this.fits(p.skip));
+    return kept.length ? kept : loads.length ? loads : this.pages;
   }
 
   first() {
@@ -72,6 +77,7 @@ export class LOLPlayer {
   }
 
   pick() {
+    this.bag = this.bag.filter((p) => !this.broken.has(p.id));
     if (!this.bag.length) {
       this.bag = this.rotation().filter((p) => !this.current || p.id !== this.current.page.id);
       for (let i = this.bag.length - 1; i > 0; i--) {
@@ -101,14 +107,18 @@ export class LOLPlayer {
   report() { this.lastReport = performance.now(); this.onState(this.snapshot()); }
 
   tick(now) {
+    // The next frame is asked for first, so nothing thrown below can stop the clock.
+    this.raf = requestAnimationFrame(this.tick);
     if (this.running()) this.elapsed = Math.min(this.duration(), this.elapsed + now - this.lastTick);
     this.lastTick = now;
     if (this.current && this.status === 'playing') {
       if (this.duration() - this.elapsed < 4500 && !this.upcoming && this.pages.length > 1) this.upcoming = this.load(this.pick());
-      if (this.elapsed >= this.duration() && this.running()) this.advance();
+      if (this.elapsed >= this.duration() && this.running() && !this.advancing) {
+        this.advancing = true;
+        this.advance().finally(() => { this.advancing = false; });
+      }
       if (now - this.lastReport >= 250) this.report();
     }
-    this.raf = requestAnimationFrame(this.tick);
   }
 
   configure(values = {}) {
@@ -117,9 +127,12 @@ export class LOLPlayer {
     const now = performance.now();
     if (this.running()) this.elapsed = Math.min(this.duration(), this.elapsed + now - this.lastTick);
     this.lastTick = now;
+    const paused = this.paused;
     for (const key of ['paused', 'hovering', 'visible', 'explaining']) {
       if (typeof values[key] === 'boolean') this[key] = values[key];
     }
+    // Pause stops the joke's own motion too, not only the move to the next one.
+    if (this.paused !== paused) this.tell(this.current, this.paused ? 'pause' : 'play');
     if ((values.lang === 'en' || values.lang === 'ko') && values.lang !== this.lang) {
       this.lang = values.lang;
       document.documentElement.lang = this.lang;
@@ -180,19 +193,45 @@ export class LOLPlayer {
     entry.slot.remove();
   }
 
+  // Waits for the page loading next. One that fails (a 404, a slow network, a phone asleep) is left
+  // out for the rest of the visit and another takes its place; three failures in a row are an
+  // error. Resolves to null when something else replaced the page meanwhile.
+  async next() {
+    for (;;) {
+      const entry = this.upcoming;
+      try {
+        await entry.ready;
+        return this.upcoming === entry ? entry : null;
+      } catch (error) {
+        if (this.upcoming !== entry) return null;
+        this.broken.add(entry.page.id);
+        this.drop(entry);
+        this.failures += 1;
+        if (this.failures >= 3) { this.upcoming = null; throw error; }
+        this.upcoming = this.load(this.pick());
+      }
+    }
+  }
+
   async advance() {
     if (!this.pages.length || !this.active) return;
+    if (this.status === 'error') this.failures = 0;
     if (!this.upcoming) this.upcoming = this.load(this.pick());
-    const entry = this.upcoming;
-    try { await entry.ready; } catch (error) { if (this.upcoming === entry) this.fail(); return; }
-    if (this.upcoming !== entry || !this.active) return;
+    let entry;
+    try { entry = await this.next(); } catch (error) { this.fail(); return; }
+    if (!entry || this.upcoming !== entry || !this.active) return;
+    this.failures = 0;
     this.upcoming = null;
     const previous = this.current;
+    // Someone reading or playing in the joke with the keyboard stays in the stage.
+    const focused = previous && document.activeElement === previous.frame;
     this.current = entry;
     entry.slot.style.zIndex = '2';
     entry.slot.classList.add('on');
     if (previous) previous.slot.style.zIndex = '1';
-    entry.frame.contentWindow.postMessage({ source: 'tty-home', type: 'show' }, location.origin);
+    this.tell(entry, 'show');
+    if (this.paused) this.tell(entry, 'pause');
+    if (focused) entry.frame.focus();
     setTimeout(() => { if (previous !== this.current) this.drop(previous); entry.slot.style.zIndex = ''; }, this.reduce ? 0 : 800);
     this.elapsed = 0;
     this.lastTick = performance.now();
@@ -214,6 +253,9 @@ export class LOLPlayer {
     if (event.data.type === 'ask' && entry === this.current) this.onAsk();
   }
 
+  tell(entry, type) {
+    if (entry && entry.frame.contentWindow) entry.frame.contentWindow.postMessage({ source: 'tty-home', type }, location.origin);
+  }
   focus() { if (this.current) this.current.frame.contentWindow.focus(); }
   fail() { this.status = 'error'; this.report(); }
   destroy() {

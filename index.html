@@ -9,42 +9,53 @@
 <meta name="color-scheme" content="light">
 <link rel="canonical" href="https://lol.tty.link/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="LOL :) tty.link">
 <meta property="og:url" content="https://lol.tty.link/">
 <meta property="og:title" content="LOL | tty.link">
-<meta property="og:description" content="Making fun to make happy :)">
+<meta property="og:description" content="Making fun to make happy :) Computer jokes you can play, one at a time.">
+<meta property="og:image" content="https://lol.tty.link/cards/lol.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffd84a'/%3E%3Ctext x='32' y='44' font-family='monospace' font-size='34' text-anchor='middle' fill='%231b2b7a'%3E:)%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:wght,CASL,MONO@300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="/assets/lol-player.css">
-<link rel="stylesheet" href="/assets/lol-service.css?v=lol-wordmark-1">
-<script src="/assets/tty-glyphs.js?v=lol-wordmark-1" defer></script>
-<script type="module" src="/assets/lol-service.js"></script>
+<link rel="stylesheet" href="/assets/lol-service.css?v=remote-1">
+<script src="https://cdn.jsdelivr.net/npm/@tty.link/font-kku@0.1.4-rc.4/font-kku.js" data-fonts="sebul" data-addons="motion"></script>
+<script src="/assets/tty-glyphs.js?v=lol-wordmark-1"></script>
+<script src="/assets/lettering.js?v=remote-1"></script>
+<script src="/assets/hankey.js?v=remote-1"></script>
+<script type="module" src="/assets/lol-service.js?v=remote-1"></script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "838288248cb7432382fa48f87d722c3f", "spa": false}'></script><!-- End Cloudflare Web Analytics -->
 </head>
 <body>
 <div class="layout">
   <header>
     <a class="logo" href="/" aria-label="LOL home">LOL :)</a>
-    <p class="motto">Making fun to make happy :)</p>
-    <nav aria-label="Navigation"><a class="all" href="/all/">All pages</a><a href="https://tty.link/">tty.link ↗</a></nav>
+    <p class="motto" lang="en">Making fun to make happy :)</p>
+    <nav aria-label="tty.link"><a class="home" href="https://tty.link/">tty.link ↗</a></nav>
   </header>
   <main class="lol-stage" aria-label="LOL"></main>
   <footer>
-    <div class="now"><p class="now-title" aria-live="polite"></p><div class="progress" aria-hidden="true"><span></span></div></div>
-    <div class="controls">
-      <button class="pause" aria-pressed="false" type="button">Pause</button>
-      <button class="next" type="button">Next</button>
-      <button class="ask" aria-haspopup="dialog" aria-expanded="false" type="button">Why is this funny?</button>
-      <div class="langs" role="group" aria-label="Language"><button data-lang="en" lang="en" aria-pressed="true" type="button">EN</button><button data-lang="ko" lang="ko" aria-pressed="false" type="button">한국어</button></div>
+    <div class="now">
+      <div class="now-line">
+        <p class="now-title"></p>
+        <span class="ask-wrap"><button class="ask" aria-haspopup="dialog" aria-expanded="false" type="button"><span class="ask-q" aria-hidden="true">?</span><span class="ask-label">Why is this funny?</span></button></span>
+      </div>
+      <div class="progress" aria-hidden="true"><span></span></div>
     </div>
+    <div class="tools">
+      <button class="btn prev" type="button" aria-disabled="true" aria-label="Previous" title="Previous"></button>
+      <button class="btn pause" type="button"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path class="ico-pause" d="M5 3.5v9M11 3.5v9"/><path class="ico-play" d="M5 3v10l8-5z"/></svg><span class="pause-label">Pause</span></button>
+      <button class="btn next" type="button" aria-label="Next" title="Next"></button>
+      <a class="btn all" href="/all/">All pages</a>
+    </div>
+    <p class="sr-now" aria-live="polite"></p>
     <p class="error" role="status" hidden></p>
   </footer>
 </div>
-<script>
-  addEventListener('DOMContentLoaded', () => {
-    window.TTYGlyphs?.wordmark(document.querySelector('.logo'), null, ['LOL', ':)']);
-  }, { once: true });
-</script>
 <noscript><p>Turn on JavaScript to play LOL. <a href="/all/">Browse all pages</a>.</p></noscript>
 </body>
 </html>

@@ -4,14 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A Wild Bug Appeared | tty.link</title>
-<script src="/pages/_kit.js"></script>
+<!-- share -->
+<meta name="description" content="A wild bug, four moves, and only one that works.">
+<link rel="canonical" href="https://lol.tty.link/pages/wild-bug.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LOL :) tty.link">
+<meta property="og:url" content="https://lol.tty.link/pages/wild-bug.html">
+<meta property="og:title" content="A Wild Bug Appeared">
+<meta property="og:description" content="A wild bug, four moves, and only one that works.">
+<meta property="og:image" content="https://lol.tty.link/cards/wild-bug.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /share -->
+<script src="/pages/_kit.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap">
 <!-- Pixelify Sans draws 5 like S, 2 like 8 and B like G at small sizes and a bold C like O (Lv.405 read as Lv.40S, Lv.512 as Lv.518, 11 GB as 11 GG, Coffee as Ooffee); Tiny5 lends the page its 5, 2, B and C and nothing else. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tiny5&text=25BC&display=swap">
-<script src="https://font.tty.link/lib/font-kku.js" data-fonts="pixel"></script>
-<script src="https://font.tty.link/lib/font-kku-fx.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tty.link/font-kku@0.1.4-rc.4/font-kku.js" data-fonts="pixel"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tty.link/font-kku@0.1.4-rc.4/font-kku-fx.js"></script>
 <script>
   // Opened on its own on a phone, the four moves fill the bottom of the screen right into the
   // corner, so the tty.link links ("?" and ":)") go to the top right, over the empty sky. On a
@@ -1058,7 +1071,7 @@
       const coarse = px * dpr < 22;
       const now = host.getAttribute('font');
       if (coarse && now === 'pixel') {
-        if (!fallbackLoaded && window.FontKku && FontKku.loadFont) fallbackLoaded = FontKku.loadFont('https://font.tty.link/lib/profiles/dunggeun.css').catch(() => {});
+        if (!fallbackLoaded && window.FontKku && FontKku.loadFont) fallbackLoaded = FontKku.loadFont('https://cdn.jsdelivr.net/npm/@tty.link/font-kku@0.1.4-rc.4/profiles/dunggeun.css').catch(() => {});
         host.setAttribute('data-was-pixel', '');
         host.setAttribute('font', 'dunggeun');
       } else if (!coarse && now === 'dunggeun' && host.hasAttribute('data-was-pixel')) {

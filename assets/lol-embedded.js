@@ -1,4 +1,4 @@
-import { LOLPlayer } from './lol-player.js?v=goto-1';
+import { LOLPlayer } from './lol-player.js?v=remote-1';
 import { bridge, parentOrigin } from './lol-protocol.js';
 
 const params = new URLSearchParams(location.search);
@@ -15,6 +15,8 @@ if (origin && parent !== window) {
     lang: params.get('lang'), page: params.get('page') || '',
     onState: (state) => send('state', { state }), onAsk: () => send('ask'),
   });
+  // hello: the page is up (the home waits longer for ready, which can take a few jokes' tries).
+  send('hello');
   player.init().then((ok) => { if (ok) send('ready'); });
 } else {
   document.body.textContent = 'Open LOL at lol.tty.link.';

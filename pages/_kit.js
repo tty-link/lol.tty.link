@@ -24,6 +24,9 @@
  *   TTY.busy(ms)   the visitor is doing something: every timeline stands still for ms (2500).
  *                  The visitor's own pointerdown and keydown already call it.
  *   TTY.ready()    tell the home page this page has drawn and can be shown
+ *   (pause)        when the visitor pauses the player, the page is held still: its timers,
+ *                  intervals and animation frames wait, its animations stand, timelines count none
+ *                  of it. The visitor's own touch or key lets it move again. Nothing to do in a page.
  *   TTY.hold(ms)   ask the home page to keep this page up a little longer (someone is playing).
  *                  Every pointerdown and keydown already sends TTY.hold(12000); call it only to ask
  *                  for longer.
@@ -59,10 +62,20 @@
   // font-kku spaces words and lines with margins inside its own cascade layers. A page reset
   // like `* { margin: 0 }` sits outside any layer and would win; hand those boxes back.
   const guard = document.createElement('style');
-  guard.textContent = 'font-kku *, .font-kku * { margin: revert-layer; padding: revert-layer; box-sizing: revert-layer; }';
+  guard.textContent = 'font-kku *, .font-kku * { margin: revert-layer; padding: revert-layer; box-sizing: revert-layer; }'
+    + '.tty-held *, .tty-held *::before, .tty-held *::after { animation-play-state: paused !important; }';
   document.head.append(guard);
   root.classList.add('lang-' + lang);
   if (embedded) root.classList.add('embedded');
+
+  // Visits: a page opened on its own counts (inside the player, the player's own page already does).
+  if (!embedded && location.hostname === 'lol.tty.link') {
+    const beacon = document.createElement('script');
+    beacon.type = 'module';
+    beacon.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+    beacon.setAttribute('data-cf-beacon', '{"token": "838288248cb7432382fa48f87d722c3f", "spa": false}');
+    document.head.append(beacon);
+  }
 
   const post = (message) => {
     if (embedded) parent.postMessage(Object.assign({ source: 'tty-page' }, message), location.origin);
@@ -111,6 +124,45 @@
   };
   window.TTY = TTY;
 
+  // ---- the player's pause holds the page still ----------------------------------------------------
+  // A page's timers, intervals and animation frames go through these gates: while the page is held
+  // (frozen), a timer or frame that comes due waits, and an interval skips its turns. They run as
+  // soon as the page is let go, so a held page picks up where it stood. Unheld, the gates only pass
+  // calls through.
+  let frozen = false;
+  const due = new Map(); // timer id -> its call, come due while frozen
+  const frames = new Map(); // frame id -> its callback, come due while frozen
+  const moved = new Map(); // such a frame's id -> the id it was asked for again under
+  const native = {
+    setTimeout: window.setTimeout, clearTimeout: window.clearTimeout, setInterval: window.setInterval,
+    raf: window.requestAnimationFrame, caf: window.cancelAnimationFrame,
+  };
+  window.setTimeout = function (fn, ms, ...args) {
+    if (typeof fn !== 'function') return native.setTimeout.apply(window, arguments);
+    const id = native.setTimeout.call(window, () => {
+      if (frozen) due.set(id, () => fn.apply(window, args));
+      else fn.apply(window, args);
+    }, ms);
+    return id;
+  };
+  window.clearTimeout = function (id) { due.delete(id); return native.clearTimeout.call(window, id); };
+  window.setInterval = function (fn, ms, ...args) {
+    if (typeof fn !== 'function') return native.setInterval.apply(window, arguments);
+    return native.setInterval.call(window, () => { if (!frozen) fn.apply(window, args); }, ms);
+  };
+  if (native.raf) {
+    window.requestAnimationFrame = function (fn) {
+      if (typeof fn !== 'function') return native.raf.call(window, fn);
+      const id = native.raf.call(window, (time) => { if (frozen) frames.set(id, fn); else fn(time); });
+      return id;
+    };
+    window.cancelAnimationFrame = function (id) {
+      frames.delete(id);
+      if (moved.has(id)) { native.caf.call(window, moved.get(id)); moved.delete(id); }
+      return native.caf.call(window, id);
+    };
+  }
+
   // ---- timelines a visitor can pause but never break ---------------------------------------------
   // Time the visitor spends touching or typing does not count as autoplay time: their pointerdown
   // or keydown makes the page "busy" for 2.5 s (TTY.busy(ms) for longer), and timelines stand still
@@ -124,8 +176,34 @@
     busyEnd = Math.max(busyEnd, now + (ms || 2500));
     timelines.forEach((run) => run.held());
   };
-  ['pointerdown', 'keydown'].forEach((type) => addEventListener(type, (e) => { if (e.isTrusted) busy(); }, { capture: true, passive: true }));
+  ['pointerdown', 'keydown'].forEach((type) => addEventListener(type, (e) => {
+    if (!e.isTrusted) return;
+    if (frozen) hold(false); // a paused visitor who reaches in wants the page to answer
+    busy();
+  }, { capture: true, passive: true }));
   TTY.busy = busy;
+
+  // Held: timelines count the time as busy, animations stand, the gates above keep what comes due.
+  const stood = [];
+  const hold = (on) => {
+    if (on === frozen) return;
+    frozen = on;
+    root.classList.toggle('tty-held', on);
+    const now = performance.now();
+    if (on) {
+      if (now > busyEnd) { busyDone += busyEnd - busyStart; busyStart = now; }
+      busyEnd = Infinity;
+      if (document.getAnimations) document.getAnimations().forEach((a) => { if (a.playState === 'running') { a.pause(); stood.push(a); } });
+      return;
+    }
+    busyEnd = now;
+    stood.splice(0).forEach((a) => { try { a.play(); } catch (e) { /* removed meanwhile */ } });
+    const calls = [...due.values()];
+    due.clear();
+    frames.forEach((fn, id) => { moved.set(id, native.raf.call(window, (time) => { moved.delete(id); fn(time); })); });
+    frames.clear();
+    calls.forEach((call) => { try { call(); } catch (e) { setTimeout(() => { throw e; }); } });
+  };
 
   // const play = TTY.timeline(async (t) => {
   //   await t.at(800); show(cat);        // 0.8 s of autoplay after the start
@@ -161,7 +239,7 @@
         const run = {
           stop() { alive = false; timelines.delete(run); },
           held() {
-            if (!alive || !opts.punch) return;
+            if (!alive || !opts.punch || frozen) return;
             const now = performance.now(), left = opts.punch * 1000 - autoplay();
             if (left > 0) TTY.hold(left + (busyEnd - now) + 3000);
           },
@@ -206,6 +284,8 @@
 
   addEventListener('message', (event) => {
     if (event.origin !== location.origin || event.source !== parent || !event.data || event.data.source !== 'tty-home') return;
+    if (event.data.type === 'pause') hold(true);
+    if (event.data.type === 'play') hold(false);
     if (event.data.type === 'show' && !shown) {
       shown = true;
       markShown();
@@ -253,7 +333,8 @@
     // pressed. It sits right beside the corner: after "tty.link :)" on wide screens, and on
     // phones next to ":)" and outside the fold, so opening the fold adds the links to the
     // left without moving it. Its footprint is about 290×46px on wide screens and 84×50px
-    // folded.
+    // folded. Once the page has played its seconds, a "▷" after the "?" goes on to another
+    // joke in the player (a shared link has no player around it); then it is 36px wider.
     // The nav sits at the bottom right unless the page has more there than in another corner:
     // see `placeNav` below. A page can also pin it to a corner, and then it is not moved:
     //   <html data-tty-nav="top">          top right   ("left": bottom left, "top left": top left,
@@ -272,6 +353,9 @@
         "html:lang(ko) .tty-nav a{font-family:system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif}",
         '.tty-nav a:focus-visible,.tty-nav button:focus-visible{outline:3px solid #1b2b7a;outline-offset:2px;box-shadow:0 0 0 5px #fff}',
         '.tty-nav .tty-nav-ask{width:30px;height:30px;padding:0;font-size:15px;font-weight:800}',
+        '.tty-nav .tty-nav-next{width:30px;height:30px;padding:0}',
+        '.tty-nav .tty-nav-next[hidden]{display:none}',
+        '.tty-nav .tty-nav-next svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}',
         '.tty-nav .tty-nav-menu{display:none;width:34px;height:34px;padding:0}',
         '.tty-nav.tty-nav-wait{visibility:hidden}',
         // The corner is data-at ("top", "left", "top left"; none = bottom right), set by the script
@@ -280,7 +364,7 @@
         '.tty-nav[data-at~="left"]{left:12px;right:auto;flex-direction:row-reverse}',
         '@media (max-width:900px){.tty-nav{right:8px;bottom:8px}.tty-nav .tty-nav-menu{display:inline-flex}',
         '.tty-nav[data-at~="top"]{top:8px}.tty-nav[data-at~="left"]{left:8px}',
-        '.tty-nav .tty-nav-ask{width:34px;height:34px}.tty-nav:not(.open) a{display:none}}',
+        '.tty-nav .tty-nav-ask,.tty-nav .tty-nav-next{width:34px;height:34px}.tty-nav:not(.open) a{display:none}}',
       ].join('');
       document.head.append(style);
       const bar = document.createElement('nav');
@@ -315,6 +399,27 @@
           script.then(() => window.TTYExplain && window.TTYExplain.open({ id: page, lang, returnFocus: ask }), () => {});
         });
         bar.append(ask);
+        // A page opened from a shared link has no player around it: "next" goes on to another joke
+        // in the player, which carries on from there. It comes once the page has played its
+        // seconds (with less motion too: the last scene is read first), so it never covers the joke.
+        const next = document.createElement('button');
+        next.type = 'button';
+        next.className = 'tty-nav-next';
+        next.hidden = true;
+        next.title = lang === 'ko' ? '다음 개그' : 'Next joke';
+        next.setAttribute('aria-label', next.title);
+        next.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.2v9.6l7-4.8z"/><path d="M13 3.2v9.6"/></svg>';
+        const list = fetch('/pages/index.json', { cache: 'no-cache' }).then((r) => r.json()).then((data) => data.pages || []).catch(() => []);
+        list.then((pages) => {
+          const own = pages.find((p) => p.id === page);
+          setTimeout(() => { next.hidden = false; }, ((own && own.seconds) || 16) * 1000);
+        });
+        next.addEventListener('click', () => list.then((pages) => {
+          const pool = pages.filter((p) => p.id !== page && !p.skip && /^[a-z0-9-]+$/.test(p.id));
+          const pick = pool.length ? pool[Math.floor(Math.random() * pool.length)].id : '';
+          location.href = '/?lang=' + lang + (pick ? '#' + pick : '');
+        }));
+        bar.append(next);
       }
       const toggle = document.createElement('button');
       toggle.type = 'button';

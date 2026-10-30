@@ -4,17 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>All pages | tty.link</title>
-<meta name="description" content="Every page that plays on the tty.link home stage.">
+<meta name="description" content="Every computer joke that plays on LOL, the tty.link joke stage.">
 <meta name="theme-color" content="#ffd84a">
 <meta name="color-scheme" content="light">
 <link rel="canonical" href="https://lol.tty.link/all/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LOL :) tty.link">
+<meta property="og:url" content="https://lol.tty.link/all/">
+<meta property="og:title" content="All pages | LOL">
+<meta property="og:description" content="Every computer joke on LOL, the tty.link joke stage. Making fun to make happy :)">
+<meta property="og:image" content="https://lol.tty.link/cards/lol.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffd84a'/%3E%3Ctext x='32' y='44' font-family='ui-monospace,Menlo,monospace' font-size='34' font-weight='700' text-anchor='middle' fill='%231b2b7a'%3E:)%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:wght,CASL,MONO@300..1000,0..1,0..1&display=swap">
 <style>
-  /* Every page from pages/index.json as a card with a live, scaled-down preview.
-     A preview loads only when its card comes near the screen. */
+  /* Every page from pages/index.json as a card with a still of the page (posters/<id>.<lang>.jpg).
+     Pointing at a card, or moving to it with the keyboard, plays the page itself in its place,
+     one at a time. A page without a still yet plays as soon as its card is on screen. */
   :root {
     --sun: #ffd84a;
     --ink: #1b2b7a;
@@ -38,14 +48,21 @@
   :focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; border-radius: 6px; }
 
   .top { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-  .mark { font-size: 15px; color: inherit; text-decoration: none; }
+  .mark { font-size: 18px; line-height: 1.9; color: inherit; text-decoration: none; }
+  .top-end { display: flex; align-items: center; gap: 18px; }
+  .top-end a { color: inherit; font-weight: 600; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
   .langs { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 999px; overflow: hidden; }
   .langs button { min-height: 33px; padding: 0 12px; border: 0; background: transparent; font-size: 14px; font-weight: 600; cursor: pointer; }
   .langs button[aria-pressed="true"] { background: var(--ink); color: var(--sun); }
+  .hankey ~ .langs { display: none; }
 
   .head { margin: clamp(40px, 9vh, 96px) 0 clamp(28px, 5vh, 48px); }
+  /* Drawn like the tty.link pages: the stroke alphabet for Latin, font-kku for Hangul. */
   h1 { font-size: clamp(40px, 7vw, 88px); font-weight: 750; line-height: 1; font-variation-settings: 'MONO' 1, 'CASL' 1; }
+  h1 .lt { --lt: clamp(40px, 6.4vw, 84px) !important; }
   .lede { max-width: 34em; margin-top: 16px; font-size: clamp(15px, 1.4vw, 18px); line-height: 1.5; color: var(--ink-soft); }
+  .lede .lt { --lt: clamp(15px, 1.4vw, 18px) !important; }
+  .lede .lt-art { row-gap: .5em; }
   .lang-ko .lede { word-break: keep-all; }
 
   .grid {
@@ -86,6 +103,13 @@
     background: var(--ink);
     box-shadow: 0 0 0 1.5px var(--ink);
   }
+  .preview img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
   .preview iframe {
     position: absolute;
     top: 0;
@@ -103,15 +127,21 @@
   .card:hover .card-title { text-decoration: underline; text-underline-offset: .2em; text-decoration-thickness: 2px; }
   .card:hover .preview { box-shadow: 0 0 0 3px var(--ink); }
 </style>
-<script src="https://font.tty.link/lib/font-kku.js" data-fonts="sebul"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tty.link/font-kku@0.1.4-rc.4/font-kku.js" data-fonts="sebul" data-addons="motion"></script>
 <script src="/assets/tty-glyphs.js?v=lol-wordmark-1"></script>
+<script src="/assets/lettering.js?v=remote-1"></script>
+<script src="/assets/hankey.js?v=remote-1"></script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "838288248cb7432382fa48f87d722c3f", "spa": false}'></script><!-- End Cloudflare Web Analytics -->
 </head>
 <body>
 <header class="top">
   <a class="mark" href="/" aria-label="LOL">LOL :)</a>
+  <div class="top-end">
+  <a class="home" href="https://tty.link/">tty.link ↗</a>
   <div class="langs" role="group" aria-label="Language">
     <button type="button" data-lang="en" aria-pressed="true" lang="en">EN</button>
     <button type="button" data-lang="ko" aria-pressed="false" lang="ko">한국어</button>
+  </div>
   </div>
 </header>
 <main>
@@ -160,34 +190,57 @@
   }));
 
   let pages = [];
+  let key = null;
 
-  // Only the previews on screen are alive. A card that stays in view for a moment gets its
-  // page (so a fast scroll does not load everything it passes); a card that leaves the
-  // screen has its page removed again. However long the list grows, only a screenful runs.
+  // A card shows its still. Pointing at it (or reaching it with the keyboard) plays the page itself
+  // over the still, one card at a time; leaving it puts the still back. A card without a still yet
+  // (a page just added) plays while it is on screen, as every card once did.
+  let live = null;
+  const play = (preview) => {
+    if (preview.querySelector('iframe')) return;
+    const frame = document.createElement('iframe');
+    frame.src = preview.dataset.src;
+    frame.tabIndex = -1;
+    frame.title = '';
+    frame.setAttribute('aria-hidden', 'true');
+    frame.addEventListener('load', () => setTimeout(() => {
+      if (frame.contentWindow) frame.contentWindow.postMessage({ source: 'tty-home', type: 'show' }, location.origin);
+    }, 300), { once: true });
+    preview.append(frame);
+  };
+  const still = (preview) => { const frame = preview.querySelector('iframe'); if (frame) frame.remove(); };
   const timers = new WeakMap();
+  const start = (preview) => {
+    clearTimeout(timers.get(preview));
+    timers.set(preview, setTimeout(() => {
+      if (live && live !== preview) still(live);
+      live = preview;
+      play(preview);
+    }, 250));
+  };
+  const stop = (preview) => {
+    clearTimeout(timers.get(preview));
+    timers.set(preview, setTimeout(() => { still(preview); if (live === preview) live = null; }, 300));
+  };
   const loader = new IntersectionObserver((entries) => {
     entries.forEach(({ target, isIntersecting }) => {
+      if (!target.classList.contains('bare')) return;
       clearTimeout(timers.get(target));
-      const frame = target.querySelector('iframe');
-      if (isIntersecting && !frame) {
-        timers.set(target, setTimeout(() => {
-          const next = document.createElement('iframe');
-          next.src = target.dataset.src;
-          next.tabIndex = -1;
-          next.setAttribute('aria-hidden', 'true');
-          next.addEventListener('load', () => setTimeout(() => {
-            if (next.contentWindow) next.contentWindow.postMessage({ source: 'tty-home', type: 'show' }, location.origin);
-          }, 300), { once: true });
-          target.append(next);
-        }, 250));
-      } else if (!isIntersecting && frame) {
-        timers.set(target, setTimeout(() => frame.remove(), 1200));
-      }
+      if (isIntersecting) timers.set(target, setTimeout(() => play(target), 250));
+      else timers.set(target, setTimeout(() => still(target), 1200));
     });
   }, { rootMargin: '80px 0px' });
   const scaler = new ResizeObserver((entries) => {
     entries.forEach((entry) => entry.target.style.setProperty('--s', entry.contentRect.width / 1000));
   });
+  // Card titles are drawn as they come near the screen (48 at once would hold the page up).
+  const drawer = new IntersectionObserver((entries) => {
+    entries.forEach(({ target, isIntersecting }) => {
+      if (!isIntersecting || !window.TTYLetter) return;
+      drawer.unobserve(target);
+      window.TTYLetter.set(target, target.textContent, { size: '16px' });
+    });
+  }, { rootMargin: '200px 0px' });
 
   function render() {
     const t = TEXT[lang];
@@ -197,12 +250,19 @@
     document.querySelector('.langs').setAttribute('aria-label', t.langs);
     document.querySelectorAll('.langs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
     h1.setAttribute('lang', lang);
-    if (lang === 'ko') h1.innerHTML = `<font-kku font="sebul" size="1em">${t.title}</font-kku>`;
-    else h1.textContent = t.title;
-    lede.textContent = t.lede(pages.length);
+    if (window.TTYLetter) {
+      window.TTYLetter.set(h1, t.title, { size: '84px', animate: true });
+      window.TTYLetter.set(lede, t.lede(pages.length), { size: '18px' });
+    } else {
+      h1.textContent = t.title;
+      lede.textContent = t.lede(pages.length);
+    }
+    if (key) key.update(lang);
 
     loader.disconnect();
     scaler.disconnect();
+    drawer.disconnect();
+    live = null;
     // Newest first: pages are appended to the end of index.json.
     grid.replaceChildren(...pages.slice().reverse().map((page) => {
       const pick = (pair) => (pair && (pair[lang] || pair.en)) || '';
@@ -213,6 +273,15 @@
       const preview = document.createElement('div');
       preview.className = 'preview';
       preview.dataset.src = `/pages/${page.file}?lang=${lang}`;
+      const img = document.createElement('img');
+      img.src = `/posters/${page.id}.${lang}.jpg`;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.width = 640;
+      img.height = 480;
+      img.addEventListener('error', () => { img.remove(); preview.classList.add('bare'); loader.observe(preview); }, { once: true });
+      preview.append(img);
       const title = document.createElement('h2');
       title.className = 'card-title';
       title.textContent = pick(page.title) || page.id;
@@ -231,19 +300,27 @@
         id: page.id, lang, title: title.textContent, returnFocus: ask,
       }), () => {}));
       li.append(a, ask);
-      loader.observe(preview);
+      a.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') start(preview); });
+      a.addEventListener('pointerleave', () => stop(preview));
+      a.addEventListener('focus', () => start(preview));
+      a.addEventListener('blur', () => stop(preview));
       scaler.observe(preview);
+      drawer.observe(title);
       return li;
     }));
   }
 
-  document.querySelectorAll('.langs button').forEach((b) => b.addEventListener('click', () => {
-    if (b.dataset.lang === lang) return;
-    lang = b.dataset.lang;
+  const switchTo = (target) => {
+    if (target === lang) return;
+    lang = target;
     write('tty.lang', lang);
     history.replaceState(null, '', '?lang=' + lang);
     render();
-  }));
+  };
+  document.querySelectorAll('.langs button').forEach((b) => b.addEventListener('click', () => switchTo(b.dataset.lang)));
+  // The Han/Eng key of the tty.link pages; the buttons above stay for a page without it.
+  key = window.TTYHanKey ? window.TTYHanKey.make(switchTo) : null;
+  if (key) document.querySelector('.langs').before(key.button);
 
   fetch('/pages/index.json', { cache: 'no-cache' })
     .then((r) => r.json())

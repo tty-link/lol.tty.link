@@ -1,30 +1,99 @@
+/* LOL on its own: the same remote as under the tty.link home stage (drawn title, a "?" after it,
+   ◁ ⏸ ▷, all pages, the Han/Eng key), around the same player. */
+:root {
+  --sun: #ffd84a;
+  --ink: #1b2b7a;
+  --ink-soft: rgba(27, 43, 122, .22);
+  --ui: 'Recursive', ui-monospace, Menlo, Consolas, monospace;
+  --ko-ui: system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+}
 * { box-sizing: border-box; }
-body { background: #ffd84a; color: #1b2b7a; font: 500 14px/1.4 'Recursive', ui-monospace, monospace; }
-:lang(ko) body { font-family: system-ui, -apple-system, 'Apple SD Gothic Neo', sans-serif; }
-a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+body { margin: 0; background: var(--sun); color: var(--ink); font: 600 14px/1.4 var(--ui); font-variation-settings: 'MONO' 0, 'CASL' 0; -webkit-font-smoothing: antialiased; }
+:lang(ko) body { font-family: var(--ko-ui); }
+::selection { background: var(--ink); color: var(--sun); }
+a { color: inherit; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
 button { font: inherit; color: inherit; cursor: pointer; }
-:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.sr-now { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
 .layout { height: 100vh; height: 100svh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 18px; padding: clamp(16px, 3.4vw, 40px); }
 header { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; }
 .logo { font-size: 18px; line-height: 1.9; text-decoration: none; white-space: nowrap; }
-.motto { margin: 0; }
-nav { display: flex; gap: 18px; margin-left: auto; }
+.motto { margin: 0; font-size: 13px; }
+nav { display: flex; align-items: center; gap: 18px; margin-left: auto; }
+.home { white-space: nowrap; }
 .lol-stage { min-height: 0; border-radius: 18px; }
-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 16px 24px; }
-.now { flex: 1 1 220px; }
-.now-title { margin: 0; font-weight: 650; }
-.progress { height: 3px; margin-top: 10px; background: rgba(27,43,122,.22); border-radius: 2px; overflow: hidden; }
-.progress span { display: block; height: 100%; background: #1b2b7a; transform: scaleX(0); transform-origin: 0 50%; }
-.controls, .langs { display: flex; flex-wrap: wrap; gap: 8px; }
-button { min-height: 36px; padding: 6px 14px; border: 1.5px solid currentColor; border-radius: 999px; background: transparent; }
-button:hover, button[aria-pressed="true"] { color: #ffd84a; background: #1b2b7a; border-color: #1b2b7a; }
+
+/* The remote: the joke's title with its "?" and the time bar under it; ◁ ⏸ ▷ and all pages beside. */
+footer { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 24px; }
+.now { flex: 1 1 260px; min-width: 0; }
+.now-line { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 38px; }
+.now-title { flex: 0 1 auto; min-width: 0; margin: 0; font-size: 15px; }
+.now-title .lt { min-height: 0; }
+.progress { height: 3px; margin-top: 10px; background: var(--ink-soft); border-radius: 2px; overflow: hidden; }
+.progress span { display: block; height: 100%; background: var(--ink); transform: scaleX(0); transform-origin: 0 50%; }
+.paused .progress span, .explaining .progress span { opacity: .45; }
+.tools { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 0 14px; border: 1.5px solid var(--ink); border-radius: 999px; background: transparent; color: inherit; font-size: 14px; text-decoration: none; }
+.btn:hover { background: var(--ink); color: var(--sun); }
+.btn .lt { pointer-events: none; }
 .error { flex-basis: 100%; margin: 0; }
+
+/* Symbols, not words: ◁ ⏸ ▷ as round marks (their names stay for screen readers). */
+.btn.prev, .btn.pause, .btn.next { width: 36px; min-width: 36px; padding: 0; border-radius: 50%; }
+.pause-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.ico { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ico-play { display: none; }
+.paused .ico-play { display: inline; }
+.paused .ico-pause { display: none; }
+.btn.prev::before, .btn.next::before { content: ''; width: 15px; height: 15px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }
+.btn.next { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 3.2v9.6l7-4.8z'/%3E%3Cpath d='M13 3.2v9.6'/%3E%3C/svg%3E"); }
+.btn.prev { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.5 3.2v9.6l-7-4.8z'/%3E%3Cpath d='M3 3.2v9.6'/%3E%3C/svg%3E"); }
+.btn.prev[aria-disabled="true"] { opacity: .3; cursor: default; }
+.btn.prev[aria-disabled="true"]:hover { background: transparent; color: inherit; }
+
+/* "Why is this funny?" is about the joke on stage, so its "?" follows the title: a filled ink circle
+   that floats a little. Its bubble opens into the room after the title (never over a control). */
+.ask-wrap { position: relative; display: inline-flex; flex: none; }
+.ask { display: inline-flex; align-items: center; justify-content: center; min-width: 38px; min-height: 38px; padding: 0; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--ink); color: var(--sun); }
+.ask:hover { background: var(--sun); color: var(--ink); }
+.ask-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.ask-q { display: inline; font: 800 15px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.ask-q .lt { --lt: 20px !important; }
+.ask-q svg { animation: ask-float 2.6s ease-in-out infinite; }
+.ask .tty-glyphs, .ask .lt { transform-origin: 50% 80%; }
+@keyframes ask-float { 50% { transform: translateY(-1.6px) rotate(-6deg); } }
+.paused .ask-q svg { animation-play-state: paused; }
+.ask-pop { position: absolute; z-index: 30; display: flex; align-items: center; pointer-events: none; }
+.ask-pop[data-side="right"] { left: calc(100% + 12px); top: -20px; bottom: -20px; --from: translateX(-16px); --origin: -12px 50%; }
+.ask-pop[data-side="left"] { right: calc(100% + 12px); top: -20px; bottom: -20px; --from: translateX(16px); --origin: calc(100% + 12px) 50%; }
+.ask-bubble {
+  position: relative; width: max-content; padding: 7px 14px 8px; border: 2px solid var(--ink); border-radius: 14px;
+  background: var(--sun); color: var(--ink); box-shadow: 0 3px 0 -1px var(--ink); cursor: pointer;
+  opacity: 0; pointer-events: none; transform-origin: var(--origin);
+}
+.ask-bubble .lt-art { flex-wrap: nowrap; }
+.ask-bubble::after { content: ''; position: absolute; width: 13px; height: 13px; border-left: 2px solid var(--ink); border-bottom: 2px solid var(--ink); background: inherit; }
+[data-side="right"] > .ask-bubble::after { left: -9px; top: calc(50% - 7px); transform: rotate(45deg) skew(8deg, 8deg); }
+[data-side="left"] > .ask-bubble::after { right: -9px; top: calc(50% - 7px); transform: rotate(225deg) skew(8deg, 8deg); }
+.ask-bubble.show { opacity: 1; pointer-events: auto; animation: ask-say .55s cubic-bezier(.3, 1.4, .5, 1) both; }
+.ask-bubble.hide { animation: ask-unsay .28s ease both; }
+.ask-bubble:hover { background: var(--ink); color: var(--sun); }
+@keyframes ask-say { 0% { opacity: 0; transform: var(--from) scale(.25); } 60% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: none; } }
+@keyframes ask-unsay { to { opacity: 0; transform: var(--from) scale(.4); } }
+
 @media (max-width: 600px) {
   .layout { gap: 12px; }
   .motto { display: none; }
   .logo { font-size: 15px; }
+  nav { gap: 12px; }
   footer { gap: 10px; }
   .now { flex-basis: 100%; }
-  .controls { gap: 6px; }
-  button { padding: 5px 10px; min-height: 32px; font-size: 13px; }
+  .tools { margin-left: auto; gap: 6px; }
+  .ask { min-width: 32px; min-height: 32px; }
+  .btn { min-height: 32px; font-size: 13px; }
+  .btn.prev, .btn.pause, .btn.next { width: 32px; min-width: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ask-bubble.show, .ask-bubble.hide, .ask-q svg { animation: none; }
 }
